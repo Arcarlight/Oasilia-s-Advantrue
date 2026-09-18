@@ -1030,6 +1030,8 @@ button { font-family: inherit; }
 .battle-log p { margin: 0; padding: 1px 0; opacity: .88; border-bottom: 1px solid rgba(255,255,255,.05); }
 .battle-log p.good { color: #9be8b4; }
 .battle-log p.bad { color: #ffa894; }
+/* 「没抽到牌，因为打出去的牌要下回合才回牌堆」这类解释性提示：压暗一档，不抢眼 */
+.battle-log p.note { opacity: .62; }
 .battle-log p:last-child { opacity: 1; font-weight: 600; }
 
 /* 战斗底部：手牌区 */

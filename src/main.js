@@ -145,6 +145,10 @@ async function boot() {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));
   }
+  if (params.get('dgloop')) {
+    // 无限连招诊断：0 费「抽 1 张」+ 小卡组会不会把出牌刷成死循环
+    import('../tools/diag-loop.js').catch((e) => console.error('连招诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {

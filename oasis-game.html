@@ -1038,6 +1038,8 @@ button { font-family: inherit; }
 .battle-log p { margin: 0; padding: 1px 0; opacity: .88; border-bottom: 1px solid rgba(255,255,255,.05); }
 .battle-log p.good { color: #9be8b4; }
 .battle-log p.bad { color: #ffa894; }
+/* 「没抽到牌，因为打出去的牌要下回合才回牌堆」这类解释性提示：压暗一档，不抢眼 */
+.battle-log p.note { opacity: .62; }
 .battle-log p:last-child { opacity: 1; font-weight: 600; }
 
 /* 战斗底部：手牌区 */
@@ -9158,22 +9160,51 @@ class Battle {
   // ====================== 抽卡 / 牌堆 ======================
 
   /**
+   * 从牌堆顶取一张**本回合还能用**的牌。
+   *
+   * 「本回合打出去的牌」躺在牌堆底部并带着 playedTurn 标记，这里会跳过它们
+   * （放回底部，继续往下翻）。取不到就返回 null，交给调用方决定要不要洗弃牌堆。
+   * 翻牌次数最多一轮牌堆长度，所以不会死循环。
+   */
+  takeFromDraw(key) {
+    const d = this.decks[key];
+    const held = [];
+    let card = null;
+    while (d.draw.length) {
+      const cand = d.draw.shift();
+      if (cand.playedTurn === this.turn) { held.push(cand); continue; }
+      card = cand;
+      break;
+    }
+    // 翻过去的牌原样放回底部：它们只是「这一回合不能再被抽到」，不是消失了
+    for (const h of held) d.draw.push(h);
+    return card;
+  }
+
+  /**
    * 从卡组顶抽 n 张；牌堆空时把弃牌堆洗回卡组。
    * 抽牌数故意设计成大于手牌上限——超出部分会自动丢进弃牌堆，
    * 这样每回合的「新牌供应」是稳定的，玩家不主动出牌就会被卡住。
+   *
+   * 注意「本回合打出去的牌不能再被抽回来」这条规则（见 takeFromDraw）：
+   * 没有它的话，一副只有「子弹拳 + 电光一闪」的卡组能两张牌来回刷，
+   * 每回合都把出牌上限打满、把对手直接揍死（用户反馈的「无限循环」）。
    */
   drawCards(key, n) {
     const d = this.decks[key];
     const max = this[key].handMax;
     const drawn = [];
     for (let i = 0; i < n; i++) {
-      if (d.draw.length === 0) {
+      let card = this.takeFromDraw(key);
+      if (!card) {
         if (d.discard.length === 0) break;
-        d.draw = this.rng.shuffle(d.discard);
+        // 洗牌：弃牌堆混进来，本回合打过的那些仍然留在底部（还带着标记）
+        d.draw = [...d.draw, ...this.rng.shuffle(d.discard)];
         d.discard = [];
         this.emit({ type: 'reshuffle', side: key });
+        card = this.takeFromDraw(key);
+        if (!card) break;   // 洗完还是只剩本回合打过的牌 —— 那就是抽不到
       }
-      const card = d.draw.shift();
       if (d.hand.length >= max) {
         // 手牌满了：新抽到的牌直接进弃牌堆
         d.discard.push(card);
@@ -9184,6 +9215,18 @@ class Battle {
       drawn.push(card);
     }
     if (drawn.length) this.emit({ type: 'draw', side: key, cards: drawn.map((c) => c.id) });
+    else if (n > 0) {
+      // 一张都没抽到：如果是因为「这回合刚打出去的牌还在牌堆底部歇着」，就说一句 ——
+      // 不然玩家只看到「抽 2 张」什么也没发生，会以为是 bug。
+      const resting = d.draw.filter((c) => c.playedTurn === this.turn).length;
+      if (resting > 0) {
+        this.emitLogged(
+          { type: 'drawWhiff', side: key, resting },
+          `想抽牌，但这一回合打出去的 ${resting} 张牌要下回合才回到牌堆——没抽到。`,
+          'note',
+        );
+      }
+    }
     return drawn;
   }
 
@@ -9193,6 +9236,8 @@ class Battle {
     d.draw = this.rng.shuffle([...d.draw, ...d.discard, ...d.hand]);
     d.discard = [];
     d.hand = [];
+    // 「本回合打过」的标记也要清掉：战斗之间不该互相影响
+    for (const c of d.draw) delete c.playedTurn;
   }
 
   // ====================== 回合流程 ======================
@@ -9278,10 +9323,13 @@ class Battle {
     this.resolveCard('player', card, opts);
 
     // 使用后的去向：销毁区 or 卡组最底端
+    // 回牌堆的牌会打上 playedTurn 标记：**这一回合不会再被抽回来**（下回合自动作废）。
+    // 这是「0 费抽 1 张」类卡牌的天花板 —— 否则小卡组能靠两张牌无限轮换刷死对手。
     if (card.exhaust) {
       d.exhaust.push(entry);
       this.emit({ type: 'exhaust', side: 'player', id: card.id });
     } else {
+      entry.playedTurn = this.turn;
       d.draw.push(entry);
       this.emit({ type: 'toBottom', side: 'player', id: card.id });
     }
@@ -9643,6 +9691,8 @@ class Battle {
         this.decks.enemy.exhaust.push(pick.c);
         this.emit({ type: 'exhaust', side: 'enemy', id: pick.c.card.id });
       } else {
+        // 同上：这一回合不会再被抽回来（敌人的 0 费抽牌也刷不起来）
+        pick.c.playedTurn = this.turn;
         this.decks.enemy.draw.push(pick.c);
         this.emit({ type: 'toBottom', side: 'enemy', id: pick.c.card.id });
       }
@@ -9796,6 +9846,8 @@ class Battle {
       drawCount: this.decks[key].draw.length,
       discardCount: this.decks[key].discard.length,
       exhaustCount: this.decks[key].exhaust.length,
+      // 牌堆里「本回合刚打出去、暂时抽不到」的张数（诊断用）
+      restingCount: this.decks[key].draw.filter((c) => c.playedTurn === this.turn).length,
     };
   }
 
@@ -12153,7 +12205,7 @@ const TIP = {
   exhaust: '销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。',
   exhaustHand: '销毁手牌：把手里剩下的牌全部销毁。',
   discard: '弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。',
-  draw: '抽牌：从卡组顶抽到手牌（卡组抽空时把弃牌堆洗回来）。',
+  draw: '抽牌：从卡组顶抽到手牌（卡组抽空时把弃牌堆洗回来）。\n注意：**这一回合打出去的牌要下回合才回到牌堆**，当回合抽不回来 —— 不然「0 费抽 1 张」的牌能被两张来回刷（小卡组会变成无限连招）。',
   ap: '行动点（AP）：每回合回满，数量 = 2 + 敏捷 ÷ 2（上限 8）。打出卡牌要花 AP。',
   heal: '回复：按固定值或**最大生命**的百分比恢复 HP。百分比类的后期一样有用。',
   maxHp: '最大生命：治疗百分比、部分事件都按它算。',
@@ -14903,6 +14955,7 @@ function showHelp() {
         el('li', { html: '抽上来的牌比手牌上限多，多出来的会自动进弃牌堆——所以不要囤牌。' }),
         el('li', { html: '<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×1.6。' }),
         el('li', { html: '卡牌用完默认洗回<code>卡组最底端</code>；标着<code>销毁</code>的卡一场战斗只能用一次。' }),
+        el('li', { html: '但<code>这一回合打出去的牌，当回合不会再被抽回来</code>（下回合自动回到牌堆）—— 否则「0 费抽 1 张」的牌能在小卡组里来回刷成无限连招。' }),
         el('li', { text: '卡组抽空时，弃牌堆会洗回卡组继续抽。' }),
         el('li', { text: '护盾在持有者自己的回合开始时清空，所以它其实是「这一轮的减伤」。' }),
       ]),
@@ -16393,6 +16446,10 @@ async function boot() {
   if (params.get('dgfloat')) {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));
+  }
+  if (params.get('dgloop')) {
+    // 无限连招诊断：0 费「抽 1 张」+ 小卡组会不会把出牌刷成死循环
+    import('../tools/diag-loop.js').catch((e) => console.error('连招诊断加载失败', e));
   }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
