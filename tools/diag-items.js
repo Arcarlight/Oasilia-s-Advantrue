@@ -68,6 +68,13 @@
     showItems(game);
     await wait(300);
 
+    // 截图模式：把背包留在屏幕上给 shot.mjs 拍
+    if (new URLSearchParams(location.search).get('dgitems') === 'shot') {
+      log('背包已打开（截图模式）');
+      log('IT_DONE');
+      return;
+    }
+
     // ---- ④ ×0 的条目不该列出来 ----
     const rows = [...document.querySelectorAll('.modal-backdrop .shop-item')];
     const names = rows.map((r) => r.querySelector('h4')?.textContent?.trim() ?? '');
