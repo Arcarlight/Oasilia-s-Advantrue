@@ -1,0 +1,879 @@
+{
+  "_readme": [
+    "图标注册表（唯一数据源）。加一个图标 = 在这里加一行，然后跑：",
+    "  & tools/fetch-iconpack.ps1   # 只在 source 以 pack: 开头时才需要（下载素材）",
+    "  node tools/build-content.mjs # 校验 + 重新生成 src/ui/style.css 的 GENERATED-ICONS 区块",
+    "  node tools/check-icons.mjs   # 代码里用到的 ico-* 是否都有定义",
+    "",
+    "字段：",
+    "  name      图标名，会生成 .ico-<name>，所以只能用 [a-z0-9_]（不能有连字符/大写，否则 CSS 或 check-icons 会解析错）",
+    "  source    pack:<component_name>（Nieobie/Game-Icon-Pack 的原始文件名，见 tools/icon-catalog.json）",
+    "            或 local:<assets/img 下的相对路径>（现有 Kenney 素材，一律保留）",
+    "  file      磁盘位置（相对 assets/img/），省略时 = icons/<name>.png",
+    "  desc      用途说明（给人看）",
+    "  component / category  pack 条目的原始 component_name 与分类目录，仅作可追溯信息",
+    "  group     分组，只用于生成区块里的注释分节"
+  ],
+  "generated_from": "tools/icon-semantics-draft.json（t1 选型草表：每个概念的首选图标）+ assets/img 下现有的 Kenney 素材",
+  "icon_pack": {
+    "name": "Nieobie/Game-Icon-Pack",
+    "license": "CC0 1.0",
+    "url_template": "https://nieobie.github.io/game-icon-pack/svg/no-padding/<category>/<component_name>.svg",
+    "local_file": "assets/img/icons/pack/<name>.svg"
+  },
+  "icons": [
+    {
+      "name": "sword",
+      "source": "pack:sword",
+      "file": "icons/pack/sword.svg",
+      "desc": "剑：物理攻击 / 攻击属性",
+      "component": "sword",
+      "category": "3-gear",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "double",
+      "source": "pack:double",
+      "file": "icons/pack/double.svg",
+      "desc": "2x：连击 / 多段攻击",
+      "component": "double",
+      "category": "1-game",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "bow",
+      "source": "pack:bow",
+      "file": "icons/pack/bow.svg",
+      "desc": "弓：远程 / 投掷攻击",
+      "component": "bow",
+      "category": "3-gear",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "volcanic_eruption",
+      "source": "pack:volcanic-eruption",
+      "file": "icons/pack/volcanic_eruption.svg",
+      "desc": "火山喷发：龙息一类的大范围喷吐",
+      "component": "volcanic-eruption",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "flame",
+      "source": "pack:fire",
+      "file": "icons/pack/flame.svg",
+      "desc": "火焰：火属性伤害 / 灼伤状态",
+      "component": "fire",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "earthquake",
+      "source": "pack:earthquake",
+      "file": "icons/pack/earthquake.svg",
+      "desc": "开裂的岩石：地震 / 地面技",
+      "component": "earthquake",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "meteor",
+      "source": "pack:meteor",
+      "file": "icons/pack/meteor.svg",
+      "desc": "陨石：落石 / 砸落",
+      "component": "meteor",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "wind",
+      "source": "pack:wind",
+      "file": "icons/pack/wind.svg",
+      "desc": "气流线：沙暴 / 风属性",
+      "component": "wind",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "bug",
+      "source": "pack:bug",
+      "file": "icons/pack/bug.svg",
+      "desc": "甲虫：虫鸣 / 音波类技能",
+      "component": "bug",
+      "category": "9-media",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "poison",
+      "source": "pack:potion",
+      "file": "icons/pack/poison.svg",
+      "desc": "药水瓶 + 辐射标志：毒 / 中毒状态",
+      "component": "potion",
+      "category": "5-food",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "heal",
+      "source": "pack:medical-kit",
+      "file": "icons/pack/heal.svg",
+      "desc": "急救包：治疗 / 回血",
+      "component": "medical-kit",
+      "category": "2-items",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "shield",
+      "source": "pack:shield",
+      "file": "icons/pack/shield.svg",
+      "desc": "盾牌（基础款）：护盾卡 / 防御属性",
+      "component": "shield",
+      "category": "3-gear",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "shield_02",
+      "source": "pack:shield-02",
+      "file": "icons/pack/shield_02.svg",
+      "desc": "盾牌（圆角款）：格挡 / 护盾值（与护盾卡区分）",
+      "component": "shield-02",
+      "category": "3-gear",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "counter",
+      "source": "pack:rotate-left",
+      "file": "icons/pack/counter.svg",
+      "desc": "回转箭头：反击 / 反弹",
+      "component": "rotate-left",
+      "category": "8-ui",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "card",
+      "source": "pack:card",
+      "file": "icons/pack/card.svg",
+      "desc": "双张卡牌：抽牌",
+      "component": "card",
+      "category": "1-game",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "random_dice",
+      "source": "pack:random-dice",
+      "file": "icons/pack/random_dice.svg",
+      "desc": "带问号的骰子：洗牌 / 随机换牌",
+      "component": "random-dice",
+      "category": "1-game",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "temperature_up",
+      "source": "pack:temperature-up",
+      "file": "icons/pack/temperature_up.svg",
+      "desc": "升温箭头：攻击向增益",
+      "component": "temperature-up",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "shoe",
+      "source": "pack:shoe",
+      "file": "icons/pack/shoe.svg",
+      "desc": "鞋：敏捷 / 速度（增益与属性通用）",
+      "component": "shoe",
+      "category": "3-gear",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "temperature_down",
+      "source": "pack:temperature-down",
+      "file": "icons/pack/temperature_down.svg",
+      "desc": "降温箭头：虚弱 / 降防",
+      "component": "temperature-down",
+      "category": "4-nature",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "battery_negative",
+      "source": "pack:battery-negative",
+      "file": "icons/pack/battery_negative.svg",
+      "desc": "电量不足：削弱（降攻）",
+      "component": "battery-negative",
+      "category": "9-media",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "target",
+      "source": "pack:target",
+      "file": "icons/pack/target.svg",
+      "desc": "靶心：命中下降",
+      "component": "target",
+      "category": "6-buildings",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "award",
+      "source": "pack:trophy",
+      "file": "icons/pack/award.svg",
+      "desc": "奖杯：终结技 / 大招 / 胜利（与现有 Kenney 奖杯区分开）",
+      "component": "trophy",
+      "category": "1-game",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "backpack",
+      "source": "pack:backpack",
+      "file": "icons/pack/backpack.svg",
+      "desc": "背包：道具类 / 背包",
+      "component": "backpack",
+      "category": "2-items",
+      "group": "卡牌语义"
+    },
+    {
+      "name": "clover",
+      "source": "pack:clover",
+      "file": "icons/pack/clover.svg",
+      "desc": "三叶草：幸运属性",
+      "component": "clover",
+      "category": "4-nature",
+      "group": "属性与状态"
+    },
+    {
+      "name": "heart_break_02",
+      "source": "pack:heart-break-02",
+      "file": "icons/pack/heart_break_02.svg",
+      "desc": "裂开的心：流血 / 持续掉血",
+      "component": "heart-break-02",
+      "category": "1-game",
+      "group": "属性与状态"
+    },
+    {
+      "name": "action_points",
+      "source": "pack:action-points",
+      "file": "icons/pack/action_points.svg",
+      "desc": "纯文本 AP：行动点",
+      "component": "action-points",
+      "category": "1-game",
+      "group": "属性与状态"
+    },
+    {
+      "name": "clock",
+      "source": "pack:clock",
+      "file": "icons/pack/clock.svg",
+      "desc": "时钟：回合 / 计时",
+      "component": "clock",
+      "category": "9-media",
+      "group": "属性与状态"
+    },
+    {
+      "name": "hit_effect",
+      "source": "pack:hit-effect",
+      "file": "icons/pack/hit_effect.svg",
+      "desc": "命中特效：战斗节点",
+      "component": "hit-effect",
+      "category": "1-game",
+      "group": "界面与地图"
+    },
+    {
+      "name": "demon",
+      "source": "pack:demon",
+      "file": "icons/pack/demon.svg",
+      "desc": "小恶魔：强敌节点",
+      "component": "demon",
+      "category": "1-game",
+      "group": "界面与地图"
+    },
+    {
+      "name": "viking_helmet",
+      "source": "pack:viking-helmet",
+      "file": "icons/pack/viking_helmet.svg",
+      "desc": "维京头盔：精英敌人节点",
+      "component": "viking-helmet",
+      "category": "3-gear",
+      "group": "界面与地图"
+    },
+    {
+      "name": "question_mark",
+      "source": "pack:question-mark",
+      "file": "icons/pack/question_mark.svg",
+      "desc": "独立问号：事件节点 / 帮助",
+      "component": "question-mark",
+      "category": "8-ui",
+      "group": "界面与地图"
+    },
+    {
+      "name": "chest",
+      "source": "pack:chest",
+      "file": "icons/pack/chest.svg",
+      "desc": "宝箱：宝箱 / 奖励",
+      "component": "chest",
+      "category": "2-items",
+      "group": "界面与地图"
+    },
+    {
+      "name": "shop",
+      "source": "pack:shop",
+      "file": "icons/pack/shop.svg",
+      "desc": "店铺：商店 / 商队",
+      "component": "shop",
+      "category": "6-buildings",
+      "group": "界面与地图"
+    },
+    {
+      "name": "tent",
+      "source": "pack:tent",
+      "file": "icons/pack/tent.svg",
+      "desc": "帐篷：营地 / 休息",
+      "component": "tent",
+      "category": "6-buildings",
+      "group": "界面与地图"
+    },
+    {
+      "name": "boss",
+      "source": "pack:boss",
+      "file": "icons/pack/boss.svg",
+      "desc": "凶恶脸：章节首领",
+      "component": "boss",
+      "category": "1-game",
+      "group": "界面与地图"
+    },
+    {
+      "name": "drought",
+      "source": "pack:drought",
+      "file": "icons/pack/drought.svg",
+      "desc": "龟裂土地：地图·流沙之海",
+      "component": "drought",
+      "category": "4-nature",
+      "group": "界面与地图"
+    },
+    {
+      "name": "mountain",
+      "source": "pack:mountain",
+      "file": "icons/pack/mountain.svg",
+      "desc": "山：地图·赤岩峡谷",
+      "component": "mountain",
+      "category": "4-nature",
+      "group": "界面与地图"
+    },
+    {
+      "name": "forest",
+      "source": "pack:forest",
+      "file": "icons/pack/forest.svg",
+      "desc": "森林：地图·藤蔓密林",
+      "component": "forest",
+      "category": "4-nature",
+      "group": "界面与地图"
+    },
+    {
+      "name": "sea",
+      "source": "pack:sea",
+      "file": "icons/pack/sea.svg",
+      "desc": "海：地图·潮汐盐海",
+      "component": "sea",
+      "category": "4-nature",
+      "group": "界面与地图"
+    },
+    {
+      "name": "gravestone",
+      "source": "pack:gravestone",
+      "file": "icons/pack/gravestone.svg",
+      "desc": "墓碑：地图·夜砂墓园",
+      "component": "gravestone",
+      "category": "6-buildings",
+      "group": "界面与地图"
+    },
+    {
+      "name": "star_coin",
+      "source": "pack:star-coin",
+      "file": "icons/pack/star_coin.svg",
+      "desc": "四角星硬币：金币（不要用 coin：那是字母 C）",
+      "component": "star-coin",
+      "category": "2-items",
+      "group": "界面与地图"
+    },
+    {
+      "name": "deck",
+      "source": "pack:cards",
+      "file": "icons/pack/deck.svg",
+      "desc": "多张卡牌 / 牌组：卡组入口",
+      "component": "cards",
+      "category": "1-game",
+      "group": "界面与地图"
+    },
+    {
+      "name": "save_disk",
+      "source": "pack:save",
+      "file": "icons/pack/save_disk.svg",
+      "desc": "软盘：存档（与现有 Kenney 软盘区分开）",
+      "component": "save",
+      "category": "8-ui",
+      "group": "界面与地图"
+    },
+    {
+      "name": "settings",
+      "source": "pack:settings",
+      "file": "icons/pack/settings.svg",
+      "desc": "滑块：设置",
+      "component": "settings",
+      "category": "8-ui",
+      "group": "界面与地图"
+    },
+    {
+      "name": "volume",
+      "source": "pack:volume",
+      "file": "icons/pack/volume.svg",
+      "desc": "扬声器：音量（与 audio_off 配对）",
+      "component": "volume",
+      "category": "9-media",
+      "group": "界面与地图"
+    },
+    {
+      "name": "death",
+      "source": "pack:death",
+      "file": "icons/pack/death.svg",
+      "desc": "骷髅头：失败 / 阵亡",
+      "component": "death",
+      "category": "1-game",
+      "group": "界面与地图"
+    },
+    {
+      "name": "gear",
+      "source": "local:gear.png",
+      "file": "icons/gear.png",
+      "desc": "齿轮：设置入口（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "sound",
+      "source": "local:audio_on.png",
+      "file": "icons/audio_on.png",
+      "desc": "喇叭：音效开（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "mute",
+      "source": "local:audio_off.png",
+      "file": "icons/audio_off.png",
+      "desc": "静音喇叭：音效关（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "save",
+      "source": "local:save.png",
+      "file": "icons/save.png",
+      "desc": "软盘：存档（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "home",
+      "source": "local:home.png",
+      "file": "icons/home.png",
+      "desc": "房子：返回主页（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "help",
+      "source": "local:question.png",
+      "file": "icons/question.png",
+      "desc": "问号：帮助（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "star",
+      "source": "local:star.png",
+      "file": "icons/star.png",
+      "desc": "五角星：稀有度 / 收藏（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "trophy",
+      "source": "local:trophy.png",
+      "file": "icons/trophy.png",
+      "desc": "奖杯：成就 / 胜利（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "warn",
+      "source": "local:warning.png",
+      "file": "icons/warning.png",
+      "desc": "三角警告：危险提示（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "money",
+      "source": "local:coin.png",
+      "file": "icons/coin.png",
+      "desc": "硬币：金币（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "question",
+      "source": "local:question.png",
+      "file": "icons/question.png",
+      "desc": "问号：未知事件（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "check",
+      "source": "local:check.png",
+      "file": "icons/check.png",
+      "desc": "对勾：确认（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "cross",
+      "source": "local:cross.png",
+      "file": "icons/cross.png",
+      "desc": "叉：取消 / 失败（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "fist",
+      "source": "local:fist.png",
+      "file": "icons/fist.png",
+      "desc": "拳头：物理攻击（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "arrow_right",
+      "source": "local:arrow_right.png",
+      "file": "icons/arrow_right.png",
+      "desc": "右箭头（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "arrow_up",
+      "source": "local:arrow_up.png",
+      "file": "icons/arrow_up.png",
+      "desc": "上箭头：升级（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "diamond",
+      "source": "local:diamond.png",
+      "file": "icons/diamond.png",
+      "desc": "钻石：稀有资源（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "key",
+      "source": "local:key.png",
+      "file": "icons/key.png",
+      "desc": "钥匙（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "pause",
+      "source": "local:pause.png",
+      "file": "icons/pause.png",
+      "desc": "暂停（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "trash",
+      "source": "local:trash.png",
+      "file": "icons/trash.png",
+      "desc": "垃圾桶：删除存档（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "cards",
+      "source": "local:cards/cards_fan.png",
+      "file": "cards/cards_fan.png",
+      "desc": "扇形牌堆：卡组（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "skull",
+      "source": "local:cards/skull.png",
+      "file": "cards/skull.png",
+      "desc": "骷髅头：危险 / 失败（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "crown",
+      "source": "local:cards/crown.png",
+      "file": "cards/crown.png",
+      "desc": "王冠：首领（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "pouch",
+      "source": "local:cards/pouch.png",
+      "file": "cards/pouch.png",
+      "desc": "钱袋：宝箱 / 奖励（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "house",
+      "source": "local:cards/house.png",
+      "file": "cards/house.png",
+      "desc": "房子：商店 / 据点（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "campfire",
+      "source": "local:cards/campfire.png",
+      "file": "cards/campfire.png",
+      "desc": "篝火：营地休息（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "shuffle",
+      "source": "local:cards/cards_shuffle.png",
+      "file": "cards/cards_shuffle.png",
+      "desc": "交换的牌：洗牌（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "dice",
+      "source": "local:cards/dice.png",
+      "file": "cards/dice.png",
+      "desc": "骰子：随机（existing）",
+      "group": "本地面板图标"
+    },
+    {
+      "name": "flask",
+      "source": "local:cards/flask_full.png",
+      "file": "cards/flask_full.png",
+      "desc": "满瓶药水：道具（existing）",
+      "group": "本地面板图标"
+    },
+
+    {
+      "name": "triple",
+      "source": "pack:triple",
+      "file": "icons/pack/triple.svg",
+      "desc": "3x：三段攻击（岩石爆击 / 龙箭 / 连切 / 潮旋 / 杂技）",
+      "component": "triple",
+      "category": "1-game",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "lightning",
+      "source": "pack:lightning",
+      "file": "icons/pack/lightning.svg",
+      "desc": "闪电：先制 / 高速突进（电光一闪 / 子弹拳）",
+      "component": "lightning",
+      "category": "4-nature",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "audio_waves",
+      "source": "pack:audio-waves",
+      "file": "icons/pack/audio_waves.svg",
+      "desc": "声波：音波类技能（刺耳声 / 爆音波 / 低吼）",
+      "component": "audio-waves",
+      "category": "9-media",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "water",
+      "source": "pack:water",
+      "file": "icons/pack/water.svg",
+      "desc": "水滴：水属性（水之波动 / 盐水 / 冲浪 / 生命水滴 / 水流环）",
+      "component": "water",
+      "category": "4-nature",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "leaves",
+      "source": "pack:leaves",
+      "file": "icons/pack/leaves.svg",
+      "desc": "树叶：草属性（飞叶快刀 / 寄生种子 / 飞叶风暴）",
+      "component": "leaves",
+      "category": "4-nature",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "stone",
+      "source": "pack:stone",
+      "file": "icons/pack/stone.svg",
+      "desc": "岩石：岩地属性攻击（落石 / 岩崩 / 尖石攻击）",
+      "component": "stone",
+      "category": "4-nature",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "fog",
+      "source": "pack:fog",
+      "file": "icons/pack/fog.svg",
+      "desc": "雾：沙雾 / 降命中（蛛网 / 白雾 / 扬沙）",
+      "component": "fog",
+      "category": "4-nature",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "change",
+      "source": "pack:change",
+      "file": "icons/pack/change.svg",
+      "desc": "循环双向箭头：换牌 / 折返（急速折返）",
+      "component": "change",
+      "category": "8-ui",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "protect",
+      "source": "pack:protect",
+      "file": "icons/pack/protect.svg",
+      "desc": "盾牌 + 对勾：守护（守住 / 神秘守护）",
+      "component": "protect",
+      "category": "9-media",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "mace",
+      "source": "pack:mace",
+      "file": "icons/pack/mace.svg",
+      "desc": "钉头锤：蛮力重击（蛮力 / 真气拳）",
+      "component": "mace",
+      "category": "3-gear",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "shield_03",
+      "source": "pack:shield-03",
+      "file": "icons/pack/shield_03.svg",
+      "desc": "圆盾（第三款）：缩壳类护盾（缩入壳中 / 缩壳）",
+      "component": "shield-03",
+      "category": "3-gear",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "dagger",
+      "source": "pack:dagger",
+      "file": "icons/pack/dagger.svg",
+      "desc": "匕首：獠牙 / 撕咬类轻物理（咬住 / 咬碎）",
+      "component": "dagger",
+      "category": "3-gear",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "spear",
+      "source": "pack:spear",
+      "file": "icons/pack/spear.svg",
+      "desc": "长矛：穿刺 / 多针（双针）",
+      "component": "spear",
+      "category": "3-gear",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "heart",
+      "source": "pack:heart",
+      "file": "icons/pack/heart.svg",
+      "desc": "爱心：生命回复（羽栖）",
+      "component": "heart",
+      "category": "1-game",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "bed",
+      "source": "pack:bed",
+      "file": "icons/pack/bed.svg",
+      "desc": "床：睡觉（休息牌）+ 潮汐盐海的营地节点",
+      "component": "bed",
+      "category": "6-buildings",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "pill",
+      "source": "pack:pill",
+      "file": "icons/pack/pill.svg",
+      "desc": "药丸：小回复（文柚果 / 好伤药）",
+      "component": "pill",
+      "category": "2-items",
+      "group": "补充·卡牌语义"
+    },
+    {
+      "name": "refresh",
+      "source": "pack:refresh",
+      "file": "icons/pack/refresh.svg",
+      "desc": "环形箭头：焕然一新（清除负面状态）/ 再来一次",
+      "component": "refresh",
+      "category": "8-ui",
+      "group": "补充·卡牌语义"
+    },
+
+    {
+      "name": "wolf",
+      "source": "pack:wolf",
+      "file": "icons/pack/wolf.svg",
+      "desc": "狼：藤蔓密林的首领节点",
+      "component": "wolf",
+      "category": "4-nature",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "anchor",
+      "source": "pack:anchor",
+      "file": "icons/pack/anchor.svg",
+      "desc": "船锚：潮汐盐海的首领节点",
+      "component": "anchor",
+      "category": "7-vehicles",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "demon_02",
+      "source": "pack:demon-02",
+      "file": "icons/pack/demon_02.svg",
+      "desc": "小恶魔（二型）：风蚀峭壁的首领节点",
+      "component": "demon-02",
+      "category": "1-game",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "night",
+      "source": "pack:night",
+      "file": "icons/pack/night.svg",
+      "desc": "月亮：夜砂墓原的营地节点",
+      "component": "night",
+      "category": "4-nature",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "lantern",
+      "source": "pack:lantern",
+      "file": "icons/pack/lantern.svg",
+      "desc": "提灯：藤蔓密林的营地节点",
+      "component": "lantern",
+      "category": "6-buildings",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "sign",
+      "source": "pack:sign",
+      "file": "icons/pack/sign.svg",
+      "desc": "路牌：风蚀峭壁的商店节点",
+      "component": "sign",
+      "category": "6-buildings",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "ingot",
+      "source": "pack:ingot",
+      "file": "icons/pack/ingot.svg",
+      "desc": "金砖：赤岩峡谷的宝箱节点",
+      "component": "ingot",
+      "category": "2-items",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "tool_kit",
+      "source": "pack:tool-kit",
+      "file": "icons/pack/tool_kit.svg",
+      "desc": "工具箱：风蚀峭壁的宝箱节点",
+      "component": "tool-kit",
+      "category": "2-items",
+      "group": "补充·界面与地图"
+    },
+    {
+      "name": "sycee",
+      "source": "pack:sycee",
+      "file": "icons/pack/sycee.svg",
+      "desc": "元宝：潮汐盐海的宝箱节点",
+      "component": "sycee",
+      "category": "2-items",
+      "group": "补充·界面与地图"
+    }
+  ]
+}

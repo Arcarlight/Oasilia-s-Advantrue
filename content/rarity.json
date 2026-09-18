@@ -1,0 +1,26 @@
+{
+  "common": {
+    "key": "common",
+    "name": "普通",
+    "color": "#c8bda6",
+    "weight": 100
+  },
+  "uncommon": {
+    "key": "uncommon",
+    "name": "精良",
+    "color": "#6fd3a0",
+    "weight": 55
+  },
+  "rare": {
+    "key": "rare",
+    "name": "稀有",
+    "color": "#7fb8ff",
+    "weight": 26
+  },
+  "epic": {
+    "key": "epic",
+    "name": "史诗",
+    "color": "#d08cff",
+    "weight": 9
+  }
+}

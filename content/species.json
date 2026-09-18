@@ -1,0 +1,811 @@
+{
+  "species": {
+    "sandshrew": {
+      "dex": "0027",
+      "slug": "sandshrew",
+      "name": "穿山鼠",
+      "en": "Sandshrew",
+      "types": [
+        "地面"
+      ]
+    },
+    "cacnea": {
+      "dex": "0331",
+      "slug": "cacnea",
+      "name": "刺球仙人掌",
+      "en": "Cacnea",
+      "types": [
+        "草"
+      ]
+    },
+    "gible": {
+      "dex": "0443",
+      "slug": "gible",
+      "name": "圆陆鲨",
+      "en": "Gible",
+      "types": [
+        "龙",
+        "地面"
+      ]
+    },
+    "swablu": {
+      "dex": "0333",
+      "slug": "swablu",
+      "name": "青绵鸟",
+      "en": "Swablu",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "sandslash": {
+      "dex": "0028",
+      "slug": "sandslash",
+      "name": "穿山王",
+      "en": "Sandslash",
+      "types": [
+        "地面"
+      ]
+    },
+    "maractus": {
+      "dex": "0556",
+      "slug": "maractus",
+      "name": "沙铃仙人掌",
+      "en": "Maractus",
+      "types": [
+        "草"
+      ]
+    },
+    "cacturne": {
+      "dex": "0332",
+      "slug": "cacturne",
+      "name": "梦歌仙人掌",
+      "en": "Cacturne",
+      "types": [
+        "草",
+        "恶"
+      ]
+    },
+    "rhyhorn": {
+      "dex": "0111",
+      "slug": "rhyhorn",
+      "name": "独角犀牛",
+      "en": "Rhyhorn",
+      "types": [
+        "地面",
+        "岩石"
+      ]
+    },
+    "gligar": {
+      "dex": "0207",
+      "slug": "gligar",
+      "name": "天蝎",
+      "en": "Gligar",
+      "types": [
+        "地面",
+        "飞行"
+      ]
+    },
+    "steelix": {
+      "dex": "0208",
+      "slug": "steelix",
+      "name": "大钢蛇",
+      "en": "Steelix",
+      "types": [
+        "钢",
+        "地面"
+      ]
+    },
+    "tyranitar": {
+      "dex": "0248",
+      "slug": "tyranitar",
+      "name": "班基拉斯",
+      "en": "Tyranitar",
+      "types": [
+        "岩石",
+        "恶"
+      ]
+    },
+    "magcargo": {
+      "dex": "0219",
+      "slug": "magcargo",
+      "name": "熔岩蜗牛",
+      "en": "Magcargo",
+      "types": [
+        "火",
+        "岩石"
+      ]
+    },
+    "machop": {
+      "dex": "0066",
+      "slug": "machop",
+      "name": "腕力",
+      "en": "Machop",
+      "types": [
+        "格斗"
+      ]
+    },
+    "carnivine": {
+      "dex": "0455",
+      "slug": "carnivine",
+      "name": "尖牙笼",
+      "en": "Carnivine",
+      "types": [
+        "草"
+      ]
+    },
+    "arbok": {
+      "dex": "0024",
+      "slug": "arbok",
+      "name": "阿柏怪",
+      "en": "Arbok",
+      "types": [
+        "毒"
+      ]
+    },
+    "machoke": {
+      "dex": "0067",
+      "slug": "machoke",
+      "name": "豪力",
+      "en": "Machoke",
+      "types": [
+        "格斗"
+      ]
+    },
+    "arcanine": {
+      "dex": "0059",
+      "slug": "arcanine",
+      "name": "风速狗",
+      "en": "Arcanine",
+      "types": [
+        "火"
+      ]
+    },
+    "aerodactyl": {
+      "dex": "0142",
+      "slug": "aerodactyl",
+      "name": "化石翼龙",
+      "en": "Aerodactyl",
+      "types": [
+        "岩石",
+        "飞行"
+      ]
+    },
+    "garchomp": {
+      "dex": "0445",
+      "slug": "garchomp",
+      "name": "烈咬陆鲨",
+      "en": "Garchomp",
+      "types": [
+        "龙",
+        "地面"
+      ]
+    },
+    "larvitar": {
+      "dex": "0246",
+      "slug": "larvitar",
+      "name": "幼基拉斯",
+      "en": "Larvitar",
+      "types": [
+        "岩石",
+        "地面"
+      ]
+    },
+    "gabite": {
+      "dex": "0444",
+      "slug": "gabite",
+      "name": "尖牙陆鲨",
+      "en": "Gabite",
+      "types": [
+        "龙",
+        "地面"
+      ]
+    },
+    "rhydon": {
+      "dex": "0112",
+      "slug": "rhydon",
+      "name": "钻角犀兽",
+      "en": "Rhydon",
+      "types": [
+        "地面",
+        "岩石"
+      ]
+    },
+    "salamence": {
+      "dex": "0373",
+      "slug": "salamence",
+      "name": "暴飞龙",
+      "en": "Salamence",
+      "types": [
+        "龙",
+        "飞行"
+      ]
+    },
+    "machamp": {
+      "dex": "0068",
+      "slug": "machamp",
+      "name": "怪力",
+      "en": "Machamp",
+      "types": [
+        "格斗"
+      ]
+    },
+    "metagross": {
+      "dex": "0376",
+      "slug": "metagross",
+      "name": "巨金怪",
+      "en": "Metagross",
+      "types": [
+        "钢",
+        "超能力"
+      ]
+    },
+    "zygarde": {
+      "dex": "0718",
+      "slug": "zygarde",
+      "name": "基格尔德",
+      "en": "Zygarde",
+      "types": [
+        "龙",
+        "地面"
+      ]
+    },
+    "paras": {
+      "dex": "0046",
+      "slug": "paras",
+      "name": "派拉斯",
+      "en": "Paras",
+      "types": [
+        "虫",
+        "草"
+      ]
+    },
+    "oddish": {
+      "dex": "0043",
+      "slug": "oddish",
+      "name": "走路草",
+      "en": "Oddish",
+      "types": [
+        "草",
+        "毒"
+      ]
+    },
+    "weedle": {
+      "dex": "0013",
+      "slug": "weedle",
+      "name": "独角虫",
+      "en": "Weedle",
+      "types": [
+        "虫",
+        "毒"
+      ]
+    },
+    "bellsprout": {
+      "dex": "0069",
+      "slug": "bellsprout",
+      "name": "喇叭芽",
+      "en": "Bellsprout",
+      "types": [
+        "草",
+        "毒"
+      ]
+    },
+    "parasect": {
+      "dex": "0047",
+      "slug": "parasect",
+      "name": "派拉斯特",
+      "en": "Parasect",
+      "types": [
+        "虫",
+        "草"
+      ]
+    },
+    "gloom": {
+      "dex": "0044",
+      "slug": "gloom",
+      "name": "臭臭花",
+      "en": "Gloom",
+      "types": [
+        "草",
+        "毒"
+      ]
+    },
+    "beedrill": {
+      "dex": "0015",
+      "slug": "beedrill",
+      "name": "大针蜂",
+      "en": "Beedrill",
+      "types": [
+        "虫",
+        "毒"
+      ]
+    },
+    "pinsir": {
+      "dex": "0127",
+      "slug": "pinsir",
+      "name": "凯罗斯",
+      "en": "Pinsir",
+      "types": [
+        "虫"
+      ]
+    },
+    "heracross": {
+      "dex": "0214",
+      "slug": "heracross",
+      "name": "赫拉克罗斯",
+      "en": "Heracross",
+      "types": [
+        "虫",
+        "格斗"
+      ]
+    },
+    "sceptile": {
+      "dex": "0254",
+      "slug": "sceptile",
+      "name": "蜥蜴王",
+      "en": "Sceptile",
+      "types": [
+        "草"
+      ]
+    },
+    "tentacool": {
+      "dex": "0072",
+      "slug": "tentacool",
+      "name": "玛瑙水母",
+      "en": "Tentacool",
+      "types": [
+        "水",
+        "毒"
+      ]
+    },
+    "shellder": {
+      "dex": "0090",
+      "slug": "shellder",
+      "name": "大舌贝",
+      "en": "Shellder",
+      "types": [
+        "水"
+      ]
+    },
+    "corphish": {
+      "dex": "0341",
+      "slug": "corphish",
+      "name": "龙虾小兵",
+      "en": "Corphish",
+      "types": [
+        "水"
+      ]
+    },
+    "remoraid": {
+      "dex": "0223",
+      "slug": "remoraid",
+      "name": "铁炮鱼",
+      "en": "Remoraid",
+      "types": [
+        "水"
+      ]
+    },
+    "tentacruel": {
+      "dex": "0073",
+      "slug": "tentacruel",
+      "name": "毒刺水母",
+      "en": "Tentacruel",
+      "types": [
+        "水",
+        "毒"
+      ]
+    },
+    "cloyster": {
+      "dex": "0091",
+      "slug": "cloyster",
+      "name": "刺甲贝",
+      "en": "Cloyster",
+      "types": [
+        "水",
+        "冰"
+      ]
+    },
+    "crawdaunt": {
+      "dex": "0342",
+      "slug": "crawdaunt",
+      "name": "铁螯龙虾",
+      "en": "Crawdaunt",
+      "types": [
+        "水",
+        "恶"
+      ]
+    },
+    "kingler": {
+      "dex": "0099",
+      "slug": "kingler",
+      "name": "巨钳蟹",
+      "en": "Kingler",
+      "types": [
+        "水"
+      ]
+    },
+    "gyarados": {
+      "dex": "0130",
+      "slug": "gyarados",
+      "name": "暴鲤龙",
+      "en": "Gyarados",
+      "types": [
+        "水",
+        "飞行"
+      ]
+    },
+    "kyogre": {
+      "dex": "0382",
+      "slug": "kyogre",
+      "name": "盖欧卡",
+      "en": "Kyogre",
+      "types": [
+        "水"
+      ]
+    },
+    "geodude": {
+      "dex": "0074",
+      "slug": "geodude",
+      "name": "小拳石",
+      "en": "Geodude",
+      "types": [
+        "岩石",
+        "地面"
+      ]
+    },
+    "pidgey": {
+      "dex": "0016",
+      "slug": "pidgey",
+      "name": "波波",
+      "en": "Pidgey",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "aron": {
+      "dex": "0304",
+      "slug": "aron",
+      "name": "可可多拉",
+      "en": "Aron",
+      "types": [
+        "钢",
+        "岩石"
+      ]
+    },
+    "taillow": {
+      "dex": "0276",
+      "slug": "taillow",
+      "name": "傲骨燕",
+      "en": "Taillow",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "graveler": {
+      "dex": "0075",
+      "slug": "graveler",
+      "name": "隆隆石",
+      "en": "Graveler",
+      "types": [
+        "岩石",
+        "地面"
+      ]
+    },
+    "fearow": {
+      "dex": "0022",
+      "slug": "fearow",
+      "name": "大嘴雀",
+      "en": "Fearow",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "lairon": {
+      "dex": "0305",
+      "slug": "lairon",
+      "name": "可多拉",
+      "en": "Lairon",
+      "types": [
+        "钢",
+        "岩石"
+      ]
+    },
+    "skarmory": {
+      "dex": "0227",
+      "slug": "skarmory",
+      "name": "盔甲鸟",
+      "en": "Skarmory",
+      "types": [
+        "钢",
+        "飞行"
+      ]
+    },
+    "gliscor": {
+      "dex": "0472",
+      "slug": "gliscor",
+      "name": "天蝎王",
+      "en": "Gliscor",
+      "types": [
+        "地面",
+        "飞行"
+      ]
+    },
+    "aggron": {
+      "dex": "0306",
+      "slug": "aggron",
+      "name": "波士可多拉",
+      "en": "Aggron",
+      "types": [
+        "钢",
+        "岩石"
+      ]
+    },
+    "pupitar": {
+      "dex": "0247",
+      "slug": "pupitar",
+      "name": "沙基拉斯",
+      "en": "Pupitar",
+      "types": [
+        "岩石",
+        "地面"
+      ]
+    },
+    "flygon": {
+      "dex": "0330",
+      "slug": "flygon",
+      "name": "沙漠蜻蜓",
+      "en": "Flygon",
+      "types": [
+        "地面",
+        "龙"
+      ]
+    },
+    "trapinch": {
+      "dex": "0328",
+      "slug": "trapinch",
+      "name": "大颚蚁",
+      "en": "Trapinch",
+      "types": [
+        "地面"
+      ]
+    },
+    "hippopotas": {
+      "dex": "0449",
+      "slug": "hippopotas",
+      "name": "沙河马",
+      "en": "Hippopotas",
+      "types": [
+        "地面"
+      ]
+    },
+    "sandile": {
+      "dex": "0551",
+      "slug": "sandile",
+      "name": "黑眼鳄",
+      "en": "Sandile",
+      "types": [
+        "地面",
+        "恶"
+      ]
+    },
+    "mudbray": {
+      "dex": "0749",
+      "slug": "mudbray",
+      "name": "泥驴仔",
+      "en": "Mudbray",
+      "types": [
+        "地面"
+      ]
+    },
+    "sandygast": {
+      "dex": "0769",
+      "slug": "sandygast",
+      "name": "沙丘娃",
+      "en": "Sandygast",
+      "types": [
+        "幽灵",
+        "地面"
+      ]
+    },
+    "numel": {
+      "dex": "0322",
+      "slug": "numel",
+      "name": "呆火驼",
+      "en": "Numel",
+      "types": [
+        "火",
+        "地面"
+      ]
+    },
+    "roggenrola": {
+      "dex": "0524",
+      "slug": "roggenrola",
+      "name": "石丸子",
+      "en": "Roggenrola",
+      "types": [
+        "岩石"
+      ]
+    },
+    "rockruff": {
+      "dex": "0744",
+      "slug": "rockruff",
+      "name": "岩狗狗",
+      "en": "Rockruff",
+      "types": [
+        "岩石"
+      ]
+    },
+    "treecko": {
+      "dex": "0252",
+      "slug": "treecko",
+      "name": "木守宫",
+      "en": "Treecko",
+      "types": [
+        "草"
+      ]
+    },
+    "snivy": {
+      "dex": "0495",
+      "slug": "snivy",
+      "name": "藤藤蛇",
+      "en": "Snivy",
+      "types": [
+        "草"
+      ]
+    },
+    "ferroseed": {
+      "dex": "0597",
+      "slug": "ferroseed",
+      "name": "种子铁球",
+      "en": "Ferroseed",
+      "types": [
+        "草",
+        "钢"
+      ]
+    },
+    "grubbin": {
+      "dex": "0736",
+      "slug": "grubbin",
+      "name": "强颚鸡母虫",
+      "en": "Grubbin",
+      "types": [
+        "虫"
+      ]
+    },
+    "fomantis": {
+      "dex": "0753",
+      "slug": "fomantis",
+      "name": "伪螳草",
+      "en": "Fomantis",
+      "types": [
+        "草"
+      ]
+    },
+    "shellos": {
+      "dex": "0422",
+      "slug": "shellos",
+      "name": "无壳海兔",
+      "en": "Shellos",
+      "types": [
+        "水"
+      ]
+    },
+    "wishiwashi": {
+      "dex": "0746",
+      "slug": "wishiwashi",
+      "name": "弱丁鱼",
+      "en": "Wishiwashi",
+      "types": [
+        "水"
+      ]
+    },
+    "mareanie": {
+      "dex": "0747",
+      "slug": "mareanie",
+      "name": "好坏星",
+      "en": "Mareanie",
+      "types": [
+        "水",
+        "毒"
+      ]
+    },
+    "pyukumuku": {
+      "dex": "0771",
+      "slug": "pyukumuku",
+      "name": "拳海参",
+      "en": "Pyukumuku",
+      "types": [
+        "水"
+      ]
+    },
+    "fletchling": {
+      "dex": "0661",
+      "slug": "fletchling",
+      "name": "小箭雀",
+      "en": "Fletchling",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "woobat": {
+      "dex": "0527",
+      "slug": "woobat",
+      "name": "滚滚蝙蝠",
+      "en": "Woobat",
+      "types": [
+        "超能力",
+        "飞行"
+      ]
+    },
+    "minior": {
+      "dex": "0774",
+      "slug": "minior",
+      "name": "小陨星",
+      "en": "Minior",
+      "types": [
+        "岩石",
+        "飞行"
+      ]
+    },
+    "buneary": {
+      "dex": "0427",
+      "slug": "buneary",
+      "name": "卷卷耳",
+      "en": "Buneary",
+      "types": [
+        "一般"
+      ]
+    },
+    "litwick": {
+      "dex": "0607",
+      "slug": "litwick",
+      "name": "烛光灵",
+      "en": "Litwick",
+      "types": [
+        "幽灵",
+        "火"
+      ]
+    },
+    "yamask": {
+      "dex": "0562",
+      "slug": "yamask",
+      "name": "哭哭面具",
+      "en": "Yamask",
+      "types": [
+        "幽灵"
+      ]
+    },
+    "honedge": {
+      "dex": "0679",
+      "slug": "honedge",
+      "name": "独剑鞘",
+      "en": "Honedge",
+      "types": [
+        "钢",
+        "幽灵"
+      ]
+    },
+    "drilbur": {
+      "dex": "0529",
+      "slug": "drilbur",
+      "name": "螺钉地鼠",
+      "en": "Drilbur",
+      "types": [
+        "地面"
+      ]
+    },
+    "rolycoly": {
+      "dex": "0837",
+      "slug": "rolycoly",
+      "name": "小炭仔",
+      "en": "Rolycoly",
+      "types": [
+        "岩石"
+      ]
+    }
+  }
+}

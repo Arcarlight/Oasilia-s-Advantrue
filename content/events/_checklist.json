@@ -1,0 +1,286 @@
+[
+  {
+    "id": "lost_trainer",
+    "name": "迷路的旅行者",
+    "biome": null,
+    "options": [
+      {
+        "label": "分给他半壶水（-15 HP）",
+        "hint": "他会告诉你一条近路。"
+      },
+      {
+        "label": "问他沙漠里的传闻（抽 1 张卡）",
+        "hint": "免费的情报。"
+      },
+      {
+        "label": "继续赶路",
+        "hint": "不关你的事。"
+      }
+    ]
+  },
+  {
+    "id": "sand_pit",
+    "name": "流沙坑",
+    "biome": null,
+    "options": [
+      {
+        "label": "用力振翅冲出去（-10 HP）",
+        "hint": "硬来。"
+      },
+      {
+        "label": "顺着沙流滑下去（敏捷 +2）",
+        "hint": "让沙子带你走。"
+      }
+    ]
+  },
+  {
+    "id": "cactus",
+    "name": "沙铃仙人掌",
+    "biome": null,
+    "options": [
+      {
+        "label": "要（获得 1 张稀有卡，-12 HP）",
+        "hint": "刺有点扎手。"
+      },
+      {
+        "label": "不要（防御 +3）",
+        "hint": "礼貌地拒绝。"
+      }
+    ]
+  },
+  {
+    "id": "old_cache",
+    "name": "半埋的补给箱",
+    "biome": null,
+    "options": [
+      {
+        "label": "打开（获得道具与金币）",
+        "hint": null
+      },
+      {
+        "label": "箱子底下有东西在动（查看）",
+        "hint": null
+      },
+      {
+        "label": "不碰（幸运 +1）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "singing_sand",
+    "name": "会唱歌的沙丘",
+    "biome": null,
+    "options": [
+      {
+        "label": "回应它（幸运 +2，回复 20 HP）",
+        "hint": null
+      },
+      {
+        "label": "不理它（获得 1 张卡）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "mirror_pool",
+    "name": "绿洲镜池",
+    "biome": null,
+    "options": [
+      {
+        "label": "盯着它（攻击 +4）",
+        "hint": null
+      },
+      {
+        "label": "喝一口（回复 45 HP）",
+        "hint": null
+      },
+      {
+        "label": "打碎水面（获得 1 张史诗卡，-20 HP）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "caravan_toll",
+    "name": "商队收税员",
+    "biome": null,
+    "options": [
+      {
+        "label": "付钱（-35 金币，获得 1 张卡）",
+        "hint": null
+      },
+      {
+        "label": "拒绝（-12 HP，攻击 +2）",
+        "hint": null
+      },
+      {
+        "label": "飞过去",
+        "hint": "你是会飞的。"
+      }
+    ]
+  },
+  {
+    "id": "first_oasis",
+    "name": "第一处绿洲",
+    "biome": "desert",
+    "options": [
+      {
+        "label": "泡一会儿（回复 35 HP）",
+        "hint": null
+      },
+      {
+        "label": "在树荫下整理卡组（最大生命 +14）",
+        "hint": null
+      },
+      {
+        "label": "带走一颗果子（获得好伤药 ×2）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "bone_field",
+    "name": "化石滩",
+    "biome": "desert",
+    "options": [
+      {
+        "label": "挖一挖（50% 获得卡牌 / 50% -15 HP）",
+        "hint": null
+      },
+      {
+        "label": "绕过去（敏捷 +2）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "storm_ride",
+    "name": "沙暴来了",
+    "biome": "desert",
+    "options": [
+      {
+        "label": "迎面飞进去（幸运 +3，-18 HP）",
+        "hint": null
+      },
+      {
+        "label": "挖个坑躲起来（防御 +3）",
+        "hint": null
+      },
+      {
+        "label": "飞高躲过去（最大生命 +10）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "echo_wall",
+    "name": "回音壁",
+    "biome": "canyon",
+    "options": [
+      {
+        "label": "再喊一声（获得 1 张卡）",
+        "hint": null
+      },
+      {
+        "label": "安静地听（幸运 +2，回复 25 HP）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "lava_vent",
+    "name": "地热裂口",
+    "biome": "canyon",
+    "options": [
+      {
+        "label": "把卡牌凑近火（升级：随机 1 张卡变成史诗）",
+        "hint": null
+      },
+      {
+        "label": "跳进去淬炼（-22 HP，防御 +5）",
+        "hint": null
+      },
+      {
+        "label": "取火烤点吃的（回复 30 HP）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "rival_meet",
+    "name": "另一位沙漠精灵",
+    "biome": "canyon",
+    "options": [
+      {
+        "label": "聊一会儿（交换情报：获得 1 张稀有卡）",
+        "hint": null
+      },
+      {
+        "label": "比一场（攻击 +5，-20 HP）",
+        "hint": null
+      },
+      {
+        "label": "不理会",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "star_dust",
+    "name": "星尘沉积地",
+    "biome": "night",
+    "options": [
+      {
+        "label": "滚一圈（幸运 +4）",
+        "hint": null
+      },
+      {
+        "label": "收集起来（获得厉害伤药 ×2）",
+        "hint": null
+      },
+      {
+        "label": "把它埋回去（最大生命 +22）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "grave_marker",
+    "name": "无名的墓碑",
+    "biome": "night",
+    "options": [
+      {
+        "label": "继续往前走（攻击 +6）",
+        "hint": null
+      },
+      {
+        "label": "坐下来休息（回复 50 HP）",
+        "hint": null
+      },
+      {
+        "label": "把石头搬开（50% 史诗卡 / 50% -25 HP）",
+        "hint": null
+      }
+    ]
+  },
+  {
+    "id": "order_voice",
+    "name": "地下的低语",
+    "biome": "night",
+    "options": [
+      {
+        "label": "「不。」（攻击 +4 / 防御 +4）",
+        "hint": null
+      },
+      {
+        "label": "「凭什么？」（获得 1 张史诗卡，-30 HP）",
+        "hint": null
+      },
+      {
+        "label": "暂时退开（回复 40 HP，幸运 +2）",
+        "hint": null
+      }
+    ]
+  }
+]

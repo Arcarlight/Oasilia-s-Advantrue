@@ -1,0 +1,140 @@
+{
+  "generated_by": "t2（图标素材管线 + 图标注册表）",
+  "report_section": "tools/iconpack-report.md §8 落地方案",
+  "registry": "content/icons.json",
+  "registry_entries": 101,
+  "icon_pack_entries": 72,
+  "local_kenney_entries": 29,
+  "icon_pack": {
+    "name": "Nieobie/Game-Icon-Pack",
+    "license": "CC0 1.0",
+    "url_templates": [
+      "https://nieobie.github.io/game-icon-pack/svg/no-padding/<category>/<name>.svg",
+      "https://ghproxy.net/https://raw.githubusercontent.com/Nieobie/game-icon-pack/main/svg/no-padding/<category>/<name>.svg",
+      "https://gh-proxy.com/https://raw.githubusercontent.com/Nieobie/game-icon-pack/main/svg/no-padding/<category>/<name>.svg"
+    ],
+    "whole_pack_tarball": "https://gh-proxy.com/https://codeload.github.com/Nieobie/game-icon-pack/tar.gz/refs/heads/main",
+    "local_dir": "assets/img/icons/pack/<name>.svg",
+    "css_url_form": "url(../../assets/img/icons/pack/<name>.svg)",
+    "variants": "no-padding（紧贴墨迹）"
+  },
+  "pipeline": {
+    "add_icon": [
+      "content/icons.json 加一条 {name, source, file, desc, group}",
+      "& tools/fetch-iconpack.ps1   （只有 pack: 条目需要）",
+      "node tools/build-content.mjs （校验 + 重写 src/ui/style.css 的 GENERATED-ICONS 区块）",
+      "node tools/check-icons.mjs"
+    ],
+    "registry_fields": {
+      "name": "图标名 -> .ico-<name>，必须匹配 [a-z0-9_]（连字符/大写会硬报错）",
+      "source": "pack:<上游 component_name> 或 local:<assets/img 下的相对路径>",
+      "file": "磁盘位置，相对 assets/img/",
+      "desc": "用途说明",
+      "component/category": "pack 条目的上游可追溯信息（用于拼下载 URL）",
+      "group": "生成区块里的注释分节"
+    },
+    "renames_for_legal_class_names": {
+      "fire": "flame",
+      "potion": "poison",
+      "medical-kit": "heal",
+      "shield-02": "shield_02",
+      "rotate-left": "counter",
+      "random-dice": "random_dice",
+      "temperature-up": "temperature_up",
+      "temperature-down": "temperature_down",
+      "battery-negative": "battery_negative",
+      "heart-break-02": "heart_break_02",
+      "action-points": "action_points",
+      "hit-effect": "hit_effect",
+      "viking-helmet": "viking_helmet",
+      "question-mark": "question_mark",
+      "star-coin": "star_coin",
+      "volcanic-eruption": "volcanic_eruption",
+      "trophy": "award",
+      "cards": "deck",
+      "save": "save_disk"
+    },
+    "generated_block": {
+      "file": "src/ui/style.css",
+      "start_marker": "/* #region GENERATED-ICONS */",
+      "end_marker": "/* #endregion GENERATED-ICONS */",
+      "rules": 101,
+      "block_bytes": 18819,
+      "replaced": "原来 169~193 行的 25 条手写 .ico-* 规则（逐字搬进区块，一条没丢）"
+    },
+    "validation_in_build_content": [
+      "名字重复 / 缺 desc / 缺 group(提醒)",
+      "name 含非 [a-z0-9_] 字符 -> 硬报错",
+      "source 不是 pack: / local: -> 硬报错",
+      "素材文件不存在 / 扩展名不是 .png|.svg / 路径带 .. -> 硬报错",
+      "pack:<component> 不在 tools/icon-catalog.json 里 -> 硬报错",
+      "pack 素材不是 .svg 或根节点不是 fill=\"currentColor\" -> 硬报错",
+      "卡牌 ico 字段不在注册表里 -> 硬报错",
+      "url 一律生成 ../../assets/... （bundle.mjs 只认这个前缀）"
+    ]
+  },
+  "fetch_script": {
+    "path": "tools/fetch-iconpack.ps1",
+    "why_powershell": "沿用项目习惯（fetch-content/fetch-bgm/fetch-portraits 都是 PowerShell + 镜像链）；正文只写 ASCII，因为这台机器的 pwsh 是 Windows PowerShell 5.1，会把无 BOM 的 UTF-8 .ps1 按 GBK 解析",
+    "ascii_only_verified": "全部字节 <= 127（check-content.mjs 的脚本编码体检项也覆盖 tools/）",
+    "idempotent": "已存在且首行含 <svg 的文件直接跳过；-Force 可重下",
+    "mirror_chain_tried_in_order": 3,
+    "local_fallback": "-LocalSvg <解包出的 .../game-icon-pack-main/svg>",
+    "observed": {
+      "local_run": "new=46 skip=0 fail=0 total=40 KB",
+      "rerun": "new=0 skip=46 fail=0",
+      "network_single_file": "shield_02 走模板 A 下载，与本地快照字节一致",
+      "failure_path": "故意写错 component -> 打印每条试过的 URL 并 exit=1"
+    }
+  },
+  "assets": {
+    "pack_svg_count": 46,
+    "pack_svg_bytes": 40926,
+    "pack_svg_median_bytes": 711,
+    "old_icon_assets_bytes": 204454
+  },
+  "render_check": {
+    "script": "tools/iconpack-render.mjs",
+    "page": "tools/iconpack-render.html（真实加载 src/ui/style.css）",
+    "screenshot": "tools/shots/iconpack-render.png",
+    "stats": "tools/shots/iconpack-render-stats.txt",
+    "icons_checked": 101,
+    "blank": 0,
+    "solid_block": 0,
+    "coverage_min": "17.35% (help)",
+    "coverage_max": "84.69% (shield_02)",
+    "coverage_avg": "44.9%",
+    "detector_self_test": "把 flame.svg 换成空 <svg> 重跑 -> 'flame 0 0x0 !! 空白' 且 exit=1",
+    "bundle_side_check": "从 oasis-game.html 的 <style> 抽出 .ico-* 引用的 data URI（74 条：SVG 46 + PNG 28），Edge 里当图片逐条加载：74/74 成功"
+  },
+  "gates": {
+    "build-content": 0,
+    "check-icons": 0,
+    "check-content": 0,
+    "check-content --strict": 0,
+    "check-content --strict why": "t3 给 7 个道具加了真正渲染的 ico 字段、art 修成交集内合法值后已转绿（captain 复核）",
+    "bundle": 0,
+    "verify-bundle": 0,
+    "iconpack-render": 0
+  },
+  "bundle": {
+    "style_block_before_bytes": 12595023,
+    "style_block_after_bytes": 12951954,
+    "delta_bytes": 356931,
+    "delta_kb": 348.6,
+    "delta_percent": 1.77,
+    "measured_after_file_bytes": 20560360,
+    "measured_before_file_bytes": 20201916,
+    "delta_note": "+1.77%：保留全部老 Kenney 素材（含 6 个新注册的本地 PNG）是加法不是替换；每条 .ico-* 规则的 url() 会被 bundle.mjs 按处替换，-webkit 与标准声明各内联一份（实测 92 条 SVG data URI = 46 × 2）",
+    "inlined_assets_log": "CSS 内联素材: 74/74 个（原始 327.5 KB）",
+    "expected_after_t3": "老 cards/*.png 不再被 .ico-* 引用后，图标内联量 ≈ 335 KB -> ≈ 90 KB"
+  },
+  "semantic_landmines": [
+    "coin 的造型是字母 C，不是硬币 —— 金币用 star_coin",
+    "shield（基础盾）与 shield_02（圆角盾）是两个概念",
+    "temperature_down 给虚弱/降防，battery_negative 给降攻",
+    "bug 是甲虫（虫鸣），不是「程序错误」"
+  ],
+  "updated_by": "captain 收尾时按实际文件刷新（t3 之后注册表从 75 涨到 101）",
+  "bundle_final_bytes": 20626065
+}

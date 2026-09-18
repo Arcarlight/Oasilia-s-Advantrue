@@ -1,0 +1,39 @@
+{
+  "_comment": "BGM 选曲表（内容管线的一部分）：加一首曲子就在这里加一条，然后跑 & tools/fetch-bgm.ps1 下载、node tools/build-content.mjs 生成。key 就是 UI 里 audio.playBgm(key) 用的键。",
+  "_file": "下面的 file 是「上游 mp3 的文件名」——fetch-bgm.ps1 拿它去 tools/bgm-ogg-map.json 里查出对应的 ogg(L) 下载地址。真正落盘并被代码引用的是 assets/audio/bgm/<key>.ogg。",
+  "_loop": "一律用 ogg(L) 版：上游把每个曲子的 ogg 剪成了「切れ目のない自然ループ」，mp3 版在循环接缝处有编码器补的静音。播放侧走 WebAudio 的 AudioBuffer + loop=true，循环点是采样精确的。",
+  "source": "音楽の卵 (ontama-m.com)",
+  "license": "个人 / 法人均可免费使用、无需报告、可商用（署名非必须，游戏里仍然标注了出处）",
+  "licenseUrl": "https://ontama-m.com/ongaku.html",
+  "baseUrl": "https://ontama-m.com/midi/data/mp3_file/original/",
+  "oggBaseUrl": "https://ontama-m.com/midi/data/ogg_file/original/",
+  "tracks": {
+    "title": { "file": "tabinohajime.mp3", "name": "旅のはじめ", "page": "RPG outdoor", "desc": "标题 · 旅途开始" },
+
+    "map": { "file": "kazehukusougen.mp3", "name": "風吹く草原", "page": "RPG outdoor", "desc": "地图兜底曲" },
+    "map_desert": { "file": "kazehukusougen.mp3", "name": "風吹く草原", "page": "RPG outdoor", "desc": "第一章 流沙之海" },
+    "map_canyon": { "file": "taniwokoete.mp3", "name": "谷を越えて", "page": "RPG outdoor", "desc": "第二章 赤岩峡谷" },
+    "map_forest": { "file": "usugiraimori.mp3", "name": "薄暗い森", "page": "RPG outdoor", "desc": "第三章 藤蔓密林" },
+    "map_tide": { "file": "taiyoutoshiokaze.mp3", "name": "太陽と潮風の街", "page": "RPG town", "desc": "第四章 潮汐盐海" },
+    "map_cliff": { "file": "tozan.mp3", "name": "頂上目指して", "page": "RPG outdoor", "desc": "第五章 风蚀峭壁" },
+    "map_night": { "file": "yamidoukutu.mp3", "name": "闇の洞窟", "page": "RPG outdoor", "desc": "第六章 夜砂墓原" },
+
+    "battle": { "file": "koubouittai.mp3", "name": "攻防一体", "page": "RPG battle", "desc": "战斗兜底曲" },
+    "battle_desert": { "file": "koubouittai.mp3", "name": "攻防一体", "page": "RPG battle", "desc": "流沙之海的战斗" },
+    "battle_canyon": { "file": "tokkumiai.mp3", "name": "取っ組み合い", "page": "RPG battle", "desc": "赤岩峡谷的战斗" },
+    "battle_forest": { "file": "saguriai.mp3", "name": "さぐり合い", "page": "RPG battle", "desc": "藤蔓密林的战斗" },
+    "battle_tide": { "file": "hit_away.mp3", "name": "ヒット＆アウェイ", "page": "RPG battle", "desc": "潮汐盐海的战斗" },
+    "battle_cliff": { "file": "kazaguruma.mp3", "name": "風車", "page": "RPG battle", "desc": "风蚀峭壁的战斗" },
+    "battle_night": { "file": "yamiwouchiharau.mp3", "name": "闇を打ち払う", "page": "RPG battle", "desc": "夜砂墓原的战斗" },
+
+    "elite": { "file": "cross.mp3", "name": "クロス陣形", "page": "RPG battle", "desc": "强敌（各章通用）" },
+    "boss": { "file": "syuurai.mp3", "name": "襲来", "page": "RPG battle", "desc": "章节首领" },
+    "boss_final": { "file": "tataminouenoshitou.mp3", "name": "畳の上の死闘", "page": "RPG battle", "desc": "最终首领（终章）" },
+
+    "victory": { "file": "syourinouta.mp3", "name": "勝利のうた", "page": "RPG battle", "desc": "战斗胜利 / 通关" },
+    "defeat": { "file": "zenmetsu.mp3", "name": "ぜんめつ", "page": "RPG battle", "desc": "失败" },
+    "event": { "file": "kasakashi.mp3", "name": "傘貸し", "page": "RPG event", "desc": "未知事件 / 宝箱" },
+    "shop": { "file": "okasy.mp3", "name": "おかしな行商人", "page": "RPG event", "desc": "商店" },
+    "rest": { "file": "izuminohotoride.mp3", "name": "泉のほとりで", "page": "RPG town", "desc": "营地" }
+  }
+}

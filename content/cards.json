@@ -1,0 +1,1949 @@
+{
+  "starterDeck": [
+    "tackle",
+    "tackle",
+    "tackle",
+    "tackle",
+    "sand_attack",
+    "bite",
+    "bite",
+    "bite",
+    "harden",
+    "double_kick"
+  ],
+  "starterItems": {
+    "potion_small": 2,
+    "potion_big": 0
+  },
+  "_fields_note": [
+    "items[].art 是历史遗留字段：全项目没有任何渲染路径读它（渲染走 items[].ico 的 .ico-* mask）。",
+    "它被两面夹住 —— tools/build-content.mjs 的 6 名白名单（flask_half/flask_full/star_1/sword/shield/spark_1）",
+    "与 tools/check-content.mjs 的 assets/img/cards/<art>.png 存在性检查；而 star_1/spark_1 在 assets/img/cards/ 下",
+    "从来不存在（它们其实是 assets/img/fx 的打击特效名），charm_luck/charm_agi 的 --strict 提醒就卡在这里。",
+    "所以 art 一律取「白名单 ∩ 真实存在」的交集 {flask_half, flask_full, sword, shield}，真正的图标交给 ico。",
+    "items[].ico = 图标注册表 content/icons.json 里的名字（带 ico- 前缀），背包 / 奖励 / 商店行都用它渲染。"
+  ],
+  "items": {
+    "potion_small": {
+      "id": "potion_small",
+      "name": "好伤药",
+      "art": "flask_half",
+      "ico": "ico-pill",
+      "desc": "回复最大生命的 25%。",
+      "healPct": 0.25,
+      "price": 34
+    },
+    "potion_big": {
+      "id": "potion_big",
+      "name": "厉害伤药",
+      "art": "flask_full",
+      "ico": "ico-flask",
+      "desc": "回复最大生命的 50%。",
+      "healPct": 0.5,
+      "price": 60
+    },
+    "charm_luck": {
+      "id": "charm_luck",
+      "name": "幸运护符",
+      "art": "shield",
+      "ico": "ico-clover",
+      "desc": "本局幸运 +3。",
+      "price": 70,
+      "stat": {
+        "luck": 3
+      }
+    },
+    "charm_atk": {
+      "id": "charm_atk",
+      "name": "锐爪护符",
+      "art": "sword",
+      "ico": "ico-sword",
+      "desc": "本局攻击 +4。",
+      "price": 78,
+      "stat": {
+        "atk": 4
+      }
+    },
+    "charm_def": {
+      "id": "charm_def",
+      "name": "硬壳护符",
+      "art": "shield",
+      "ico": "ico-shield",
+      "desc": "本局防御 +3。",
+      "price": 70,
+      "stat": {
+        "def": 3
+      }
+    },
+    "charm_agi": {
+      "id": "charm_agi",
+      "name": "疾风护符",
+      "art": "shield",
+      "ico": "ico-shoe",
+      "desc": "本局敏捷 +3。",
+      "price": 82,
+      "stat": {
+        "agi": 3
+      }
+    },
+    "elixir": {
+      "id": "elixir",
+      "name": "活力药",
+      "art": "flask_full",
+      "ico": "ico-heal",
+      "desc": "本局最大生命 +18。",
+      "price": 66,
+      "stat": {
+        "maxHp": 18
+      }
+    }
+  },
+  "cards": [
+    {
+      "id": "tackle",
+      "name": "撞击",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "fist",
+      "text": "造成 6 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2
+        }
+      ],
+      "ico": "ico-fist",
+      "fx": "dirt_1"
+    },
+    {
+      "id": "sand_attack",
+      "name": "泼沙",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "dirt_1",
+      "text": "造成 4 点伤害，并让对手获得 1 层虚弱。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        }
+      ],
+      "ico": "ico-target",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "bite",
+      "name": "咬住",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 12 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4
+        }
+      ],
+      "ico": "ico-dagger",
+      "fx": "slash_1"
+    },
+    {
+      "id": "quick_attack",
+      "name": "电光一闪",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "spark_1",
+      "text": "造成 3 点伤害，抽 1 张。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-lightning",
+      "fx": "spark_1"
+    },
+    {
+      "id": "rock_throw",
+      "name": "落石",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "dirt_2",
+      "text": "造成 9 点伤害，并使对手防御 -2。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -2,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-stone",
+      "fx": "dirt_1"
+    },
+    {
+      "id": "focus_energy",
+      "name": "聚气",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "self",
+      "art": "magic_1",
+      "text": "本场战斗攻击 +4。抽 1 张。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 4
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-temperature_up",
+      "fx": "magic_1"
+    },
+    {
+      "id": "harden",
+      "name": "变硬",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "self",
+      "art": "shield",
+      "text": "获得护盾（随防御成长，约 9 + 防御×0.75）。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 9,
+          "scaleWithDef": true
+        }
+      ],
+      "ico": "ico-shield",
+      "fx": "trace_1"
+    },
+    {
+      "id": "double_kick",
+      "name": "二连踢",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "fist",
+      "text": "连续 2 次造成 7 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2,
+          "hits": 2
+        }
+      ],
+      "ico": "ico-double",
+      "fx": "slash_1"
+    },
+    {
+      "id": "potion_berry",
+      "name": "文柚果",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "self",
+      "art": "flask_half",
+      "text": "回复 22 点 HP。",
+      "effects": [
+        {
+          "kind": "heal",
+          "amount": 22
+        }
+      ],
+      "ico": "ico-pill",
+      "fx": "spark_1"
+    },
+    {
+      "id": "dragon_breath",
+      "name": "龙息",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "flare_1",
+      "text": "造成 21 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 8
+        }
+      ],
+      "ico": "ico-volcanic_eruption",
+      "fx": "flare_1"
+    },
+    {
+      "id": "rock_slide",
+      "name": "岩崩",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "dirt_2",
+      "text": "造成 19 点伤害，40% 概率使对手获得 1 层虚弱。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 7
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1,
+          "chance": 0.4
+        }
+      ],
+      "ico": "ico-stone",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "bug_buzz",
+      "name": "虫鸣",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "magic_2",
+      "text": "抽 2 张。",
+      "effects": [
+        {
+          "kind": "draw",
+          "n": 2
+        }
+      ],
+      "ico": "ico-bug",
+      "fx": "magic_2"
+    },
+    {
+      "id": "roost",
+      "name": "羽栖",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "flask_full",
+      "text": "回复最大生命的 22%。",
+      "effects": [
+        {
+          "kind": "heal",
+          "pct": 0.22
+        }
+      ],
+      "ico": "ico-heart",
+      "fx": "spark_1"
+    },
+    {
+      "id": "dragon_dance",
+      "name": "龙之舞",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "star_1",
+      "text": "本场战斗攻击 +3、敏捷 +3。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": 3
+        }
+      ],
+      "ico": "ico-temperature_up",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "screech",
+      "name": "刺耳声",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "ui_glitch",
+      "text": "对手防御 -5，本场战斗有效。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -5,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-audio_waves",
+      "fx": "magic_2"
+    },
+    {
+      "id": "iron_defense",
+      "name": "铁壁",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "shield",
+      "text": "获得护盾（随防御成长），本场战斗防御 +3。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 13,
+          "scaleWithDef": true
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 3
+        }
+      ],
+      "ico": "ico-shield_02",
+      "fx": "trace_1"
+    },
+    {
+      "id": "rock_blast",
+      "name": "岩石爆击",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "dirt_1",
+      "text": "连续 3 次造成 8 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3,
+          "hits": 3
+        }
+      ],
+      "ico": "ico-triple",
+      "fx": "dirt_1"
+    },
+    {
+      "id": "toxic",
+      "name": "剧毒",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "flask_half",
+      "text": "给对手 3 层中毒（每回合流失中毒层数的生命，之后减 1）。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 3
+        }
+      ],
+      "ico": "ico-poison",
+      "fx": "magic_1"
+    },
+    {
+      "id": "u_turn",
+      "name": "急速折返",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "cards_return",
+      "text": "抽 2 张，回复 1 点 AP。",
+      "effects": [
+        {
+          "kind": "draw",
+          "n": 2
+        },
+        {
+          "kind": "ap",
+          "n": 1
+        }
+      ],
+      "ico": "ico-change",
+      "fx": "trace_1"
+    },
+    {
+      "id": "fire_fang",
+      "name": "火焰牙",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "flare_1",
+      "text": "造成 17 点伤害，并给对手 2 层灼伤。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 6
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "stacks": 2
+        }
+      ],
+      "ico": "ico-flame",
+      "fx": "flare_1"
+    },
+    {
+      "id": "crunch",
+      "name": "咬碎",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 13 点伤害，并使对手防御 -2。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -2,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-dagger",
+      "fx": "slash_1"
+    },
+    {
+      "id": "dragon_claw",
+      "name": "龙爪",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 26 点伤害。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 10
+        }
+      ],
+      "ico": "ico-sword",
+      "fx": "slash_1"
+    },
+    {
+      "id": "earthquake",
+      "name": "地震",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "exploding",
+      "text": "造成 29 点伤害，并让对手防御 -4。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -4,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-earthquake",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "earth_power",
+      "name": "大地之力",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "magic_2",
+      "text": "造成 17 点伤害，无视对手 50% 防御。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 6,
+          "ignoreDefPct": 0.5
+        }
+      ],
+      "ico": "ico-earthquake",
+      "fx": "magic_1"
+    },
+    {
+      "id": "boomburst",
+      "name": "爆音波",
+      "ap": 3,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "exploding",
+      "text": "造成 48 点伤害。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 17
+        }
+      ],
+      "ico": "ico-audio_waves",
+      "fx": "flare_1"
+    },
+    {
+      "id": "outrage",
+      "name": "逆鳞",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "flare_1",
+      "text": "造成 30 点伤害，自身受到 6 点反伤。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 11,
+          "recoilPct": 0.2
+        }
+      ],
+      "ico": "ico-volcanic_eruption",
+      "fx": "flare_1"
+    },
+    {
+      "id": "dragon_rush",
+      "name": "龙之俯冲",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "spark_1",
+      "text": "造成 25 点伤害；若对手 HP 低于 40%，改为造成 38 点。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 9,
+          "execThreshold": 0.4,
+          "execBonus": 5
+        }
+      ],
+      "ico": "ico-meteor",
+      "fx": "spark_1"
+    },
+    {
+      "id": "heat_wave",
+      "name": "热风",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "flare_1",
+      "text": "造成 22 点伤害，并给对手 3 层灼伤。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 8
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "stacks": 3
+        }
+      ],
+      "ico": "ico-flame",
+      "fx": "flare_1"
+    },
+    {
+      "id": "bulk_up",
+      "name": "健美",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "fist",
+      "text": "本场战斗攻击 +4、防御 +3。抽 1 张。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 4
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 3
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-temperature_up",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "sandstorm",
+      "name": "沙暴",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "smoke_1",
+      "text": "本场战斗防御 +4、幸运 +3。抽 1 张。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 4
+        },
+        {
+          "kind": "buff",
+          "stat": "luck",
+          "amount": 3
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-wind",
+      "fx": "smoke_1"
+    },
+    {
+      "id": "protect",
+      "name": "守住",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "shield",
+      "text": "获得大量护盾（随防御成长）。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 18,
+          "scaleWithDef": true
+        }
+      ],
+      "ico": "ico-protect",
+      "fx": "trace_1"
+    },
+    {
+      "id": "draco_meteor",
+      "name": "流星群",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "star_1",
+      "text": "造成 62 点伤害，本场战斗攻击 -8。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 22
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -8
+        }
+      ],
+      "ico": "ico-meteor",
+      "fx": "star_1"
+    },
+    {
+      "id": "fissure",
+      "name": "地裂",
+      "ap": 2,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "exploding",
+      "text": "造成 40 点伤害，无视对手全部防御。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 14,
+          "ignoreDefPct": 1
+        }
+      ],
+      "ico": "ico-earthquake",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "superpower",
+      "name": "蛮力",
+      "ap": 2,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "fist",
+      "text": "造成 36 点伤害，本场战斗攻击 -3、防御 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 13
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -3
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3
+        }
+      ],
+      "ico": "ico-mace",
+      "fx": "spark_1"
+    },
+    {
+      "id": "first_aid",
+      "name": "急救",
+      "ap": 0,
+      "rarity": "epic",
+      "targeting": "self",
+      "art": "flask_full",
+      "text": "回复最大生命的 16%，并抽 1 张。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "heal",
+          "pct": 0.16
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-heal",
+      "fx": "spark_1"
+    },
+    {
+      "id": "endure",
+      "name": "挺住",
+      "ap": 0,
+      "rarity": "epic",
+      "targeting": "self",
+      "art": "shield",
+      "text": "获得护盾（随防御成长），回复 3 点 AP。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 8,
+          "scaleWithDef": true
+        },
+        {
+          "kind": "ap",
+          "n": 3
+        }
+      ],
+      "ico": "ico-action_points",
+      "fx": "trace_1"
+    },
+    {
+      "id": "dragon_darts",
+      "name": "龙箭",
+      "ap": 1,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "spark_1",
+      "text": "连续 4 次造成 9 点伤害。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3,
+          "hits": 4
+        }
+      ],
+      "ico": "ico-triple",
+      "fx": "spark_1"
+    },
+    {
+      "id": "absorb",
+      "name": "吸取",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "magic_1",
+      "text": "造成 11 点伤害，回复 5 点 HP。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4,
+          "drainPct": 0.5
+        }
+      ],
+      "ico": "ico-heart_break_02",
+      "fx": "magic_1"
+    },
+    {
+      "id": "twineedle",
+      "name": "双针",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "连续 2 次造成 5 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 1,
+          "hits": 2
+        }
+      ],
+      "ico": "ico-spear",
+      "fx": "slash_1"
+    },
+    {
+      "id": "poison_sting",
+      "name": "毒针",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "flask_half",
+      "text": "造成 8 点伤害，并给对手 1 层中毒。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 1
+        }
+      ],
+      "ico": "ico-poison",
+      "fx": "magic_1"
+    },
+    {
+      "id": "fury_cutter",
+      "name": "连切",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "连续 3 次造成 4 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 1,
+          "hits": 3
+        }
+      ],
+      "ico": "ico-triple",
+      "fx": "slash_1"
+    },
+    {
+      "id": "silver_wind",
+      "name": "银色旋风",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "magic_2",
+      "text": "造成 10 点伤害，并抽 1 张。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-wind",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "spider_web",
+      "name": "蛛网",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "trace_1",
+      "text": "造成 4 点伤害，并让对手敏捷 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-fog",
+      "fx": "trace_1"
+    },
+    {
+      "id": "razor_leaf",
+      "name": "飞叶快刀",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "连续 2 次造成 15 点伤害，并抽 1 张。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4,
+          "hits": 2
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-leaves",
+      "fx": "slash_1"
+    },
+    {
+      "id": "spore",
+      "name": "蘑菇孢子",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "smoke_1",
+      "text": "给对手 1 层中毒和 1 层虚弱。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 1
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        }
+      ],
+      "ico": "ico-poison",
+      "fx": "smoke_1"
+    },
+    {
+      "id": "quiver_dance",
+      "name": "蝶舞",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "twirl_1",
+      "text": "本场战斗攻击 +3、敏捷 +3、幸运 +3。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "luck",
+          "amount": 3
+        }
+      ],
+      "ico": "ico-clover",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "leech_seed",
+      "name": "寄生种子",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "magic_2",
+      "text": "给对手 1 层中毒，并回复 8 点 HP。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 1
+        },
+        {
+          "kind": "heal",
+          "amount": 8
+        }
+      ],
+      "ico": "ico-leaves",
+      "fx": "magic_2"
+    },
+    {
+      "id": "giga_drain",
+      "name": "终极吸取",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "magic_1",
+      "text": "造成 14 点伤害，回复所造成伤害的一半。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 5,
+          "drainPct": 0.5
+        }
+      ],
+      "ico": "ico-heart_break_02",
+      "fx": "magic_1"
+    },
+    {
+      "id": "u_turn_dance",
+      "name": "虫之抵抗",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 10 点伤害，并让对手攻击 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-battery_negative",
+      "fx": "slash_1"
+    },
+    {
+      "id": "water_pulse",
+      "name": "水之波动",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "magic_1",
+      "text": "造成 17 点伤害，并让对手获得 1 层虚弱。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 6
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        }
+      ],
+      "ico": "ico-water",
+      "fx": "magic_1"
+    },
+    {
+      "id": "aqua_ring",
+      "name": "水流环",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "magic_2",
+      "text": "回复最大生命的 20%，并获得护盾（随防御成长）。",
+      "effects": [
+        {
+          "kind": "heal",
+          "pct": 0.2
+        },
+        {
+          "kind": "shield",
+          "amount": 6,
+          "scaleWithDef": true
+        }
+      ],
+      "ico": "ico-water",
+      "fx": "magic_2"
+    },
+    {
+      "id": "life_dew",
+      "name": "生命水滴",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "flask_full",
+      "text": "回复 22 点 HP，并回复 1 点 AP。",
+      "effects": [
+        {
+          "kind": "heal",
+          "amount": 22
+        },
+        {
+          "kind": "ap",
+          "n": 1
+        }
+      ],
+      "ico": "ico-water",
+      "fx": "spark_1"
+    },
+    {
+      "id": "withdraw",
+      "name": "缩入壳中",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "shield",
+      "text": "获得护盾（随防御成长，约 13 + 防御×0.75），并抽 1 张。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 13,
+          "scaleWithDef": true
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-shield_03",
+      "fx": "trace_1"
+    },
+    {
+      "id": "brine",
+      "name": "盐水",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "flask_half",
+      "text": "造成 15 点伤害；若对手 HP 低于 40%，改为造成 25 点。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 5,
+          "execThreshold": 0.4,
+          "execBonus": 4
+        }
+      ],
+      "ico": "ico-water",
+      "fx": "magic_1"
+    },
+    {
+      "id": "bulldoze",
+      "name": "重踏",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "dirt_1",
+      "text": "造成 15 点伤害，并让对手敏捷 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-temperature_down",
+      "fx": "dirt_1"
+    },
+    {
+      "id": "rolling_kick",
+      "name": "滚动",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "art": "dirt_2",
+      "text": "连续 2 次造成 5 点伤害，并让对手防御 -2。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 1,
+          "hits": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -2,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-double",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "tailwind",
+      "name": "顺风",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "twirl_1",
+      "text": "本场战斗敏捷 +3，回复 1 点 AP。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": 3
+        },
+        {
+          "kind": "ap",
+          "n": 1
+        }
+      ],
+      "ico": "ico-shoe",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "safeguard",
+      "name": "神秘守护",
+      "ap": 2,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "shield",
+      "text": "本场战斗防御 +4，获得护盾（随防御成长）。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 4
+        },
+        {
+          "kind": "shield",
+          "amount": 10,
+          "scaleWithDef": true
+        }
+      ],
+      "ico": "ico-protect",
+      "fx": "trace_1"
+    },
+    {
+      "id": "super_luck",
+      "name": "幸运咒语",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "star_1",
+      "text": "本场战斗幸运 +4，抽 1 张。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "luck",
+          "amount": 4
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-clover",
+      "fx": "star_1"
+    },
+    {
+      "id": "leaf_storm",
+      "name": "飞叶风暴",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "连续 4 次造成 20 点伤害，本场战斗攻击 -5。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4,
+          "hits": 4
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -5
+        }
+      ],
+      "ico": "ico-leaves",
+      "fx": "slash_1"
+    },
+    {
+      "id": "rest",
+      "name": "睡觉",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "self",
+      "art": "flask_full",
+      "text": "回复最大生命的 50%，并抽 2 张。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "heal",
+          "pct": 0.5
+        },
+        {
+          "kind": "draw",
+          "n": 2
+        }
+      ],
+      "ico": "ico-bed",
+      "fx": "light_1"
+    },
+    {
+      "id": "sludge_bomb",
+      "name": "污泥炸弹",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "flask_half",
+      "text": "造成 33 点伤害，并给对手 3 层中毒，无视对手一半防御。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 12,
+          "ignoreDefPct": 0.5
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 3
+        }
+      ],
+      "ico": "ico-skull",
+      "fx": "smoke_1"
+    },
+    {
+      "id": "salt_cure",
+      "name": "盐腌",
+      "ap": 2,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "flask_half",
+      "text": "给对手 2 层中毒和 2 层虚弱，并让对手防御 -4。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 2
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -4,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-poison",
+      "fx": "dirt_1"
+    },
+    {
+      "id": "stone_edge",
+      "name": "尖石攻击",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "art": "dirt_2",
+      "text": "造成 52 点伤害，并让对手防御 -5。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 18
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -5,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-stone",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "surf",
+      "name": "冲浪",
+      "ap": 3,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "magic_1",
+      "text": "造成 35 点伤害，并让对手获得 1 层虚弱。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 13
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        }
+      ],
+      "ico": "ico-water",
+      "fx": "magic_1"
+    },
+    {
+      "id": "whirlpool",
+      "name": "潮旋",
+      "ap": 3,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "twirl_1",
+      "text": "连续 3 次造成 8 点伤害，并让对手攻击 -3。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3,
+          "hits": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-triple",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "knock_off",
+      "name": "拍落",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 18 点伤害，并让对手攻击 -4、防御 -3。使用后销毁。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 6
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -4,
+          "target": "enemy"
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-battery_negative",
+      "fx": "slash_1",
+      "exhaust": true
+    },
+    {
+      "id": "double_edge",
+      "name": "舍身冲撞",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "exploding",
+      "text": "造成 41 点伤害，自身受到 8 点反伤。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 15,
+          "recoilPct": 0.2
+        }
+      ],
+      "ico": "ico-counter",
+      "fx": "flare_1"
+    },
+    {
+      "id": "giga_impact",
+      "name": "终极冲击",
+      "ap": 3,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "exploding",
+      "text": "造成 48 点伤害，自身受到 5 点反伤。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 17,
+          "recoilPct": 0.1
+        }
+      ],
+      "ico": "ico-counter",
+      "fx": "dirt_2"
+    },
+    {
+      "id": "dragon_tail",
+      "name": "龙尾",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 29 点伤害，并让对手防御 -4。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -4,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-sword",
+      "fx": "slash_1"
+    },
+    {
+      "id": "swords_dance",
+      "name": "剑舞",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "sword",
+      "text": "本场战斗攻击 +6。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 6
+        }
+      ],
+      "ico": "ico-sword",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "calm_mind",
+      "name": "冥想",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "magic_1",
+      "text": "本场战斗攻击 +4、幸运 +3。抽 1 张。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 4
+        },
+        {
+          "kind": "buff",
+          "stat": "luck",
+          "amount": 3
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-clover",
+      "fx": "magic_1"
+    },
+    {
+      "id": "agility",
+      "name": "高速移动",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "spark_1",
+      "text": "本场战斗敏捷 +5，抽 1 张，回复 1 点 AP。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": 5
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        },
+        {
+          "kind": "ap",
+          "n": 1
+        }
+      ],
+      "ico": "ico-shoe",
+      "fx": "spark_1"
+    },
+    {
+      "id": "bullet_punch",
+      "name": "子弹拳",
+      "ap": 0,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "fist",
+      "text": "造成 7 点伤害，抽 1 张。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 3
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "ico": "ico-lightning",
+      "fx": "spark_1"
+    },
+    {
+      "id": "focus_punch",
+      "name": "真气拳",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "fist",
+      "text": "造成 36 点伤害，本场战斗敏捷 -3。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 13
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3
+        }
+      ],
+      "ico": "ico-mace",
+      "fx": "smoke_1"
+    },
+    {
+      "id": "feather_dance",
+      "name": "羽毛舞",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "twirl_1",
+      "text": "获得护盾（随防御成长，约 9 + 防御×0.75），并让对手攻击 -3。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 9,
+          "scaleWithDef": true
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-battery_negative",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "acrobatics",
+      "name": "杂技",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "twirl_1",
+      "text": "连续 3 次造成 9 点伤害，并让对手防御 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2,
+          "hits": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "ico": "ico-triple",
+      "fx": "twirl_1"
+    },
+    {
+      "id": "iron_head",
+      "name": "铁头",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "shield",
+      "text": "造成 26 点伤害，无视对手 50% 防御。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 10,
+          "ignoreDefPct": 0.5
+        }
+      ],
+      "ico": "ico-gear",
+      "fx": "spark_1"
+    },
+    {
+      "id": "air_slash",
+      "name": "空气利刃",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "art": "slash_1",
+      "text": "造成 11 点伤害，无视对手 50% 防御。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 4,
+          "ignoreDefPct": 0.5
+        }
+      ],
+      "ico": "ico-sword",
+      "fx": "slash_1"
+    },
+    {
+      "id": "mist",
+      "name": "白雾",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "self",
+      "art": "smoke_1",
+      "ico": "ico-fog",
+      "fx": "smoke_1",
+      "text": "清除自己身上所有的属性下降与负面状态，并获得护盾（随防御成长）。",
+      "effects": [
+        {
+          "kind": "cleanse",
+          "statuses": true
+        },
+        {
+          "kind": "shield",
+          "amount": 10,
+          "scaleWithDef": true
+        }
+      ]
+    },
+    {
+      "id": "refresh",
+      "name": "焕然一新",
+      "ap": 0,
+      "rarity": "rare",
+      "targeting": "self",
+      "art": "spark_1",
+      "ico": "ico-refresh",
+      "fx": "spark_1",
+      "text": "清除自己所有的属性下降与负面状态，抽 1 张。使用后销毁。",
+      "exhaust": true,
+      "effects": [
+        {
+          "kind": "cleanse",
+          "statuses": true
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ]
+    },
+    {
+      "id": "mob_scratch",
+      "name": "抓挠",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "dirt_1",
+      "ico": "ico-fist",
+      "fx": "dirt_1",
+      "enemyOnly": true,
+      "text": "造成 6 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 2
+        }
+      ]
+    },
+    {
+      "id": "mob_sand",
+      "name": "扬沙",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "dirt_2",
+      "ico": "ico-fog",
+      "fx": "dirt_2",
+      "enemyOnly": true,
+      "text": "造成 4 点伤害，并让对手获得 1 层虚弱。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 1
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "mob_guard",
+      "name": "缩壳",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "self",
+      "art": "trace_1",
+      "ico": "ico-shield_03",
+      "fx": "trace_1",
+      "enemyOnly": true,
+      "text": "获得 5 点护盾。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "mob_growl",
+      "name": "低吼",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "self",
+      "art": "smoke_1",
+      "ico": "ico-audio_waves",
+      "fx": "smoke_1",
+      "enemyOnly": true,
+      "text": "本场战斗攻击 +2。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "mob_stare",
+      "name": "瞪眼",
+      "ap": 0,
+      "rarity": "common",
+      "targeting": "enemy",
+      "art": "magic_1",
+      "ico": "ico-temperature_down",
+      "fx": "magic_1",
+      "enemyOnly": true,
+      "text": "让对手防御 -1。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -1,
+          "target": "enemy"
+        }
+      ]
+    }
+  ]
+}

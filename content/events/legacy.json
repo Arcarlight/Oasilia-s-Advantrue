@@ -1,0 +1,750 @@
+[
+  {
+    "id": "lost_trainer",
+    "name": "迷路的旅行者",
+    "text": "沙丘阴影里坐着一个人，正在把水壶倒过来抖最后两滴。他抬头看你：「你也是来送死的？」",
+    "options": [
+      {
+        "label": "分给他半壶水（-15 HP）",
+        "hint": "他会告诉你一条近路。",
+        "tone": "good",
+        "text": "你把水递过去。他一口气喝光，然后塞给你一袋金币：「前面第三座沙丘，绕左边。」\nHP -{hp}，金币 +{gold}。",
+        "effects": [
+          {
+            "hp": -15
+          },
+          {
+            "gold": 45
+          }
+        ]
+      },
+      {
+        "label": "问他沙漠里的传闻（抽 1 张卡）",
+        "hint": "免费的情报。",
+        "tone": "good",
+        "text": "「沙子底下埋着会走的东西。」他说完就睡了。你在他的行囊里翻到一张卡。\n获得卡牌「{card}」。",
+        "effects": [
+          {
+            "cardRandom": 0
+          }
+        ]
+      },
+      {
+        "label": "继续赶路",
+        "hint": "不关你的事。",
+        "tone": "neutral",
+        "text": "你从旁边绕过去。他在你背后喊了句什么，被风吃掉了。",
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "sand_pit",
+    "name": "流沙坑",
+    "text": "脚下的沙忽然开始往下走。你展开翅膀，但沙子抓住了你的尾尖。",
+    "options": [
+      {
+        "label": "用力振翅冲出去（-10 HP）",
+        "hint": "硬来。",
+        "tone": "neutral",
+        "text": "你把自己从沙里拔出来，翅膀酸得要命。但你在沙坑底部看到一张卡。\nHP -{hp}，获得「电光一闪」。",
+        "effects": [
+          {
+            "hp": -10
+          },
+          {
+            "card": "quick_attack"
+          }
+        ]
+      },
+      {
+        "label": "顺着沙流滑下去（敏捷 +2）",
+        "hint": "让沙子带你走。",
+        "tone": "good",
+        "text": "你放松下来，沙流把你送到坑底的一个洞穴。出口在很远的另一边。\n敏捷 +2。",
+        "effects": [
+          {
+            "stat": {
+              "agi": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cactus",
+    "name": "沙铃仙人掌",
+    "text": "一株沙铃仙人掌转过来对着你，晃了晃手里的沙铃：「要刺吗？刚长的。」",
+    "options": [
+      {
+        "label": "要（获得 1 张稀有卡，-12 HP）",
+        "hint": "刺有点扎手。",
+        "tone": "good",
+        "text": "你摘了一根。它看起来很满意，顺手又摇了一下沙铃。\nHP -{hp}，获得「{card}」。",
+        "effects": [
+          {
+            "cardRarity": {
+              "rarities": [
+                "rare",
+                "epic"
+              ]
+            }
+          },
+          {
+            "hp": -12
+          }
+        ]
+      },
+      {
+        "label": "不要（防御 +3）",
+        "hint": "礼貌地拒绝。",
+        "tone": "good",
+        "text": "「聪明。」它说完就继续晒太阳了。你摸了摸自己的甲壳，好像硬了一点。\n防御 +3。",
+        "effects": [
+          {
+            "stat": {
+              "def": 3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "old_cache",
+    "name": "半埋的补给箱",
+    "text": "一个锈掉的箱子露出一角，锁早就烂了。",
+    "options": [
+      {
+        "label": "打开（获得道具与金币）",
+        "tone": "good",
+        "text": "里面是几瓶还算完好的药和一个钱袋。\n金币 +{gold}，获得{item} ×1。",
+        "effects": [
+          {
+            "goldRange": [
+              25,
+              60
+            ]
+          },
+          {
+            "item": "potion_small"
+          }
+        ]
+      },
+      {
+        "label": "箱子底下有东西在动（查看）",
+        "tone": "neutral",
+        "text": "你把手伸进去。",
+        "effects": [
+          {
+            "branch": [
+              {
+                "weight": 50,
+                "tone": "good",
+                "text": "你把箱子掀开，一只沙鼠窜了出去。它窝里堆着一瓶高级伤药。\n获得{item} ×1。",
+                "effects": [
+                  {
+                    "item": "potion_big"
+                  }
+                ]
+              },
+              {
+                "weight": 50,
+                "tone": "neutral",
+                "text": "是一只被惊动的穿山鼠。它先咬了你一口，然后叼着金币跑了——不过钱袋掉了一半下来。\nHP -{hp}，金币 +{gold}。",
+                "effects": [
+                  {
+                    "hp": -18
+                  },
+                  {
+                    "gold": 80
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "不碰（幸运 +1）",
+        "tone": "good",
+        "text": "沙漠里半埋的箱子十有八九是陷阱。你绕着走，感觉自己做对了。\n幸运 +1。",
+        "effects": [
+          {
+            "stat": {
+              "luck": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "singing_sand",
+    "name": "会唱歌的沙丘",
+    "text": "风吹过沙丘顶，沙子发出很像歌声的嗡鸣。你忽然很想跟着唱。",
+    "options": [
+      {
+        "label": "回应它（幸运 +2，回复 20 HP）",
+        "tone": "good",
+        "text": "你振动翅膀，和沙丘合了个音。整片沙原安静了一瞬，然后风都变得温柔了。\nHP +{heal}，幸运 +2。",
+        "effects": [
+          {
+            "stat": {
+              "luck": 2
+            }
+          },
+          {
+            "hp": 20
+          }
+        ]
+      },
+      {
+        "label": "不理它（获得 1 张卡）",
+        "tone": "neutral",
+        "text": "你捂住耳朵往前走。声音在身后变成一句听不懂的话。\n获得「{card}」。",
+        "effects": [
+          {
+            "cardRandom": 0.3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mirror_pool",
+    "name": "绿洲镜池",
+    "text": "一汪静水映出你的样子——但它比你大得多，而且眼睛是红的。",
+    "options": [
+      {
+        "label": "盯着它（攻击 +4）",
+        "tone": "good",
+        "text": "水里的那个东西先移开了视线。你觉得自己赢了。\n攻击 +4。",
+        "effects": [
+          {
+            "stat": {
+              "atk": 4
+            }
+          }
+        ]
+      },
+      {
+        "label": "喝一口（回复 45 HP）",
+        "tone": "good",
+        "text": "水很甜，甜得不太对劲。但身体确实舒服了。\nHP +{heal}。",
+        "effects": [
+          {
+            "hp": 45
+          }
+        ]
+      },
+      {
+        "label": "打碎水面（获得 1 张史诗卡，-20 HP）",
+        "tone": "neutral",
+        "text": "水花四溅，碎片里浮出一张卡。你的倒影不见了。\nHP -{hp}，获得「{card}」。",
+        "effects": [
+          {
+            "cardRarity": {
+              "rarities": [
+                "epic",
+                "rare"
+              ],
+              "boost": 0.5
+            }
+          },
+          {
+            "hp": -20
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "caravan_toll",
+    "name": "商队收税员",
+    "text": "一只戴着帽子的沙河马拦住你：「过路费。三十金币，或者一件东西。」",
+    "options": [
+      {
+        "label": "付钱（-35 金币，获得 1 张卡）",
+        "tone": "good",
+        "text": "他收了钱，还顺手从货里挑了一张卡给你：「下次别走这条路。」\n金币 -35，获得「{card}」。",
+        "effects": [
+          {
+            "if": {
+              "goldAtLeast": 35
+            },
+            "then": {
+              "tone": "good",
+              "text": "他收了钱，还顺手从货里挑了一张卡给你：「下次别走这条路。」\n金币 -35，获得「{card}」。",
+              "effects": [
+                {
+                  "gold": -35
+                },
+                {
+                  "cardRandom": 0.35
+                }
+              ]
+            },
+            "else": {
+              "tone": "neutral",
+              "text": "你掏了半天，只有几枚硬币。他叹了口气，挥挥手让你过了。",
+              "effects": []
+            }
+          }
+        ]
+      },
+      {
+        "label": "拒绝（-12 HP，攻击 +2）",
+        "tone": "neutral",
+        "text": "他推了你一把。你站稳了，而且很生气。\nHP -{hp}，攻击 +2。",
+        "effects": [
+          {
+            "hp": -12
+          },
+          {
+            "stat": {
+              "atk": 2
+            }
+          }
+        ]
+      },
+      {
+        "label": "飞过去",
+        "hint": "你是会飞的。",
+        "tone": "good",
+        "text": "你张开翅膀从他头顶飞过。他在下面喊：「这不公平！」\n（什么都没发生，但心情不错。）",
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "first_oasis",
+    "name": "第一处绿洲",
+    "biome": "desert",
+    "text": "棕榈树围着一小片水。几只青绵鸟在上面打转，看到你就散开了。",
+    "options": [
+      {
+        "label": "泡一会儿（回复 35 HP）",
+        "tone": "good",
+        "text": "水是温的。你趴了半小时。\nHP +{heal}。",
+        "effects": [
+          {
+            "hp": 35
+          }
+        ]
+      },
+      {
+        "label": "在树荫下整理卡组（最大生命 +14）",
+        "tone": "good",
+        "text": "你把卡一张张摊在沙上重新排了顺序，顺便睡了一觉。\n最大生命 +14。",
+        "effects": [
+          {
+            "stat": {
+              "maxHp": 14
+            }
+          }
+        ]
+      },
+      {
+        "label": "带走一颗果子（获得好伤药 ×2）",
+        "tone": "good",
+        "text": "树下的果子还能吃。\n获得{item} ×2。",
+        "effects": [
+          {
+            "item": {
+              "id": "potion_small",
+              "n": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bone_field",
+    "name": "化石滩",
+    "biome": "desert",
+    "text": "一整片白色的骨头从沙里伸出来，像某种很久以前的路标。",
+    "options": [
+      {
+        "label": "挖一挖（50% 获得卡牌 / 50% -15 HP）",
+        "tone": "neutral",
+        "text": "你开始挖。",
+        "effects": [
+          {
+            "branch": [
+              {
+                "weight": 50,
+                "tone": "good",
+                "text": "骨头下面压着一块石板，石板上刻着招式。你把它记住了。\n获得「{card}」。",
+                "effects": [
+                  {
+                    "cardRandom": 0.4
+                  }
+                ]
+              },
+              {
+                "weight": 50,
+                "tone": "bad",
+                "text": "沙子塌了，你被埋到脖子才爬出来。\nHP -{hp}。",
+                "effects": [
+                  {
+                    "hp": -15
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "绕过去（敏捷 +2）",
+        "tone": "good",
+        "text": "你从骨堆边缘绕过去，脚步很轻。\n敏捷 +2。",
+        "effects": [
+          {
+            "stat": {
+              "agi": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "storm_ride",
+    "name": "沙暴来了",
+    "biome": "desert",
+    "text": "远处的地平线立起来一整面墙，正在往这边推。",
+    "options": [
+      {
+        "label": "迎面飞进去（幸运 +3，-18 HP）",
+        "tone": "good",
+        "text": "你在沙暴中心待了三分钟。你听到了那个像歌声的振翅声——是你自己的。\nHP -{hp}，幸运 +3。",
+        "effects": [
+          {
+            "hp": -18
+          },
+          {
+            "stat": {
+              "luck": 3
+            }
+          }
+        ]
+      },
+      {
+        "label": "挖个坑躲起来（防御 +3）",
+        "tone": "good",
+        "text": "你把自己埋起来，只留眼睛。沙子打在甲壳上，它挡住了。\n防御 +3。",
+        "effects": [
+          {
+            "stat": {
+              "def": 3
+            }
+          }
+        ]
+      },
+      {
+        "label": "飞高躲过去（最大生命 +10）",
+        "tone": "good",
+        "text": "你在沙暴顶上飞了很久，看到了整片沙海的形状。\n最大生命 +10。",
+        "effects": [
+          {
+            "stat": {
+              "maxHp": 10
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "echo_wall",
+    "name": "回音壁",
+    "biome": "canyon",
+    "text": "峡谷在这里收成一个很窄的缝。你喊了一声，回音回来的时候变成了两个声音。",
+    "options": [
+      {
+        "label": "再喊一声（获得 1 张卡）",
+        "tone": "good",
+        "text": "第二个声音回答了你一句你没说过的话。那句话变成了一张卡。\n获得「{card}」。",
+        "effects": [
+          {
+            "cardRandom": 0.4
+          }
+        ]
+      },
+      {
+        "label": "安静地听（幸运 +2，回复 25 HP）",
+        "tone": "good",
+        "text": "你听了很久，风声里全是沙。\nHP +{heal}，幸运 +2。",
+        "effects": [
+          {
+            "stat": {
+              "luck": 2
+            }
+          },
+          {
+            "hp": 25
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lava_vent",
+    "name": "地热裂口",
+    "biome": "canyon",
+    "text": "岩缝里透出橙色的光，热得能烤干鳞片。一只熔岩蜗牛慢吞吞地爬过去。",
+    "options": [
+      {
+        "label": "把卡牌凑近火（随机 1 张史诗卡）",
+        "tone": "good",
+        "text": "你把一张卡在火边烘了一下，它上面的图案变了。\n获得「{card}」。",
+        "effects": [
+          {
+            "cardRarity": {
+              "rarities": [
+                "epic"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "label": "跳进去淬炼（-22 HP，防御 +5）",
+        "tone": "good",
+        "text": "很疼。但冷却之后，甲壳上多了一层像釉的东西。\nHP -{hp}，防御 +5。",
+        "effects": [
+          {
+            "hp": -22
+          },
+          {
+            "stat": {
+              "def": 5
+            }
+          }
+        ]
+      },
+      {
+        "label": "取火烤点吃的（回复 30 HP）",
+        "tone": "good",
+        "text": "烤过的仙人掌果实意外地好吃。\nHP +{heal}。",
+        "effects": [
+          {
+            "hp": 30
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rival_meet",
+    "name": "另一位沙漠精灵",
+    "biome": "canyon",
+    "text": "半空中悬着另一只沙漠蜻蜓。她比你小一点，但眼睛很亮。「你也是……欧亚西莉亚？听说过这个名字。」",
+    "options": [
+      {
+        "label": "聊一会儿（获得 1 张稀有卡）",
+        "tone": "good",
+        "text": "你们交换了各自会的招式。临走她塞给你一张：「前面有个东西在等你。」\n获得「{card}」。",
+        "effects": [
+          {
+            "cardRarity": {
+              "rarities": [
+                "rare"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "label": "比一场（攻击 +5，-20 HP）",
+        "tone": "good",
+        "text": "你们在峡谷里追了十几分钟。你赢了，也累坏了。\nHP -{hp}，攻击 +5。",
+        "effects": [
+          {
+            "hp": -20
+          },
+          {
+            "stat": {
+              "atk": 5
+            }
+          }
+        ]
+      },
+      {
+        "label": "不理会",
+        "tone": "neutral",
+        "text": "你从她身边掠过。她在你身后喊了句「小心点」，然后飞走了。",
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "star_dust",
+    "name": "星尘沉积地",
+    "biome": "night",
+    "text": "沙面上浮着一层细碎的光。踩上去会有轻微的响声，像踩在玻璃上。",
+    "options": [
+      {
+        "label": "滚一圈（幸运 +4）",
+        "tone": "good",
+        "text": "你全身沾满了星尘，在夜里看起来像一大团萤火。\n幸运 +4。",
+        "effects": [
+          {
+            "stat": {
+              "luck": 4
+            }
+          }
+        ]
+      },
+      {
+        "label": "收集起来（获得厉害伤药 ×2）",
+        "tone": "good",
+        "text": "星尘压成药丸，苦，但很有用。\n获得{item} ×2。",
+        "effects": [
+          {
+            "item": {
+              "id": "potion_big",
+              "n": 2
+            }
+          }
+        ]
+      },
+      {
+        "label": "把它埋回去（最大生命 +22）",
+        "tone": "good",
+        "text": "你觉得它不该被踩。盖上沙的时候，有什么东西从地底轻轻顶了你一下，像在道谢。\n最大生命 +22。",
+        "effects": [
+          {
+            "stat": {
+              "maxHp": 22
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "grave_marker",
+    "name": "无名的墓碑",
+    "biome": "night",
+    "text": "一块歪掉的石头，上面刻着半句话：「走到这里就够了。」",
+    "options": [
+      {
+        "label": "继续往前走（攻击 +6）",
+        "tone": "good",
+        "text": "你把石头扶正，然后越过了它。\n攻击 +6。",
+        "effects": [
+          {
+            "stat": {
+              "atk": 6
+            }
+          }
+        ]
+      },
+      {
+        "label": "坐下来休息（回复 50 HP）",
+        "tone": "good",
+        "text": "你靠着石头坐了一会儿，什么都没想。\nHP +{heal}。",
+        "effects": [
+          {
+            "hp": 50
+          }
+        ]
+      },
+      {
+        "label": "把石头搬开（50% 史诗卡 / 50% -25 HP）",
+        "tone": "neutral",
+        "text": "你把石头推开了。",
+        "effects": [
+          {
+            "branch": [
+              {
+                "weight": 50,
+                "tone": "good",
+                "text": "石头下面是个地窖。里面整整齐齐摆着别人留下的东西，还有一张卡。\n获得「{card}」。",
+                "effects": [
+                  {
+                    "cardRarity": {
+                      "rarities": [
+                        "epic"
+                      ],
+                      "boost": 0.6
+                    }
+                  }
+                ]
+              },
+              {
+                "weight": 50,
+                "tone": "bad",
+                "text": "石头底下全是沙，还有一只被吵醒的尖牙陆鲨。\nHP -{hp}。",
+                "effects": [
+                  {
+                    "hp": -25
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "order_voice",
+    "name": "地下的低语",
+    "biome": "night",
+    "text": "整个沙原同时震了一下。有个很慢的声音在你脑子里说话：「回去。」",
+    "options": [
+      {
+        "label": "「不。」（攻击 +4 / 防御 +4）",
+        "tone": "good",
+        "text": "声音沉默了。你感到整片大地都在看着你。\n攻击 +4，防御 +4。",
+        "effects": [
+          {
+            "stat": {
+              "atk": 4,
+              "def": 4
+            }
+          }
+        ]
+      },
+      {
+        "label": "「凭什么？」（获得 1 张史诗卡，-30 HP）",
+        "tone": "neutral",
+        "text": "大地翻了一下。你被打进了沙里，但手里多了一张卡。\nHP -{hp}，获得「{card}」。",
+        "effects": [
+          {
+            "hp": -30
+          },
+          {
+            "cardRarity": {
+              "rarities": [
+                "epic"
+              ],
+              "boost": 0.8
+            }
+          }
+        ]
+      },
+      {
+        "label": "暂时退开（回复 40 HP，幸运 +2）",
+        "tone": "good",
+        "text": "你退到远处缩起来，把呼吸放慢。声音也慢慢远了。\nHP +{heal}，幸运 +2。",
+        "effects": [
+          {
+            "hp": 40
+          },
+          {
+            "stat": {
+              "luck": 2
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

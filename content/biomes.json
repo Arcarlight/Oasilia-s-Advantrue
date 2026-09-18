@@ -1,0 +1,186 @@
+{
+  "stageOrder": [
+    "desert",
+    "canyon",
+    "forest",
+    "tide",
+    "cliff",
+    "night"
+  ],
+  "biomes": {
+    "desert": {
+      "key": "desert",
+      "name": "流沙之海",
+      "sub": "第一章",
+      "desc": "热风卷着石英砂，地平线像被烤化了一样摇晃。",
+      "sky": [
+        "#2a1c14",
+        "#6b4a2a",
+        "#c98f4a"
+      ],
+      "ground": "#8a5a2b",
+      "accent": "#f0b95c",
+      "shape": {
+        "desc": "第一章：什么都有一点，当作教学图",
+        "rows": 9,
+        "nodeWeights": {
+          "battle": 52,
+          "elite": 9,
+          "event": 18,
+          "chest": 13,
+          "shop": 8
+        },
+        "guarantee": {
+          "chest": 2,
+          "shop": 2,
+          "rest": 1
+        }
+      }
+    },
+    "canyon": {
+      "key": "canyon",
+      "name": "赤岩峡谷",
+      "sub": "第二章",
+      "desc": "层层叠叠的红色岩壁，风在里面吹口哨。",
+      "sky": [
+        "#1d1420",
+        "#5a2a28",
+        "#c2553c"
+      ],
+      "ground": "#6d3123",
+      "accent": "#ff8a5c",
+      "shape": {
+        "desc": "第二章：精英偏多，硬碰硬的图",
+        "rows": 9,
+        "nodeWeights": {
+          "battle": 46,
+          "elite": 16,
+          "event": 16,
+          "chest": 14,
+          "shop": 8
+        },
+        "guarantee": {
+          "chest": 2,
+          "shop": 1,
+          "rest": 1
+        }
+      }
+    },
+    "forest": {
+      "key": "forest",
+      "name": "藤蔓密林",
+      "sub": "第三章",
+      "desc": "沙的尽头是一堵树墙。阳光被叶子切成碎片，落在地上还在动。",
+      "sky": [
+        "#0f1c14",
+        "#1f4028",
+        "#4e8a4a"
+      ],
+      "ground": "#2f4a2a",
+      "accent": "#8ddc6a",
+      "shape": {
+        "desc": "第三章：怪事多，事件与宝箱偏多",
+        "rows": 10,
+        "nodeWeights": {
+          "battle": 40,
+          "elite": 9,
+          "event": 30,
+          "chest": 16,
+          "shop": 5
+        },
+        "guarantee": {
+          "chest": 2,
+          "shop": 1,
+          "rest": 1
+        }
+      }
+    },
+    "tide": {
+      "key": "tide",
+      "name": "潮汐盐海",
+      "sub": "第四章",
+      "desc": "沙下面全是水。退潮时露出一片白得刺眼的盐壳，涨潮时整片地都在呼吸。",
+      "sky": [
+        "#0d1c33",
+        "#1d4a68",
+        "#5fb0c8"
+      ],
+      "ground": "#245363",
+      "accent": "#7fe6ff",
+      "shape": {
+        "desc": "第四章：补给多（商店 / 宝箱），适合调整卡组",
+        "rows": 10,
+        "nodeWeights": {
+          "battle": 44,
+          "elite": 10,
+          "event": 16,
+          "chest": 16,
+          "shop": 14
+        },
+        "guarantee": {
+          "chest": 2,
+          "shop": 2,
+          "rest": 1
+        }
+      }
+    },
+    "cliff": {
+      "key": "cliff",
+      "name": "风蚀峭壁",
+      "sub": "第五章",
+      "desc": "风在这里被切成一把把刀。岩壁上全是它刻出来的沟，深得能塞进一个人。",
+      "sky": [
+        "#181822",
+        "#3c3a4e",
+        "#8a8aa8"
+      ],
+      "ground": "#4a4658",
+      "accent": "#cfd6ff",
+      "shape": {
+        "desc": "第五章：战斗与精英最多，一路打上去",
+        "rows": 10,
+        "nodeWeights": {
+          "battle": 54,
+          "elite": 16,
+          "event": 13,
+          "chest": 12,
+          "shop": 5
+        },
+        "guarantee": {
+          "chest": 1,
+          "shop": 1,
+          "rest": 1
+        }
+      }
+    },
+    "night": {
+      "key": "night",
+      "name": "夜砂墓原",
+      "sub": "第六章",
+      "desc": "星尘落进沙里，埋在下面的东西开始翻身。",
+      "sky": [
+        "#0d1030",
+        "#241a4a",
+        "#4a3a7a"
+      ],
+      "ground": "#2c2447",
+      "accent": "#a98cff",
+      "shape": {
+        "desc": "第六章（终章）：长、难、几乎没有商店",
+        "rows": 11,
+        "nodeWeights": {
+          "battle": 50,
+          "elite": 20,
+          "event": 16,
+          "chest": 12,
+          "shop": 2
+        },
+        "guarantee": {
+          "chest": 1,
+          "shop": 1,
+          "rest": 1
+        }
+      }
+    }
+  }
+}

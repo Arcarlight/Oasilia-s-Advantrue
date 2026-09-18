@@ -1,0 +1,915 @@
+// 游戏状态机：地图 → 战斗 / 事件 / 宝箱 / 商店 / 营地 → 下一章 → 结局。
+// 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
+
+import { BALANCE, BIOMES, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
+import { CARD_BY_ID, ITEMS, STARTER_DECK, STARTER_ITEMS, rollCard, rollCards, CARDS } from '../data/cards.js';
+import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
+import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
+import { eventsFor } from '../data/events.js';
+import { pickMerchant, MERCHANTS } from '../data/merchants.js';
+import { makeRng } from './rng.js';
+import { Battle } from './battle.js';
+import { save } from './save.js';
+
+export const Phase = {
+  TITLE: 'title',
+  MAP: 'map',
+  BATTLE: 'battle',
+  EVENT: 'event',
+  CHEST: 'chest',
+  SHOP: 'shop',
+  REST: 'rest',
+  REWARD: 'reward',
+  GAMEOVER: 'gameover',
+  VICTORY: 'victory',
+  DECK: 'deck',
+};
+
+const STAT_NAMES = { atk: '攻击', def: '防御', maxHp: '最大生命', agi: '敏捷', luck: '幸运' };
+
+export class Game {
+  /**
+   * @param {{seed?:number, onChange?:Function}} opts
+   */
+  constructor(opts = {}) {
+    this.onChange = opts.onChange ?? (() => {});
+    this.rng = makeRng(opts.seed ?? Math.floor(Math.random() * 1e9));
+    this.phase = Phase.TITLE;
+    this.data = null;
+    this.battle = null;
+    this.pendingMap = null;
+    this.message = null;
+    this.meta = save.readMeta();
+    this.usedEvents = [];
+    this.awaiting = null; // UI 需要处理的交互（例如战斗结算）
+    this.mapDirty = false;
+  }
+
+  // ================= 基础工具 =================
+
+  newRun(seed) {
+    if (seed != null) this.rng = makeRng(seed);
+    const p = BALANCE.player;
+    this.usedEvents = [];
+    this.data = {
+      seed: this.rng.seed,
+      name: p.name,
+      slug: p.species,
+      speciesName: p.speciesName,
+      hp: p.maxHp,
+      maxHp: p.maxHp,
+      atk: p.atk,
+      def: p.def,
+      agi: p.agi,
+      luck: p.luck,
+      gold: 60,
+      deck: [...STARTER_DECK],
+      items: { ...STARTER_ITEMS },
+      relics: [],
+      battleDeck: null,
+      stage: 0,
+      map: null,
+      nodeId: null,
+      route: [],
+      floor: 0,
+      kills: 0,
+      turnsThisRun: 0,
+      damageDealt: 0,
+      healing: 0,
+      startedAt: Date.now(),
+    };
+    this.data.map = generateMap(0, this.rng);
+    this.phase = Phase.MAP;
+    this.pendingMap = null;
+    this.save();
+    this.changed();
+    return this.data;
+  }
+
+  changed() {
+    this.onChange(this);
+  }
+
+  save() {
+    if (this.data && this.phase !== Phase.TITLE && this.phase !== Phase.GAMEOVER && this.phase !== Phase.VICTORY) {
+      save.writeRun(this.data);
+      // 顺手把「这一局拿到过哪些卡」记进跨局图鉴：
+      // save() 是所有卡牌变动（奖励 / 商店 / 营地 / 宝箱 / 事件）之后的必经之路，
+      // 挂在这里就不用去十几个地方各记一次。
+      const before = this.meta?.seenCards?.length ?? 0;
+      const next = save.noteCards(this.data.deck);
+      if ((next.seenCards?.length ?? 0) !== before) this.meta = next;
+    }
+  }
+
+  loadFromData(data) {
+    if (!data || !data.map) return false;
+    this.data = data;
+    this.phase = Phase.MAP;
+    this.pendingMap = null;
+    this.changed();
+    return true;
+  }
+
+  // ================= 属性成长 =================
+
+  getStat(key) {
+    return this.data?.[key] ?? 0;
+  }
+
+  gainStat(key, amount) {
+    const d = this.data;
+    const cap = BALANCE.cap[key] ?? 999;
+    const before = d[key];
+    d[key] = Math.max(1, Math.min(cap, d[key] + amount));
+    if (key === 'maxHp') d.hp = Math.min(d.maxHp, d.hp + amount);
+    return d[key] - before;
+  }
+
+  heal(amount) {
+    const d = this.data;
+    const healed = Math.min(amount, d.maxHp - d.hp);
+    d.hp += healed;
+    d.healing += healed;
+    return healed;
+  }
+
+  takeDamage(amount) {
+    const d = this.data;
+    const cost = Math.min(amount, d.hp - 1); // 地图事件不会直接致死
+    d.hp -= Math.max(0, cost);
+    return Math.max(0, cost);
+  }
+
+  giveItem(id, n = 1) {
+    this.data.items[id] = (this.data.items[id] ?? 0) + n;
+    return id;
+  }
+
+  useItem(id) {
+    const item = ITEMS[id];
+    if (!item || (this.data.items[id] ?? 0) <= 0) return null;
+    const amount = item.healPct ? Math.round(this.data.maxHp * item.healPct) : (item.heal ?? 0);
+    if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: 'HP 已经满了。' };
+    this.data.items[id] -= 1;
+    if (this.data.items[id] <= 0) delete this.data.items[id];
+    if (amount > 0) {
+      const h = this.heal(amount);
+      return { ok: true, text: `使用「${item.name}」，回复 ${h} 点 HP。` };
+    }
+    if (item.stat) {
+      const [k, v] = Object.entries(item.stat)[0];
+      this.gainStat(k, v);
+      return { ok: true, text: `使用「${item.name}」，${STAT_NAMES[k]} +${v}。` };
+    }
+    return { ok: true, text: `使用了「${item.name}」。` };
+  }
+
+  addCard(id) {
+    this.data.deck.push(id);
+    return CARD_BY_ID[id];
+  }
+
+  removeCard(id) {
+    const i = this.data.deck.indexOf(id);
+    if (i >= 0) {
+      this.data.deck.splice(i, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /** 事件专用：直接塞一张随机卡进卡组并返回卡对象 */
+  offerRandomCard(boost = 0) {
+    const card = rollCard(boost, this.data.deck);
+    this.addCard(card.id);
+    return card;
+  }
+
+  offerCardOfRarity(rarities = ['rare'], boost = 0.5) {
+    for (let i = 0; i < 200; i++) {
+      const card = rollCard(boost, []);
+      if (rarities.includes(card.rarity)) {
+        this.addCard(card.id);
+        return card;
+      }
+    }
+    const fallback = CARD_BY_ID['dragon_claw'];
+    this.addCard(fallback.id);
+    return fallback;
+  }
+
+  // ================= 地图 =================
+
+  get map() { return this.data?.map ?? null; }
+
+  /** 当前可选的下一站 */
+  availableNodes() {
+    if (!this.data?.map) return [];
+    if (!this.data.nodeId) return startNodes(this.data.map);
+    return nextNodes(this.data.map, this.data.nodeId);
+  }
+
+  biomeOfRun() {
+    return BIOMES[this.data?.map?.biome ?? 'desert'];
+  }
+
+  goToNode(nodeId) {
+    const node = nodeById(this.data.map, nodeId);
+    if (!node) return;
+    this.data.nodeId = node.id;
+    this.data.route.push(node.id);
+    this.data.floor += 1;
+    node.visited = true;
+    this.pendingMap = node;
+    this.enterNode(node);
+  }
+
+  enterNode(node) {
+    switch (node.type) {
+      case 'battle': return this.startBattle('normal', 0);
+      case 'elite': return this.startBattle('elite', 0);
+      case 'boss': return this.startBossBattle();
+      case 'event': return this.startEvent();
+      case 'chest': return this.startChest();
+      case 'shop': return this.startShop();
+      case 'rest': return this.startRest();
+      default: return this.startBattle('normal', 0);
+    }
+  }
+
+  /** 首领战：开打前先回一口血，免得玩家因为前半章掉了点血就被卡死在这里 */
+  startBossBattle() {
+    const d = this.data;
+    const healed = this.heal(Math.round(d.maxHp * (BALANCE.preBossHealPct ?? 0.35)));
+    this.preBossHeal = healed;
+    return this.startBattle('boss', 0);
+  }
+
+  /** 章节推进 */
+  nextStage() {
+    const d = this.data;
+    d.stage += 1;
+    if (d.stage >= stageCount()) {
+      this.phase = Phase.VICTORY;
+      this.meta = save.patchMeta({ wins: (this.meta.wins ?? 0) + 1, unlocked: true });
+      save.clearRun();
+      this.changed();
+      return;
+    }
+    const bonus = BALANCE.stageClearGold[d.stage - 1] ?? 40;
+    d.gold += bonus;
+    // 打完首领完全恢复：下一章的敌人强度是按满血设计的
+    const healLines = [];
+    if (BALANCE.fullHealAfterBoss) {
+      const healed = this.heal(d.maxHp);
+      if (healed > 0) healLines.push(`HP 完全恢复（+${healed}）`);
+    }
+    d.map = generateMap(d.stage, this.rng);
+    d.nodeId = null;
+    d.floor = 0;
+    this.phase = Phase.MAP;
+    this.message = {
+      title: `进入 ${BIOMES[d.map.biome].name}`,
+      text: `${BIOMES[d.map.biome].desc}\n\n章节通关奖励：金币 +${bonus}${healLines.length ? '，' + healLines.join('，') : ''}`,
+      tone: 'good',
+    };
+    this.save();
+    this.changed();
+  }
+
+  // ================= 战斗 =================
+
+  /** 玩家可以在战斗外挑选出战卡组 */
+  activeBattleDeck() {
+    const d = this.data;
+    if (d.battleDeck && d.battleDeck.length >= BALANCE.minBattleDeck) return d.battleDeck;
+    // 默认：卡组里的前 N 张（按稀有度/费用排序后更合理）
+    return this.defaultBattleDeck();
+  }
+
+  /**
+   * 默认出战卡组（玩家没手动挑过时用）。
+   * 以前这里是「按费用升序取前 8 张」，结果默认卡组全是 0 费小牌，输出惨不忍睹；
+   * 现在改成：优先带能造成伤害的牌，再尽量带满上限。
+   */
+  defaultBattleDeck() {
+    const uniq = [];
+    const seenCount = new Map();
+    for (const id of this.data.deck) {
+      const n = (seenCount.get(id) ?? 0) + 1;
+      seenCount.set(id, n);
+      uniq.push({ id, card: CARD_BY_ID[id], n });
+    }
+    const isDamage = (card) => !!card && card.effects.some((e) => e.kind === 'damage');
+    const ranked = uniq
+      .filter((x) => x.card)
+      .sort((a, b) => {
+        const da = isDamage(a.card) ? 0 : 1;
+        const db = isDamage(b.card) ? 0 : 1;
+        if (da !== db) return da - db;
+        // 同类型里，平均每 AP 的伤害更高优先
+        const eff = (x) => {
+          const power = x.card.effects.filter((e) => e.kind === 'damage').reduce((s, e) => s + e.power * (e.hits ?? 1), 0);
+          return power / Math.max(1, x.card.ap);
+        };
+        return eff(b) - eff(a);
+      });
+
+    const picks = [];
+    for (const x of ranked) {
+      if (picks.length >= BALANCE.maxBattleDeck) break;
+      picks.push(x.id);
+    }
+    // 重复卡按出现次数补齐，避免同一张卡出现次数超过卡组里实际拥有的数量
+    const used = new Map();
+    const out = [];
+    for (const id of picks) {
+      const c = (used.get(id) ?? 0) + 1;
+      if (c > (seenCount.get(id) ?? 0)) continue;
+      used.set(id, c);
+      out.push(id);
+    }
+    // 保证不少于最小张数
+    while (out.length < BALANCE.minBattleDeck && this.data.deck.length) {
+      out.push(this.data.deck[out.length % this.data.deck.length]);
+    }
+    return out;
+  }
+
+  setBattleDeck(ids) {
+    const valid = ids.filter((id) => this.data.deck.includes(id));
+    if (valid.length < BALANCE.minBattleDeck) return { ok: false, reason: `至少要带 ${BALANCE.minBattleDeck} 张卡` };
+    if (valid.length > BALANCE.maxBattleDeck) return { ok: false, reason: `最多带 ${BALANCE.maxBattleDeck} 张卡` };
+    this.data.battleDeck = valid;
+    this.save();
+    return { ok: true };
+  }
+
+  /**
+   * 生成敌人卡组：从招式池随机抽卡，同时把平均威力压在档位上限之内。
+   * 这是防止「一回合三张大地震」秒人的关键。
+   *
+   * 另外还限制「削弱牌」的数量：削弱是整场战斗永久叠加的，
+   * 一副 9 张里塞四五张降属性牌，玩家会一路挨打还还不了手（实测出来的问题）。
+   */
+  /**
+   * 拼一副敌人的牌组。
+   *
+   * 以前是「从池子里随机抽 9 次」——允许重复、只卡「平均威力上限」，结果出过这种事：
+   * 首领的 9 张牌里 **4 张白雾 + 3 张伤害牌**，而那 3 张伤害牌（地震/龙爪/热风）都带销毁，
+   * 两个回合就永久打光了，剩下十几个回合它手上只有白雾/铁壁/健美，
+   * 于是「每回合只放一张防御牌」混到死（玩家实测反馈）。
+   * 现在：牌组放大到跟它的抽牌速度匹配，伤害牌有数量下限，同一张牌有份数上限。
+   */
+  buildEnemyDeck(pool, kind, scaled) {
+    // 牌组大小：敌人每回合要抽 6~8 张，牌组太小等于一回合打穿整副牌
+    const SIZE = { normal: 14, elite: 18, boss: 22 }[kind] ?? 14;
+    // 伤害牌下限：保证「后期还有牌可打」，不会被销毁牌掏空
+    const MIN_DAMAGE = { normal: 9, elite: 12, boss: 15 }[kind] ?? 9;
+    const MAX_AVG = { normal: 4.6, elite: 6.2, boss: 7.2 }[kind] ?? 4.6;
+    const MAX_SINGLE = { normal: 8, elite: 10, boss: 11 }[kind] ?? 8;
+    const MAX_DEBUFF = { normal: 1, elite: 2, boss: 2 }[kind] ?? 1;
+    /** 同一张非伤害牌最多几份（白雾 ×4 这种事不能再出现） */
+    const COPY_UTILITY = 1;
+    const BASIC = 'tackle';
+
+    const powerOf = (id) => (CARD_BY_ID[id]?.effects ?? [])
+      .filter((e) => e.kind === 'damage')
+      .reduce((s, e) => s + e.power * (e.hits ?? 1), 0);
+    const isDamage = (id) => powerOf(id) > 0;
+    /** 「纯削弱/降属性」的牌（有伤害的顺手降防不算） */
+    const isDebuff = (id) => {
+      const card = CARD_BY_ID[id];
+      if (!card) return false;
+      const hasDamage = card.effects.some((e) => e.kind === 'damage');
+      return card.effects.some((e) => (e.kind === 'buff' && e.amount < 0 && e.target === 'enemy')
+        || (e.kind === 'status' && !hasDamage));
+    };
+
+    const uniq = [...new Set(pool)].filter((id) => CARD_BY_ID[id] && powerOf(id) <= MAX_SINGLE);
+    const dmgPool = uniq.filter(isDamage).sort((a, b) => powerOf(a) - powerOf(b));  // 低威力优先
+    const utilPool = uniq.filter((id) => !isDamage(id));
+    // 同一张伤害牌最多几份：按「把牌组填满还需要重复几轮」来定，
+    // 免得池子小而重复上限又低时，剩下的位置全被最弱的普攻（撞击）灌满 —— 首领池只有 6 张伤害牌，
+    // 上限给 2 的话 22 张里要塞 8 张「撞击」，打起来就很难看。
+    const COPY_DAMAGE = Math.max(2, Math.ceil((SIZE - utilPool.length) / Math.max(1, dmgPool.length)));
+
+    const deck = [];
+    const copies = new Map();
+    const count = (id) => copies.get(id) ?? 0;
+    const add = (id) => { deck.push(id); copies.set(id, count(id) + 1); };
+    const dmgCount = () => deck.reduce((n, id) => n + (isDamage(id) ? 1 : 0), 0);
+    const debuffCount = () => deck.reduce((n, id) => n + (isDebuff(id) ? 1 : 0), 0);
+    const sumPower = () => deck.reduce((s, id) => s + powerOf(id), 0);
+    const projAvg = (id) => (sumPower() + powerOf(id)) / (deck.length + 1);
+    const okToAdd = (id) => count(id) < (isDamage(id) ? COPY_DAMAGE : COPY_UTILITY)
+      && !(isDebuff(id) && debuffCount() >= MAX_DEBUFF);
+
+    // ① 伤害牌：低威力优先凑够 MIN_DAMAGE；只有「已经够数」时才用平均威力上限挡掉强牌
+    let guard = 0, i = 0;
+    while (dmgCount() < MIN_DAMAGE && guard++ < 600 && dmgPool.length) {
+      const id = dmgPool[i++ % dmgPool.length];
+      if (!okToAdd(id)) continue;
+      if (projAvg(id) > MAX_AVG && dmgCount() >= MIN_DAMAGE) continue;
+      add(id);
+    }
+    while (dmgCount() < MIN_DAMAGE) add(BASIC);            // 池子里伤害牌不够就用普攻补
+    // ② 非伤害牌：每张只塞一份，补到 SIZE 为止
+    for (const id of utilPool) {
+      if (deck.length >= SIZE) break;
+      if (okToAdd(id)) add(id);
+    }
+    // ③ 还不够就继续塞伤害牌，最后兜底普攻
+    i = 0;
+    while (deck.length < SIZE && guard++ < 900 && dmgPool.length) {
+      const id = dmgPool[i++ % dmgPool.length];
+      if (okToAdd(id)) add(id);
+    }
+    while (deck.length < SIZE) add(BASIC);
+    return deck;
+  }
+
+  /** @param {'normal'|'elite'|'boss'} kind */
+  startBattle(kind, retry = 0) {
+    const d = this.data;
+    const biome = d.map.biome;
+    const stage = d.stage;
+    const nodeIdx = d.floor;
+
+    let enemyDef;
+    if (kind === 'boss') {
+      const bosses = poolFor(biome, 'boss');
+      // 最后一章要把「结局首领」（content/enemies.json 里标了 final 的那个）请出来，
+      // 不然 zygarde 永远不会出场——以前固定取 bosses[0]，标了 final 的那只被跳过了。
+      const isFinalStage = stage >= stageCount() - 1;
+      const chosen = isFinalStage ? bosses.find((b) => b.final) : null;
+      enemyDef = chosen ?? (isFinalStage ? bosses[0] : this.rng.pick(bosses))
+        ?? poolFor(biome, 'elite')[0] ?? ENEMIES[ENEMIES.length - 1];
+    } else if (kind === 'elite') {
+      const pool = poolFor(biome, 'elite');
+      enemyDef = this.rng.pick(pool.length ? pool : poolFor(biome, 'normal'));
+    } else {
+      const pool = poolFor(biome, 'normal').concat(poolFor(biome, 'mob'));
+      enemyDef = this.rng.pick(pool);
+    }
+
+    const scaled = scaleEnemy(enemyDef, stage, nodeIdx, {
+      atk: d.atk, def: d.def, maxHp: d.maxHp, agi: d.agi,
+    });
+    // 敌人卡组：从招式池里抽 9 张，并限制「单场平均威力」，
+    // 免得同一回合抽到三张大地震把玩家直接秒掉（平衡细节见 tools/check-balance.mjs）
+    const deck = this.buildEnemyDeck(enemyDef.deck ?? ['tackle'], kind, scaled);
+
+    this.battleKind = kind;
+    this.battleContext = { kind, enemyDef, scaled, retry };
+
+    this.battle = new Battle({
+      seed: this.rng.int(0, 1e9),
+      player: {
+        name: d.name, slug: d.slug,
+        hp: d.hp, maxHp: d.maxHp,
+        atk: d.atk, def: d.def, agi: d.agi, luck: d.luck,
+      },
+      deck: this.activeBattleDeck(),
+      enemy: {
+        id: enemyDef.id, slug: enemyDef.slug, name: enemyDef.name,
+        maxHp: scaled.maxHp, atk: scaled.atk, def: scaled.def, agi: scaled.agi,
+        tier: scaled.tier, deck, powerMul: scaled.powerMul ?? 1,
+      },
+    });
+    this.battle.start();
+    this.phase = Phase.BATTLE;
+    this.changed();
+    return this.battle;
+  }
+
+  /** 战斗结束结算 */
+  finishBattle() {
+    const b = this.battle;
+    if (!b || !b.over) return null;
+    const d = this.data;
+    d.hp = Math.max(0, b.player.hp);
+    d.turnsThisRun += b.turn;
+
+    if (b.winner !== 'player') {
+      // 失败
+      this.meta = save.patchMeta({ runs: (this.meta.runs ?? 0) + 1, bestDistance: Math.max(this.meta.bestDistance ?? 0, d.floor) });
+      save.clearRun();
+      this.phase = Phase.GAMEOVER;
+      this.changed();
+      return { win: false };
+    }
+
+    d.kills += 1;
+    this.meta = save.patchMeta({ kills: (this.meta.kills ?? 0) + 1 });
+    const ctx = this.battleContext;
+    const rewardMult = ctx.scaled.rewardMult ?? 1;
+    const range = ctx.kind === 'boss' ? BALANCE.goldPerElite : ctx.kind === 'elite' ? BALANCE.goldPerElite : BALANCE.goldPerBattle;
+    const gold = Math.round(this.rng.int(range[0], range[1]) * rewardMult);
+    d.gold += gold;
+    const heal = Math.round(d.maxHp * BALANCE.healAfterBattlePct);
+    const healed = this.heal(heal);
+
+    // 成长：每场战斗永久提升一点属性，精英/首领给得更多。
+    // 没有这个成长，第 2、3 章的敌人强度就会超出玩家能跟上的范围。
+    const growth = this.rollGrowth(ctx.kind);
+    const growthText = this.applyGrowth(growth);
+
+    // 抽奖励卡
+    const boost = ctx.kind === 'boss' ? 0.8 : ctx.kind === 'elite' ? 0.45 : 0.1;
+    const getCard = ctx.kind === 'boss' || this.rng.chance(BALANCE.cardRewardChance);
+    const slots = ctx.kind === 'boss' ? 4 : 3;
+    const choices = getCard ? this.withSustainPity(rollCards(slots, boost, [])) : [];
+    const getPotion = this.rng.chance(BALANCE.potionDropChance);
+
+    this.reward = {
+      win: true, gold, healed, cardChoices: choices, getPotion,
+      potion: getPotion ? (this.rng.chance(0.55) ? 'potion_small' : 'potion_big') : null,
+      isBoss: ctx.kind === 'boss',
+      enemyName: b.enemy.name,
+      growth, growthText,
+    };
+    if (ctx.kind === 'boss' && this.rng.chance(0.75)) {
+      const relicPool = ['charm_atk', 'charm_def', 'charm_agi', 'charm_luck', 'elixir'];
+      this.reward.relic = this.rng.pick(relicPool);
+    }
+    this.phase = Phase.REWARD;
+    this.save();
+    this.changed();
+    return this.reward;
+  }
+
+  /**
+   * 奖励「保底」：保证玩家拿得到续命与解状态的手段。
+   *
+   * 起因是玩家反馈：一直开不出回血牌，一路被磨死；而且**灼伤与猛降防御完全没有反制**——
+   * 唯一能清负面状态的「焕然一新」是 rare 还带销毁，一局里很可能根本见不到。
+   * 规则：
+   *   · 卡组里一张回血牌都没有 → 这次奖励里必有一张回血牌
+   *   · 卡组里一张解状态/解削弱牌都没有 → 第 2 章起必有一张（第 1 章还不至于被状态压死）
+   * 只替换**最后一个**选项，前面的随机结果保留，不至于每次奖励都长一个样。
+   */
+  withSustainPity(choices) {
+    if (!choices?.length) return choices;
+    const deck = this.data.deck;
+    const has = (kind) => deck.some((id) => CARD_BY_ID[id]?.effects?.some((e) => e.kind === kind));
+    const out = [...choices];
+    const used = new Set(out.map((c) => c.id));
+    const swapLast = (test) => {
+      const pool = CARDS.filter((c) => !c.enemyOnly && !used.has(c.id) && test(c));
+      if (!pool.length) return false;
+      const pick = this.rng.pick(pool);
+      used.add(pick.id);
+      out[out.length - 1] = pick;
+      return true;
+    };
+    if (!has('heal')) swapLast((c) => c.effects.some((e) => e.kind === 'heal'));
+    if (!has('cleanse') && this.data.stage > 0) swapLast((c) => c.effects.some((e) => e.kind === 'cleanse'));
+    return out;
+  }
+
+  /** 调试用：造一份和真实战斗奖励同结构的假数据（UI 预览 / 截图用） */
+  mockReward() {
+    const growth = [{ stat: 'atk', amount: 1 }, { stat: 'maxHp', amount: 12 }];
+    return {
+      win: true,
+      gold: 42,
+      healed: 18,
+      cardChoices: rollCards(3, 0.4, []),
+      getPotion: true,
+      potion: 'potion_small',
+      isBoss: false,
+      enemyName: '穿山鼠',
+      growth,
+      growthText: growth.map((g) => `${STAT_NAMES[g.stat]} +${g.amount}`).join('，'),
+    };
+  }
+
+  /** 随机生成一份属性成长 */
+  rollGrowth(kind) {
+    const budget = kind === 'boss' ? 8 : kind === 'elite' ? 5 : 3;
+    const out = [];
+    const pool = [
+      ['atk', 1, 1],
+      ['def', 1, 1],
+      ['maxHp', 8, 16],
+      ['agi', 1, 1],
+      ['luck', 1, 1],
+    ];
+    let left = budget;
+    let guard = 0;
+    while (left > 0 && guard++ < 20) {
+      const [stat, lo, hi] = this.rng.pick(pool);
+      const amount = this.rng.int(lo, hi);
+      const cap = BALANCE.cap[stat];
+      if (this.data[stat] >= cap) continue;
+      const existing = out.find((g) => g.stat === stat);
+      if (existing) existing.amount += amount;
+      else out.push({ stat, amount });
+      left -= stat === 'maxHp' ? 2 : 1;
+    }
+    return out;
+  }
+
+  applyGrowth(growth) {
+    const parts = [];
+    for (const g of growth) {
+      const gained = this.gainStat(g.stat, g.amount);
+      if (gained !== 0) parts.push(`${STAT_NAMES[g.stat]} +${gained}`);
+    }
+    return parts.join('，');
+  }
+
+  /** 奖励界面：拿卡 / 跳过 */
+  takeRewardCard(cardId) {
+    if (!this.reward) return;
+    if (cardId) this.addCard(cardId);
+    if (this.reward.relic) this.giveItem(this.reward.relic, 1);
+    if (this.reward.potion) this.giveItem(this.reward.potion, 1);
+    const wasBoss = this.reward.isBoss;
+    this.reward = null;
+    if (wasBoss) {
+      this.nextStage();
+    } else {
+      this.phase = Phase.MAP;
+      this.data.nodeId = this.data.nodeId; // 停留在当前节点，地图上会显示可继续前进
+      this.save();
+      this.changed();
+    }
+  }
+
+  // ================= 事件 =================
+
+  startEvent() {
+    const pool = eventsFor(this.data.map.biome).filter((e) => !this.usedEvents.includes(e.id));
+    const ev = pool.length ? this.rng.pick(pool) : this.rng.pick(eventsFor(this.data.map.biome));
+    this.usedEvents.push(ev.id);
+    this.event = ev;
+    this.eventResult = null;
+    this.phase = Phase.EVENT;
+    this.changed();
+  }
+
+  /**
+   * 选择事件选项。
+   * 注意：这里**不能**调用 changed() 触发整屏重绘 —— 之前那样做会把 UI 上
+   * 刚挂出来的「继续前进」按钮连同监听一起丢掉，事件页面就永远关不掉了。
+   * 现在只改状态，由 UI 层自己决定怎么演。
+   */
+  chooseEventOption(index) {
+    const ev = this.event;
+    if (!ev) return null;
+    const opt = ev.options[index];
+    if (!opt) return null;
+    const result = opt.run(this) ?? { text: '……什么也没发生。', tone: 'neutral' };
+    this.eventResult = { index, ...result };
+    this.save();
+    return this.eventResult;
+  }
+
+  leaveEvent() {
+    this.event = null;
+    this.eventResult = null;
+    this.phase = Phase.MAP;
+    this.save();
+    this.changed();
+  }
+
+  // ================= 宝箱 / 营地 =================
+
+  startChest() {
+    const roll = this.rng();
+    const d = this.data;
+    let chest;
+    if (roll < 0.36) {
+      const gold = this.rng.int(45, 95) + d.stage * 20;
+      d.gold += gold;
+      chest = { kind: 'gold', gold, text: `一整袋金币，还有几颗碎宝石。\n金币 +${gold}。` };
+    } else if (roll < 0.74) {
+      const card = rollCard(0.5, []);
+      this.addCard(card.id);
+      const gold = this.rng.int(15, 35);
+      d.gold += gold;
+      chest = { kind: 'card', cardId: card.id, gold, text: `箱底压着一张卡，还有一点零钱。\n获得「${card.name}」，金币 +${gold}。` };
+    } else if (roll < 0.9) {
+      const big = this.rng.chance(0.5);
+      this.giveItem(big ? 'potion_big' : 'potion_small', big ? 1 : 2);
+      const healed = this.heal(Math.round(d.maxHp * 0.12));
+      chest = { kind: 'item', text: `一堆补给。你顺手给自己处理了伤口。\n获得${big ? '厉害伤药 ×1' : '好伤药 ×2'}，HP +${healed}。` };
+    } else {
+      // 宝箱怪！
+      chest = { kind: 'mimic', text: '箱子说话了。而且它很饿。' };
+    }
+    this.chest = chest;
+    this.phase = Phase.CHEST;
+    this.save();
+    this.changed();
+    return chest;
+  }
+
+  leaveChest() {
+    const mimic = this.chest?.kind === 'mimic';
+    this.chest = null;
+    if (mimic) {
+      this.startBattle('elite', 0);
+    } else {
+      this.phase = Phase.MAP;
+      this.save();
+      this.changed();
+    }
+  }
+
+  startRest() {
+    const d = this.data;
+    const healAmount = Math.round(d.maxHp * BALANCE.restHealPct);
+    /**
+     * done 是「这次机会用掉了」的总开关：休息和冥想**只能二选一**。
+     * 以前 used / upgraded 各管各的，于是休息完还能再冥想，
+     * 和界面上写的「你可以做一件事——只有一件」自相矛盾。
+     *
+     * 记录存在 run 数据里（d.rests[节点 id]）而不是只放内存，
+     * 免得中途刷新页面回到同一个营地时，用掉的机会又变回来。
+     */
+    if (!d.rests) d.rests = {};
+    const key = String(d.nodeId ?? 'r0');
+    const rec = d.rests[key] ?? (d.rests[key] = { healResult: null, upgradeResult: null });
+    this.rest = {
+      key,
+      healAmount,
+      used: rec.healResult != null,
+      upgraded: rec.upgradeResult != null,
+      done: rec.healResult != null || rec.upgradeResult != null,
+      healResult: rec.healResult,
+      upgradeResult: rec.upgradeResult,
+    };
+    this.phase = Phase.REST;
+    this.changed();
+    return this.rest;
+  }
+
+  restHeal() {
+    if (this.rest?.done) return null;
+    const healed = this.heal(this.rest.healAmount);
+    this.rest.used = true;
+    this.rest.done = true;
+    this.rest.healResult = healed;
+    if (this.data.rests?.[this.rest.key]) this.data.rests[this.rest.key].healResult = healed;
+    this.save();
+    this.changed();
+    return healed;
+  }
+
+  /** 营地：把一张卡换成更好的（相当于「升级」）*/
+  restUpgrade(cardId) {
+    if (this.rest?.done) return null;
+    const card = CARD_BY_ID[cardId];
+    if (!card) return null;
+    const better = rollCard(1.2, []);
+    const idx = this.data.deck.indexOf(cardId);
+    if (idx < 0) return null;
+    this.data.deck.splice(idx, 1);
+    this.addCard(better.id);
+    this.rest.upgraded = true;
+    this.rest.done = true;
+    this.rest.upgradeResult = { removed: card.name, gained: better.name };
+    if (this.data.rests?.[this.rest.key]) this.data.rests[this.rest.key].upgradeResult = this.rest.upgradeResult;
+    this.save();
+    this.changed();
+    return this.rest.upgradeResult;
+  }
+
+  leaveRest() {
+    this.rest = null;
+    this.phase = Phase.MAP;
+    this.save();
+    this.changed();
+  }
+
+  // ================= 商店 =================
+
+  /**
+   * 开一家商店。
+   * @param {string} [forceMerchantId] 指定摊主（调试 / 以后「事件里出现特定商人」用）；
+   *        不传就按地图 + 节点 id 挑一位。
+   */
+  startShop(forceMerchantId = null) {
+    const d = this.data;
+    const biome = d.map?.biome ?? 'desert';
+    // 商人按「地图 + 节点 id」稳定挑选：同一个商店节点每次进来都是同一位摊主
+    const merchant = (forceMerchantId ? MERCHANTS.find((m) => m.id === forceMerchantId) : null)
+      ?? pickMerchant(biome, `${d.stage}:${d.nodeId ?? '?'}`);
+    // 兜底：万一某张地图没有配商人（build-content 会拦，但别让运行期崩）
+    const p = merchant ?? {
+      id: 'default', name: '沙漠商队', role: '杂货商人', slug: null, emotion: 'happy',
+      greet: '「钱货两清，概不赊账。」店主是一只戴着帽子的沙河马。', leave: '离开商队',
+      priceMul: 1, cards: 5, items: 3, rarityBoost: 0.35, mustItems: [], service: 'remove', servicePrice: 70,
+    };
+
+    const stock = [];
+    const cards = rollCards(p.cards, p.rarityBoost, []);
+    for (const c of cards) {
+      const base = { common: 42, uncommon: 66, rare: 92, epic: 130 }[c.rarity] ?? 50;
+      stock.push({
+        kind: 'card', id: c.id, name: c.name, rarity: c.rarity,
+        price: Math.round(base * (0.9 + this.rng() * 0.25) * p.priceMul),
+      });
+    }
+
+    // 道具：先放这位商人必进的货（药草商人一定有药、铁匠一定有护符），剩下的随机补满
+    const pool = ['potion_small', 'potion_big', 'charm_atk', 'charm_def', 'charm_agi', 'charm_luck', 'elixir'];
+    const picked = [];
+    for (const id of p.mustItems ?? []) if (pool.includes(id) && !picked.includes(id)) picked.push(id);
+    for (const id of this.rng.shuffle(pool)) {
+      if (picked.length >= p.items) break;
+      if (!picked.includes(id)) picked.push(id);
+    }
+    for (const id of picked.slice(0, p.items)) {
+      stock.push({ kind: 'item', id, name: ITEMS[id].name, desc: ITEMS[id].desc, price: Math.round(ITEMS[id].price * p.priceMul) });
+    }
+    // 保底：每位商人至少备一瓶药（「开不出回血牌」的局总得有地方补血）
+    if (p.items > 0 && !stock.some((s) => s.kind === 'item' && (s.id === 'potion_small' || s.id === 'potion_big'))) {
+      const cheap = p.priceMul <= 0.9 ? 'potion_small' : 'potion_big';
+      const last = stock.map((s) => s.kind).lastIndexOf('item');
+      stock[last] = { kind: 'item', id: cheap, name: ITEMS[cheap].name, desc: ITEMS[cheap].desc, price: Math.round(ITEMS[cheap].price * p.priceMul) };
+    }
+
+    if (p.service === 'remove') {
+      stock.push({ kind: 'service', id: 'remove', name: '卡牌移除服务', desc: '从卡组里删掉一张卡。', price: p.servicePrice });
+    }
+    this.shop = { merchant: p, stock, soldOut: [] };
+    this.phase = Phase.SHOP;
+    this.changed();
+    return this.shop;
+  }
+
+  buy(index) {
+    const s = this.shop;
+    if (!s) return { ok: false, text: '没有商店' };
+    const entry = s.stock[index];
+    if (!entry || s.soldOut.includes(index)) return { ok: false, text: '这件已经卖掉了。' };
+    if (this.data.gold < entry.price) return { ok: false, text: '金币不够。' };
+    this.data.gold -= entry.price;
+    s.soldOut.push(index);
+    if (entry.kind === 'card') {
+      this.addCard(entry.id);
+      return { ok: true, text: `买下「${entry.name}」，已放入卡组。` };
+    }
+    if (entry.kind === 'item') {
+      this.giveItem(entry.id, 1);
+      return { ok: true, text: `买下「${entry.name}」。` };
+    }
+    if (entry.kind === 'service') {
+      this.pendingRemove = true;
+      return { ok: true, text: '选择一张要移除的卡牌。', needRemove: true };
+    }
+    return { ok: true, text: '成交。' };
+  }
+
+  doRemove(cardId) {
+    const card = CARD_BY_ID[cardId];
+    if (!card) return null;
+    if (this.data.deck.length <= 3) return { ok: false, text: '卡组已经很少了，不能再删。' };
+    this.removeCard(cardId);
+    this.pendingRemove = false;
+    this.save();
+    this.changed();
+    return { ok: true, text: `移除了「${card.name}」。` };
+  }
+
+  leaveShop() {
+    this.shop = null;
+    this.pendingRemove = false;
+    this.phase = Phase.MAP;
+    this.save();
+    this.changed();
+  }
+
+  // ================= 展示用派生数据 =================
+
+  derived() {
+    const d = this.data;
+    if (!d) return null;
+    return {
+      ap: apFromAgi(d.agi),
+      draw: drawFromAgi(d.agi),
+      hand: handFromAgi(d.agi),
+      crit: critChance(d.luck).toFixed(1),
+      dodge: dodgeChance(d.luck).toFixed(1),
+      atk: d.atk,
+      def: d.def,
+      agi: d.agi,
+      luck: d.luck,
+    };
+  }
+
+  /** 顶部状态栏要显示的文本 */
+  statusLine() {
+    const d = this.data;
+    if (!d) return '';
+    const biome = BIOMES[d.map?.biome ?? 'desert'];
+    return `${biome.name} · 第 ${d.floor + 1} 步 / 第 ${d.stage + 1} 章`;
+  }
+}
+
+export { BIOMES, NODE_TYPES, BALANCE, ITEMS, CARD_BY_ID, CARDS, ENEMY_BY_ID, stageCount, ENEMIES };

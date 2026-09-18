@@ -1,0 +1,25 @@
+# ---- GitHub Pages 不需要的东西 ----
+# 第三方原始素材包（Kenney 的素材包，只用来「生成」assets/ 里的东西；
+# 游戏运行时完全不读它们。来源与挑选规则见 README「素材来源」与 tools/copy-kenney.mjs）
+kenney_*/
+
+# 工作区里那份没被任何代码引用的字体（游戏用的是 assets/fonts/LXGWNeoXiHeiPlus.ttf）
+森泽UD新黑 Gb4 R.otf
+
+# 诊断产物 / 截图 / 浏览器缓存（体积大，与运行无关）
+tools/shots/
+tools/.edge-profile*/
+tools/animdata-cache/
+verify-bundle.html
+
+# BGM 的旧版 mp3（68 MB）：游戏引用的 23 首全部是 ogg(L) 无缝循环版，
+# 这些 mp3 一个都没人引用（`content/bgm.json` + `src/core/bgm.js` 都是 ogg）。
+# 本地留着无所谓，但没必要塞进仓库 / 让访客的站点多 68 MB。
+# 想彻底清掉：& tools/fetch-bgm.ps1 -RemoveMp3
+assets/audio/bgm/*.mp3
+
+# 多智能体协作的中间状态
+.agent-teams/
+
+# 杂项
+*.log

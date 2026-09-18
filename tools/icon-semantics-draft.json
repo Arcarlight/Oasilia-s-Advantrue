@@ -1,0 +1,2301 @@
+{
+  "generated_by": "tools/iconpack-select.mjs",
+  "source_snapshot": "Nieobie/game-icon-pack @ main（svg/ 目录，1630 个文件 = 815 图标 × padding/no-padding）",
+  "icon_pack_license": "CC0 1.0",
+  "url_template_nopadding": "https://nieobie.github.io/game-icon-pack/svg/no-padding/<category>/<component_name>.svg",
+  "url_template_padding": "https://nieobie.github.io/game-icon-pack/svg/padding/<category>/<component_name>.svg",
+  "counts": {
+    "concepts": 57,
+    "candidates": 171,
+    "distinct_primary": 46
+  },
+  "bundle_size_estimate": {
+    "primary_only_bytes_svg": 40926,
+    "primary_only_bytes_base64": 54568,
+    "all_candidates_bytes_svg": 138440,
+    "all_candidates_bytes_base64": 184588,
+    "note": "base64 内联大约是原始字节 ×1.37（data:image/svg+xml;base64, 前缀另计）"
+  },
+  "table": [
+    {
+      "group": "卡牌语义",
+      "concept": "物理攻击",
+      "note": "包里没有「拳头/徒手」，sword 语义最正；broadsword 更重，axe 偏劈砍",
+      "candidates": [
+        {
+          "component_name": "sword",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 398,
+          "svg_padding_bytes": 388,
+          "core_semantic": "剑",
+          "visual_features": "双刃剑",
+          "path_nopadding": "svg/no-padding/3-gear/sword.svg",
+          "path_padding": "svg/padding/3-gear/sword.svg"
+        },
+        {
+          "component_name": "broadsword",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 346,
+          "svg_padding_bytes": 336,
+          "core_semantic": "大剑（基础款）",
+          "visual_features": "小一点的阔剑",
+          "path_nopadding": "svg/no-padding/3-gear/broadsword.svg",
+          "path_padding": "svg/padding/3-gear/broadsword.svg"
+        },
+        {
+          "component_name": "axe",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 583,
+          "svg_padding_bytes": 573,
+          "core_semantic": "斧头",
+          "visual_features": "一把斧头（带柄的斧刃）",
+          "path_nopadding": "svg/no-padding/2-items/axe.svg",
+          "path_padding": "svg/padding/2-items/axe.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "连击",
+      "note": "double/triple 是纯文本 2x/3x（和 AP/HP 同款），hit-effect 是爆炸星",
+      "candidates": [
+        {
+          "component_name": "double",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1127,
+          "svg_padding_bytes": 1117,
+          "core_semantic": "双倍（2倍）",
+          "visual_features": "纯文本「2x」",
+          "path_nopadding": "svg/no-padding/1-game/double.svg",
+          "path_padding": "svg/padding/1-game/double.svg"
+        },
+        {
+          "component_name": "triple",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1576,
+          "svg_padding_bytes": 1566,
+          "core_semantic": "三倍（3倍）",
+          "visual_features": "纯文本「3x」",
+          "path_nopadding": "svg/no-padding/1-game/triple.svg",
+          "path_padding": "svg/padding/1-game/triple.svg"
+        },
+        {
+          "component_name": "hit-effect",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 995,
+          "svg_padding_bytes": 985,
+          "core_semantic": "命中/攻击特效",
+          "visual_features": "打击特效（类似💥爆炸星）",
+          "path_nopadding": "svg/no-padding/1-game/hit-effect.svg",
+          "path_padding": "svg/padding/1-game/hit-effect.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "远程/投掷",
+      "note": "弓/导弹/长矛；没有飞刀、没有投石",
+      "candidates": [
+        {
+          "component_name": "bow",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 712,
+          "svg_padding_bytes": 702,
+          "core_semantic": "弓",
+          "visual_features": "弓（不带箭）",
+          "path_nopadding": "svg/no-padding/3-gear/bow.svg",
+          "path_padding": "svg/padding/3-gear/bow.svg"
+        },
+        {
+          "component_name": "missile",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 705,
+          "svg_padding_bytes": 695,
+          "core_semantic": "导弹",
+          "visual_features": "导弹",
+          "path_nopadding": "svg/no-padding/3-gear/missile.svg",
+          "path_padding": "svg/padding/3-gear/missile.svg"
+        },
+        {
+          "component_name": "spear",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 364,
+          "svg_padding_bytes": 354,
+          "core_semantic": "矛",
+          "visual_features": "向上的长矛",
+          "path_nopadding": "svg/no-padding/3-gear/spear.svg",
+          "path_padding": "svg/padding/3-gear/spear.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "龙息",
+      "note": "包里没有龙/喷火生物，火山喷发是最接近的「大口喷出」形态",
+      "candidates": [
+        {
+          "component_name": "volcanic-eruption",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 1530,
+          "svg_padding_bytes": 1520,
+          "core_semantic": "火山喷发",
+          "visual_features": "冒烟的火山",
+          "path_nopadding": "svg/no-padding/4-nature/volcanic-eruption.svg",
+          "path_padding": "svg/padding/4-nature/volcanic-eruption.svg"
+        },
+        {
+          "component_name": "fire",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 449,
+          "svg_padding_bytes": 439,
+          "core_semantic": "火",
+          "visual_features": "火焰",
+          "path_nopadding": "svg/no-padding/4-nature/fire.svg",
+          "path_padding": "svg/padding/4-nature/fire.svg"
+        },
+        {
+          "component_name": "thunderstorm",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 863,
+          "svg_padding_bytes": 853,
+          "core_semantic": "雷暴",
+          "visual_features": "雷暴",
+          "path_nopadding": "svg/no-padding/4-nature/thunderstorm.svg",
+          "path_padding": "svg/padding/4-nature/thunderstorm.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "火焰",
+      "note": "fire 是干净火焰剪影，首选",
+      "candidates": [
+        {
+          "component_name": "fire",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 449,
+          "svg_padding_bytes": 439,
+          "core_semantic": "火",
+          "visual_features": "火焰",
+          "path_nopadding": "svg/no-padding/4-nature/fire.svg",
+          "path_padding": "svg/padding/4-nature/fire.svg"
+        },
+        {
+          "component_name": "volcanic-eruption",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 1530,
+          "svg_padding_bytes": 1520,
+          "core_semantic": "火山喷发",
+          "visual_features": "冒烟的火山",
+          "path_nopadding": "svg/no-padding/4-nature/volcanic-eruption.svg",
+          "path_padding": "svg/padding/4-nature/volcanic-eruption.svg"
+        },
+        {
+          "component_name": "temperature-up",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 677,
+          "svg_padding_bytes": 667,
+          "core_semantic": "升温",
+          "visual_features": "温度上升",
+          "path_nopadding": "svg/no-padding/4-nature/temperature-up.svg",
+          "path_padding": "svg/padding/4-nature/temperature-up.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "地震",
+      "note": "earthquake = 石头中间裂开，语义精准",
+      "candidates": [
+        {
+          "component_name": "earthquake",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 788,
+          "svg_padding_bytes": 778,
+          "core_semantic": "地震",
+          "visual_features": "石头中间裂开",
+          "path_nopadding": "svg/no-padding/4-nature/earthquake.svg",
+          "path_padding": "svg/padding/4-nature/earthquake.svg"
+        },
+        {
+          "component_name": "stone",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 950,
+          "svg_padding_bytes": 940,
+          "core_semantic": "岩石",
+          "visual_features": "石头",
+          "path_nopadding": "svg/no-padding/4-nature/stone.svg",
+          "path_padding": "svg/padding/4-nature/stone.svg"
+        },
+        {
+          "component_name": "mountain",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 707,
+          "svg_padding_bytes": 697,
+          "core_semantic": "山",
+          "visual_features": "山",
+          "path_nopadding": "svg/no-padding/4-nature/mountain.svg",
+          "path_padding": "svg/padding/4-nature/mountain.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "落石",
+      "note": "meteor 陨石/流星，用来表示砸落最直观",
+      "candidates": [
+        {
+          "component_name": "meteor",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 535,
+          "svg_padding_bytes": 525,
+          "core_semantic": "流星/陨石",
+          "visual_features": "陨石",
+          "path_nopadding": "svg/no-padding/4-nature/meteor.svg",
+          "path_padding": "svg/padding/4-nature/meteor.svg"
+        },
+        {
+          "component_name": "stone",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 950,
+          "svg_padding_bytes": 940,
+          "core_semantic": "岩石",
+          "visual_features": "石头",
+          "path_nopadding": "svg/no-padding/4-nature/stone.svg",
+          "path_padding": "svg/padding/4-nature/stone.svg"
+        },
+        {
+          "component_name": "mountain",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 707,
+          "svg_padding_bytes": 697,
+          "core_semantic": "山",
+          "visual_features": "山",
+          "path_nopadding": "svg/no-padding/4-nature/mountain.svg",
+          "path_padding": "svg/padding/4-nature/mountain.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "沙暴/风",
+      "note": "wind 是气流线；drought 是枯裂土地（更像「流沙」）",
+      "candidates": [
+        {
+          "component_name": "wind",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 545,
+          "svg_padding_bytes": 535,
+          "core_semantic": "风",
+          "visual_features": "风/气流",
+          "path_nopadding": "svg/no-padding/4-nature/wind.svg",
+          "path_padding": "svg/padding/4-nature/wind.svg"
+        },
+        {
+          "component_name": "drought",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 2326,
+          "svg_padding_bytes": 2316,
+          "core_semantic": "干旱",
+          "visual_features": "枯裂土地",
+          "path_nopadding": "svg/no-padding/4-nature/drought.svg",
+          "path_padding": "svg/padding/4-nature/drought.svg"
+        },
+        {
+          "component_name": "fog",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 511,
+          "svg_padding_bytes": 501,
+          "core_semantic": "雾",
+          "visual_features": "雾",
+          "path_nopadding": "svg/no-padding/4-nature/fog.svg",
+          "path_padding": "svg/padding/4-nature/fog.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "虫鸣/音波",
+      "note": "bug = 甲虫（视觉是虫子），audio-waves = 声波",
+      "candidates": [
+        {
+          "component_name": "bug",
+          "primary": true,
+          "category": "9-media",
+          "svg_nopadding_bytes": 1232,
+          "svg_padding_bytes": 1222,
+          "core_semantic": "Bug/程序错误",
+          "visual_features": "虫子/甲虫",
+          "path_nopadding": "svg/no-padding/9-media/bug.svg",
+          "path_padding": "svg/padding/9-media/bug.svg"
+        },
+        {
+          "component_name": "audio-waves",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 498,
+          "svg_padding_bytes": 488,
+          "core_semantic": "音频/声波",
+          "visual_features": "声波图形（多条竖线或波形）",
+          "path_nopadding": "svg/no-padding/9-media/audio-waves.svg",
+          "path_padding": "svg/padding/9-media/audio-waves.svg"
+        },
+        {
+          "component_name": "bullhorn",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 479,
+          "svg_padding_bytes": 469,
+          "core_semantic": "喇叭/扩音器",
+          "visual_features": "扩音喇叭/喊话器",
+          "path_nopadding": "svg/no-padding/2-items/bullhorn.svg",
+          "path_padding": "svg/padding/2-items/bullhorn.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "毒",
+      "note": "包里没有骷髅瓶/毒液，药水瓶+辐射标志是最近语义",
+      "candidates": [
+        {
+          "component_name": "potion",
+          "primary": true,
+          "category": "5-food",
+          "svg_nopadding_bytes": 468,
+          "svg_padding_bytes": 458,
+          "core_semantic": "药水",
+          "visual_features": "药水瓶",
+          "path_nopadding": "svg/no-padding/5-food/potion.svg",
+          "path_padding": "svg/padding/5-food/potion.svg"
+        },
+        {
+          "component_name": "radiation",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 1204,
+          "svg_padding_bytes": 1194,
+          "core_semantic": "辐射/危险警告",
+          "visual_features": "辐射警告标志 ☢",
+          "path_nopadding": "svg/no-padding/12-misc/radiation.svg",
+          "path_padding": "svg/padding/12-misc/radiation.svg"
+        },
+        {
+          "component_name": "pill",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 390,
+          "svg_padding_bytes": 380,
+          "core_semantic": "药品",
+          "visual_features": "药丸/胶囊",
+          "path_nopadding": "svg/no-padding/2-items/pill.svg",
+          "path_padding": "svg/padding/2-items/pill.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "治疗",
+      "note": "medical-kit 红十字急救包语义最正",
+      "candidates": [
+        {
+          "component_name": "medical-kit",
+          "primary": true,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1270,
+          "svg_padding_bytes": 1260,
+          "core_semantic": "医疗箱/急救包",
+          "visual_features": "带红十字标志的手提包",
+          "path_nopadding": "svg/no-padding/2-items/medical-kit.svg",
+          "path_padding": "svg/padding/2-items/medical-kit.svg"
+        },
+        {
+          "component_name": "heart",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 320,
+          "svg_padding_bytes": 310,
+          "core_semantic": "爱心/喜欢/生命",
+          "visual_features": "普通心形 ❤️（较圆润）",
+          "path_nopadding": "svg/no-padding/1-game/heart.svg",
+          "path_padding": "svg/padding/1-game/heart.svg"
+        },
+        {
+          "component_name": "potion",
+          "primary": false,
+          "category": "5-food",
+          "svg_nopadding_bytes": 468,
+          "svg_padding_bytes": 458,
+          "core_semantic": "药水",
+          "visual_features": "药水瓶",
+          "path_nopadding": "svg/no-padding/5-food/potion.svg",
+          "path_padding": "svg/padding/5-food/potion.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "护盾",
+      "note": "三款盾牌都是独立造型，可分别给不同卡",
+      "candidates": [
+        {
+          "component_name": "shield",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 400,
+          "svg_padding_bytes": 390,
+          "core_semantic": "盾牌（基础款）",
+          "visual_features": "尖锐底的基础盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield.svg",
+          "path_padding": "svg/padding/3-gear/shield.svg"
+        },
+        {
+          "component_name": "shield-02",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 397,
+          "svg_padding_bytes": 387,
+          "core_semantic": "盾牌（圆角）",
+          "visual_features": "圆角盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield-02.svg",
+          "path_padding": "svg/padding/3-gear/shield-02.svg"
+        },
+        {
+          "component_name": "shield-03",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 347,
+          "svg_padding_bytes": 337,
+          "core_semantic": "盾牌（更圆）",
+          "visual_features": "更圆的盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield-03.svg",
+          "path_padding": "svg/padding/3-gear/shield-03.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "格挡",
+      "note": "要跟「护盾」区分开：防弹衣/保护盾",
+      "candidates": [
+        {
+          "component_name": "shield-02",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 397,
+          "svg_padding_bytes": 387,
+          "core_semantic": "盾牌（圆角）",
+          "visual_features": "圆角盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield-02.svg",
+          "path_padding": "svg/padding/3-gear/shield-02.svg"
+        },
+        {
+          "component_name": "bulletproof-vest",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1249,
+          "svg_padding_bytes": 1239,
+          "core_semantic": "防弹衣",
+          "visual_features": "防弹背心",
+          "path_nopadding": "svg/no-padding/3-gear/bulletproof-vest.svg",
+          "path_padding": "svg/padding/3-gear/bulletproof-vest.svg"
+        },
+        {
+          "component_name": "protect",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 682,
+          "svg_padding_bytes": 672,
+          "core_semantic": "保护/安全",
+          "visual_features": "盾牌+对勾/锁",
+          "path_nopadding": "svg/no-padding/9-media/protect.svg",
+          "path_padding": "svg/padding/9-media/protect.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "反击",
+      "note": "没有「反弹」图标，用回转箭头表达「打了回去」",
+      "candidates": [
+        {
+          "component_name": "rotate-left",
+          "primary": true,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 596,
+          "svg_padding_bytes": 586,
+          "core_semantic": "向左旋转",
+          "visual_features": "椭圆逆时针弯曲箭头",
+          "path_nopadding": "svg/no-padding/8-ui/rotate-left.svg",
+          "path_padding": "svg/padding/8-ui/rotate-left.svg"
+        },
+        {
+          "component_name": "refresh",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 638,
+          "svg_padding_bytes": 628,
+          "core_semantic": "刷新/重载",
+          "visual_features": "两个弯曲箭头首尾相接环形",
+          "path_nopadding": "svg/no-padding/8-ui/refresh.svg",
+          "path_padding": "svg/padding/8-ui/refresh.svg"
+        },
+        {
+          "component_name": "change",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 1119,
+          "svg_padding_bytes": 1109,
+          "core_semantic": "交换/切换",
+          "visual_features": "两个箭头首尾相接形成循环",
+          "path_nopadding": "svg/no-padding/8-ui/change.svg",
+          "path_padding": "svg/padding/8-ui/change.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "抽牌",
+      "note": "card=两张牌，cards=三张牌",
+      "candidates": [
+        {
+          "component_name": "card",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 914,
+          "svg_padding_bytes": 904,
+          "core_semantic": "卡牌（双张）",
+          "visual_features": "两张卡叠在一起",
+          "path_nopadding": "svg/no-padding/1-game/card.svg",
+          "path_padding": "svg/padding/1-game/card.svg"
+        },
+        {
+          "component_name": "cards",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1080,
+          "svg_padding_bytes": 1070,
+          "core_semantic": "多张卡牌/牌组",
+          "visual_features": "三张卡叠在一起",
+          "path_nopadding": "svg/no-padding/1-game/cards.svg",
+          "path_padding": "svg/padding/1-game/cards.svg"
+        },
+        {
+          "component_name": "spade-card",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 951,
+          "svg_padding_bytes": 941,
+          "core_semantic": "黑桃扑克牌",
+          "visual_features": "扑克牌黑桃（♠）",
+          "path_nopadding": "svg/no-padding/1-game/spade-card.svg",
+          "path_padding": "svg/padding/1-game/spade-card.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "洗牌/换牌",
+      "note": "random-dice = 带问号的骰子，「随机」语义最贴",
+      "candidates": [
+        {
+          "component_name": "random-dice",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 806,
+          "svg_padding_bytes": 796,
+          "core_semantic": "随机骰子/随机事件",
+          "visual_features": "带问号的正方形（骰子）",
+          "path_nopadding": "svg/no-padding/1-game/random-dice.svg",
+          "path_padding": "svg/padding/1-game/random-dice.svg"
+        },
+        {
+          "component_name": "refresh",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 638,
+          "svg_padding_bytes": 628,
+          "core_semantic": "刷新/重载",
+          "visual_features": "两个弯曲箭头首尾相接环形",
+          "path_nopadding": "svg/no-padding/8-ui/refresh.svg",
+          "path_padding": "svg/padding/8-ui/refresh.svg"
+        },
+        {
+          "component_name": "rotate-right",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 594,
+          "svg_padding_bytes": 584,
+          "core_semantic": "向右旋转",
+          "visual_features": "椭圆顺时针弯曲箭头",
+          "path_nopadding": "svg/no-padding/8-ui/rotate-right.svg",
+          "path_padding": "svg/padding/8-ui/rotate-right.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "增益（攻击）",
+      "note": "temperature-up 是「升温」箭头，比纯箭头更有「变强」感",
+      "candidates": [
+        {
+          "component_name": "temperature-up",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 677,
+          "svg_padding_bytes": 667,
+          "core_semantic": "升温",
+          "visual_features": "温度上升",
+          "path_nopadding": "svg/no-padding/4-nature/temperature-up.svg",
+          "path_padding": "svg/padding/4-nature/temperature-up.svg"
+        },
+        {
+          "component_name": "arrow-up",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 683,
+          "svg_padding_bytes": 673,
+          "core_semantic": "向上（基础）",
+          "visual_features": "圆润向上箭头",
+          "path_nopadding": "svg/no-padding/8-ui/arrow-up.svg",
+          "path_padding": "svg/padding/8-ui/arrow-up.svg"
+        },
+        {
+          "component_name": "battery-positive",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 1029,
+          "svg_padding_bytes": 1019,
+          "core_semantic": "电量满",
+          "visual_features": "电量充足/电池带加号",
+          "path_nopadding": "svg/no-padding/9-media/battery-positive.svg",
+          "path_padding": "svg/padding/9-media/battery-positive.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "增益（敏捷）",
+      "note": "鞋=移动/速度",
+      "candidates": [
+        {
+          "component_name": "shoe",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 633,
+          "svg_padding_bytes": 623,
+          "core_semantic": "鞋子",
+          "visual_features": "一只鞋",
+          "path_nopadding": "svg/no-padding/3-gear/shoe.svg",
+          "path_padding": "svg/padding/3-gear/shoe.svg"
+        },
+        {
+          "component_name": "warrior-boots-lv3",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1261,
+          "svg_padding_bytes": 1251,
+          "core_semantic": "战士靴 Lv3",
+          "visual_features": "战士靴子等级3",
+          "path_nopadding": "svg/no-padding/3-gear/warrior-boots-lv3.svg",
+          "path_padding": "svg/padding/3-gear/warrior-boots-lv3.svg"
+        },
+        {
+          "component_name": "arrow-up-right",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 673,
+          "svg_padding_bytes": 663,
+          "core_semantic": "右上方向（基础）",
+          "visual_features": "圆润右上箭头",
+          "path_nopadding": "svg/no-padding/8-ui/arrow-up-right.svg",
+          "path_padding": "svg/padding/8-ui/arrow-up-right.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "削弱（降防）",
+      "note": "temperature-down = 降温箭头",
+      "candidates": [
+        {
+          "component_name": "temperature-down",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 376,
+          "svg_padding_bytes": 366,
+          "core_semantic": "降温",
+          "visual_features": "温度下降",
+          "path_nopadding": "svg/no-padding/4-nature/temperature-down.svg",
+          "path_padding": "svg/padding/4-nature/temperature-down.svg"
+        },
+        {
+          "component_name": "arrow-down",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 686,
+          "svg_padding_bytes": 676,
+          "core_semantic": "向下指示（基础）",
+          "visual_features": "圆润向下箭头",
+          "path_nopadding": "svg/no-padding/8-ui/arrow-down.svg",
+          "path_padding": "svg/padding/8-ui/arrow-down.svg"
+        },
+        {
+          "component_name": "heart-break",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 743,
+          "svg_padding_bytes": 733,
+          "core_semantic": "心碎（将断未断）",
+          "visual_features": "心裂开但还有一点连着",
+          "path_nopadding": "svg/no-padding/1-game/heart-break.svg",
+          "path_padding": "svg/padding/1-game/heart-break.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "削弱（降攻）",
+      "note": "电池负号表示「掉」",
+      "candidates": [
+        {
+          "component_name": "battery-negative",
+          "primary": true,
+          "category": "9-media",
+          "svg_nopadding_bytes": 727,
+          "svg_padding_bytes": 717,
+          "core_semantic": "电量不足",
+          "visual_features": "电量低/电池带减号",
+          "path_nopadding": "svg/no-padding/9-media/battery-negative.svg",
+          "path_padding": "svg/padding/9-media/battery-negative.svg"
+        },
+        {
+          "component_name": "arrow-down",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 686,
+          "svg_padding_bytes": 676,
+          "core_semantic": "向下指示（基础）",
+          "visual_features": "圆润向下箭头",
+          "path_nopadding": "svg/no-padding/8-ui/arrow-down.svg",
+          "path_padding": "svg/padding/8-ui/arrow-down.svg"
+        },
+        {
+          "component_name": "heart-break-02",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 778,
+          "svg_padding_bytes": 768,
+          "core_semantic": "心碎（彻底分开）",
+          "visual_features": "心完全分成两半",
+          "path_nopadding": "svg/no-padding/1-game/heart-break-02.svg",
+          "path_padding": "svg/padding/1-game/heart-break-02.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "命中下降",
+      "note": "靶子 + 禁止符号；fog 表示看不清",
+      "candidates": [
+        {
+          "component_name": "target",
+          "primary": true,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 269,
+          "svg_padding_bytes": 259,
+          "core_semantic": "靶心",
+          "visual_features": "靶子",
+          "path_nopadding": "svg/no-padding/6-buildings/target.svg",
+          "path_padding": "svg/padding/6-buildings/target.svg"
+        },
+        {
+          "component_name": "prohibited",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 631,
+          "svg_padding_bytes": 621,
+          "core_semantic": "禁止",
+          "visual_features": "空心禁止符号（红圈+斜杠）",
+          "path_nopadding": "svg/no-padding/8-ui/prohibited.svg",
+          "path_padding": "svg/padding/8-ui/prohibited.svg"
+        },
+        {
+          "component_name": "fog",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 511,
+          "svg_padding_bytes": 501,
+          "core_semantic": "雾",
+          "visual_features": "雾",
+          "path_nopadding": "svg/no-padding/4-nature/fog.svg",
+          "path_padding": "svg/padding/4-nature/fog.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "终结技/大招",
+      "note": "奖杯/星/王冠，都有「最高级」含义",
+      "candidates": [
+        {
+          "component_name": "trophy",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1253,
+          "svg_padding_bytes": 1243,
+          "core_semantic": "奖杯/成就",
+          "visual_features": "奖杯 🏆",
+          "path_nopadding": "svg/no-padding/1-game/trophy.svg",
+          "path_padding": "svg/padding/1-game/trophy.svg"
+        },
+        {
+          "component_name": "five-pointed-star",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 870,
+          "svg_padding_bytes": 860,
+          "core_semantic": "五角星",
+          "visual_features": "五角星",
+          "path_nopadding": "svg/no-padding/12-misc/five-pointed-star.svg",
+          "path_padding": "svg/padding/12-misc/five-pointed-star.svg"
+        },
+        {
+          "component_name": "crown",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 740,
+          "svg_padding_bytes": 730,
+          "core_semantic": "王冠",
+          "visual_features": "皇冠",
+          "path_nopadding": "svg/no-padding/3-gear/crown.svg",
+          "path_padding": "svg/padding/3-gear/crown.svg"
+        }
+      ]
+    },
+    {
+      "group": "卡牌语义",
+      "concept": "道具类",
+      "note": "背包/工具箱；没有 pouch 钱袋",
+      "candidates": [
+        {
+          "component_name": "backpack",
+          "primary": true,
+          "category": "2-items",
+          "svg_nopadding_bytes": 989,
+          "svg_padding_bytes": 979,
+          "core_semantic": "背包",
+          "visual_features": "双肩背包",
+          "path_nopadding": "svg/no-padding/2-items/backpack.svg",
+          "path_padding": "svg/padding/2-items/backpack.svg"
+        },
+        {
+          "component_name": "tool-kit",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1067,
+          "svg_padding_bytes": 1057,
+          "core_semantic": "工具箱",
+          "visual_features": "打开的工具箱",
+          "path_nopadding": "svg/no-padding/2-items/tool-kit.svg",
+          "path_padding": "svg/padding/2-items/tool-kit.svg"
+        },
+        {
+          "component_name": "plastic-bag",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 916,
+          "svg_padding_bytes": 906,
+          "core_semantic": "塑料袋/购物袋",
+          "visual_features": "带反光的手提袋",
+          "path_nopadding": "svg/no-padding/2-items/plastic-bag.svg",
+          "path_padding": "svg/padding/2-items/plastic-bag.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "攻击属性",
+      "note": "属性行小图标（16px）不要用复杂造型",
+      "candidates": [
+        {
+          "component_name": "sword",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 398,
+          "svg_padding_bytes": 388,
+          "core_semantic": "剑",
+          "visual_features": "双刃剑",
+          "path_nopadding": "svg/no-padding/3-gear/sword.svg",
+          "path_padding": "svg/padding/3-gear/sword.svg"
+        },
+        {
+          "component_name": "hit-effect",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 995,
+          "svg_padding_bytes": 985,
+          "core_semantic": "命中/攻击特效",
+          "visual_features": "打击特效（类似💥爆炸星）",
+          "path_nopadding": "svg/no-padding/1-game/hit-effect.svg",
+          "path_padding": "svg/padding/1-game/hit-effect.svg"
+        },
+        {
+          "component_name": "mace",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1406,
+          "svg_padding_bytes": 1396,
+          "core_semantic": "钉头锤",
+          "visual_features": "钉头锤/权杖",
+          "path_nopadding": "svg/no-padding/3-gear/mace.svg",
+          "path_padding": "svg/padding/3-gear/mace.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "防御属性",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "shield",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 400,
+          "svg_padding_bytes": 390,
+          "core_semantic": "盾牌（基础款）",
+          "visual_features": "尖锐底的基础盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield.svg",
+          "path_padding": "svg/padding/3-gear/shield.svg"
+        },
+        {
+          "component_name": "bulletproof-vest",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1249,
+          "svg_padding_bytes": 1239,
+          "core_semantic": "防弹衣",
+          "visual_features": "防弹背心",
+          "path_nopadding": "svg/no-padding/3-gear/bulletproof-vest.svg",
+          "path_padding": "svg/padding/3-gear/bulletproof-vest.svg"
+        },
+        {
+          "component_name": "protect",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 682,
+          "svg_padding_bytes": 672,
+          "core_semantic": "保护/安全",
+          "visual_features": "盾牌+对勾/锁",
+          "path_nopadding": "svg/no-padding/9-media/protect.svg",
+          "path_padding": "svg/padding/9-media/protect.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "敏捷属性",
+      "note": "shoe 在 16px 下仍可读",
+      "candidates": [
+        {
+          "component_name": "shoe",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 633,
+          "svg_padding_bytes": 623,
+          "core_semantic": "鞋子",
+          "visual_features": "一只鞋",
+          "path_nopadding": "svg/no-padding/3-gear/shoe.svg",
+          "path_padding": "svg/padding/3-gear/shoe.svg"
+        },
+        {
+          "component_name": "wind",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 545,
+          "svg_padding_bytes": 535,
+          "core_semantic": "风",
+          "visual_features": "风/气流",
+          "path_nopadding": "svg/no-padding/4-nature/wind.svg",
+          "path_padding": "svg/padding/4-nature/wind.svg"
+        },
+        {
+          "component_name": "warrior-boots-lv3",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1261,
+          "svg_padding_bytes": 1251,
+          "core_semantic": "战士靴 Lv3",
+          "visual_features": "战士靴子等级3",
+          "path_nopadding": "svg/no-padding/3-gear/warrior-boots-lv3.svg",
+          "path_padding": "svg/padding/3-gear/warrior-boots-lv3.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "幸运属性",
+      "note": "clover = 三叶草 = 幸运，语义精准",
+      "candidates": [
+        {
+          "component_name": "clover",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 970,
+          "svg_padding_bytes": 960,
+          "core_semantic": "三叶草/幸运",
+          "visual_features": "三叶草",
+          "path_nopadding": "svg/no-padding/4-nature/clover.svg",
+          "path_padding": "svg/padding/4-nature/clover.svg"
+        },
+        {
+          "component_name": "four-pointed-star",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 731,
+          "svg_padding_bytes": 721,
+          "core_semantic": "四角星",
+          "visual_features": "四角星",
+          "path_nopadding": "svg/no-padding/12-misc/four-pointed-star.svg",
+          "path_padding": "svg/padding/12-misc/four-pointed-star.svg"
+        },
+        {
+          "component_name": "dice",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 487,
+          "svg_padding_bytes": 477,
+          "core_semantic": "骰子（基础1点）",
+          "visual_features": "单个骰子显示1点",
+          "path_nopadding": "svg/no-padding/1-game/dice.svg",
+          "path_padding": "svg/padding/1-game/dice.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "中毒",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "potion",
+          "primary": true,
+          "category": "5-food",
+          "svg_nopadding_bytes": 468,
+          "svg_padding_bytes": 458,
+          "core_semantic": "药水",
+          "visual_features": "药水瓶",
+          "path_nopadding": "svg/no-padding/5-food/potion.svg",
+          "path_padding": "svg/padding/5-food/potion.svg"
+        },
+        {
+          "component_name": "radiation",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 1204,
+          "svg_padding_bytes": 1194,
+          "core_semantic": "辐射/危险警告",
+          "visual_features": "辐射警告标志 ☢",
+          "path_nopadding": "svg/no-padding/12-misc/radiation.svg",
+          "path_padding": "svg/padding/12-misc/radiation.svg"
+        },
+        {
+          "component_name": "bug",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 1232,
+          "svg_padding_bytes": 1222,
+          "core_semantic": "Bug/程序错误",
+          "visual_features": "虫子/甲虫",
+          "path_nopadding": "svg/no-padding/9-media/bug.svg",
+          "path_padding": "svg/padding/9-media/bug.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "灼伤",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "fire",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 449,
+          "svg_padding_bytes": 439,
+          "core_semantic": "火",
+          "visual_features": "火焰",
+          "path_nopadding": "svg/no-padding/4-nature/fire.svg",
+          "path_padding": "svg/padding/4-nature/fire.svg"
+        },
+        {
+          "component_name": "temperature-up",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 677,
+          "svg_padding_bytes": 667,
+          "core_semantic": "升温",
+          "visual_features": "温度上升",
+          "path_nopadding": "svg/no-padding/4-nature/temperature-up.svg",
+          "path_padding": "svg/padding/4-nature/temperature-up.svg"
+        },
+        {
+          "component_name": "volcanic-eruption",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 1530,
+          "svg_padding_bytes": 1520,
+          "core_semantic": "火山喷发",
+          "visual_features": "冒烟的火山",
+          "path_nopadding": "svg/no-padding/4-nature/volcanic-eruption.svg",
+          "path_padding": "svg/padding/4-nature/volcanic-eruption.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "虚弱",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "temperature-down",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 376,
+          "svg_padding_bytes": 366,
+          "core_semantic": "降温",
+          "visual_features": "温度下降",
+          "path_nopadding": "svg/no-padding/4-nature/temperature-down.svg",
+          "path_padding": "svg/padding/4-nature/temperature-down.svg"
+        },
+        {
+          "component_name": "battery-negative",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 727,
+          "svg_padding_bytes": 717,
+          "core_semantic": "电量不足",
+          "visual_features": "电量低/电池带减号",
+          "path_nopadding": "svg/no-padding/9-media/battery-negative.svg",
+          "path_padding": "svg/padding/9-media/battery-negative.svg"
+        },
+        {
+          "component_name": "heart-break",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 743,
+          "svg_padding_bytes": 733,
+          "core_semantic": "心碎（将断未断）",
+          "visual_features": "心裂开但还有一点连着",
+          "path_nopadding": "svg/no-padding/1-game/heart-break.svg",
+          "path_padding": "svg/padding/1-game/heart-break.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "流血",
+      "note": "包里没有血滴；heart-break-02 是心彻底裂开，最贴「持续掉血」",
+      "candidates": [
+        {
+          "component_name": "heart-break-02",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 778,
+          "svg_padding_bytes": 768,
+          "core_semantic": "心碎（彻底分开）",
+          "visual_features": "心完全分成两半",
+          "path_nopadding": "svg/no-padding/1-game/heart-break-02.svg",
+          "path_padding": "svg/padding/1-game/heart-break-02.svg"
+        },
+        {
+          "component_name": "medical-kit",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1270,
+          "svg_padding_bytes": 1260,
+          "core_semantic": "医疗箱/急救包",
+          "visual_features": "带红十字标志的手提包",
+          "path_nopadding": "svg/no-padding/2-items/medical-kit.svg",
+          "path_padding": "svg/padding/2-items/medical-kit.svg"
+        },
+        {
+          "component_name": "dagger",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 364,
+          "svg_padding_bytes": 354,
+          "core_semantic": "匕首",
+          "visual_features": "匕首",
+          "path_nopadding": "svg/no-padding/3-gear/dagger.svg",
+          "path_padding": "svg/padding/3-gear/dagger.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "护盾值",
+      "note": "和「护盾卡」用不同变体，避免歧义",
+      "candidates": [
+        {
+          "component_name": "shield-02",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 397,
+          "svg_padding_bytes": 387,
+          "core_semantic": "盾牌（圆角）",
+          "visual_features": "圆角盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield-02.svg",
+          "path_padding": "svg/padding/3-gear/shield-02.svg"
+        },
+        {
+          "component_name": "shield-03",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 347,
+          "svg_padding_bytes": 337,
+          "core_semantic": "盾牌（更圆）",
+          "visual_features": "更圆的盾牌",
+          "path_nopadding": "svg/no-padding/3-gear/shield-03.svg",
+          "path_padding": "svg/padding/3-gear/shield-03.svg"
+        },
+        {
+          "component_name": "protect",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 682,
+          "svg_padding_bytes": 672,
+          "core_semantic": "保护/安全",
+          "visual_features": "盾牌+对勾/锁",
+          "path_nopadding": "svg/no-padding/9-media/protect.svg",
+          "path_padding": "svg/padding/9-media/protect.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "AP",
+      "note": "action-points 就是纯文本「AP」，和游戏里 AP 字样完全一致",
+      "candidates": [
+        {
+          "component_name": "action-points",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 918,
+          "svg_padding_bytes": 908,
+          "core_semantic": "行动点/行动力",
+          "visual_features": "纯文本「AP」",
+          "path_nopadding": "svg/no-padding/1-game/action-points.svg",
+          "path_padding": "svg/padding/1-game/action-points.svg"
+        },
+        {
+          "component_name": "stamina",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 548,
+          "svg_padding_bytes": 538,
+          "core_semantic": "体力/耐力",
+          "visual_features": "闪电 ⚡",
+          "path_nopadding": "svg/no-padding/1-game/stamina.svg",
+          "path_padding": "svg/padding/1-game/stamina.svg"
+        },
+        {
+          "component_name": "lightning",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 626,
+          "svg_padding_bytes": 616,
+          "core_semantic": "闪电",
+          "visual_features": "闪电",
+          "path_nopadding": "svg/no-padding/4-nature/lightning.svg",
+          "path_padding": "svg/padding/4-nature/lightning.svg"
+        }
+      ]
+    },
+    {
+      "group": "属性与状态",
+      "concept": "回合",
+      "note": "clock 表盘最直观",
+      "candidates": [
+        {
+          "component_name": "clock",
+          "primary": true,
+          "category": "9-media",
+          "svg_nopadding_bytes": 969,
+          "svg_padding_bytes": 959,
+          "core_semantic": "时间/时钟",
+          "visual_features": "时钟",
+          "path_nopadding": "svg/no-padding/9-media/clock.svg",
+          "path_padding": "svg/padding/9-media/clock.svg"
+        },
+        {
+          "component_name": "time",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 348,
+          "svg_padding_bytes": 338,
+          "core_semantic": "时间",
+          "visual_features": "时间/钟表",
+          "path_nopadding": "svg/no-padding/9-media/time.svg",
+          "path_padding": "svg/padding/9-media/time.svg"
+        },
+        {
+          "component_name": "rotate-right",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 594,
+          "svg_padding_bytes": 584,
+          "core_semantic": "向右旋转",
+          "visual_features": "椭圆顺时针弯曲箭头",
+          "path_nopadding": "svg/no-padding/8-ui/rotate-right.svg",
+          "path_padding": "svg/padding/8-ui/rotate-right.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "战斗节点",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "hit-effect",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 995,
+          "svg_padding_bytes": 985,
+          "core_semantic": "命中/攻击特效",
+          "visual_features": "打击特效（类似💥爆炸星）",
+          "path_nopadding": "svg/no-padding/1-game/hit-effect.svg",
+          "path_padding": "svg/padding/1-game/hit-effect.svg"
+        },
+        {
+          "component_name": "sword",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 398,
+          "svg_padding_bytes": 388,
+          "core_semantic": "剑",
+          "visual_features": "双刃剑",
+          "path_nopadding": "svg/no-padding/3-gear/sword.svg",
+          "path_padding": "svg/padding/3-gear/sword.svg"
+        },
+        {
+          "component_name": "target",
+          "primary": false,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 269,
+          "svg_padding_bytes": 259,
+          "core_semantic": "靶心",
+          "visual_features": "靶子",
+          "path_nopadding": "svg/no-padding/6-buildings/target.svg",
+          "path_padding": "svg/padding/6-buildings/target.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "强敌节点",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "demon",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 853,
+          "svg_padding_bytes": 843,
+          "core_semantic": "可爱恶魔/小恶魔",
+          "visual_features": "圆润可爱的恶魔",
+          "path_nopadding": "svg/no-padding/1-game/demon.svg",
+          "path_padding": "svg/padding/1-game/demon.svg"
+        },
+        {
+          "component_name": "skull",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 670,
+          "svg_padding_bytes": 660,
+          "core_semantic": "骷髅/危险/海盗",
+          "visual_features": "骷髅头（与death略有不同）",
+          "path_nopadding": "svg/no-padding/1-game/skull.svg",
+          "path_padding": "svg/padding/1-game/skull.svg"
+        },
+        {
+          "component_name": "wolf",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 1064,
+          "svg_padding_bytes": 1054,
+          "core_semantic": "狼",
+          "visual_features": "狼",
+          "path_nopadding": "svg/no-padding/4-nature/wolf.svg",
+          "path_padding": "svg/padding/4-nature/wolf.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "精英节点",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "viking-helmet",
+          "primary": true,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 1531,
+          "svg_padding_bytes": 1521,
+          "core_semantic": "维京头盔",
+          "visual_features": "维京头盔（带角）",
+          "path_nopadding": "svg/no-padding/3-gear/viking-helmet.svg",
+          "path_padding": "svg/padding/3-gear/viking-helmet.svg"
+        },
+        {
+          "component_name": "crown",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 740,
+          "svg_padding_bytes": 730,
+          "core_semantic": "王冠",
+          "visual_features": "皇冠",
+          "path_nopadding": "svg/no-padding/3-gear/crown.svg",
+          "path_padding": "svg/padding/3-gear/crown.svg"
+        },
+        {
+          "component_name": "demon-02",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 772,
+          "svg_padding_bytes": 762,
+          "core_semantic": "邪恶恶魔（凶恶版）",
+          "visual_features": "狰狞/邪恶的恶魔（圆角较凶）",
+          "path_nopadding": "svg/no-padding/1-game/demon-02.svg",
+          "path_padding": "svg/padding/1-game/demon-02.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "事件节点",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "question-mark",
+          "primary": true,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 635,
+          "svg_padding_bytes": 625,
+          "core_semantic": "帮助/疑问",
+          "visual_features": "独立问号 ?",
+          "path_nopadding": "svg/no-padding/8-ui/question-mark.svg",
+          "path_padding": "svg/padding/8-ui/question-mark.svg"
+        },
+        {
+          "component_name": "random-dice",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 806,
+          "svg_padding_bytes": 796,
+          "core_semantic": "随机骰子/随机事件",
+          "visual_features": "带问号的正方形（骰子）",
+          "path_nopadding": "svg/no-padding/1-game/random-dice.svg",
+          "path_padding": "svg/padding/1-game/random-dice.svg"
+        },
+        {
+          "component_name": "sign",
+          "primary": false,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 890,
+          "svg_padding_bytes": 880,
+          "core_semantic": "标志牌",
+          "visual_features": "指示牌",
+          "path_nopadding": "svg/no-padding/6-buildings/sign.svg",
+          "path_padding": "svg/padding/6-buildings/sign.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "宝箱/奖励",
+      "note": "chest = 宝箱，语义精准",
+      "candidates": [
+        {
+          "component_name": "chest",
+          "primary": true,
+          "category": "2-items",
+          "svg_nopadding_bytes": 775,
+          "svg_padding_bytes": 765,
+          "core_semantic": "宝箱",
+          "visual_features": "宝箱/箱子",
+          "path_nopadding": "svg/no-padding/2-items/chest.svg",
+          "path_padding": "svg/padding/2-items/chest.svg"
+        },
+        {
+          "component_name": "key",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 655,
+          "svg_padding_bytes": 645,
+          "core_semantic": "钥匙/解锁",
+          "visual_features": "钥匙",
+          "path_nopadding": "svg/no-padding/2-items/key.svg",
+          "path_padding": "svg/padding/2-items/key.svg"
+        },
+        {
+          "component_name": "ingot",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1009,
+          "svg_padding_bytes": 999,
+          "core_semantic": "金条/金属锭",
+          "visual_features": "三块叠放的金砖",
+          "path_nopadding": "svg/no-padding/2-items/ingot.svg",
+          "path_padding": "svg/padding/2-items/ingot.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "商店",
+      "note": "shop 是店铺造型；货币类给价格标签",
+      "candidates": [
+        {
+          "component_name": "shop",
+          "primary": true,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 1304,
+          "svg_padding_bytes": 1294,
+          "core_semantic": "商店/店铺",
+          "visual_features": "商店",
+          "path_nopadding": "svg/no-padding/6-buildings/shop.svg",
+          "path_padding": "svg/padding/6-buildings/shop.svg"
+        },
+        {
+          "component_name": "star-coin",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 738,
+          "svg_padding_bytes": 728,
+          "core_semantic": "星星硬币（四角星）",
+          "visual_features": "四角星硬币",
+          "path_nopadding": "svg/no-padding/2-items/star-coin.svg",
+          "path_padding": "svg/padding/2-items/star-coin.svg"
+        },
+        {
+          "component_name": "sycee",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 454,
+          "svg_padding_bytes": 444,
+          "core_semantic": "元宝",
+          "visual_features": "元宝/银锭",
+          "path_nopadding": "svg/no-padding/2-items/sycee.svg",
+          "path_padding": "svg/padding/2-items/sycee.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "营地",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "tent",
+          "primary": true,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 797,
+          "svg_padding_bytes": 787,
+          "core_semantic": "帐篷",
+          "visual_features": "帐篷",
+          "path_nopadding": "svg/no-padding/6-buildings/tent.svg",
+          "path_padding": "svg/padding/6-buildings/tent.svg"
+        },
+        {
+          "component_name": "bed",
+          "primary": false,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 827,
+          "svg_padding_bytes": 817,
+          "core_semantic": "床",
+          "visual_features": "床",
+          "path_nopadding": "svg/no-padding/6-buildings/bed.svg",
+          "path_padding": "svg/padding/6-buildings/bed.svg"
+        },
+        {
+          "component_name": "lantern",
+          "primary": false,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 1617,
+          "svg_padding_bytes": 1607,
+          "core_semantic": "灯笼",
+          "visual_features": "灯笼",
+          "path_nopadding": "svg/no-padding/6-buildings/lantern.svg",
+          "path_padding": "svg/padding/6-buildings/lantern.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "首领",
+      "note": "boss = 三牙两角凶恶脸，就是给 boss 画的",
+      "candidates": [
+        {
+          "component_name": "boss",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1643,
+          "svg_padding_bytes": 1633,
+          "core_semantic": "Boss 首领/强大敌人",
+          "visual_features": "三个牙、两个角、凶恶眼神",
+          "path_nopadding": "svg/no-padding/1-game/boss.svg",
+          "path_padding": "svg/padding/1-game/boss.svg"
+        },
+        {
+          "component_name": "demon-02",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 772,
+          "svg_padding_bytes": 762,
+          "core_semantic": "邪恶恶魔（凶恶版）",
+          "visual_features": "狰狞/邪恶的恶魔（圆角较凶）",
+          "path_nopadding": "svg/no-padding/1-game/demon-02.svg",
+          "path_padding": "svg/padding/1-game/demon-02.svg"
+        },
+        {
+          "component_name": "skull",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 670,
+          "svg_padding_bytes": 660,
+          "core_semantic": "骷髅/危险/海盗",
+          "visual_features": "骷髅头（与death略有不同）",
+          "path_nopadding": "svg/no-padding/1-game/skull.svg",
+          "path_padding": "svg/padding/1-game/skull.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·流沙之海",
+      "note": "drought 枯裂土地 + sea 海，拼「沙海」概念",
+      "candidates": [
+        {
+          "component_name": "drought",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 2326,
+          "svg_padding_bytes": 2316,
+          "core_semantic": "干旱",
+          "visual_features": "枯裂土地",
+          "path_nopadding": "svg/no-padding/4-nature/drought.svg",
+          "path_padding": "svg/padding/4-nature/drought.svg"
+        },
+        {
+          "component_name": "sea",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 378,
+          "svg_padding_bytes": 368,
+          "core_semantic": "海洋",
+          "visual_features": "大海",
+          "path_nopadding": "svg/no-padding/4-nature/sea.svg",
+          "path_padding": "svg/padding/4-nature/sea.svg"
+        },
+        {
+          "component_name": "cloud",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 408,
+          "svg_padding_bytes": 398,
+          "core_semantic": "云",
+          "visual_features": "云",
+          "path_nopadding": "svg/no-padding/4-nature/cloud.svg",
+          "path_padding": "svg/padding/4-nature/cloud.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·赤岩峡谷",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "mountain",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 707,
+          "svg_padding_bytes": 697,
+          "core_semantic": "山",
+          "visual_features": "山",
+          "path_nopadding": "svg/no-padding/4-nature/mountain.svg",
+          "path_padding": "svg/padding/4-nature/mountain.svg"
+        },
+        {
+          "component_name": "stone",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 950,
+          "svg_padding_bytes": 940,
+          "core_semantic": "岩石",
+          "visual_features": "石头",
+          "path_nopadding": "svg/no-padding/4-nature/stone.svg",
+          "path_padding": "svg/padding/4-nature/stone.svg"
+        },
+        {
+          "component_name": "acute-triangle",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 390,
+          "svg_padding_bytes": 380,
+          "core_semantic": "锐角三角形",
+          "visual_features": "填充的等腰锐角三角形",
+          "path_nopadding": "svg/no-padding/12-misc/acute-triangle.svg",
+          "path_padding": "svg/padding/12-misc/acute-triangle.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·藤蔓密林",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "forest",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 2569,
+          "svg_padding_bytes": 2559,
+          "core_semantic": "森林",
+          "visual_features": "森林",
+          "path_nopadding": "svg/no-padding/4-nature/forest.svg",
+          "path_padding": "svg/padding/4-nature/forest.svg"
+        },
+        {
+          "component_name": "bamboo",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 1165,
+          "svg_padding_bytes": 1155,
+          "core_semantic": "竹笋",
+          "visual_features": "竹笋",
+          "path_nopadding": "svg/no-padding/4-nature/bamboo.svg",
+          "path_padding": "svg/padding/4-nature/bamboo.svg"
+        },
+        {
+          "component_name": "leaves",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 897,
+          "svg_padding_bytes": 887,
+          "core_semantic": "叶子",
+          "visual_features": "树叶",
+          "path_nopadding": "svg/no-padding/4-nature/leaves.svg",
+          "path_padding": "svg/padding/4-nature/leaves.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·潮汐盐海",
+      "note": "anchor 锚，很有「海」味",
+      "candidates": [
+        {
+          "component_name": "sea",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 378,
+          "svg_padding_bytes": 368,
+          "core_semantic": "海洋",
+          "visual_features": "大海",
+          "path_nopadding": "svg/no-padding/4-nature/sea.svg",
+          "path_padding": "svg/padding/4-nature/sea.svg"
+        },
+        {
+          "component_name": "water",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 751,
+          "svg_padding_bytes": 741,
+          "core_semantic": "水",
+          "visual_features": "水滴/水波",
+          "path_nopadding": "svg/no-padding/4-nature/water.svg",
+          "path_padding": "svg/padding/4-nature/water.svg"
+        },
+        {
+          "component_name": "anchor",
+          "primary": false,
+          "category": "7-vehicles",
+          "svg_nopadding_bytes": 1235,
+          "svg_padding_bytes": 1225,
+          "core_semantic": "锚/停泊",
+          "visual_features": "船锚",
+          "path_nopadding": "svg/no-padding/7-vehicles/anchor.svg",
+          "path_padding": "svg/padding/7-vehicles/anchor.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·风蚀峭壁",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "wind",
+          "primary": true,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 545,
+          "svg_padding_bytes": 535,
+          "core_semantic": "风",
+          "visual_features": "风/气流",
+          "path_nopadding": "svg/no-padding/4-nature/wind.svg",
+          "path_padding": "svg/padding/4-nature/wind.svg"
+        },
+        {
+          "component_name": "mountain",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 707,
+          "svg_padding_bytes": 697,
+          "core_semantic": "山",
+          "visual_features": "山",
+          "path_nopadding": "svg/no-padding/4-nature/mountain.svg",
+          "path_padding": "svg/padding/4-nature/mountain.svg"
+        },
+        {
+          "component_name": "acute-triangle",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 390,
+          "svg_padding_bytes": 380,
+          "core_semantic": "锐角三角形",
+          "visual_features": "填充的等腰锐角三角形",
+          "path_nopadding": "svg/no-padding/12-misc/acute-triangle.svg",
+          "path_padding": "svg/padding/12-misc/acute-triangle.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "地图·夜砂墓原",
+      "note": "gravestone 墓碑 + night 夜",
+      "candidates": [
+        {
+          "component_name": "gravestone",
+          "primary": true,
+          "category": "6-buildings",
+          "svg_nopadding_bytes": 680,
+          "svg_padding_bytes": 670,
+          "core_semantic": "墓碑/坟墓",
+          "visual_features": "墓碑",
+          "path_nopadding": "svg/no-padding/6-buildings/gravestone.svg",
+          "path_padding": "svg/padding/6-buildings/gravestone.svg"
+        },
+        {
+          "component_name": "night",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 788,
+          "svg_padding_bytes": 778,
+          "core_semantic": "夜晚",
+          "visual_features": "夜晚/月亮",
+          "path_nopadding": "svg/no-padding/4-nature/night.svg",
+          "path_padding": "svg/padding/4-nature/night.svg"
+        },
+        {
+          "component_name": "drought",
+          "primary": false,
+          "category": "4-nature",
+          "svg_nopadding_bytes": 2326,
+          "svg_padding_bytes": 2316,
+          "core_semantic": "干旱",
+          "visual_features": "枯裂土地",
+          "path_nopadding": "svg/no-padding/4-nature/drought.svg",
+          "path_padding": "svg/padding/4-nature/drought.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "金币",
+      "note": "⚠ 不要用 coin：它的实际造型是字母「C」不是硬币（已截图验证）",
+      "candidates": [
+        {
+          "component_name": "star-coin",
+          "primary": true,
+          "category": "2-items",
+          "svg_nopadding_bytes": 738,
+          "svg_padding_bytes": 728,
+          "core_semantic": "星星硬币（四角星）",
+          "visual_features": "四角星硬币",
+          "path_nopadding": "svg/no-padding/2-items/star-coin.svg",
+          "path_padding": "svg/padding/2-items/star-coin.svg"
+        },
+        {
+          "component_name": "sycee",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 454,
+          "svg_padding_bytes": 444,
+          "core_semantic": "元宝",
+          "visual_features": "元宝/银锭",
+          "path_nopadding": "svg/no-padding/2-items/sycee.svg",
+          "path_padding": "svg/padding/2-items/sycee.svg"
+        },
+        {
+          "component_name": "ingot",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1009,
+          "svg_padding_bytes": 999,
+          "core_semantic": "金条/金属锭",
+          "visual_features": "三块叠放的金砖",
+          "path_nopadding": "svg/no-padding/2-items/ingot.svg",
+          "path_padding": "svg/padding/2-items/ingot.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "卡组",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "cards",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1080,
+          "svg_padding_bytes": 1070,
+          "core_semantic": "多张卡牌/牌组",
+          "visual_features": "三张卡叠在一起",
+          "path_nopadding": "svg/no-padding/1-game/cards.svg",
+          "path_padding": "svg/padding/1-game/cards.svg"
+        },
+        {
+          "component_name": "card",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 914,
+          "svg_padding_bytes": 904,
+          "core_semantic": "卡牌（双张）",
+          "visual_features": "两张卡叠在一起",
+          "path_nopadding": "svg/no-padding/1-game/card.svg",
+          "path_padding": "svg/padding/1-game/card.svg"
+        },
+        {
+          "component_name": "spade-card",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 951,
+          "svg_padding_bytes": 941,
+          "core_semantic": "黑桃扑克牌",
+          "visual_features": "扑克牌黑桃（♠）",
+          "path_nopadding": "svg/no-padding/1-game/spade-card.svg",
+          "path_padding": "svg/padding/1-game/spade-card.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "背包",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "backpack",
+          "primary": true,
+          "category": "2-items",
+          "svg_nopadding_bytes": 989,
+          "svg_padding_bytes": 979,
+          "core_semantic": "背包",
+          "visual_features": "双肩背包",
+          "path_nopadding": "svg/no-padding/2-items/backpack.svg",
+          "path_padding": "svg/padding/2-items/backpack.svg"
+        },
+        {
+          "component_name": "tool-kit",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 1067,
+          "svg_padding_bytes": 1057,
+          "core_semantic": "工具箱",
+          "visual_features": "打开的工具箱",
+          "path_nopadding": "svg/no-padding/2-items/tool-kit.svg",
+          "path_padding": "svg/padding/2-items/tool-kit.svg"
+        },
+        {
+          "component_name": "chest",
+          "primary": false,
+          "category": "2-items",
+          "svg_nopadding_bytes": 775,
+          "svg_padding_bytes": 765,
+          "core_semantic": "宝箱",
+          "visual_features": "宝箱/箱子",
+          "path_nopadding": "svg/no-padding/2-items/chest.svg",
+          "path_padding": "svg/padding/2-items/chest.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "存档",
+      "note": "save = 软盘，语义精准",
+      "candidates": [
+        {
+          "component_name": "save",
+          "primary": true,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 615,
+          "svg_padding_bytes": 605,
+          "core_semantic": "保存",
+          "visual_features": "软盘图标",
+          "path_nopadding": "svg/no-padding/8-ui/save.svg",
+          "path_padding": "svg/padding/8-ui/save.svg"
+        },
+        {
+          "component_name": "memory-card",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 742,
+          "svg_padding_bytes": 732,
+          "core_semantic": "存储卡",
+          "visual_features": "SD存储卡",
+          "path_nopadding": "svg/no-padding/9-media/memory-card.svg",
+          "path_padding": "svg/padding/9-media/memory-card.svg"
+        },
+        {
+          "component_name": "document",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 849,
+          "svg_padding_bytes": 839,
+          "core_semantic": "文档",
+          "visual_features": "文档/纸张",
+          "path_nopadding": "svg/no-padding/9-media/document.svg",
+          "path_padding": "svg/padding/9-media/document.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "设置",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "settings",
+          "primary": true,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 601,
+          "svg_padding_bytes": 591,
+          "core_semantic": "设置（基础）",
+          "visual_features": "尖锐棱角齿轮",
+          "path_nopadding": "svg/no-padding/8-ui/settings.svg",
+          "path_padding": "svg/padding/8-ui/settings.svg"
+        },
+        {
+          "component_name": "settings-02",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 420,
+          "svg_padding_bytes": 410,
+          "core_semantic": "设置（圆润）",
+          "visual_features": "圆润齿轮",
+          "path_nopadding": "svg/no-padding/8-ui/settings-02.svg",
+          "path_padding": "svg/padding/8-ui/settings-02.svg"
+        },
+        {
+          "component_name": "slider",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 782,
+          "svg_padding_bytes": 772,
+          "core_semantic": "滑动条/滑块",
+          "visual_features": "水平线 + 椭圆手柄，已过部分实心",
+          "path_nopadding": "svg/no-padding/8-ui/slider.svg",
+          "path_padding": "svg/padding/8-ui/slider.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "音量",
+      "note": "volume 开声 / mute 静音，成对替换现有 audio_on/audio_off",
+      "candidates": [
+        {
+          "component_name": "volume",
+          "primary": true,
+          "category": "9-media",
+          "svg_nopadding_bytes": 974,
+          "svg_padding_bytes": 964,
+          "core_semantic": "音量",
+          "visual_features": "扬声器音波",
+          "path_nopadding": "svg/no-padding/9-media/volume.svg",
+          "path_padding": "svg/padding/9-media/volume.svg"
+        },
+        {
+          "component_name": "mute",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 963,
+          "svg_padding_bytes": 953,
+          "core_semantic": "静音",
+          "visual_features": "扬声器+禁止符号",
+          "path_nopadding": "svg/no-padding/9-media/mute.svg",
+          "path_padding": "svg/padding/9-media/mute.svg"
+        },
+        {
+          "component_name": "audio-waves",
+          "primary": false,
+          "category": "9-media",
+          "svg_nopadding_bytes": 498,
+          "svg_padding_bytes": 488,
+          "core_semantic": "音频/声波",
+          "visual_features": "声波图形（多条竖线或波形）",
+          "path_nopadding": "svg/no-padding/9-media/audio-waves.svg",
+          "path_padding": "svg/padding/9-media/audio-waves.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "帮助",
+      "note": "question-mark 是独立问号，和现有 question.png 同义",
+      "candidates": [
+        {
+          "component_name": "question-mark",
+          "primary": true,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 635,
+          "svg_padding_bytes": 625,
+          "core_semantic": "帮助/疑问",
+          "visual_features": "独立问号 ?",
+          "path_nopadding": "svg/no-padding/8-ui/question-mark.svg",
+          "path_padding": "svg/padding/8-ui/question-mark.svg"
+        },
+        {
+          "component_name": "info-02",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 498,
+          "svg_padding_bytes": 488,
+          "core_semantic": "信息提示（圆圈）",
+          "visual_features": "空心圆圈内含 i",
+          "path_nopadding": "svg/no-padding/8-ui/info-02.svg",
+          "path_padding": "svg/padding/8-ui/info-02.svg"
+        },
+        {
+          "component_name": "info",
+          "primary": false,
+          "category": "8-ui",
+          "svg_nopadding_bytes": 475,
+          "svg_padding_bytes": 465,
+          "core_semantic": "信息（基础）",
+          "visual_features": "独立加粗字母 i（无圆圈）",
+          "path_nopadding": "svg/no-padding/8-ui/info.svg",
+          "path_padding": "svg/padding/8-ui/info.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "胜利",
+      "note": "",
+      "candidates": [
+        {
+          "component_name": "trophy",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 1253,
+          "svg_padding_bytes": 1243,
+          "core_semantic": "奖杯/成就",
+          "visual_features": "奖杯 🏆",
+          "path_nopadding": "svg/no-padding/1-game/trophy.svg",
+          "path_padding": "svg/padding/1-game/trophy.svg"
+        },
+        {
+          "component_name": "crown",
+          "primary": false,
+          "category": "3-gear",
+          "svg_nopadding_bytes": 740,
+          "svg_padding_bytes": 730,
+          "core_semantic": "王冠",
+          "visual_features": "皇冠",
+          "path_nopadding": "svg/no-padding/3-gear/crown.svg",
+          "path_padding": "svg/padding/3-gear/crown.svg"
+        },
+        {
+          "component_name": "five-pointed-star",
+          "primary": false,
+          "category": "12-misc",
+          "svg_nopadding_bytes": 870,
+          "svg_padding_bytes": 860,
+          "core_semantic": "五角星",
+          "visual_features": "五角星",
+          "path_nopadding": "svg/no-padding/12-misc/five-pointed-star.svg",
+          "path_padding": "svg/padding/12-misc/five-pointed-star.svg"
+        }
+      ]
+    },
+    {
+      "group": "界面与地图",
+      "concept": "失败",
+      "note": "death = 骷髅头，语义精准",
+      "candidates": [
+        {
+          "component_name": "death",
+          "primary": true,
+          "category": "1-game",
+          "svg_nopadding_bytes": 999,
+          "svg_padding_bytes": 989,
+          "core_semantic": "死亡/阵亡状态",
+          "visual_features": "骷髅头 💀",
+          "path_nopadding": "svg/no-padding/1-game/death.svg",
+          "path_padding": "svg/padding/1-game/death.svg"
+        },
+        {
+          "component_name": "skull",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 670,
+          "svg_padding_bytes": 660,
+          "core_semantic": "骷髅/危险/海盗",
+          "visual_features": "骷髅头（与death略有不同）",
+          "path_nopadding": "svg/no-padding/1-game/skull.svg",
+          "path_padding": "svg/padding/1-game/skull.svg"
+        },
+        {
+          "component_name": "heart-break",
+          "primary": false,
+          "category": "1-game",
+          "svg_nopadding_bytes": 743,
+          "svg_padding_bytes": 733,
+          "core_semantic": "心碎（将断未断）",
+          "visual_features": "心裂开但还有一点连着",
+          "path_nopadding": "svg/no-padding/1-game/heart-break.svg",
+          "path_padding": "svg/padding/1-game/heart-break.svg"
+        }
+      ]
+    }
+  ]
+}

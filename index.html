@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>沙漠精灵 Oasis · 流沙卡牌冒险</title>
+<link rel="icon" href="assets/pokemon/flygon/Idle.png" />
+<link rel="stylesheet" href="src/ui/style.css" />
+</head>
+<body>
+<div id="app">
+  <!-- 顶部状态栏 -->
+  <header id="hud" class="hud hidden">
+    <div class="hud-left">
+      <!-- 头像是在这个 div 里动态挂进去的：id 必须挂在 div 上，
+           不能挂在里面的 canvas 上（否则 getElementById 拿到的是画布，图片永远挂不进去） -->
+      <div class="hud-portrait" id="hud-portrait"></div>
+      <div class="hud-ident">
+        <div class="hud-name"><span id="hud-name">欧亚西莉亚</span> <span class="gender">♀</span></div>
+        <div class="hud-species" id="hud-species">沙漠蜻蜓 · 地面/龙</div>
+      </div>
+      <div class="hud-hp">
+        <div class="hp-bar"><div class="hp-fill" id="hud-hp-fill"></div><span id="hud-hp-text">90 / 90</span></div>
+      </div>
+      <div class="hud-stats" id="hud-stats"></div>
+    </div>
+    <div class="hud-right">
+      <div class="gold-pill"><span class="ico-money"></span><span id="hud-gold">0</span></div>
+      <button class="btn btn-icon" id="btn-deck" title="查看卡组 / 挑选出战卡牌"><span class="ico-cards"></span></button>
+      <button class="btn btn-icon" id="btn-settings" title="设置"><span class="ico-gear"></span></button>
+    </div>
+  </header>
+
+  <!-- 场景层 -->
+  <main id="stage" class="stage"></main>
+
+  <!-- 底部提示条 -->
+  <footer id="toast" class="toast hidden"></footer>
+</div>
+
+<!-- 弹窗容器 -->
+<div id="modal-root"></div>
+
+<!-- 全屏演出层（伤害数字、飘字） -->
+<div id="float-layer" class="float-layer"></div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

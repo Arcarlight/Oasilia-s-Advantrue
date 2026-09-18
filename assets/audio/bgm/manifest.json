@@ -1,0 +1,170 @@
+{
+    "source":  "音楽の卵 (ontama-m.com)",
+    "license":  "个人 / 法人均可免费使用、无需报告、可商用（署名非必须，游戏里仍然标注了出处）",
+    "licenseUrl":  "https://ontama-m.com/ongaku.html",
+    "loopNote":  "ogg(L) version: upstream edits these into a seamless natural loop; the game plays them with a WebAudio AudioBuffer loop",
+    "downloadedBy":  "tools/fetch-bgm.ps1",
+    "tracks":  {
+                   "title":  {
+                                 "file":  "title.ogg",
+                                 "source":  "tabinohajime.mp3",
+                                 "name":  "旅のはじめ",
+                                 "use":  "标题 · 旅途开始",
+                                 "ogg":  "midi/data/ogg_file/original/ontama_rpg_tabinohajime_ogg.zip"
+                             },
+                   "map":  {
+                               "file":  "map.ogg",
+                               "source":  "kazehukusougen.mp3",
+                               "name":  "風吹く草原",
+                               "use":  "地图兜底曲",
+                               "ogg":  "midi/data/ogg_file/original/ontama_rpg_kazehukusougen_ogg.zip"
+                           },
+                   "map_desert":  {
+                                      "file":  "map_desert.ogg",
+                                      "source":  "kazehukusougen.mp3",
+                                      "name":  "風吹く草原",
+                                      "use":  "第一章 流沙之海",
+                                      "ogg":  "midi/data/ogg_file/original/ontama_rpg_kazehukusougen_ogg.zip"
+                                  },
+                   "map_canyon":  {
+                                      "file":  "map_canyon.ogg",
+                                      "source":  "taniwokoete.mp3",
+                                      "name":  "谷を越えて",
+                                      "use":  "第二章 赤岩峡谷",
+                                      "ogg":  "midi/data/ogg_file/original/ontama_rpg_taniwokoete_ogg.zip"
+                                  },
+                   "map_forest":  {
+                                      "file":  "map_forest.ogg",
+                                      "source":  "usugiraimori.mp3",
+                                      "name":  "薄暗い森",
+                                      "use":  "第三章 藤蔓密林",
+                                      "ogg":  "midi/data/ogg_file/original/ontama_rpg_usugiraimori_ogg.zip"
+                                  },
+                   "map_tide":  {
+                                    "file":  "map_tide.ogg",
+                                    "source":  "taiyoutoshiokaze.mp3",
+                                    "name":  "太陽と潮風の街",
+                                    "use":  "第四章 潮汐盐海",
+                                    "ogg":  "midi/data/ogg_file/original/taiyoutoshiokaze.ogg"
+                                },
+                   "map_cliff":  {
+                                     "file":  "map_cliff.ogg",
+                                     "source":  "tozan.mp3",
+                                     "name":  "頂上目指して",
+                                     "use":  "第五章 风蚀峭壁",
+                                     "ogg":  "midi/data/ogg_file/original/ontama_rpg_choujoumezashite_ogg.zip"
+                                 },
+                   "map_night":  {
+                                     "file":  "map_night.ogg",
+                                     "source":  "yamidoukutu.mp3",
+                                     "name":  "闇の洞窟",
+                                     "use":  "第六章 夜砂墓原",
+                                     "ogg":  "midi/data/ogg_file/original/ontama_rpg_yaminodoukutsu_ogg.zip"
+                                 },
+                   "battle":  {
+                                  "file":  "battle.ogg",
+                                  "source":  "koubouittai.mp3",
+                                  "name":  "攻防一体",
+                                  "use":  "战斗兜底曲",
+                                  "ogg":  "midi/data/ogg_file/original/ontama_rpg_koubouittai_ogg.zip"
+                              },
+                   "battle_desert":  {
+                                         "file":  "battle_desert.ogg",
+                                         "source":  "koubouittai.mp3",
+                                         "name":  "攻防一体",
+                                         "use":  "流沙之海的战斗",
+                                         "ogg":  "midi/data/ogg_file/original/ontama_rpg_koubouittai_ogg.zip"
+                                     },
+                   "battle_canyon":  {
+                                         "file":  "battle_canyon.ogg",
+                                         "source":  "tokkumiai.mp3",
+                                         "name":  "取っ組み合い",
+                                         "use":  "赤岩峡谷的战斗",
+                                         "ogg":  "midi/data/ogg_file/original/tokkumiai.ogg"
+                                     },
+                   "battle_forest":  {
+                                         "file":  "battle_forest.ogg",
+                                         "source":  "saguriai.mp3",
+                                         "name":  "さぐり合い",
+                                         "use":  "藤蔓密林的战斗",
+                                         "ogg":  "midi/data/ogg_file/original/ontama_rpg_saguriai_ogg.zip"
+                                     },
+                   "battle_tide":  {
+                                       "file":  "battle_tide.ogg",
+                                       "source":  "hit_away.mp3",
+                                       "name":  "ヒット＆アウェイ",
+                                       "use":  "潮汐盐海的战斗",
+                                       "ogg":  "midi/data/ogg_file/original/ontama_rpg_hitandaway_ogg.zip"
+                                   },
+                   "battle_cliff":  {
+                                        "file":  "battle_cliff.ogg",
+                                        "source":  "kazaguruma.mp3",
+                                        "name":  "風車",
+                                        "use":  "风蚀峭壁的战斗",
+                                        "ogg":  "midi/data/ogg_file/original/kazaguruma.ogg"
+                                    },
+                   "battle_night":  {
+                                        "file":  "battle_night.ogg",
+                                        "source":  "yamiwouchiharau.mp3",
+                                        "name":  "闇を打ち払う",
+                                        "use":  "夜砂墓原的战斗",
+                                        "ogg":  "midi/data/ogg_file/original/ontama_rpg_yamiwouchiharau_ogg.zip"
+                                    },
+                   "elite":  {
+                                 "file":  "elite.ogg",
+                                 "source":  "cross.mp3",
+                                 "name":  "クロス陣形",
+                                 "use":  "强敌（各章通用）",
+                                 "ogg":  "midi/data/ogg_file/original/ontama_rpg_kurosujinkei_ogg.zip"
+                             },
+                   "boss":  {
+                                "file":  "boss.ogg",
+                                "source":  "syuurai.mp3",
+                                "name":  "襲来",
+                                "use":  "章节首领",
+                                "ogg":  "midi/data/ogg_file/original/ontama_rpg_syuurai_ogg.zip"
+                            },
+                   "boss_final":  {
+                                      "file":  "boss_final.ogg",
+                                      "source":  "tataminouenoshitou.mp3",
+                                      "name":  "畳の上の死闘",
+                                      "use":  "最终首领（终章）",
+                                      "ogg":  "midi/data/ogg_file/original/ontama_rpg_tataminouenoshitou_ogg.zip"
+                                  },
+                   "victory":  {
+                                   "file":  "victory.ogg",
+                                   "source":  "syourinouta.mp3",
+                                   "name":  "勝利のうた",
+                                   "use":  "战斗胜利 / 通关",
+                                   "ogg":  "midi/data/ogg_file/original/ontama_rpg_syourinouta_ogg.zip"
+                               },
+                   "defeat":  {
+                                  "file":  "defeat.ogg",
+                                  "source":  "zenmetsu.mp3",
+                                  "name":  "ぜんめつ",
+                                  "use":  "失败",
+                                  "ogg":  "midi/data/ogg_file/original/ontama_rpg_zenmetsu_ogg.zip"
+                              },
+                   "event":  {
+                                 "file":  "event.ogg",
+                                 "source":  "kasakashi.mp3",
+                                 "name":  "傘貸し",
+                                 "use":  "未知事件 / 宝箱",
+                                 "ogg":  "midi/data/ogg_file/original/kasakashi.ogg"
+                             },
+                   "shop":  {
+                                "file":  "shop.ogg",
+                                "source":  "okasy.mp3",
+                                "name":  "おかしな行商人",
+                                "use":  "商店",
+                                "ogg":  "midi/data/ogg_file/original/ontama_rpg_okashinagyousyounin_ogg.zip"
+                            },
+                   "rest":  {
+                                "file":  "rest.ogg",
+                                "source":  "izuminohotoride.mp3",
+                                "name":  "泉のほとりで",
+                                "use":  "营地",
+                                "ogg":  "midi/data/ogg_file/original/ontama_rpg_izuminohotoride_ogg.zip"
+                            }
+               }
+}

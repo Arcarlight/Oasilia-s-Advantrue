@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>t5 图标审查</title>
+<link rel="stylesheet" href="../src/ui/style.css">
+<style>
+ body{margin:0;padding:14px 16px;background:#20160e;color:#f0dcbd;font:13px/1.5 "Segoe UI",system-ui,sans-serif}
+ h1{font-size:18px;margin:0 0 2px} h2{font-size:15px;margin:18px 0 6px;color:#ffd98a;border-bottom:1px solid #5a4426;padding-bottom:3px}
+ .sub{color:#c8ab7e;font-size:12px;margin-bottom:8px}
+ .grid{display:flex;flex-wrap:wrap;gap:8px}
+ .cell{width:130px;background:#2c1f14;border:1px solid #5a4426;border-radius:8px;padding:6px 5px;text-align:center}
+ .cell.small{width:120px}
+ .box{height:110px;display:grid;place-items:center;background:repeating-conic-gradient(#3a2a1a 0 25%,#241a11 0 50%) 0 0/16px 16px;border-radius:6px}
+ .box2{height:64px;display:grid;place-items:center;background:repeating-conic-gradient(#3a2a1a 0 25%,#241a11 0 50%) 0 0/16px 16px;border-radius:6px}
+ .big{width:110px;height:110px;background-color:#f0dcbd}
+ .big2{width:56px;height:56px;background-color:#4a3524}
+ .med{width:64px;height:64px;background-color:currentColor}
+ .nm{font:11.5px/1.4 Consolas,monospace;color:#ffd98a;margin-top:4px;word-break:break-all}
+ .meta{font-size:10px;color:#a68c66}
+ table{border-collapse:separate;border-spacing:6px}
+ th{font:11px Consolas,monospace;color:#ffd98a;text-align:right;vertical-align:middle;width:64px}
+ .nbox{width:64px;height:64px;display:grid;place-items:center;background:#2c1f14;border:1px solid #5a4426;border-radius:6px}
+ .ncap{font:10px Consolas,monospace;color:#c8ab7e;text-align:center;margin-top:2px}
+ .b{color:#7ee08a}
+</style></head><body>
+<h1>t5 审查用放大对照</h1>
+<div class="sub">全部用游戏真实 .ico-* 规则（mask + currentColor）。卡牌色 = 卡面取色 #f0dcbd 附近；地图节点用 currentColor。</div>
+
+<h2>① 86 张卡按图标分组（41 组，放大 110px）</h2>
+<div class="grid"><div class="cell">
+  <div class="box"><span class="ico-triple big"></span></div>
+  <div class="nm">ico-triple  &times;5</div>
+  <div class="meta">岩石爆击 · 龙箭 · 连切 · 潮旋 · 杂技</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-water big"></span></div>
+  <div class="nm">ico-water  &times;5</div>
+  <div class="meta">水之波动 · 水流环 · 生命水滴 · 盐水 · 冲浪</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-poison big"></span></div>
+  <div class="nm">ico-poison  &times;4</div>
+  <div class="meta">剧毒 · 毒针 · 蘑菇孢子 · 盐腌</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-sword big"></span></div>
+  <div class="nm">ico-sword  &times;4</div>
+  <div class="meta">龙爪 · 龙尾 · 剑舞 · 空气利刃</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-audio_waves big"></span></div>
+  <div class="nm">ico-audio_waves  &times;3</div>
+  <div class="meta">刺耳声 · 爆音波 · 低吼</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-battery_negative big"></span></div>
+  <div class="nm">ico-battery_negative  &times;3</div>
+  <div class="meta">虫之抵抗 · 拍落 · 羽毛舞</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-clover big"></span></div>
+  <div class="nm">ico-clover  &times;3</div>
+  <div class="meta">蝶舞 · 幸运咒语 · 冥想</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-earthquake big"></span></div>
+  <div class="nm">ico-earthquake  &times;3</div>
+  <div class="meta">地震 · 大地之力 · 地裂</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-fog big"></span></div>
+  <div class="nm">ico-fog  &times;3</div>
+  <div class="meta">蛛网 · 白雾 · 扬沙</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-leaves big"></span></div>
+  <div class="nm">ico-leaves  &times;3</div>
+  <div class="meta">飞叶快刀 · 寄生种子 · 飞叶风暴</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-stone big"></span></div>
+  <div class="nm">ico-stone  &times;3</div>
+  <div class="meta">落石 · 岩崩 · 尖石攻击</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-temperature_up big"></span></div>
+  <div class="nm">ico-temperature_up  &times;3</div>
+  <div class="meta">聚气 · 龙之舞 · 健美</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-counter big"></span></div>
+  <div class="nm">ico-counter  &times;2</div>
+  <div class="meta">舍身冲撞 · 终极冲击</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-dagger big"></span></div>
+  <div class="nm">ico-dagger  &times;2</div>
+  <div class="meta">咬住 · 咬碎</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-double big"></span></div>
+  <div class="nm">ico-double  &times;2</div>
+  <div class="meta">二连踢 · 滚动</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-fist big"></span></div>
+  <div class="nm">ico-fist  &times;2</div>
+  <div class="meta">撞击 · 抓挠</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-flame big"></span></div>
+  <div class="nm">ico-flame  &times;2</div>
+  <div class="meta">火焰牙 · 热风</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-heart_break_02 big"></span></div>
+  <div class="nm">ico-heart_break_02  &times;2</div>
+  <div class="meta">吸取 · 终极吸取</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-lightning big"></span></div>
+  <div class="nm">ico-lightning  &times;2</div>
+  <div class="meta">电光一闪 · 子弹拳</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-mace big"></span></div>
+  <div class="nm">ico-mace  &times;2</div>
+  <div class="meta">蛮力 · 真气拳</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-meteor big"></span></div>
+  <div class="nm">ico-meteor  &times;2</div>
+  <div class="meta">龙之俯冲 · 流星群</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-protect big"></span></div>
+  <div class="nm">ico-protect  &times;2</div>
+  <div class="meta">守住 · 神秘守护</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-shield_03 big"></span></div>
+  <div class="nm">ico-shield_03  &times;2</div>
+  <div class="meta">缩入壳中 · 缩壳</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-shoe big"></span></div>
+  <div class="nm">ico-shoe  &times;2</div>
+  <div class="meta">顺风 · 高速移动</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-temperature_down big"></span></div>
+  <div class="nm">ico-temperature_down  &times;2</div>
+  <div class="meta">重踏 · 瞪眼</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-volcanic_eruption big"></span></div>
+  <div class="nm">ico-volcanic_eruption  &times;2</div>
+  <div class="meta">龙息 · 逆鳞</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-wind big"></span></div>
+  <div class="nm">ico-wind  &times;2</div>
+  <div class="meta">沙暴 · 银色旋风</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-action_points big"></span></div>
+  <div class="nm">ico-action_points  &times;1</div>
+  <div class="meta">挺住</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-bed big"></span></div>
+  <div class="nm">ico-bed  &times;1</div>
+  <div class="meta">睡觉</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-bug big"></span></div>
+  <div class="nm">ico-bug  &times;1</div>
+  <div class="meta">虫鸣</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-change big"></span></div>
+  <div class="nm">ico-change  &times;1</div>
+  <div class="meta">急速折返</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-gear big"></span></div>
+  <div class="nm">ico-gear  &times;1</div>
+  <div class="meta">铁头</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-heal big"></span></div>
+  <div class="nm">ico-heal  &times;1</div>
+  <div class="meta">急救</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-heart big"></span></div>
+  <div class="nm">ico-heart  &times;1</div>
+  <div class="meta">羽栖</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-pill big"></span></div>
+  <div class="nm">ico-pill  &times;1</div>
+  <div class="meta">文柚果</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-refresh big"></span></div>
+  <div class="nm">ico-refresh  &times;1</div>
+  <div class="meta">焕然一新</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-shield big"></span></div>
+  <div class="nm">ico-shield  &times;1</div>
+  <div class="meta">变硬</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-shield_02 big"></span></div>
+  <div class="nm">ico-shield_02  &times;1</div>
+  <div class="meta">铁壁</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-skull big"></span></div>
+  <div class="nm">ico-skull  &times;1</div>
+  <div class="meta">污泥炸弹</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-spear big"></span></div>
+  <div class="nm">ico-spear  &times;1</div>
+  <div class="meta">双针</div>
+</div>
+<div class="cell">
+  <div class="box"><span class="ico-target big"></span></div>
+  <div class="nm">ico-target  &times;1</div>
+  <div class="meta">泼沙</div>
+</div></div>
+
+<h2>② 地图节点：同一类型在六章各用什么</h2>
+<table><tr><th></th><th style="width:64px">desert</th><th style="width:64px">canyon</th><th style="width:64px">forest</th><th style="width:64px">tide</th><th style="width:64px">cliff</th><th style="width:64px">night</th></tr><tr>
+  <th>battle</th>
+  <td><div class="nbox"><span class="ico-hit_effect med"></span></div><div class="ncap">hit_effect<br><span class="b">desert</span></div></td>
+</tr>
+<tr>
+  <th>elite</th>
+  <td><div class="nbox"><span class="ico-viking_helmet med"></span></div><div class="ncap">viking_helmet<br><span class="b">desert</span></div></td>
+</tr>
+<tr>
+  <th>event</th>
+  <td><div class="nbox"><span class="ico-question_mark med"></span></div><div class="ncap">question_mark<br><span class="b">desert</span></div></td>
+</tr>
+<tr>
+  <th>chest</th>
+  <td><div class="nbox"><span class="ico-chest med"></span></div><div class="ncap">chest<br><span class="b">desert</span></div></td><td><div class="nbox"><span class="ico-ingot med"></span></div><div class="ncap">ingot<br><span class="b">canyon</span></div></td><td><div class="nbox"><span class="ico-key med"></span></div><div class="ncap">key<br><span class="b">forest</span></div></td><td><div class="nbox"><span class="ico-sycee med"></span></div><div class="ncap">sycee<br><span class="b">tide</span></div></td><td><div class="nbox"><span class="ico-tool_kit med"></span></div><div class="ncap">tool_kit<br><span class="b">cliff</span></div></td><td><div class="nbox"><span class="ico-pouch med"></span></div><div class="ncap">pouch<br><span class="b">night</span></div></td>
+</tr>
+<tr>
+  <th>shop</th>
+  <td><div class="nbox"><span class="ico-shop med"></span></div><div class="ncap">shop<br><span class="b">desert</span></div></td><td><div class="nbox"><span class="ico-money med"></span></div><div class="ncap">money<br><span class="b">canyon</span></div></td><td><div class="nbox"><span class="ico-backpack med"></span></div><div class="ncap">backpack<br><span class="b">forest</span></div></td><td><div class="nbox"><span class="ico-star_coin med"></span></div><div class="ncap">star_coin<br><span class="b">tide</span></div></td><td><div class="nbox"><span class="ico-sign med"></span></div><div class="ncap">sign<br><span class="b">cliff</span></div></td><td><div class="nbox"><span class="ico-diamond med"></span></div><div class="ncap">diamond<br><span class="b">night</span></div></td>
+</tr>
+<tr>
+  <th>rest</th>
+  <td><div class="nbox"><span class="ico-tent med"></span></div><div class="ncap">tent<br><span class="b">desert</span></div></td><td><div class="nbox"><span class="ico-campfire med"></span></div><div class="ncap">campfire<br><span class="b">canyon</span></div></td><td><div class="nbox"><span class="ico-lantern med"></span></div><div class="ncap">lantern<br><span class="b">forest</span></div></td><td><div class="nbox"><span class="ico-bed med"></span></div><div class="ncap">bed<br><span class="b">tide</span></div></td><td><div class="nbox"><span class="ico-house med"></span></div><div class="ncap">house<br><span class="b">cliff</span></div></td><td><div class="nbox"><span class="ico-night med"></span></div><div class="ncap">night<br><span class="b">night</span></div></td>
+</tr>
+<tr>
+  <th>boss</th>
+  <td><div class="nbox"><span class="ico-boss med"></span></div><div class="ncap">boss<br><span class="b">desert</span></div></td><td><div class="nbox"><span class="ico-demon med"></span></div><div class="ncap">demon<br><span class="b">canyon</span></div></td><td><div class="nbox"><span class="ico-wolf med"></span></div><div class="ncap">wolf<br><span class="b">forest</span></div></td><td><div class="nbox"><span class="ico-anchor med"></span></div><div class="ncap">anchor<br><span class="b">tide</span></div></td><td><div class="nbox"><span class="ico-demon_02 med"></span></div><div class="ncap">demon_02<br><span class="b">cliff</span></div></td><td><div class="nbox"><span class="ico-death med"></span></div><div class="ncap">death<br><span class="b">night</span></div></td>
+</tr></table>
+<div class="sub">battle/elite/event 三行六章同图（按类型统一）；chest/shop/rest/boss 四行六章不同图。</div>
+
+<h2>③ 风格对照：上一行 = 新 Game-Icon-Pack(SVG)，下一行 = 旧 Kenney(本地 PNG)</h2>
+<table>
+ <tr><th>pack</th><td><div class="nbox"><span class="ico-sword med"></span></div><div class="ncap">sword</div></td><td><div class="nbox"><span class="ico-shield med"></span></div><div class="ncap">shield</div></td><td><div class="nbox"><span class="ico-shield_02 med"></span></div><div class="ncap">shield_02</div></td><td><div class="nbox"><span class="ico-heal med"></span></div><div class="ncap">heal</div></td><td><div class="nbox"><span class="ico-pill med"></span></div><div class="ncap">pill</div></td><td><div class="nbox"><span class="ico-stone med"></span></div><div class="ncap">stone</div></td><td><div class="nbox"><span class="ico-chest med"></span></div><div class="ncap">chest</div></td><td><div class="nbox"><span class="ico-boss med"></span></div><div class="ncap">boss</div></td><td><div class="nbox"><span class="ico-death med"></span></div><div class="ncap">death</div></td><td><div class="nbox"><span class="ico-gravestone med"></span></div><div class="ncap">gravestone</div></td><td><div class="nbox"><span class="ico-poison med"></span></div><div class="ncap">poison</div></td><td><div class="nbox"><span class="ico-star_coin med"></span></div><div class="ncap">star_coin</div></td></tr>
+ <tr><th>kenney</th><td><div class="nbox"><span class="ico-star med"></span></div><div class="ncap">star</div></td><td><div class="nbox"><span class="ico-flask med"></span></div><div class="ncap">flask</div></td><td><div class="nbox"><span class="ico-skull med"></span></div><div class="ncap">skull</div></td><td><div class="nbox"><span class="ico-fist med"></span></div><div class="ncap">fist</div></td><td><div class="nbox"><span class="ico-warn med"></span></div><div class="ncap">warn</div></td><td><div class="nbox"><span class="ico-gear med"></span></div><div class="ncap">gear</div></td><td><div class="nbox"><span class="ico-money med"></span></div><div class="ncap">money</div></td><td><div class="nbox"><span class="ico-cards med"></span></div><div class="ncap">cards</div></td><td><div class="nbox"><span class="ico-house med"></span></div><div class="ncap">house</div></td><td><div class="nbox"><span class="ico-campfire med"></span></div><div class="ncap">campfire</div></td><td><div class="nbox"><span class="ico-dice med"></span></div><div class="ncap">dice</div></td><td><div class="nbox"><span class="ico-trash med"></span></div><div class="ncap">trash</div></td></tr>
+</table>
+
+<h2>④ 道具图标（背包/商店/奖励）</h2>
+<div class="grid"><div class="cell small">
+  <div class="box2"><span class="ico-pill big2"></span></div>
+  <div class="nm">好伤药</div>
+  <div class="meta">ico-pill<br>flask_half</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-flask big2"></span></div>
+  <div class="nm">厉害伤药</div>
+  <div class="meta">ico-flask<br>flask_full</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-clover big2"></span></div>
+  <div class="nm">幸运护符</div>
+  <div class="meta">ico-clover<br>shield</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-sword big2"></span></div>
+  <div class="nm">锐爪护符</div>
+  <div class="meta">ico-sword<br>sword</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-shield big2"></span></div>
+  <div class="nm">硬壳护符</div>
+  <div class="meta">ico-shield<br>shield</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-shoe big2"></span></div>
+  <div class="nm">疾风护符</div>
+  <div class="meta">ico-shoe<br>shield</div>
+</div>
+<div class="cell small">
+  <div class="box2"><span class="ico-heal big2"></span></div>
+  <div class="nm">活力药</div>
+  <div class="meta">ico-heal<br>flask_full</div>
+</div></div>
+</body></html>

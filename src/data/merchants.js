@@ -1,0 +1,46 @@
+// 商人（商店的摊主）：每个地图有自己的几位商人，每次进商店按节点 id 稳定地挑一位。
+//
+// 【选表不在这里】—— MERCHANTS 由 content/merchants.json 生成（见下面的 GENERATED 区块）：
+// 加一个商人就改那个 JSON，然后跑 `node tools/build-content.mjs`。
+// 商人的脸用的是 PMD 头像（assets/portraits/<slug>/），所以 slug 必须在 content/species.json 里。
+import { hashString } from '../core/rng.js';
+
+// #region GENERATED-MERCHANTS
+export const MERCHANTS = [
+  {"id":"hippo_general","name":"沙河马商队","slug":"hippopotas","emotion":"happy","role":"杂货商人","greet":"「钱货两清，概不赊账。」店主是一只戴着帽子的沙河马，柜台底下还压着半张地图。","leave":"离开商队","biomes":["desert","canyon"],"priceMul":1,"cards":5,"items":3,"rarityBoost":0.35,"mustItems":[],"service":"remove","servicePrice":70},
+  {"id":"maractus_herb","name":"沙铃仙人掌药草摊","slug":"maractus","emotion":"joyous","role":"药草商人","greet":"「要刺吗？刚长的。」摊主晃了晃手里的沙铃，一股清苦的药草味混着沙子飘过来。","leave":"谢过摊主","biomes":["desert","forest"],"priceMul":0.95,"cards":3,"items":4,"rarityBoost":0.35,"mustItems":["potion_small","potion_big"],"service":"remove","servicePrice":60},
+  {"id":"trapinch_dig","name":"大颚蚁挖掘队","slug":"trapinch","emotion":"determined","role":"卡牌贩子","greet":"「从地底下挖出来的，你说值不值？」几只大颚蚁正把卡牌一张张从沙里拖出来。","leave":"拍拍沙子走人","biomes":["desert","canyon"],"priceMul":1.05,"cards":6,"items":2,"rarityBoost":0.45,"mustItems":[],"service":"remove","servicePrice":55},
+  {"id":"roggenrola_smith","name":"石丸子铁匠铺","slug":"roggenrola","emotion":"normal","role":"护符匠","greet":"「敲一敲，硬得很。」石丸子把护符一枚枚摆在石台上，敲起来叮叮响。","leave":"离开铁匠铺","biomes":["canyon","cliff"],"priceMul":1,"cards":3,"items":4,"rarityBoost":0.35,"mustItems":["charm_def","charm_atk"],"service":"remove","servicePrice":80},
+  {"id":"snivy_garden","name":"藤藤蛇花摊","slug":"snivy","emotion":"inspired","role":"种子商人","greet":"「藤蔓会自己找路，金币也会。」藤藤蛇把卡牌像叶子一样摊开，摆得很有讲究。","leave":"起身告辞","biomes":["forest"],"priceMul":0.95,"cards":5,"items":3,"rarityBoost":0.4,"mustItems":[],"service":"remove","servicePrice":65},
+  {"id":"grubbin_scrap","name":"强颚鸡母虫废料场","slug":"grubbin","emotion":"normal","role":"拾荒商人","greet":"「别嫌弃，都是好东西……大概是。」强颚鸡母虫从一堆破烂里翻出几张还算平整的卡。","leave":"离开废料场","biomes":["forest","cliff"],"priceMul":0.8,"cards":4,"items":3,"rarityBoost":0.25,"mustItems":[],"service":"remove","servicePrice":50},
+  {"id":"wishiwashi_market","name":"弱丁鱼渔市","slug":"wishiwashi","emotion":"happy","role":"海鲜商人","greet":"「今天的浪不错，货也不错。」一群弱丁鱼挤在一起充当柜台，看上去随时会散开。","leave":"离开渔市","biomes":["tide"],"priceMul":0.9,"cards":4,"items":4,"rarityBoost":0.35,"mustItems":[],"service":"remove","servicePrice":70},
+  {"id":"mareanie_junk","name":"好坏星杂货","slug":"mareanie","emotion":"worried","role":"便宜货商人","greet":"「便宜！因为……别问。」好坏星用触手把货推过来，你决定不去想这些东西是从哪来的。","leave":"赶紧走","biomes":["tide"],"priceMul":0.75,"cards":4,"items":2,"rarityBoost":0.2,"mustItems":[],"service":null,"servicePrice":0},
+  {"id":"fletchling_courier","name":"小箭雀信使","slug":"fletchling","emotion":"happy","role":"跑腿商人","greet":"「顺路带的，运费另算。」小箭雀把包裹往你面前一推，羽毛上还挂着风蚀崖的碎屑。","leave":"收下包裹","biomes":["cliff"],"priceMul":1,"cards":3,"items":3,"rarityBoost":0.4,"mustItems":["charm_agi"],"service":"remove","servicePrice":45},
+  {"id":"litwick_lantern","name":"烛光灵灯市","slug":"litwick","emotion":"stunned","role":"灯火商人","greet":"「灯亮着，价钱就好商量 —— 反过来也一样。」烛光灵的火焰晃了晃，你觉得自己的影子好像短了一截。","leave":"快点离开灯市","biomes":["night"],"priceMul":1.25,"cards":5,"items":3,"rarityBoost":0.6,"mustItems":[],"service":"remove","servicePrice":90},
+  {"id":"yamask_relic","name":"哭哭面具古董商","slug":"yamask","emotion":"sad","role":"古董商人","greet":"「这些都是有来历的东西。」哭哭面具抱着它的面具，声音很轻，像是在念谁的名字。","leave":"轻轻放下货品","biomes":["night"],"priceMul":1.15,"cards":4,"items":4,"rarityBoost":0.5,"mustItems":[],"service":"remove","servicePrice":75},
+  {"id":"honedge_black","name":"独剑鞘黑市","slug":"honedge","emotion":"angry","role":"黑市商人","greet":"「不问来路，不看身份，只收金币。」独剑鞘悬在半空，剑身上的那只眼睛一直盯着你的钱袋。","leave":"不留痕迹地走开","biomes":["night","cliff"],"priceMul":1.3,"cards":6,"items":2,"rarityBoost":0.75,"mustItems":["elixir"],"service":"remove","servicePrice":100}
+];
+// #endregion GENERATED-MERCHANTS
+
+/** 这个地图会出摊的商人（不会为空：没有专属商人时退回全体） */
+export function merchantsFor(biome) {
+  const list = MERCHANTS.filter((m) => m.biomes.includes(biome));
+  return list.length ? list : MERCHANTS;
+}
+
+/**
+ * 挑一位商人。用节点 id 做种子，所以同一个商店节点每次进来都是同一张脸、
+ * 同一套货（刷新页面回来也一样），不同节点才会换人。
+ * @param {string} biome 当前地图
+ * @param {string} seed 一般传节点 id
+ */
+export function pickMerchant(biome, seed) {
+  const list = merchantsFor(biome);
+  if (!list.length) return null;
+  return list[hashString(`${biome}:${seed}`) % list.length];
+}
+
+/** 调试用：列出某个地图会出现的商人名字 */
+export function merchantNames(biome) {
+  return merchantsFor(biome).map((m) => m.name);
+}
