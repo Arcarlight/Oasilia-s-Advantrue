@@ -37,17 +37,20 @@ const STAT_ICO = { 攻: 'ico-sword', 防: 'ico-shield', 速: 'ico-shoe', 运: 'i
 const PACE = {
   battleStart: 340,
   turnStart: 280,
-  /** 回合切换的光带横扫（和 turnStart 一起构成过场；够慢才看得清回合数） */
-  turnSweep: 1250,
+  /**
+   * 回合切换的光带横扫（和 turnStart 一起构成过场；够慢才看得清回合数，
+   * 而且它现在**不挡操作**，所以停留时间从 1250 拉长到了 2600）。
+   */
+  turnSweep: 2600,
   /**
    * 回合立绘：由大变小落到回合数旁边。
-   * turnArtLead 是「光带扫到几成才放立绘」（0~1）—— 取 .55 是为了让两段动画叠着走，
-   * 不然每个回合都要平白多等一整段立绘演出。
+   * turnArtLead 是「光带停稳之后隔多久放立绘」（按 sweep 时长的比例），
+   * 取 .22 是为了让「数字先落定 → 立绘再收拢进来」读起来有先后。
    */
-  turnArtLead: 0.55,
-  turnArtIn: 560,
-  turnArtHold: 380,
-  turnArtOut: 200,
+  turnArtLead: 0.22,
+  turnArtIn: 620,
+  turnArtHold: 620,
+  turnArtOut: 300,
   turnEnd: 200,
   draw: 140,
   reshuffle: 190,
@@ -333,15 +336,8 @@ export class BattleScreen {
 
     // ---- 中间：回合 / 敌方意图 ----
     // 回合徽章用时钟（骰子是「随机」，跟回合没关系）
-    // 立绘位就挂在徽章容器上（绝对定位），所以立绘无论多大都不会把布局挤动。
-    this.turnArtPlayer = el('div', { class: 'turn-art turn-art-player' });
-    this.turnArtEnemy = el('div', { class: 'turn-art turn-art-enemy' });
     this.turnBadgeText = el('span', { text: '第 1 回合' });
-    this.turnBadge = el('div', { class: 'turn-badge-wrap' }, [
-      this.turnArtPlayer,
-      el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), this.turnBadgeText]),
-      this.turnArtEnemy,
-    ]);
+    this.turnBadge = el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), this.turnBadgeText]);
     this.intentEl = el('div', { class: 'intent' }, [el('span', { class: 'ico-sword' }), el('span', { text: '正在观察……' })]);
 
     // ---- 战斗日志 ----
@@ -802,23 +798,64 @@ export class BattleScreen {
   }
 
   /**
-   * 回合切换特效：一条斜切的光带横扫过屏幕，带出「第 N 回合 / 你的行动（对手行动）」。
-   * 回合切换以前只是角标数字变了，打快了根本注意不到自己已经进入下一回合。
+   * 回合过场：一条斜切的光带横扫过屏幕，带出「第 N 回合 / 你的行动（对手行动）」，
+   * 并在回合数**左边（我方）/ 右边（敌方）**停一张「由大变小」的立绘。
+   *
+   * 两个刻意的设计（都是用户反馈定下来的）：
+   *
+   * ① **过场不挡操作**。这个方法只是**把浮层挂上去就返回**，事件流不等它演完 ——
+   *    所以抽牌演完、手牌解锁时，光带还在屏幕上飘着，玩家已经可以出牌了。
+   *    以前 `await turnSweep()` 会把整个回合开头卡住，光带扫完才能动作。
+   *    代价是光带必须自己负责收场（下面的 timer），并且要能容忍
+   *    「上一根还没走完，下一回合就来了」——所以每次进来先把上一根拆掉。
+   *
+   * ② 光带**停住的时间拉长了**（PACE.turnSweep 从 1250 提到 2600）：
+   *    既然不挡操作了，停留久一点才有时间看清回合数和立绘。
+   *
+   * 立绘挂在光带内部（不是别的地方），并做了反向 skew：
+   * 光带整体 `skewX(-12deg)`，立绘再 `skewX(12deg)` 掰回来 ——
+   * 宝可梦歪着站很奇怪，但反斜的光带是这套 UI 的样子。
    */
-  async turnSweep(ev) {
-    if (ev.side !== 'player' && ev.side !== 'enemy') return;
-    const band = el('div', { class: `turn-sweep sweep-${ev.side}` }, [
+  turnIntro(side, turn) {
+    if (this.destroyed) return;
+    if (side !== 'player' && side !== 'enemy') return;
+    const ms = Math.max(700, Math.round(PACE.turnSweep * this.speedMul));
+
+    // 上一根光带可能还在（连点/演出重叠）：先拆掉，连同它的定时器
+    this.clearTurnIntro();
+
+    const artPlayer = el('div', { class: 'turn-art turn-art-player' });
+    const artEnemy = el('div', { class: 'turn-art turn-art-enemy' });
+    const band = el('div', { class: `turn-sweep sweep-${side}` }, [
       el('div', { class: 'turn-sweep-glow' }),
-      el('div', { class: 'turn-sweep-text', text: `第 ${ev.turn} 回合` }),
-      el('div', { class: 'turn-sweep-sub', text: ev.side === 'player' ? '你的行动' : '对手行动' }),
+      el('div', { class: 'turn-sweep-row' }, [
+        artPlayer,
+        el('div', { class: 'turn-sweep-mid' }, [
+          el('div', { class: 'turn-sweep-text', text: `第 ${turn} 回合` }),
+          el('div', { class: 'turn-sweep-sub', text: side === 'player' ? '你的行动' : '对手行动' }),
+        ]),
+        artEnemy,
+      ]),
     ]);
-    // 动画时长跟着「演出速度」缩放（CSS 写死的话，快/慢档会和这里的等待脱节：
-    // 快档下光带还没走完就被移除，慢档下又会僵在屏幕中间）
-    const ms = Math.max(400, Math.round(PACE.turnSweep * this.speedMul));
     band.style.setProperty('--sweep-ms', `${ms}ms`);
     document.body.append(band);
-    await this.wait(PACE.turnSweep);
-    band.remove();
+
+    this._sweep = { band, slots: { player: artPlayer, enemy: artEnemy }, timers: [] };
+    // 立绘等光带停稳之后再入场（关键帧里 16% 就到位了，这里取 22% 留一点余量）
+    this._sweep.timers.push(setTimeout(() => this.turnArt(side, turn), Math.round(ms * PACE.turnArtLead)));
+    // 动画播完再拆（+80ms 余量，免得 CSS 动画最后几帧被截掉）
+    this._sweep.timers.push(setTimeout(() => {
+      band.remove();
+      if (this._sweep?.band === band) this._sweep = null;
+    }, ms + 80));
+  }
+
+  /** 拆掉当前这根回合光带（连同它没跑完的定时器） */
+  clearTurnIntro() {
+    if (!this._sweep) return;
+    for (const t of this._sweep.timers) clearTimeout(t);
+    this._sweep.band.remove();
+    this._sweep = null;
   }
 
   /**
@@ -827,15 +864,13 @@ export class BattleScreen {
    * 为什么是背面对我方、正面对敌方：和正作一致 —— 玩家永远看着自己宝可梦的后背。
    * 素材来自 Generation 9 Pack（assets/gen9/，导入时已裁到包围盒，见 tools/import-gen9.mjs）。
    *
-   * 动画本身：以「靠着徽章的那条边」为缩放原点，从 2.6 倍缩到 1 倍 ——
-   * 于是它一开始是**盖住回合数**的一大团，收拢之后停在回合数旁边，
-   * 而不是从旁边「长出来」。
-   *
-   * 时长跟着「演出速度」缩放（快档下整套只有三分之一长），和 turnSweep 用同一套倍率。
+   * 缩放原点是「靠着回合数的那条边」：于是它一开始是**盖住回合数**的一大团，
+   * 收拢之后停在旁边，而不是从旁边「长出来」。
+   * 时长跟着「演出速度」缩放，和光带用同一套倍率。
    */
   async turnArt(side, turn) {
-    if (this.destroyed) return;
-    const slot = side === 'player' ? this.turnArtPlayer : this.turnArtEnemy;
+    if (this.destroyed || !this._sweep) return;
+    const slot = this._sweep.slots[side];
     if (!slot) return;
     slot.replaceChildren();
 
@@ -850,7 +885,7 @@ export class BattleScreen {
      * getComputedStyle 拿的是「已经按窗口宽度 clamp 过」的真实像素值，
      * 所以窄窗口下立绘会自己变小，不需要第二套断点。
      */
-    const slotH = parseFloat(getComputedStyle(slot).height) || 80;
+    const slotH = parseFloat(getComputedStyle(slot).height) || 96;
     const { w, h } = fitArt(art, slotH);
 
     const inMs = Math.max(120, Math.round(PACE.turnArtIn * this.speedMul));
@@ -858,6 +893,9 @@ export class BattleScreen {
     slot.style.setProperty('--tart-in', `${inMs}ms`);
     slot.style.setProperty('--tart-out', `${outMs}ms`);
     slot.style.setProperty('--tart-from', String(ART_FROM_SCALE));
+    // 图在立绘位里是绝对定位 + top:50% 垂直居中的，CSS 不知道它多高，
+    // 所以把高度也当成变量传进去（margin-top 用负一半把它拉回来）。
+    slot.style.setProperty('--tart-ih', `${h}px`);
 
     const img = el('img', {
       class: 'turn-art-img',
@@ -868,7 +906,7 @@ export class BattleScreen {
     img.draggable = false;
     const glow = el('div', {
       class: 'turn-art-glow',
-      style: { width: `${Math.round(w * 1.5)}px`, height: `${Math.round(h * 0.7)}px` },
+      style: { width: `${w}px`, height: `${Math.round(h * 0.6)}px` },
     });
     slot.append(glow, img);
 
@@ -882,8 +920,7 @@ export class BattleScreen {
 
   /** 清掉立绘位（切屏 / 销毁时用，防止动画节点留在 DOM 里） */
   clearTurnArt() {
-    this.turnArtPlayer?.replaceChildren();
-    this.turnArtEnemy?.replaceChildren();
+    for (const slot of Object.values(this._sweep?.slots ?? {})) slot.replaceChildren();
   }
 
   refreshTurn() {
@@ -1231,18 +1268,17 @@ export class BattleScreen {
         this.refreshTurn();
         this.refreshSide(ev.side);
         /**
-         * 立绘等光带扫到 PACE.turnArtLead 的时候才入场。
-         * 那个时刻「第 N 回合」已经在大字幕上停稳了（turnSweepText 在 20%~74% 是静止的），
-         * 所以观感是「数字先落定 → 立绘从大缩到小停在数字旁边」，
-         * 而两段动画叠着走，每个回合只比原来多等收尾的那一点点。
+         * 回合过场（光带 + 立绘）**不 await**：它自己演完自己收场。
+         *
+         * 这样抽牌演完、手牌一解锁，光带还在屏幕上飘着，玩家就能出牌了 ——
+         * 用户要的就是这个手感（「可以让条消失之前玩家就可以出牌」）。
+         * 代价是它不能再替我们「垫时间」，所以光带自己把停留时间拉长到了
+         * PACE.turnSweep（见 turnIntro）。
          */
-        const artDone = this.wait(PACE.turnSweep * PACE.turnArtLead)
-          .then(() => this.turnArt(ev.side, ev.turn));
-        await this.turnSweep(ev);
+        this.turnIntro(ev.side, ev.turn);
         this.refreshSide(ev.side === 'player' ? 'enemy' : 'player');
         // 意图胶囊也要跟着换（之前漏了这一句，敌方回合里还挂着玩家回合的文案）
         this.refreshIntent();
-        await artDone;
         await this.wait(PACE.turnStart);
         break;
       }
@@ -1693,7 +1729,7 @@ export class BattleScreen {
     try { this._ro?.disconnect(); } catch { /* 忽略 */ }
     this.playerAnim?.destroy?.();
     this.enemyAnim?.destroy?.();
-    this.clearTurnArt();
+    this.clearTurnIntro();
     this.screen?.remove();
   }
 }

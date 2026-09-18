@@ -971,18 +971,9 @@ button { font-family: inherit; }
 .stat-chips .up { color: var(--good); }
 .stat-chips .down { color: var(--bad); }
 
-/* 底部这条：上面一行是「回合数 + 两侧立绘位」，下面一行是敌方意图。
-   为什么改成两行：立绘要占回合徽章**两侧**的位置，而徽章原来贴在场地最左边 ——
-   诊断量出来我方立绘落定后 x=-97，整只跑到屏幕外去了。
-   现在徽章在自己的列里居中，两侧各留出半个列宽（1440 下约 265px），
-   放一张立绘绰绰有余；意图挪到第二行，免得和右侧立绘抢那 691px。 */
 .battle-middle {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  align-content: center;
-  gap: 4px;
-  padding: 4px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 4px 0;
   grid-column: 1;
 }
 .turn-badge {
@@ -995,68 +986,69 @@ button { font-family: inherit; }
 
 /* ------------------------------------------------------------------
    回合切换立绘
-   回合数显示完整之后，对应一侧的正面/背面图「由大变小」落到回合数旁边
-   （我方在左、敌方在右，和正作一样：自己的宝可梦给看后背）。
+   回合数显示完整之后，对应一侧的正面/背面图「由大变小」落到**回合光带上**
+   回合数的左边 / 右边（我方在左、敌方在右，和正作一样：自己的宝可梦给看后背）。
 
-   两个立绘位是**绝对定位**挂在徽章容器上的，所以：
+   三条硬约束：
 
-   · 立绘无论放大到 2.6 倍还是收回来，都**不会挤动任何布局** ——
-     徽章位置不动、角色站位不动、战斗场地那两行的高度也不变；
-   · 缩放原点是「靠着徽章的那条边 + 底边」，于是放大时它朝屏幕中间
-     （也就是朝徽章）铺开、收拢时退回自己的位置，而不是从旁边长出来；
-   · 高度用 clamp 跟着窗口走，窄窗口自动变小，不需要第二套断点。
+   · 立绘位在光带内部、和回合数同一行，两侧留**等宽**的空位 ——
+     所以回合数永远在正中，立绘多宽都不会把字幕顶偏；
+   · 缩放原点是「靠着回合数的那条边」，于是放大时它朝字幕中央铺开、
+     收拢时退回自己那一侧，而不是从旁边长出来；
+   · 光带整体 `skewX(-12deg)`，立绘用等量的反向 skew 掰回来 ——
+     宝可梦歪着站会很像坏图，但斜切的光带是这套 UI 的招牌样子。
    ------------------------------------------------------------------ */
-.turn-badge-wrap { position: relative; display: inline-flex; align-items: center; }
-.turn-art {
-  --tart-h: clamp(52px, 6.6vw, 96px);
-  position: absolute;
-  bottom: -6px;
-  height: var(--tart-h);
-  width: calc(var(--tart-h) * 2);
-  pointer-events: none;
-  z-index: 6;
+.turn-sweep-row {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(10px, 2vw, 30px);
 }
-/* 「100% + 4px」= 徽章容器的外沿往外挪 4px：左边给玩家、右边给对手 */
-.turn-art-player { right: calc(100% + 4px); }
-.turn-art-enemy { left: calc(100% + 4px); }
-
+.turn-sweep-mid { display: flex; flex-direction: column; align-items: center; }
+.turn-art {
+  /* 高度跟着窗口走，窄窗口自动变小，不需要第二套断点 */
+  --tart-h: clamp(56px, 8.4vw, 128px);
+  flex: 0 0 auto;
+  width: calc(var(--tart-h) * 1.6);
+  height: var(--tart-h);
+  position: relative;
+  transform: skewX(12deg);   /* 把光带的 -12deg 掰回来 */
+}
+.turn-art-player { text-align: right; }
 .turn-art-img {
   position: absolute;
-  bottom: 0;
+  top: 50%;
   image-rendering: pixelated;
-  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, .5));
-  animation: turnArtIn var(--tart-in, 560ms) cubic-bezier(.16, .84, .3, 1) both;
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, .5));
+  animation: turnArtIn var(--tart-in, 620ms) cubic-bezier(.16, .84, .3, 1) both;
 }
-.turn-art-player .turn-art-img { right: 0; transform-origin: 0% 100%; }
-.turn-art-enemy .turn-art-img { left: 0; transform-origin: 100% 100%; }
+.turn-art-player .turn-art-img { right: 0; margin-top: calc(var(--tart-ih, 0px) / -2); transform-origin: 0% 50%; }
+.turn-art-enemy .turn-art-img { left: 0; margin-top: calc(var(--tart-ih, 0px) / -2); transform-origin: 100% 50%; }
 
 @keyframes turnArtIn {
   0%   { opacity: 0; transform: scale(var(--tart-from, 2.6)); }
   18%  { opacity: 1; }
   100% { opacity: 1; transform: scale(1); }
 }
-/* 淡出单独一个动画：如果想在同一个元素上用两条 animation 叠「入场 + 淡出」，
+/* 淡出单独一个动画：想在同一条元素上用两条 animation 叠「入场 + 淡出」的话，
    后一条的 backwards 填充会在入场期间就把 transform 覆盖成 scale(1)，入场就不动了 */
 .turn-art-img.turn-art-out,
 .turn-art-glow.turn-art-out {
-  animation: turnArtOut var(--tart-out, 200ms) ease-in both;
+  animation: turnArtOut var(--tart-out, 300ms) ease-in both;
 }
 @keyframes turnArtOut {
   0%   { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(.82); }
+  100% { opacity: 0; transform: scale(.84); }
 }
 
-/* 脚下一圈光晕，把立绘从天空背景里托出来 */
+/* 脚下一圈光晕，把立绘从光带上托出来 */
 .turn-art-glow {
   position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 2px;
   border-radius: 50%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 226, 170, .55), rgba(255, 226, 170, 0) 72%);
-  animation: turnArtGlow var(--tart-in, 560ms) ease-out both;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 236, 190, .6), rgba(255, 236, 190, 0) 72%);
+  animation: turnArtGlow var(--tart-in, 620ms) ease-out both;
 }
-.turn-art-player .turn-art-glow { right: 0; left: auto; }
+.turn-art-player .turn-art-glow { right: 0; }
 .turn-art-enemy .turn-art-glow { left: 0; }
 @keyframes turnArtGlow {
   0%   { opacity: 0; transform: scale(.6); }
@@ -1212,16 +1204,18 @@ button { font-family: inherit; }
 .turn-sweep.sweep-enemy .turn-sweep-sub { color: #ffd2c2; }
 @keyframes turnSweep {
   0%   { transform: translateX(-115%) skewX(-12deg); opacity: 0; }
-  10%  { opacity: 1; }
-  26%  { transform: translateX(0) skewX(-12deg); opacity: 1; }
-  72%  { transform: translateX(0) skewX(-12deg); opacity: 1; }   /* 停住，让人看清回合数 */
-  88%  { opacity: 1; }
+  8%   { opacity: 1; }
+  16%  { transform: translateX(0) skewX(-12deg); opacity: 1; }
+  /* 停住很久：光带现在**不挡操作**了，停久一点才有时间看清回合数和立绘
+     （立绘就在这段时间里由大变小落到回合数旁边） */
+  76%  { transform: translateX(0) skewX(-12deg); opacity: 1; }
+  90%  { opacity: 1; }
   100% { transform: translateX(115%) skewX(-12deg); opacity: 0; }
 }
 @keyframes turnSweepText {
   0%   { transform: scale(.84); opacity: 0; letter-spacing: .42em; }
-  20%  { transform: scale(1.05); opacity: 1; letter-spacing: .16em; }
-  74%  { transform: scale(1); opacity: 1; letter-spacing: .16em; }
+  12%  { transform: scale(1.05); opacity: 1; letter-spacing: .16em; }
+  78%  { transform: scale(1); opacity: 1; letter-spacing: .16em; }
   100% { transform: scale(1.03); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
