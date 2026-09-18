@@ -1254,8 +1254,9 @@ export class BattleScreen {
     // 先把「界面副本」推进到这条事件之后的状态，再演动画
     this.applyEventToDisp(ev);
     // 大部分事件都可以顺手给对应角色换个表情
+    // （必须把整条 ev 传进去：强化和削弱是同一种事件，只有数值正负能把它们分开）
     if (ev.side && ['damage', 'trueDamage', 'heal', 'shield', 'buff', 'status', 'dodge', 'playCard'].includes(ev.type)) {
-      this.reactFace(ev.side, emotionForEvent(ev.type, ev.side));
+      this.reactFace(ev.side, emotionForEvent(ev.type, ev.side, ev));
     }
     switch (ev.type) {
       case 'battleStart':

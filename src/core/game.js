@@ -26,6 +26,44 @@ export const Phase = {
 };
 
 const STAT_NAMES = { atk: '攻击', def: '防御', maxHp: '最大生命', agi: '敏捷', luck: '幸运' };
+export { STAT_NAMES };
+
+// ================= 道具 =================
+
+/**
+ * 一件道具「用下去会发生什么」——**界面和引擎共用这一份判断**。
+ *
+ * 为什么必须抽出来：背包界面以前自己写了一句 `item.heal ? 显示「使用」按钮 : 显示「已生效」`，
+ * 而药水的数据里根本没有 `heal` 字段（它们用的是 `healPct`）——
+ * 于是**七件道具全部显示「已生效」、一个「使用」按钮都没有**，背包等于整个是死的
+ * （玩家反馈：「道具都写着已生效，像好伤药那种完全没法用」）。
+ * 这就是「界面把数据模型的规则又抄了一遍」的老毛病，改数据忘改界面。
+ *
+ * @returns {{kind:'heal', flat?:number, pct?:number}|{kind:'stat', key:string, amount:number}|null}
+ *   null = 这件道具有没有主动使用的效果（那种才该显示「已生效」）
+ */
+export function itemEffect(item) {
+  if (!item) return null;
+  if (item.healPct) return { kind: 'heal', pct: item.healPct };
+  if (item.heal) return { kind: 'heal', flat: item.heal };
+  if (item.stat) {
+    const [key, amount] = Object.entries(item.stat)[0] ?? [];
+    if (key) return { kind: 'stat', key, amount };
+  }
+  return null;
+}
+
+/**
+ * 背包里**真的还有**的东西（数量 > 0，而且认得出来是什么）。
+ *
+ * 数量为 0 的条目要滤掉：开局数据 `STARTER_ITEMS` 就带着一个 `potion_big: 0`，
+ * 用光最后一件时也可能留下 0。以前背包照单全收，于是开局第一眼就是一行
+ * 「厉害伤药 ×0」配着一个「使用」按钮，点下去只说「现在用不了」——
+ * 这也是「背包看起来整个没用」的一部分。
+ */
+export function inventoryEntries(items) {
+  return Object.entries(items ?? {}).filter(([id, n]) => n > 0 && !!ITEMS[id]);
+}
 
 export class Game {
   /**
@@ -142,27 +180,51 @@ export class Game {
   }
 
   giveItem(id, n = 1) {
+    const item = ITEMS[id];
+    const eff = itemEffect(item);
+    /**
+     * **本局永久生效的道具（护符 / 活力药）拿到就直接生效，不占背包格子。**
+     *
+     * 为什么：这类道具写的是「本局攻击 +4」——它是永久加成，没有「什么时候用」这个决策，
+     * 留在背包里只会让玩家买了却什么都没得到（界面还会显示「已生效」，名不副实）。
+     * 药水不一样：**什么时候喝**是真决策，所以留在背包里按需使用。
+     *
+     * 返回值带上「实际生效了什么」，调用方可以把它写进给玩家看的文案里。
+     */
+    if (eff?.kind === 'stat') {
+      const applied = [];
+      for (let i = 0; i < n; i++) {
+        const gained = this.gainStat(eff.key, eff.amount);
+        applied.push(gained);
+      }
+      return { id, n, stored: false, applied: { key: eff.key, amount: applied.reduce((a, b) => a + b, 0) } };
+    }
     this.data.items[id] = (this.data.items[id] ?? 0) + n;
-    return id;
+    return { id, n, stored: true, applied: null };
   }
 
   useItem(id) {
     const item = ITEMS[id];
     if (!item || (this.data.items[id] ?? 0) <= 0) return null;
-    const amount = item.healPct ? Math.round(this.data.maxHp * item.healPct) : (item.heal ?? 0);
-    if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: 'HP 已经满了。' };
-    this.data.items[id] -= 1;
-    if (this.data.items[id] <= 0) delete this.data.items[id];
-    if (amount > 0) {
+    const eff = itemEffect(item);
+    if (!eff) return { ok: false, text: `「${item.name}」没有可以主动使用的效果。` };
+    if (eff.kind === 'heal') {
+      const amount = eff.pct ? Math.round(this.data.maxHp * eff.pct) : eff.flat;
+      if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: 'HP 已经满了。' };
+      this.consumeItem(id);
       const h = this.heal(amount);
       return { ok: true, text: `使用「${item.name}」，回复 ${h} 点 HP。` };
     }
-    if (item.stat) {
-      const [k, v] = Object.entries(item.stat)[0];
-      this.gainStat(k, v);
-      return { ok: true, text: `使用「${item.name}」，${STAT_NAMES[k]} +${v}。` };
-    }
-    return { ok: true, text: `使用了「${item.name}」。` };
+    // 属性类：正常情况下拿到时就已经生效了（见 giveItem），
+    // 这里留着是为了兜住老存档里已经躺在背包里的那几件
+    this.consumeItem(id);
+    const gained = this.gainStat(eff.key, eff.amount);
+    return { ok: true, text: `使用「${item.name}」，${STAT_NAMES[eff.key] ?? eff.key} +${gained}。` };
+  }
+
+  consumeItem(id) {
+    this.data.items[id] = (this.data.items[id] ?? 0) - 1;
+    if (this.data.items[id] <= 0) delete this.data.items[id];
   }
 
   addCard(id) {
@@ -892,8 +954,13 @@ export class Game {
       return { ok: true, text: `买下「${entry.name}」，已放入卡组。` };
     }
     if (entry.kind === 'item') {
-      this.giveItem(entry.id, 1);
-      return { ok: true, text: `买下「${entry.name}」。` };
+      const got = this.giveItem(entry.id, 1);
+      // 护符 / 活力药是**拿到就生效**的（见 giveItem）：文案要说清「已经加上了」，
+      // 否则玩家会去背包里找 —— 那里根本没有，看起来就像买了个没用的东西
+      if (got.applied) {
+        return { ok: true, text: `买下「${entry.name}」，${STAT_NAMES[got.applied.key] ?? got.applied.key} +${got.applied.amount}（本局有效）。` };
+      }
+      return { ok: true, text: `买下「${entry.name}」，已放进背包（按 I 打开，点「使用」）。` };
     }
     return { ok: true, text: '成交。' };
   }

@@ -28,18 +28,29 @@ export const EMOTION = {
   teary: 'Teary-Eyed',
 };
 
-/** 战斗里根据事件挑表情 */
-export function emotionForEvent(type, side) {
+/**
+ * 战斗里根据事件挑表情。
+ *
+ * `ev` 是必要的第三个参数：**强化和削弱用的是同一种事件**（`type: 'buff'`），
+ * 只有数值的正负能把它们分开。以前只看 type，两者一律给 'inspired' ——
+ * 那是一张**淡黄底的兴奋脸**，于是「刺耳声把你的防御削掉 5 点」的时候，
+ * 你自己的头像反而一脸兴奋（用户反馈：「受伤的时候为什么用激动的表情」）。
+ */
+export function emotionForEvent(type, side, ev = {}) {
   switch (type) {
     case 'damage':
     case 'trueDamage':
-      return side === 'player' ? 'pain' : 'pain';
+      return 'pain';
     case 'heal':
       return 'happy';
     case 'shield':
       return 'determined';
-    case 'buff':
-      return 'inspired';
+    case 'buff': {
+      // requested 是卡面写的数（被属性下限夹住时 delta 会变成 0 甚至 +1），
+      // 所以判定方向要用 requested，没有它才退回 amount
+      const dir = ev.requested ?? ev.amount ?? 0;
+      return dir < 0 ? 'worried' : 'inspired';
+    }
     case 'status':
       return side === 'player' ? 'worried' : 'stunned';
     case 'dodge':
@@ -53,10 +64,33 @@ export function emotionForEvent(type, side) {
   }
 }
 
-const cache = new Map();
+/**
+ * 情绪的「正负」分组。回退时**绝不跨组**：
+ * 一张「痛苦」的图找不到时，宁可退到中性的 Normal，也不能退到黄底的 Happy。
+ *
+ * 这条以前是隐患而不是显式规则 —— 旧的回退顺序写死成
+ * `normal → determined → happy → surprised …`，靠「每种宝可梦都有 Normal」侥幸没出事；
+ * 一旦某个物种缺 Normal，挨打就会变成一张笑脸。
+ */
+const VALENCE = {
+  pain: 'bad', angry: 'bad', sad: 'bad', worried: 'bad',
+  stunned: 'bad', sigh: 'bad', crying: 'bad', teary: 'bad',
+  happy: 'good', joyous: 'good', inspired: 'good',
+};
+/** 中性脸：任何情绪找不到图时都可以退到这里 */
+const NEUTRAL_ORDER = ['normal', 'determined', 'surprised', 'shouting', 'dizzy'];
 
-/** 表情不存在时的回退顺序（SpriteCollab 里有些物种只画了少量表情） */
-const FALLBACK = ['normal', 'determined', 'happy', 'surprised', 'pain', 'angry', 'sad', 'worried'];
+/** 该按什么顺序去找图：自己 → 同正负的其它表情 → 中性脸 → 剩下的 */
+export function emotionFallbackOrder(emotion) {
+  const same = VALENCE[emotion];
+  const all = Object.keys(EMOTION).filter((e) => e !== emotion);
+  const group = same ? all.filter((e) => VALENCE[e] === same) : [];
+  const neutral = NEUTRAL_ORDER.filter((e) => e !== emotion && !group.includes(e));
+  const rest = all.filter((e) => !group.includes(e) && !neutral.includes(e));
+  return [emotion, ...group, ...neutral, ...rest];
+}
+
+const cache = new Map();
 
 function loadImage(url) {
   return new Promise((resolve) => {
@@ -86,7 +120,9 @@ export async function portraitUrl(slug, emotion = 'normal') {
   };
 
   const p = (async () => {
-    const order = [emotion, ...FALLBACK.filter((e) => e !== emotion)];
+    // 回退顺序由 emotionFallbackOrder() 决定：同正负的表情优先，中性脸兜底，
+    // **永远不会**把「痛苦」退成「高兴」（见那里的说明）
+    const order = emotionFallbackOrder(emotion);
     for (const emo of order) {
       const url = src(emo);
       if (!url) continue;

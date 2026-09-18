@@ -8,6 +8,8 @@ import { createPortrait, setPortraitEmotion } from '../core/portraits.js';
 import { audio } from '../core/audio.js';
 import { BIOMES, BALANCE } from '../data/balance.js';
 import { CARD_BY_ID, ITEMS } from '../data/cards.js';
+// 道具有没有「主动使用」的效果、属性叫什么，都从引擎那一份问，别在界面里自己判断
+import { itemEffect, STAT_NAMES } from '../core/game.js';
 import { NODE_TYPES, nodeName } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
@@ -134,7 +136,7 @@ async function renderTitle(game) {
 
   inner.append(el('div', {
     class: 'title-foot',
-    html: '素材：宝可梦精灵图来自 <b>PMDCollab/SpriteCollab</b>；界面与音效来自 <b>Kenney</b> 素材包。<br>这是一个非商业的同人练习作品。',
+    html: '素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面与音效来自 <b>Kenney</b> 素材包。<br>这是一个非商业的同人练习作品。',
   }));
 
   host.append(screen);
@@ -692,7 +694,14 @@ function renderReward(game) {
   if (r.growthText) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-arrow_up' }), `成长：${r.growthText}`]));
   // 道具 / 遗物各自用注册表里给它挑的图标（以前两个都是 ico-star，压根看不出拿的是什么）
   if (r.potion) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.potion]?.ico ?? 'ico-flask' }), `获得 ${ITEMS[r.potion].name}`]));
-  if (r.relic) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.relic]?.ico ?? 'ico-clover' }), `获得 ${ITEMS[r.relic].name}`]));
+  if (r.relic) {
+    const relic = ITEMS[r.relic];
+    const eff = itemEffect(relic);
+    // 护符类拿到就生效了（见 Game.giveItem），所以把「加了什么」直接写在奖励条上 ——
+    // 只写「获得 锐爪护符」，玩家会以为还得自己去背包里用一次
+    const note = eff?.kind === 'stat' ? `（${STAT_NAMES[eff.key] ?? eff.key} +${eff.amount}，本局有效）` : '';
+    pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.relic]?.ico ?? 'ico-clover' }), `获得 ${relic?.name ?? r.relic}${note}`]));
+  }
   panel.append(pills);
 
   if (r.cardChoices?.length) {

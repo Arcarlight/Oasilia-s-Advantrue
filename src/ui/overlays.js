@@ -8,7 +8,13 @@ import {
 import { audio } from '../core/audio.js';
 import { music } from '../core/bgm.js';
 import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance, dodgeChance, SPEED_OPTIONS, BATTLE_SPEED_KEY, loadBattleSpeed, RARITY } from '../data/balance.js';
+// itemEffect / inventoryEntries：道具有没有「主动使用」的效果、背包里哪些真的还有 ——
+// 背包界面和引擎共用这两份判断，别在界面里自己抄一遍数据模型的规则
+// （抄漏过一次：判断写的是 `item.heal` 而数据字段叫 `healPct`，整个背包一个按钮都没有）
+import { itemEffect, inventoryEntries } from '../core/game.js';
 import { CARD_BY_ID, CARDS, ITEMS } from '../data/cards.js';
+// 说明页里「一共几章」也从地图生成器现问，别再手写（曾经写成「三章」，而实际是 6 章）
+import { stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { BGM_NAMES } from '../core/bgm.js';
 import { renderHud } from './hud.js';
@@ -230,8 +236,9 @@ export function showCardDetail(card, opts = {}) {
     const { picked = 0, owned = 1, full = false, max = 0, readOnly = false } = state();
     stateEl.textContent = readOnly
       ? (owned > 0
-        ? `卡组里有这张：${owned} 张（出战卡组 = 全部所持卡牌）`
-        : `这张还没拿到（去奖励 / 商店 / 事件里找找）`)
+        // 「出战卡组 = 全部所持卡牌」这句是旧概念的残留：现在根本没有单独的出战卡组了
+        ? `你的卡组里有这张：${owned} 张`
+        : '这张还没拿到（去奖励 / 商店 / 事件里找找）')
       : (picked > 0
         ? `出战卡组里有这张：${picked} / ${owned} 张`
         : `这张还没进出战卡组（卡组里一共有 ${owned} 张）`);
@@ -333,7 +340,9 @@ export function showItems(game) {
 
   const paint = () => {
     clear(body);
-    const entries = Object.entries(game.data.items ?? {});
+    // 只列**真的还有**的东西（数量 > 0）：开局数据自带一个 `potion_big: 0`，
+    // 照单全收的话开局就有一行「厉害伤药 ×0」配着「使用」按钮，点了只说「现在用不了」
+    const entries = inventoryEntries(game.data.items);
     if (!entries.length) {
       body.append(el('p', { text: '背包是空的。地图上的宝箱和商店会给你补货。' }));
     } else {
@@ -341,6 +350,28 @@ export function showItems(game) {
       for (const [id, n] of entries) {
         const item = ITEMS[id];
         if (!item) continue;
+        /**
+         * 「这件东西能不能用」必须问 itemEffect()，**不能在这里自己判断**。
+         *
+         * 这里以前写的是 `item.heal ? 使用按钮 : 「已生效」`，而药水的数据字段叫 `healPct`
+         * ——于是七件道具全都显示「已生效」，一个「使用」按钮都没有，背包整个是死的
+         * （玩家反馈：「道具都写着已生效，像好伤药那种完全没法用」）。
+         * 同理，只有**回血类**才该因为「HP 已满」被禁用；护符类跟血量无关。
+         */
+        const eff = itemEffect(item);
+        const hpFull = game.data.hp >= game.data.maxHp;
+        const blocked = eff?.kind === 'heal' && hpFull;
+        const use = () => {
+          const res = game.useItem(id);
+          if (res?.ok) {
+            audio.useItem();
+            toast(res.text, 'good');
+            paint();
+            renderHud(game);
+          } else {
+            toast(res?.text ?? '现在用不了。', 'bad');
+          }
+        };
         // 背包以前一行图标都没有，只能读名字；现在用注册表给道具挑的图标
         list.append(el('div', { class: 'shop-item' }, [
           el('h4', {}, [
@@ -349,35 +380,35 @@ export function showItems(game) {
           ]),
           el('p', { text: item.desc }),
           el('div', { class: 'row' }, [
-            item.heal
+            eff
               ? el('button', {
                   class: 'btn btn-sm btn-primary',
-                  disabled: game.data.hp >= game.data.maxHp,
-                  onClick: () => {
-                    const res = game.useItem(id);
-                    if (res?.ok) {
-                      audio.useItem();
-                      toast(res.text, 'good');
-                      paint();
-                      renderHud(game);
-                    } else {
-                      toast(res?.text ?? '现在用不了。', 'bad');
-                    }
-                  },
-                }, [game.data.hp >= game.data.maxHp ? 'HP 已满' : '使用'])
-              : el('span', { class: 'price', text: '已生效' }),
+                  disabled: blocked,
+                  dataset: blocked ? { tip: 'HP 已经满了，喝了也是浪费 —— 受伤之后再来。' } : null,
+                  onClick: use,
+                }, [blocked ? 'HP 已满' : '使用'])
+              : el('span', { class: 'price', dataset: { tip: '这类道具拿到手就已经生效了，不需要使用。' } }, ['已生效']),
           ]),
         ]));
       }
       body.append(list);
     }
     body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
+      el('h4', { text: '道具怎么用' }),
+      el('ul', {}, [
+        el('li', { text: '药水留在背包里，想什么时候喝就点「使用」——不占出牌次数，战斗中也随时能用（按 I 打开背包）。' }),
+        el('li', { html: '护符 / 活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>了，不会留在背包里。' }),
+      ]),
+    ]));
+    body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
       el('h4', { text: '地图上的回血方式' }),
       el('ul', {}, [
-        el('li', { text: '绿洲营地：回复最大生命的 35%（营地还可以把一张卡换成更强的卡）。' }),
+        // 数字全部现算：这几条以前写死成 35% / 4%，和 BALANCE 里的 40% / 12% 早就对不上了
+        el('li', { text: `绿洲营地：回复最大生命的 ${Math.round(BALANCE.restHealPct * 100)}%（营地还可以把一张卡换成更强的卡）。` }),
         el('li', { text: '卡牌：羽栖、文柚果、急救等回复类卡牌，战斗中随时可用。' }),
         el('li', { text: '事件：不少选项能直接回血，或者提升最大生命。' }),
-        el('li', { text: '每场战斗胜利后自动回复最大生命的 4%。' }),
+        el('li', { text: `每场战斗胜利后自动回复最大生命的 ${Math.round(BALANCE.healAfterBattlePct * 100)}%。` }),
+        el('li', { text: `走到首领节点前会先自动回复 ${Math.round(BALANCE.preBossHealPct * 100)}% 生命。` }),
       ]),
     ]));
   };
@@ -389,37 +420,56 @@ export function showItems(game) {
 // 帮助
 // ============================================================
 export function showHelp() {
+  /**
+   * 说明页里的数字**一律从 BALANCE / stageCount() 现算**，不许再手写。
+   *
+   * 这一页以前到处是写死的数字，改完平衡就全对不上了 —— 实测过期的有：
+   * 「三章都走完就算通关」（早就 6 章）、「营地回复 35%」（实际 40%）、
+   * 「每场战斗胜利后回复 4%」（实际 12%）。手写数字 = 一定会过期。
+   */
+  const pct = (v) => `${Math.round(v * 100)}%`;
+  const stages = stageCount();
   const body = el('div', { class: 'help-grid' }, [
     el('div', { class: 'help-card' }, [
       el('h4', { text: '怎么玩' }),
       el('ul', {}, [
         el('li', { text: '在分叉地图上选择前进路线：战斗 / 事件 / 宝箱 / 商店 / 营地 / 首领。' }),
         el('li', { text: '战斗胜利后可以拿卡、拿金币、拿道具。击败章节首领进入下一章。' }),
-        el('li', { text: 'HP 在战斗之间保留，降到 0 这一局就结束了。' }),
-        el('li', { text: '三章都走完就算通关，看看你能走多远。' }),
+        el('li', { text: 'HP 在战斗之间保留，降到 0 这一局就灰溜溜地回家了。' }),
+        el('li', { text: `${stages} 章都走完就算通关，看看你能走多远。` }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
       el('h4', { text: '战斗规则' }),
       el('ul', {}, [
-        el('li', { html: '每回合 AP 回满，由<code>敏捷</code>决定：AP = 2 + 敏捷 ÷ 2（上限 8）。' }),
+        el('li', { html: `每回合 AP 回满，由<code>敏捷</code>决定：AP = 2 + 敏捷 ÷ 2（上限 ${BALANCE.apMax}）。` }),
         el('li', { html: '伤害 =（攻击 + 卡牌威力）× 60 ÷ (60 + 对方防御)，最低 1 点；先扣<code>护盾</code>。' }),
-        el('li', { html: '每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = 3 + 敏捷 ÷ 5，出牌上限 = 3 + 敏捷 ÷ 2。' }),
-        el('li', { html: '抽上来的牌比手牌上限多，多出来的会自动进弃牌堆——所以不要囤牌。' }),
-        el('li', { html: '<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×1.6。' }),
+        el('li', { html: `每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = 3 + 敏捷 ÷ 5（上限 ${BALANCE.drawMax}），出牌上限 = 3 + 敏捷 ÷ 2（上限 ${BALANCE.playMax}）。这三项在你战斗界面的底栏写着当前数值。` }),
+        el('li', { html: `抽上来的牌比手牌上限（3 + 敏捷 ÷ 5，上限 ${BALANCE.handMax}）多，多出来的会自动进弃牌堆——所以不要囤牌。` }),
+        el('li', { html: `<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×${BALANCE.luckCritMult}。` }),
         el('li', { html: '卡牌用完默认洗回<code>卡组最底端</code>；标着<code>销毁</code>的卡一场战斗只能用一次。' }),
         el('li', { html: '牌组薄的时候，同一张牌一个回合里能被打上好几次（打完回底端、又抽回来）—— 这是<code>花了钱删卡</code>才换来的构筑，但每回合能打几张仍然卡死在出牌上限。' }),
         el('li', { text: '卡组抽空时，弃牌堆会洗回卡组继续抽。' }),
         el('li', { text: '护盾在持有者自己的回合开始时清空，所以它其实是「这一轮的减伤」。' }),
+        el('li', { html: '每次进入新回合会有一条<code>回合光带</code>扫过屏幕，写着「第 N 回合」和这一侧的正 / 背面立绘。<b>它不挡操作</b> —— 光带还在飘的时候你已经可以出牌了。' }),
+      ]),
+    ]),
+    el('div', { class: 'help-card' }, [
+      el('h4', { text: '道具与背包' }),
+      el('ul', {}, [
+        el('li', { html: `按 <code>I</code> 打开背包。药水（好伤药 ${pct(0.25)} / 厉害伤药 ${pct(0.5)}）留在背包里，想喝就点「使用」——<b>不占出牌次数</b>，战斗中随时能用。` }),
+        el('li', { html: '护符与活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>，不会留在背包里。' }),
+        el('li', { text: '来源：宝箱、事件、商店（铁匠铺一定有护符、药草摊一定有药），以及首领奖励。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
       el('h4', { text: '成长与续航' }),
       el('ul', {}, [
         el('li', { text: '每场战斗胜利都会永久提升属性（精英与首领给得更多），这是跟得上后续章节的关键。' }),
-        el('li', { text: '走到首领节点时会先自动恢复一部分生命。' }),
-        el('li', { text: '打完章节首领完全回血，然后进入下一章。' }),
-        el('li', { text: '治疗类卡牌（羽栖、文柚果、急救）按最大生命的百分比恢复，后期一样有用。' }),
+        el('li', { text: `走到首领节点时会先自动恢复 ${pct(BALANCE.preBossHealPct)} 生命。` }),
+        el('li', { text: BALANCE.fullHealAfterBoss ? '打完章节首领完全回血，然后进入下一章。' : '打完章节首领后进入下一章。' }),
+        el('li', { text: `每场战斗胜利后自动回复最大生命的 ${pct(BALANCE.healAfterBattlePct)}；绿洲营地回复 ${pct(BALANCE.restHealPct)}。` }),
+        el('li', { text: '回复类卡牌里，羽栖 / 急救 / 水流环 / 睡觉按最大生命的百分比回，文柚果 / 寄生种子 / 生命水滴是固定值 —— 前期固定值更顶用，后期百分比更顶用。' }),
         el('li', { text: '护盾类卡牌（变硬、铁壁、守住）的量会随你的防御成长。' }),
       ]),
     ]),
@@ -428,18 +478,21 @@ export function showHelp() {
       el('ul', {}, [
         el('li', {}, [el('span', { class: 'help-ico ico-poison' }), '中毒：回合开始流失等于层数的生命，然后层数 -1。']),
         el('li', {}, [el('span', { class: 'help-ico ico-flame' }), '灼伤：回合开始流失等于层数的生命，层数不减少。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-temperature_down' }), '虚弱：攻击力降低 25%，持续若干回合。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), '流血：每次受到攻击额外流失层数的生命。']),
+        el('li', {}, [el('span', { class: 'help-ico ico-temperature_down' }), '虚弱：攻击力降低 25%。挂上之后那一方要打完整整一个回合才掉 1 层，所以「1 层」= 削弱对方一个回合。']),
+        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), '出血：每次受到攻击额外流失层数的生命。']),
         el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), '护盾：先于 HP 承受伤害，回合开始时清空。']),
+        el('li', { text: '属性被削有下限：最多削到基础值的一半，不会被磨成负数。' }),
+        el('li', { text: '「白雾」清自己所有属性下降，「焕然一新」连负面状态一起清 —— 被削弱得难受时找这两张。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
       el('h4', { text: '卡组' }),
       el('ul', {}, [
         el('li', { text: '带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。' }),
-        el('li', { html: '想让卡组更精：去商店买<code>卡牌移除服务</code>删掉不要的牌，同一家店里越删越贵。' }),
+        el('li', { html: '想让卡组更精：去商店买<code>卡牌移除服务</code>删掉不要的牌，同一家店里越删越贵（最多删到剩 3 张）。' }),
         el('li', { html: '想换牌：营地的<code>冥想</code>能把一张牌换成随机的高稀有度牌（只能二选一，不能又休息又冥想）。' }),
         el('li', { text: '卡组越薄 → 越容易每回合抽到关键牌；越厚 → 每回合能打出的总量上限更高，但抽得散。' }),
+        el('li', { text: '卡组一览里可以排序、点开单卡看详情，每种卡带了几张会标成 ×N，还能展开卡牌图鉴看收集进度。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
@@ -447,15 +500,18 @@ export function showHelp() {
       el('ul', {}, [
         el('li', { html: '<code>1</code> ~ <code>9</code> 打出手牌中第 N 张。' }),
         el('li', { html: '<code>空格</code> 结束回合。' }),
-        el('li', { html: '<code>D</code> 打开卡组/出战选择。' }),
-        el('li', { html: '<code>Esc</code> 关闭弹窗。' }),
+        el('li', { html: '<code>D</code> 打开卡组一览（只读：能排序、看详情、看图鉴）。' }),
+        el('li', { html: '<code>I</code> 打开背包（喝药在这里）。' }),
+        el('li', { html: '<code>H</code> 或 <code>?</code> 打开这一页。' }),
+        el('li', { html: '<code>Esc</code> 关闭弹窗（叠了好几层时只关最上面那层）。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
       el('h4', { text: '关于素材' }),
       el('ul', {}, [
-        el('li', { text: '宝可梦精灵图来自 PMDCollab/SpriteCollab（各作者署名见仓库 credits.txt）。' }),
-        el('li', { text: '界面图标、面板、音效、粒子来自 Kenney 素材包（CC0）。' }),
+        el('li', { text: '宝可梦精灵图与表情头像来自 PMDCollab/SpriteCollab（各作者署名见仓库 credits.txt）。' }),
+        el('li', { text: '回合切换立绘来自 Generation 9 Pack（正面 / 背面图）。' }),
+        el('li', { text: '界面图标、面板、音效、粒子来自 Kenney 素材包与 Game-Icon-Pack（都是 CC0）。' }),
         el('li', { text: 'BGM 来自「音楽の卵」(ontama-m.com)：个人/法人均可免费使用、无需报告、无需署名、可商用。' }),
         el('li', { text: '宝可梦译名以 52poke 神奇宝贝百科为准。' }),
         el('li', { text: '非商业同人练习作品。' }),

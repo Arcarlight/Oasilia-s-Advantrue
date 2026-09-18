@@ -170,6 +170,18 @@ async function boot() {
     // 商店删卡诊断：整条链路按**真实指针**走一遍（elementFromPoint + 完整指针序列）
     import('../tools/diag-remove.js').catch((e) => console.error('删卡诊断加载失败', e));
   }
+  if (params.get('dgitems')) {
+    // 背包诊断：每一件道具能不能用、按钮可不可点、×0 的条目有没有被滤掉
+    import('../tools/diag-items.js').catch((e) => console.error('背包诊断加载失败', e));
+  }
+  if (params.get('dgemote')) {
+    // 表情诊断：打一回合，把「事件流」和「头像表情变化」按时间对在一起看
+    import('../tools/diag-emote.js').catch((e) => console.error('表情诊断加载失败', e));
+  }
+  if (params.get('dghelp')) {
+    // 说明页文案诊断：页里的数字必须等于 BALANCE / stageCount() 的现值
+    import('../tools/diag-help.js').catch((e) => console.error('说明页诊断加载失败', e));
+  }
   if (params.get('dgfloat')) {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));

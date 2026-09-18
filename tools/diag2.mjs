@@ -33,7 +33,7 @@ let buf = '';
 const killTimer = setTimeout(() => child.kill(), realtime ? 90000 : Number(budget) + 20000);
 child.stderr.on('data', (d) => {
   buf += d.toString('utf8');
-  if (realtime && /BGM_DONE|D2_DONE|DIAG_DONE|EV_DONE|REST_DONE|FX_DONE|SHIELD_DONE|INTENT_DONE|DMG_DONE|CARD_DONE|FLOAT_DONE|LOOP_DONE|DODGE_DONE|STUCK_DONE|TURNART_DONE|DGDECK_DONE|RM_DONE/.test(buf)) {
+  if (realtime && /BGM_DONE|D2_DONE|DIAG_DONE|EV_DONE|REST_DONE|FX_DONE|SHIELD_DONE|INTENT_DONE|DMG_DONE|CARD_DONE|FLOAT_DONE|LOOP_DONE|DODGE_DONE|STUCK_DONE|TURNART_DONE|DGDECK_DONE|RM_DONE|IT_DONE|EM_DONE|HP_DONE/.test(buf)) {
     setTimeout(() => child.kill(), 400);
   }
 });
