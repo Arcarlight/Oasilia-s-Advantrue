@@ -559,7 +559,12 @@ export class Game {
    * 规则：
    *   · 卡组里一张回血牌都没有 → 这次奖励里必有一张回血牌
    *   · 卡组里一张解状态/解削弱牌都没有 → 第 2 章起必有一张（第 1 章还不至于被状态压死）
-   * 只替换**最后一个**选项，前面的随机结果保留，不至于每次奖励都长一个样。
+   * 只替换末尾的几个选项，前面的随机结果保留，不至于每次奖励都长一个样。
+   *
+   * 两条保底必须**各占一个槽位**：以前两条都写死替换 `out[out.length - 1]`，
+   * 于是「既没有回血牌、也没有解状态牌」时（第 2 章起很常见），后一条会把前一条顶掉 ——
+   * 实测 200/200 次奖励里一张回血牌都没有，也就是「必出回血牌」这条承诺**一直是失效的**。
+   * 现在从末尾往前依次占位：回血占最后一个，解状态占倒数第二个。
    */
   withSustainPity(choices) {
     if (!choices?.length) return choices;
@@ -567,16 +572,19 @@ export class Game {
     const has = (kind) => deck.some((id) => CARD_BY_ID[id]?.effects?.some((e) => e.kind === kind));
     const out = [...choices];
     const used = new Set(out.map((c) => c.id));
-    const swapLast = (test) => {
+    let slot = out.length - 1;
+    const swapInto = (test) => {
+      if (slot < 0) return false;
       const pool = CARDS.filter((c) => !c.enemyOnly && !used.has(c.id) && test(c));
       if (!pool.length) return false;
       const pick = this.rng.pick(pool);
       used.add(pick.id);
-      out[out.length - 1] = pick;
+      out[slot] = pick;
+      slot -= 1;
       return true;
     };
-    if (!has('heal')) swapLast((c) => c.effects.some((e) => e.kind === 'heal'));
-    if (!has('cleanse') && this.data.stage > 0) swapLast((c) => c.effects.some((e) => e.kind === 'cleanse'));
+    if (!has('heal')) swapInto((c) => c.effects.some((e) => e.kind === 'heal'));
+    if (!has('cleanse') && this.data.stage > 0) swapInto((c) => c.effects.some((e) => e.kind === 'cleanse'));
     return out;
   }
 
@@ -860,6 +868,17 @@ export class Game {
     const entry = s.stock[index];
     if (!entry || s.soldOut.includes(index)) return { ok: false, text: '这件已经卖掉了。' };
     if (this.data.gold < entry.price) return { ok: false, text: '金币不够。' };
+    /**
+     * 删卡服务：卡组太小就**在收钱之前**拦住。
+     *
+     * 以前的顺序是：扣钱 → 弹选牌窗 → 选一张 → `doRemove()` 说「卡组已经很少了，不能再删」→
+     * 关窗时退款。玩家经历的是「付了钱 → 点了牌 → 钱又回来了 → 卡没删」，
+     * 很容易读成「删卡根本没用」。现在直接拦住，钱一动不动，提示也只说一件事。
+     * 注意这个判断必须在 `data.gold -= price` **之前**（第一版写在后面，钱照样扣了）。
+     */
+    if (entry.kind === 'service' && this.data.deck.length <= 3) {
+      return { ok: false, text: `卡组只剩 ${this.data.deck.length} 张了，不能再删 —— 再删就没牌可打了。` };
+    }
     this.data.gold -= entry.price;
     if (entry.kind === 'service') {
       // 删卡服务**不售罄**：卡组变薄是这一版唯一「精简」手段（不能挑着不带），
@@ -886,7 +905,16 @@ export class Game {
     const card = CARD_BY_ID[cardId];
     if (!card) return null;
     if (this.data.deck.length <= 3) return { ok: false, text: '卡组已经很少了，不能再删。' };
-    this.removeCard(cardId);
+    /**
+     * 真的删掉了才算成功。
+     *
+     * 以前这里把 `removeCard()` 的返回值丢掉了，无条件回一句「移除了「XX」。」——
+     * 万一那张牌不在卡组里（id 对不上 / 卡组被动过），玩家会看到「删好了」的提示、
+     * 回去一看牌还在，那就是标准的「根本删不掉」。现在删不掉就直说。
+     */
+    if (!this.removeCard(cardId)) {
+      return { ok: false, text: `卡组里已经没有「${card.name}」了。` };
+    }
     // 涨价：下一张更贵（这一步才算「交易完成」）
     const pending = this.pendingRemove;
     if (pending && this.shop) {

@@ -162,6 +162,14 @@ async function boot() {
     // 回合立绘诊断：素材来源 / 落点 / 由大变小 / 不挤动布局 / 跟着演出速度
     import('../tools/diag-turnart.js').catch((e) => console.error('回合立绘诊断加载失败', e));
   }
+  if (params.get('dgdeck')) {
+    // 牌堆诊断：手牌 DOM 与引擎是否一一对应 + 卡组页的 ×N 角标看不看得见
+    import('../tools/diag-deck.js').catch((e) => console.error('牌堆诊断加载失败', e));
+  }
+  if (params.get('dgremove')) {
+    // 商店删卡诊断：整条链路按**真实指针**走一遍（elementFromPoint + 完整指针序列）
+    import('../tools/diag-remove.js').catch((e) => console.error('删卡诊断加载失败', e));
+  }
   if (params.get('dgfloat')) {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));

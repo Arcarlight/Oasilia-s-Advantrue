@@ -219,6 +219,7 @@ export class Battle {
       drawn.push(card);
     }
     if (drawn.length) this.emit({ type: 'draw', side: key, cards: drawn.map((c) => c.id) });
+    if (key === 'player') this.checkPileIntegrity('抽牌后');
     return drawn;
   }
 
@@ -228,6 +229,45 @@ export class Battle {
     d.draw = this.rng.shuffle([...d.draw, ...d.discard, ...d.hand]);
     d.discard = [];
     d.hand = [];
+  }
+
+  /**
+   * 牌堆哨兵：同一张牌（uid）不能同时出现在两堆里，也不能在同一堆里出现两次。
+   *
+   * 起因：玩家反馈「我只有一张羽栖，战斗里却抽出了两张」。
+   * 把 86 种卡各塞进小卡组打一遍、再跑 150 局全流程逐操作对账（见
+   * tools/test-deck-integrity.mjs 与 tools/test-deck-growth.mjs）都**没有复现**——
+   * 那份反馈实际是「打出去洗回牌堆底端、又被抽回来」的正常轮换（同一张牌，
+   * 整场战斗里 uid 始终不变）。但「凭空多一张」这种事只要真发生过一次就该留下痕迹，
+   * 所以这里常驻一个哨兵：一旦真的发生，控制台会直接说清是哪张牌、出现在哪几堆。
+   *
+   * 开销：牌组最多几十张，一次 Set 扫描，比重绘一帧便宜得多，所以在正式版里也开着。
+   */
+  checkPileIntegrity(where) {
+    const seen = new Map();
+    // 注意是 decks[side][pile] —— decks 的第一层是「哪一方」，不是「哪一堆」。
+    // （哨兵第一版写成了 this.decks[key]，永远扫到 undefined，于是它其实从来没生效过；
+    //   是「故意制造重复、看它会不会响」那条反例断言把它抓出来的。）
+    for (const side of ['player', 'enemy']) {
+      for (const key of ['draw', 'hand', 'discard', 'exhaust']) {
+        for (const entry of this.decks[side]?.[key] ?? []) {
+          const id = `${side}:${entry.uid}`;
+          const at = seen.get(id);
+          if (at) {
+            const name = entry.card?.name ?? entry.id;
+            const msg = `[oasis] 牌堆异常（${where}）：${side} 的「${name}」uid=${entry.uid} `
+              + `同时出现在「${at}」和「${key}」里。请把这一行发给作者 —— 这就是「一张牌变成两张」的现场。`;
+            console.error(msg);
+            if (typeof window !== 'undefined') {
+              window.__oasisLastError = { at: new Date().toISOString(), message: msg };
+            }
+            return false;
+          }
+          seen.set(id, key);
+        }
+      }
+    }
+    return true;
   }
 
   // ====================== 回合流程 ======================
@@ -322,6 +362,7 @@ export class Battle {
       d.draw.push(entry);
       this.emit({ type: 'toBottom', side: 'player', id: card.id });
     }
+    this.checkPileIntegrity('出牌后');
     return { ok: true, card: card.id, cost };
   }
 
