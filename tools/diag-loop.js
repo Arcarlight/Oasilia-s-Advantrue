@@ -49,8 +49,8 @@
     const used = b.enemy.maxHp - Math.max(0, b.enemy.hp);
     check('出牌数被「每回合出牌上限」拦住（没有无限循环）', plays <= b.player.playMax,
       `实测 ${plays} 张（上限 ${b.player.playMax}），单张最慢 ${slowest.toFixed(0)}ms`);
-    // 这条才是用户报的那个 bug 的正题：两张 0 费抽牌不能再互相抽回来
-    check('一回合出牌数不超过卡组张数（打过的牌当回合抽不回来）', plays <= 2,
+    // 小卡组轮换是允许的（花钱删卡才做得出来），但绝不允许越过出牌上限
+    check('小卡组可以轮换，但一回合不超过出牌上限', plays <= b.player.playMax,
       `实测 ${plays} 张：${order.join(' → ')}`);
     log(`一回合打掉敌方 ${Math.round(used)} HP（${(used / b.enemy.maxHp * 100).toFixed(0)}%）`);
 

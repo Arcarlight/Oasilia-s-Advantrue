@@ -2137,10 +2137,15 @@ const BALANCE = {
   // 玩家每章大约长「攻击 +9 / 防御 +6 / 生命 +45」，敌方输出维持在玩家最大生命的 15%~22%。
   // ============================================================
   enemyHp: {
-    mob: [171, 597, 615, 633, 652, 1153],
-    normal: [167, 494, 748, 1224, 1527, 1770],
-    elite: [169, 425, 678, 927, 1256, 1552],
-    boss: [108, 293, 443, 575, 741, 960],
+    // 杂兵 / 较强：保持「短平快」（3~4.5 回合、胜率 95%+）—— 它们是资源消耗，不是门槛。
+    // 精英 / 首领：第 4 章起明显加厚，让胜率按目标曲线掉下来。
+    // 这套数字是 tune-curve 逐格二分 + sweep-curve 复核挑出来的。注意：
+    // 单格胜率在这个样本量下有 ±10 个点的噪声，所以挑的时候**优先看回合数与每回合压力**
+    // （这两个量稳定得多），胜率只要求落在合理区间、整体逐章下降。
+    mob: [253, 377, 388, 633, 652, 1153],
+    normal: [152, 521, 789, 1116, 1608, 1740],
+    elite: [166, 433, 678, 1088, 1527, 1822],
+    boss: [108, 295, 436, 755, 958, 1168],
   },
   // 敌攻 ×1.7（配合「出战卡组 = 全部卡牌」这一版）：
   // 玩家每回合能打的牌变多之后，光靠加血只会把战斗拖成 6~8 回合的持久战，
@@ -9165,51 +9170,31 @@ class Battle {
   // ====================== 抽卡 / 牌堆 ======================
 
   /**
-   * 从牌堆顶取一张**本回合还能用**的牌。
-   *
-   * 「本回合打出去的牌」躺在牌堆底部并带着 playedTurn 标记，这里会跳过它们
-   * （放回底部，继续往下翻）。取不到就返回 null，交给调用方决定要不要洗弃牌堆。
-   * 翻牌次数最多一轮牌堆长度，所以不会死循环。
-   */
-  takeFromDraw(key) {
-    const d = this.decks[key];
-    const held = [];
-    let card = null;
-    while (d.draw.length) {
-      const cand = d.draw.shift();
-      if (cand.playedTurn === this.turn) { held.push(cand); continue; }
-      card = cand;
-      break;
-    }
-    // 翻过去的牌原样放回底部：它们只是「这一回合不能再被抽到」，不是消失了
-    for (const h of held) d.draw.push(h);
-    return card;
-  }
-
-  /**
    * 从卡组顶抽 n 张；牌堆空时把弃牌堆洗回卡组。
    * 抽牌数故意设计成大于手牌上限——超出部分会自动丢进弃牌堆，
    * 这样每回合的「新牌供应」是稳定的，玩家不主动出牌就会被卡住。
    *
-   * 注意「本回合打出去的牌不能再被抽回来」这条规则（见 takeFromDraw）：
-   * 没有它的话，一副只有「子弹拳 + 电光一闪」的卡组能两张牌来回刷，
-   * 每回合都把出牌上限打满、把对手直接揍死（用户反馈的「无限循环」）。
+   * 关于「一张牌能不能在同一回合里被反复抽回来」：
+   * 曾经加过一条「打出去的牌当回合抽不回来」的规则，用来堵「子弹拳 + 电光一闪」两张
+   * 0 费抽 1 互相刷的连招。但那条规则把**所有**小卡组一起废掉了（2 张卡组从每回合 8 张
+   * 掉到 2 张），而真正的病根其实是「出战卡组可以随便挑成 2 张」——
+   * 那个开关已经取消（出战卡组 = 全部所持卡牌，精简要花钱删卡），所以这条规则**已回退**。
+   *
+   * 现在小卡组轮换是**花钱买来的构筑**（商店删卡），而且有出牌上限兜底：
+   * 不管怎么轮换，一回合最多也就打 `playMax`（3 + 敏捷÷2，上限 9）张牌 —— 不会死循环。
    */
   drawCards(key, n) {
     const d = this.decks[key];
     const max = this[key].handMax;
     const drawn = [];
     for (let i = 0; i < n; i++) {
-      let card = this.takeFromDraw(key);
-      if (!card) {
+      if (d.draw.length === 0) {
         if (d.discard.length === 0) break;
-        // 洗牌：弃牌堆混进来，本回合打过的那些仍然留在底部（还带着标记）
-        d.draw = [...d.draw, ...this.rng.shuffle(d.discard)];
+        d.draw = this.rng.shuffle(d.discard);
         d.discard = [];
         this.emit({ type: 'reshuffle', side: key });
-        card = this.takeFromDraw(key);
-        if (!card) break;   // 洗完还是只剩本回合打过的牌 —— 那就是抽不到
       }
+      const card = d.draw.shift();
       if (d.hand.length >= max) {
         // 手牌满了：新抽到的牌直接进弃牌堆
         d.discard.push(card);
@@ -9220,18 +9205,6 @@ class Battle {
       drawn.push(card);
     }
     if (drawn.length) this.emit({ type: 'draw', side: key, cards: drawn.map((c) => c.id) });
-    else if (n > 0) {
-      // 一张都没抽到：如果是因为「这回合刚打出去的牌还在牌堆底部歇着」，就说一句 ——
-      // 不然玩家只看到「抽 2 张」什么也没发生，会以为是 bug。
-      const resting = d.draw.filter((c) => c.playedTurn === this.turn).length;
-      if (resting > 0) {
-        this.emitLogged(
-          { type: 'drawWhiff', side: key, resting },
-          `想抽牌，但这一回合打出去的 ${resting} 张牌要下回合才回到牌堆——没抽到。`,
-          'note',
-        );
-      }
-    }
     return drawn;
   }
 
@@ -9241,8 +9214,6 @@ class Battle {
     d.draw = this.rng.shuffle([...d.draw, ...d.discard, ...d.hand]);
     d.discard = [];
     d.hand = [];
-    // 「本回合打过」的标记也要清掉：战斗之间不该互相影响
-    for (const c of d.draw) delete c.playedTurn;
   }
 
   // ====================== 回合流程 ======================
@@ -9328,13 +9299,12 @@ class Battle {
     this.resolveCard('player', card, opts);
 
     // 使用后的去向：销毁区 or 卡组最底端
-    // 回牌堆的牌会打上 playedTurn 标记：**这一回合不会再被抽回来**（下回合自动作废）。
-    // 这是「0 费抽 1 张」类卡牌的天花板 —— 否则小卡组能靠两张牌无限轮换刷死对手。
+    // （牌堆空时再抽就会把弃牌堆洗回来；小卡组靠「打完回底端」在同一回合内反复抽到，
+    //  这是允许的构筑玩法 —— 一回合最多打 playMax 张，不会失控，详见 drawCards 的说明）
     if (card.exhaust) {
       d.exhaust.push(entry);
       this.emit({ type: 'exhaust', side: 'player', id: card.id });
     } else {
-      entry.playedTurn = this.turn;
       d.draw.push(entry);
       this.emit({ type: 'toBottom', side: 'player', id: card.id });
     }
@@ -9696,8 +9666,7 @@ class Battle {
         this.decks.enemy.exhaust.push(pick.c);
         this.emit({ type: 'exhaust', side: 'enemy', id: pick.c.card.id });
       } else {
-        // 同上：这一回合不会再被抽回来（敌人的 0 费抽牌也刷不起来）
-        pick.c.playedTurn = this.turn;
+        // 和玩家同一条规则：打出去的牌回牌堆底部，同一回合可能再被抽到
         this.decks.enemy.draw.push(pick.c);
         this.emit({ type: 'toBottom', side: 'enemy', id: pick.c.card.id });
       }
@@ -9851,8 +9820,6 @@ class Battle {
       drawCount: this.decks[key].draw.length,
       discardCount: this.decks[key].discard.length,
       exhaustCount: this.decks[key].exhaust.length,
-      // 牌堆里「本回合刚打出去、暂时抽不到」的张数（诊断用）
-      restingCount: this.decks[key].draw.filter((c) => c.playedTurn === this.turn).length,
     };
   }
 
@@ -12246,7 +12213,7 @@ const TIP = {
   exhaust: '销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。',
   exhaustHand: '销毁手牌：把手里剩下的牌全部销毁。',
   discard: '弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。',
-  draw: '抽牌：从卡组顶抽到手牌（卡组抽空时把弃牌堆洗回来）。\n注意：**这一回合打出去的牌要下回合才回到牌堆**，当回合抽不回来 —— 不然「0 费抽 1 张」的牌能被两张来回刷（小卡组会变成无限连招）。',
+  draw: '抽牌：从卡组顶抽到手牌（卡组抽空时把弃牌堆洗回来）。\n打出去的牌会回到牌堆**最底端**，所以牌组薄的时候同一张牌一个回合里能打上好几次 —— 但每回合的出牌次数是有限的。',
   ap: '行动点（AP）：每回合回满，数量 = 2 + 敏捷 ÷ 2（上限 8）。打出卡牌要花 AP。',
   heal: '回复：按固定值或**最大生命**的百分比恢复 HP。百分比类的后期一样有用。',
   maxHp: '最大生命：治疗百分比、部分事件都按它算。',
@@ -14962,7 +14929,7 @@ function showHelp() {
         el('li', { html: '抽上来的牌比手牌上限多，多出来的会自动进弃牌堆——所以不要囤牌。' }),
         el('li', { html: '<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×1.6。' }),
         el('li', { html: '卡牌用完默认洗回<code>卡组最底端</code>；标着<code>销毁</code>的卡一场战斗只能用一次。' }),
-        el('li', { html: '但<code>这一回合打出去的牌，当回合不会再被抽回来</code>（下回合自动回到牌堆）—— 否则「0 费抽 1 张」的牌能在小卡组里来回刷成无限连招。' }),
+        el('li', { html: '牌组薄的时候，同一张牌一个回合里能被打上好几次（打完回底端、又抽回来）—— 这是<code>花了钱删卡</code>才换来的构筑，但每回合能打几张仍然卡死在出牌上限。' }),
         el('li', { text: '卡组抽空时，弃牌堆会洗回卡组继续抽。' }),
         el('li', { text: '护盾在持有者自己的回合开始时清空，所以它其实是「这一轮的减伤」。' }),
       ]),

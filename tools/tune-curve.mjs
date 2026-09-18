@@ -21,6 +21,7 @@ const N = Number(process.argv.filter((a) => /^\d+$/.test(a))[0] ?? 110);
 
 const { Game } = await imp('src/core/game.js');
 const { BALANCE } = await imp('src/data/balance.js');
+const { STARTER_DECK } = await imp('src/data/cards.js');
 
 /**
  * 目标胜率曲线（贪婪 AI、不喝药、不用道具的「下限表现」）。
@@ -45,8 +46,16 @@ const ATTACK = ['bite', 'rock_throw', 'double_kick', 'crunch', 'dragon_breath', 
 const UTIL = ['bulk_up', 'iron_defense', 'roost', 'protect', 'dragon_dance', 'sandstorm', 'harden', 'screech'];
 
 function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+/**
+ * 造一副「像真玩家会有的牌」：**起始卡组 + 战斗奖励里拿到的牌**。
+ *
+ * 以前这里是「整副牌都从奖励池里抽」—— 那等于假设玩家每一张都是龙爪/地震/超级冲击，
+ * 牌组比真实情况强一大截，于是调出来的难度**偏难**，
+ * 和 measure-balance（从起始卡组开始长）量出来的胜率能差 20 个百分点。
+ * 现在两边用同一个牌组模型，两套工具的结论才能互相印证。
+ */
 function buildDeck(rng, size) {
-  const out = [];
+  const out = STARTER_DECK.slice(0, size);
   while (out.length < size) out.push(rng() < 0.75 ? ATTACK[Math.floor(rng() * ATTACK.length)] : UTIL[Math.floor(rng() * UTIL.length)]);
   return out;
 }
