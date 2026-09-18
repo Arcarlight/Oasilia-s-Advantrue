@@ -617,6 +617,7 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `measure-debuff.mjs` | 量敌人的削弱压力：每个招式池里的削弱牌密度 + 一局里玩家防御最低被压到多少 |
 | `dgpreview-script.js` | 内容预览：`?dgpreview=<slug>` 直接和指定物种打一场，核对新敌人的立绘与数值 |
 | `diag-turnart.js` | 回合立绘 + 敏捷预算诊断（`?dgturnart=1`，**31 项断言**）：立绘是不是我方背面 / 敌方正面、图有没有真的加载出来、落点在回合数左边 / 右边、**起始帧（2.6 倍）和落定帧的尺寸比**、起始帧和回合数有没有重叠而落定帧让开、落定帧在不在战斗场地内（别被 `overflow` 切掉）、**整段演出前后回合徽章与两个角色站位逐像素不变**、演出速度设「快」时动画时长跟着缩短、回合切换整体只变长多少毫秒、以及 `出牌 x/y` / `抽牌 n` 两个胶囊的数值与 `balance.js` 的三个公式是否一致（含「出一张牌当场递减」）、HUD「敏」胶囊的 `data-tip` 三项数值 + 悬停真的弹浮层、卡组页「每回合的预算」卡片。`?dgturnart=big\|docked&artside=player\|enemy` 把立绘定格给 `shot.mjs` 截图 |
+| `compare-deployed.mjs` | 上线验收：把线上 Pages 的关键文件逐个取回来，和本地工作区比 **sha256** —— 截图只能证明「看起来对」，哈希才能证明「线上跑的就是这份代码」。走 Node 24 自带的 `NODE_USE_ENV_PROXY`（这台机器直连 github.io 不通），不依赖 node_modules |
 | `import-gen9.mjs` | 从 Generation 9 Pack 的 rar 解包里挑出本作 84 只宝可梦的正面 / 背面立绘 → `assets/gen9/<slug>/{front,back}.png`（自带 PNG 解码 / 包围盒裁切 / PNG 编码），并生成 `src/data/gen9.js`（宽高 + 原画布 + 包围盒）。原始 rar 不进仓库 |
 | `fetch-sfx-pansound.ps1` | 从 PANICPUMPKIN 下载战斗音效（读 `tools/sfx-tracks.json`） |
 | `find-dsymphony-track.mjs` | 在 d-symphony 页面里定位某首曲子的下载链接 |
