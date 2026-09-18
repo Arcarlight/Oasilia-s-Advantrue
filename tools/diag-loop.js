@@ -17,7 +17,7 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { CARD_BY_ID } = await import('/src/data/cards.js');
+    const { CARD_BY_ID } = await import('../src/data/cards.js');
 
     game.newRun(777);
     game.data.deck = ['bullet_punch', 'quick_attack'];

@@ -9,9 +9,9 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { MERCHANTS, merchantsFor, pickMerchant } = await import('/src/data/merchants.js');
-    const { generateMap } = await import('/src/data/mapgen.js');
-    const { STAGE_BIOME } = await import('/src/data/balance.js');
+    const { MERCHANTS, merchantsFor, pickMerchant } = await import('../src/data/merchants.js');
+    const { generateMap } = await import('../src/data/mapgen.js');
+    const { STAGE_BIOME } = await import('../src/data/balance.js');
     const want = new URLSearchParams(location.search).get('dgmerchant') || '1';
 
     log(`注册商人 ${MERCHANTS.length} 位`);
@@ -72,6 +72,7 @@
       const deck0 = game.data.deck.length;
       const gold0 = game.data.gold;
       const price1 = game.shop.stock[idx].price;
+      const ledger0 = document.querySelector('.shop-ledger')?.textContent ?? '(没有顶部那行 ✗)';
       const buyBtn = [...document.querySelectorAll('.shop-item')]
         .find((row) => row.textContent.includes('卡牌移除服务'))?.querySelector('button');
       if (!buyBtn) { log('  ✗ 货架上找不到删卡服务的购买按钮'); log('DMG_DONE'); return; }
@@ -79,11 +80,19 @@
       await wait(300);
       const picker = [...document.querySelectorAll('.modal-head h3')].find((h) => h.textContent.includes('移除'));
       log(`  买到删卡服务：金币 ${gold0} → ${game.data.gold}（-${price1}）；选牌窗＝${picker ? '已弹出' : '没弹出 ✗'}`);
+      log(`  顶部账目（买之前）：${ledger0}`);
+      let flowOk = false;
       const firstCard = document.querySelector('.modal-backdrop .card-grid .card');
       if (firstCard) {
         firstCard.click();
-        await wait(300);
+        await wait(400);
+        const toastEl = document.getElementById('toast');
+        const visible = !!toastEl && !toastEl.classList.contains('hidden') && toastEl.textContent.length > 0;
         log(`  选了一张：卡组 ${deck0} → ${game.data.deck.length} 张；这家店下一张报价 ${game.shop.stock[idx].price} 金`);
+        // 关键：玩家必须**看得见**结果（以前提示写在被重画掉的旧节点上，等于什么都没发生）
+        log(`  结果提示：${visible ? `「${toastEl.textContent}」` : '（没弹 ✗）'}`);
+        log(`  顶部账目（删之后）：${document.querySelector('.shop-ledger')?.textContent ?? '(没有 ✗)'}`);
+        flowOk = game.data.deck.length === deck0 - 1 && visible;
       } else {
         log('  ✗ 选牌窗里没有卡面');
       }
@@ -95,6 +104,7 @@
       closeBtn?.click();
       await wait(250);
       log(`  取消删卡：金币 ${goldBefore} → ${game.data.gold}（${game.data.gold === goldBefore ? '退回成功 ✓' : '没退 ✗'}）`);
+      log(`  删卡流程自检：${flowOk ? '通过 ✓（卡组真的变短 + 有可见提示）' : '失败 ✗'}`);
     }
     log('DMG_DONE');
   } catch (e) {

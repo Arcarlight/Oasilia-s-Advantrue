@@ -1537,6 +1537,8 @@ button { font-family: inherit; }
 
 /* 商店 */
 .shop-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+/* 商店顶部的「卡组 N 张 / 金币 M」：删卡之后要能当场看见卡组变短 */
+.shop-ledger { display: flex; gap: 10px; flex-wrap: wrap; margin: 2px 0 12px; }
 .shop-item {
   display: flex; flex-direction: column; gap: 6px;
   padding: 10px 12px;

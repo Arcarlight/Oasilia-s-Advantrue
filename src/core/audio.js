@@ -240,6 +240,8 @@ export const audio = {
   coin() { this.play('coin', { volume: 0.5 }); },
   reveal() { this.play('lucky', { volume: 0.5 }); },
   bad() { this.play('ui_cancel', { volume: 0.6 }); },
+  /** 删卡（商店的卡牌移除服务）：洗牌声 + 确认音，玩家能听出「这张牌真的没了」 */
+  removeCard() { this.play('shuffle', { volume: 0.5 }); this.play('ui_confirm', { volume: 0.65 }); },
   move() { this.play('ui_cursor', { volume: 0.5 }); },
   trap() { this.play('trap', { volume: 0.55 }); },
   surprise() { this.play('surprise', { volume: 0.5 }); },

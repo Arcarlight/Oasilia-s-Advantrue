@@ -532,6 +532,23 @@ function renderShop(game) {
   }
   panel.append(el('div', { class: 'scene-text', text: merchant?.greet ?? '「钱货两清，概不赊账。」' }));
 
+  /**
+   * 头顶挂一行「卡组 N 张 / 金币 M」。
+   * 删卡服务买完之后，玩家需要**当场看见卡组变短**才算完成了一次交易 ——
+   * 以前删成功了界面上什么都没变（结果提示还写在被重画掉的旧节点上），
+   * 玩家只会以为「付了钱没删掉」（用户反馈）。
+   */
+  const ledger = el('div', { class: 'shop-ledger' });
+  panel.append(ledger);
+  const refreshLedger = () => {
+    clear(ledger);
+    ledger.append(
+      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-deck' }), `卡组 ${game.data.deck.length} 张`]),
+      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), `金币 ${game.data.gold}`]),
+    );
+  };
+  refreshLedger();
+
   const list = el('div', { class: 'shop-list' });
   panel.append(list);
 
@@ -540,6 +557,8 @@ function renderShop(game) {
 
   function paint() {
     clear(list);
+    // 买卡 / 买道具 / 删卡之后金币与卡组都会变，顶部那行要跟着刷新
+    refreshLedger();
     game.shop.stock.forEach((s, i) => {
       const sold = game.shop.soldOut.includes(i);
       const card = s.kind === 'card' ? CARD_BY_ID[s.id] : null;
@@ -586,37 +605,58 @@ function renderShop(game) {
   }
 
   function pickRemove() {
-    // 关掉弹窗 = 放弃这次删卡：**把钱退回去**（以前是钱照扣、卡没删，玩家只会觉得亏了）
+    // 关掉弹窗 = 放弃这次删卡：**把钱退回去**（以前是钱照扣、卡没删）。
+    // 结果统一走 toast：doRemove() 会让商店界面整体重画，挂在旧界面上的那行文字
+    // （msg 盒子）那时已经脱离文档了 —— 玩家什么都看不到，只会以为「付了钱没删掉」。
     const m = modal({
       title: '选择要移除的卡牌',
       wide: true,
       onClose: () => {
         if (!game.pendingRemove) return;
         const res = game.refundRemove();
-        if (res?.ok) {
-          msg.className = 'result-box bad';
-          msg.textContent = res.text;
-          msg.classList.remove('hidden');
-          paint();
-        }
+        if (res?.ok) toast(res.text, 'good');
+        paint();
       },
     });
     const grid = el('div', { class: 'card-grid' });
     const counts = new Map();
     for (const id of game.data.deck) counts.set(id, (counts.get(id) ?? 0) + 1);
+    let shown = 0;
     for (const [id, n] of counts) {
-      grid.append(cardEl(CARD_BY_ID[id], {
+      const card = CARD_BY_ID[id];
+      // 卡组里万一有未知 id（旧存档 / 内容改过）：跳过它，别把整个选牌窗搞崩
+      if (!card) {
+        console.warn(`[oasis] 卡组里有未知卡牌 id「${id}」，选牌窗跳过它`);
+        continue;
+      }
+      shown += 1;
+      grid.append(cardEl(card, {
         size: 'sm',
         badges: n > 1 ? [`×${n}`] : [],
         onClick: () => {
-          const res = game.doRemove(id);
+          let res = null;
+          try {
+            res = game.doRemove(id);
+          } catch (err) {
+            console.error('[oasis] 删卡时抛异常：', err);
+          }
           m.close();
-          msg.className = `result-box ${res?.ok ? 'good' : 'bad'}`;
-          msg.textContent = res?.text ?? '移除失败。';
-          msg.classList.remove('hidden');
+          if (res?.ok) {
+            audio.removeCard();
+            toast(res.text, 'good');
+            refreshLedger();
+          } else {
+            audio.bad();
+            toast(res?.text ?? '删卡失败（钱已经退回）。', 'bad');
+          }
           paint();
         },
       }));
+    }
+    if (!shown) {
+      m.close();
+      toast('卡组里没有可以删除的卡。', 'bad');
+      return;
     }
     m.box.querySelector('.modal-body').append(grid);
   }

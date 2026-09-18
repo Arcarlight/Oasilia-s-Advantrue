@@ -25,7 +25,7 @@
 
   try {
     const game = window.__oasis;
-    const mod = await import('/src/data/events.js');
+    const mod = await import('../src/data/events.js');
     const EVENTS = mod.EVENTS;
     const errors = [];
     log(`事件池共 ${EVENTS.length} 个`);

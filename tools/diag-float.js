@@ -40,7 +40,7 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { CARD_BY_ID } = await import('/src/data/cards.js');
+    const { CARD_BY_ID } = await import('../src/data/cards.js');
 
     game.newRun(4242);
     // 给玩家一副会挨打的牌：让敌人有机会降属性 / 造成伤害，浮字才出得来
@@ -127,8 +127,8 @@
     // 这里直接把「最长的那张卡」放进 .played-card 里，扫一遍所有可能出现的卡宽量一遍 ——
     // 不依赖窗口尺寸，任何尺子坏了都躲不过。
     {
-      const { CARDS } = await import('/src/data/cards.js');
-      const { cardEl } = await import('/src/ui/cards.js');
+      const { CARDS } = await import('../src/data/cards.js');
+      const { cardEl } = await import('../src/ui/cards.js');
       const longest = CARDS.slice().sort((a, b) => (b.text?.length ?? 0) - (a.text?.length ?? 0))[0];
       const NAT_W = 186, ASPECT = 186 / 190;
       const rows = [];

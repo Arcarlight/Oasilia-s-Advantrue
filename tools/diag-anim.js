@@ -9,7 +9,7 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { CARD_BY_ID } = await import('/src/data/cards.js');
+    const { CARD_BY_ID } = await import('../src/data/cards.js');
     const mode = new URLSearchParams(location.search).get('dganim') || '1';
 
     game.newRun(1234);
@@ -58,10 +58,10 @@
 
     if (mode === 'cursor') {
       // 光标主题色：三种地图各切一次，看注入的 CSS 是不是跟着换色
-      const { BIOMES } = await import('/src/data/balance.js');
-      const { cursorStatus } = await import('/src/ui/cursor.js');
-      const { generateMap } = await import('/src/data/mapgen.js');
-      const { STAGE_BIOME } = await import('/src/data/balance.js');
+      const { BIOMES } = await import('../src/data/balance.js');
+      const { cursorStatus } = await import('../src/ui/cursor.js');
+      const { generateMap } = await import('../src/data/mapgen.js');
+      const { STAGE_BIOME } = await import('../src/data/balance.js');
       for (const b of ['desert', 'tide', 'night']) {
         const stage = STAGE_BIOME.indexOf(b);
         game.data.stage = stage;

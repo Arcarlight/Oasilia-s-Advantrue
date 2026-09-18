@@ -36,7 +36,7 @@
 
     if (params.get('settings') === '1') {
       // 打开设置弹窗，检查「战斗演出速度」选项有没有出来
-      const { showSettings } = await import('/src/ui/overlays.js');
+      const { showSettings } = await import('../src/ui/overlays.js');
       showSettings();
       log('SETTINGS_OPENED 选项=' + document.querySelectorAll('.modal select option').length);
       return;

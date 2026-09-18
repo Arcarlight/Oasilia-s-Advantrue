@@ -51,10 +51,10 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { CARDS } = await import('/src/data/cards.js');
-    const { cardEl } = await import('/src/ui/cards.js');
-    const { showDeck } = await import('/src/ui/overlays.js');
-    const { cardDamageTotal } = await import('/src/ui/cardtext.js');
+    const { CARDS } = await import('../src/data/cards.js');
+    const { cardEl } = await import('../src/ui/cards.js');
+    const { showDeck } = await import('../src/ui/overlays.js');
+    const { cardDamageTotal } = await import('../src/ui/cardtext.js');
 
     game.newRun(20240607);
     game.phase = 'map';
@@ -196,7 +196,7 @@
     // ---------- 图鉴的「拿过 / 没拿过」 ----------
     // 用户反馈：图鉴里连没拿过的卡也全是亮的，看着像都已经收集了。
     {
-      const { save } = await import('/src/core/save.js');
+      const { save } = await import('../src/core/save.js');
       const cards = qa('.card', codexGrid);
       const unowned = cards.filter((n) => n.classList.contains('card-unowned'));
       const deckNames = new Set(game.data.deck.map((id) => CARDS.find((c) => c.id === id)?.name));
@@ -303,7 +303,7 @@
         // 截图用：换一张效果最多的牌（盐腌：2 种状态 + 降防 + 销毁），
         // 这样「效果明细」一栏能看出它到底能列多少东西
         const rich = CARDS.find((c) => c.id === 'salt_cure') ?? CARDS[0];
-        const { showCardDetail } = await import('/src/ui/overlays.js');
+        const { showCardDetail } = await import('../src/ui/overlays.js');
         showCardDetail(rich, { state: () => ({ picked: 2, owned: 3, readOnly: true }) });
         await wait(150);
         log(`（截图模式：停在「${rich.name}」的详情页）`);

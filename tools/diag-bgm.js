@@ -12,8 +12,8 @@
   try {
     const game = window.__oasis;
     const ui = window.__oasisUI;
-    const { audio } = await import('/src/core/audio.js');
-    const bgm = await import('/src/core/bgm.js');
+    const { audio } = await import('../src/core/audio.js');
+    const bgm = await import('../src/core/bgm.js');
     const music = bgm.music;
     music.debug = true;
     audio.unlock();
@@ -38,7 +38,7 @@
 
     // 换一张地图再打一次，确认是「按地图」而不是固定曲
     game.data.stage = 3;
-    const { generateMap } = await import('/src/data/mapgen.js');
+    const { generateMap } = await import('../src/data/mapgen.js');
     game.data.map = generateMap(3, game.rng);
     game.data.nodeId = null;
     game.phase = 'map';
