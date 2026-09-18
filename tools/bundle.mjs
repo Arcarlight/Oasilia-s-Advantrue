@@ -237,6 +237,24 @@ for (const slug of await fs.readdir(portraitDir).catch(() => [])) {
 }
 console.log(`头像内联: ${Object.keys(portraitMap).length} 张（原始 ${(portraitBytes / 1024).toFixed(0)} KB）`);
 
+// 回合切换立绘（正/背面）也内联：168 张裁切后总共只有 200 KB 左右
+const gen9Dir = path.join(ROOT, 'assets', 'gen9');
+const gen9Map = {};
+let gen9Bytes = 0;
+for (const slug of await fs.readdir(gen9Dir).catch(() => [])) {
+  const dir = path.join(gen9Dir, slug);
+  const st = await fs.stat(dir).catch(() => null);
+  if (!st?.isDirectory()) continue;
+  for (const file of await fs.readdir(dir)) {
+    if (!file.endsWith('.png')) continue;
+    const kind = path.basename(file, '.png');
+    const buf = await fs.readFile(path.join(dir, file));
+    gen9Map[`${slug}/${kind}`] = `data:image/png;base64,${buf.toString('base64')}`;
+    gen9Bytes += buf.length;
+  }
+}
+console.log(`立绘内联: ${Object.keys(gen9Map).length} 张（原始 ${(gen9Bytes / 1024).toFixed(0)} KB）`);
+
 // 精灵数据直接内联，省掉一次 fetch（file:// 下 fetch 也会被拦）
 const spriteInline = `
 <script>
@@ -250,6 +268,10 @@ const spriteInline = `
 <script>
   // 表情头像（data URI），键是 "物种slug/表情名"
   window.__OASIS_PORTRAITS__ = ${JSON.stringify(portraitMap)};
+</script>
+<script>
+  // 回合切换立绘（data URI），键是 "物种slug/front|back"
+  window.__OASIS_GEN9__ = ${JSON.stringify(gen9Map)};
 </script>`;
 
 const html = `<!DOCTYPE html>

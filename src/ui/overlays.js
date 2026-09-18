@@ -7,7 +7,7 @@ import {
 } from './cardtext.js';
 import { audio } from '../core/audio.js';
 import { music } from '../core/bgm.js';
-import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance, SPEED_OPTIONS, BATTLE_SPEED_KEY, loadBattleSpeed, RARITY } from '../data/balance.js';
+import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance, dodgeChance, SPEED_OPTIONS, BATTLE_SPEED_KEY, loadBattleSpeed, RARITY } from '../data/balance.js';
 import { CARD_BY_ID, CARDS, ITEMS } from '../data/cards.js';
 import { save } from '../core/save.js';
 import { BGM_NAMES } from '../core/bgm.js';
@@ -47,6 +47,15 @@ export function showDeck(game) {
   const damageCards = d.deck.filter((id) => CARD_BY_ID[id]?.effects.some((e) => e.kind === 'damage')).length;
 
   const statsPanel = el('div', { class: 'help-grid' }, [
+    el('div', { class: 'help-card' }, [
+      el('h4', { text: `每回合的预算（敏捷 ${d.agi}）` }),
+      el('ul', {}, [
+        el('li', { text: `行动点 AP ${apFromAgi(d.agi)} 点 —— 回合开始回满，出牌花的就是它。` }),
+        el('li', { text: `抽牌 ${drawFromAgi(d.agi)} 张 —— 手牌上限 ${handFromAgi(d.agi)} 张，抽满后多出来的直接进弃牌堆。` }),
+        el('li', { text: `出牌上限 ${playsFromAgi(d.agi)} 张 —— 一回合最多打这么多张，AP 再多也越不过它。` }),
+        el('li', { text: '三项都由敏捷决定；每场战斗胜利涨属性时，它们会跟着一起涨。' }),
+      ]),
+    ]),
     el('div', { class: 'help-card' }, [
       el('h4', { text: `卡组（${d.deck.length} 张）` }),
       el('ul', {}, [

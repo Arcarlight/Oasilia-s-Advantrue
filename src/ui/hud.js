@@ -36,10 +36,18 @@ export function renderHud(game) {
 
   clear(stats);
   // 四项属性的图标各自对应语义：剑=攻击、盾=防御、鞋=敏捷（拳是「物理攻击」不是速度）、三叶草=幸运
+  // 说明必须走 data-tip（全站那套浮层），不能用 title：
+  // title 是浏览器原生提示，要悬停一两秒才出来、样式也不受控，
+  // 等于「敏捷影响什么」这件事在界面上根本看不见（用户反馈过）。
   stats.append(
-    chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}`),
-    chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 60/(60+${d.def})`),
-    chip('ico-shoe', '敏', d.agi, `敏捷 ${d.agi}：每回合 ${apFromAgi(d.agi)} AP，抽 ${drawFromAgi(d.agi)} 张，出牌上限 ${playsFromAgi(d.agi)}`),
+    chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}：决定你打出多少伤害。\n伤害 =（攻击 + 招式威力）× 60 ÷ (60 + 对手防御)。`),
+    chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 60/(60+${d.def})。`),
+    chip('ico-shoe', '敏', d.agi,
+      `敏捷 ${d.agi}：**一回合的三项预算全看它**。\n`
+      + `· 行动点 AP = 2 + 敏捷÷2（上限 8）→ 你现在 **${apFromAgi(d.agi)} 点**\n`
+      + `· 每回合抽牌 = 3 + 敏捷÷5（上限 8）→ 你现在 **${drawFromAgi(d.agi)} 张**\n`
+      + `· 出牌上限 = 3 + 敏捷÷2（上限 9）→ 你现在 **${playsFromAgi(d.agi)} 张**\n`
+      + '战斗中这三项就写在底部：AP 圆点、以及「出牌 x/y」「抽牌 n」。'),
     chip('ico-clover', '运', d.luck, `幸运 ${d.luck}：暴击 ${critChance(d.luck).toFixed(1)}%，闪避 ${dodgeChance(d.luck).toFixed(1)}%`),
   );
 
@@ -48,8 +56,12 @@ export function renderHud(game) {
   updatePortrait(d);
 }
 
-function chip(ico, label, value, title) {
-  return el('span', { class: 'stat-chip', title }, [
+/**
+ * 属性胶囊。说明文本走 `data-tip`（src/ui/tips.js 的全站浮层），支持 **加粗**。
+ * 以前这里传的是原生 title，既不跟游戏主题一致，也没人会悬停两秒去等它弹出来。
+ */
+function chip(ico, label, value, tip) {
+  return el('span', { class: 'stat-chip', dataset: { tip } }, [
     el('span', { class: ico, style: { width: '13px', height: '13px' } }),
     el('span', { text: label }),
     el('b', { text: String(value) }),

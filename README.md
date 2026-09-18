@@ -97,7 +97,8 @@ http://127.0.0.1:5123/?scene=shop       # 直接进商店
 | 攻击 ATK | 伤害的基本值 |
 | 防御 DF | 减伤：受到伤害 `× 60 / (60 + DF)` |
 | 血量 HP | 归零即失败，战斗间保留 |
-| 敏捷 AGI | 决定每回合 **AP**、**抽牌数**、**出牌上限** |
+| 敏捷 AGI | 决定每回合 **AP**、**抽牌数**、**出牌上限**（这三项在战斗底栏和卡组页都直接写着数值） |
+| 幸运 LUK | 暴击率、闪避率 |
 | 幸运 LUK | 暴击率、闪避率 |
 
 派生公式：
@@ -130,6 +131,31 @@ AP        = min(8, 2 + 敏捷 / 2)
 - **动画**：每回合抽到的牌从屏幕下方滑入（非线性缓动，一张接一张，不是一起蹦出来）；
   带「销毁」的牌打出去后会**碎成碎片飞散淡出**，表示这张牌真的没了；
   打牌消耗 AP 时，对应的行动点会**先弹一下再熄灭**、数字滚下去，并飘出一个「-N」。
+- **回合切换立绘**：光带扫过、大字幕上的「第 N 回合」停稳之后，
+  对应一侧的**正 / 背面立绘**会**由大变小**落到回合数旁边 —— **我方在左、敌方在右**。
+  素材是 Generation 9 Pack 的官方风格图（`assets/gen9/`），
+  和我方用**背面**、敌方用**正面**（和正作一样：自己的宝可梦给看后背）。
+  几条设计上的硬约束（都有断言守着，见 `tools/diag-turnart.js`）：
+  - 立绘位是**绝对定位挂在回合徽章上**的，所以放大到 2.6 倍时**一点布局都不会挤动**
+    （徽章、两个角色站位的位置在演出前后逐像素相同）；
+  - 缩放原点是「靠着徽章的那条边 + 底边」，于是它一开始是**盖住回合数**的一大团、
+    收拢之后停在旁边 —— 不是从旁边「长出来」；
+  - 回合徽章因此从场地最左边挪到了自己那一列的**中间**（原来贴着左边缘，
+    我方立绘算出来落点是 `x=-97`，整只跑到屏幕外）；
+  - 时长跟「设置 → 战斗演出速度」联动（快档 308ms / 标准 560ms），
+    而且是**叠在光带后半段**上场的（`PACE.turnArtLead = 0.55`）——
+    每回合只多等约 0.58 秒，不是多等一整段演出；
+  - 素材缺失（新物种还没导图）时**安静跳过**，不留破图。
+  想调就改 `src/ui/battle-view.js` 的 `PACE.turnArtIn / turnArtHold / turnArtOut / turnArtLead`，
+  起始倍数在 `src/core/gen9.js` 的 `ART_FROM_SCALE`。
+- **敏捷到底影响什么，界面上直接写着**：`敏捷` 管的是**一回合的三项预算** ——
+  行动点 `2 + 敏捷÷2`（上限 8）、每回合抽牌 `3 + 敏捷÷5`（上限 8）、
+  出牌上限 `3 + 敏捷÷2`（上限 9）。这三项以前只有悬停里一句「都看它」，
+  玩家只会遇到「牌是亮的却打不出去」。现在：
+  - 战斗底栏有 **`出牌 x/y`**（用完了变红）和 **`抽牌 n`** 两个胶囊，每次出牌当场递减；
+  - 顶部 HUD 的「敏」胶囊**悬停会弹出**三项的具体数值与公式
+    （以前挂的是原生 `title`，要等一两秒才出来，等于看不见）；
+  - 卡组页最左边多了「**每回合的预算（敏捷 N）**」卡片，不悬停也看得到。
 - 护盾在持有者自己的回合开始时清空，所以它是「撑过这一轮」的资源。
 - **属性下降有下限**：攻击 / 防御 / 敏捷最多被削到**基础值的一半**
   （`balance.debuffFloorPct`）。因为削弱是整场战斗永久叠加的，敌人一副牌里又不止一张，
@@ -263,6 +289,7 @@ src/
     save.js                localStorage 存档 + JSON 导入导出
     sprites.js             SpriteCollab 精灵动画（canvas 逐帧重绘，按朝向取行）
     portraits.js           表情头像（16 种表情 + 缺失时自动回退）
+    gen9.js                回合切换立绘（正/背面，按包围盒尺寸算显示大小与物种大小系数）
     audio.js               音效（Kenney + PANICPUMPKIN 两套，WebAudio）
     bgm.js                 BGM 管理（WebAudio AudioBuffer 无缝循环 + 按地图切歌 + 交叉淡入淡出）
   data/
@@ -271,6 +298,7 @@ src/
     events.js              事件表（生成区块）+ 分章节取事件池
     mapgen.js              分叉地图生成（行数/权重按地图读 biome.shape）
     balance.js             BIOMES / STAGE_BIOME / RARITY（生成区块）+ BALANCE
+    gen9.js                回合切换立绘的尺寸元数据（由 tools/import-gen9.mjs 生成）
   ui/
     style.css              视觉系统（6 套地图配色 + 卡牌桌游质感 + GENERATED-ICONS 图标区块）
     ui.js                  界面调度 + 按地图切 BGM
@@ -290,6 +318,7 @@ assets/
   fonts/LXGWNeoXiHeiPlus.ttf              游戏字体
   audio/bgm/                              BGM（音楽の卵，23 首 ogg(L)，按地图分曲、无缝循环）
   portraits/<slug>/<Emotion>.png          表情头像（SpriteCollab，每物种 16 种表情）
+  gen9/<slug>/{front,back}.png            回合切换立绘（Generation 9 Pack，已裁到包围盒；84 只 × 2 张共 210 KB）
 tools/                                    构建、验证、调参脚本（见下）
 ```
 
@@ -333,6 +362,7 @@ node tools/bundle.mjs           # ③ 重新打包单文件
 | --- | --- | --- |
 | 宝可梦精灵图 | PMDCollab/SpriteCollab | 由 `tools/fetch_sprites.ps1` 下载，署名见仓库 `credits.txt` |
 | 宝可梦表情头像 | PMDCollab/SpriteCollab（`portrait/`） | 由 `tools/fetch-portraits.ps1` 下载，每个物种 16 种表情 |
+| 回合切换立绘（正 / 背面） | **Generation 9 Pack v3.3.7**（用户提供的 rar） | 由 `tools/import-gen9.mjs` 从 `Graphics/Pokemon/{Front,Back}` 里挑出本作的 84 只，裁到包围盒后存成 `assets/gen9/`（168 张共 210 KB）；**原始 rar 不进仓库**（`.gitignore` 里挡了 `*.rar`） |
 | 界面图标 / 桌游图标 / 面板 / 粒子 | 工作区里的 Kenney 素材包 | 由 `tools/copy-kenney.mjs` 挑选复制，CC0 |
 | 卡牌与界面图标（101 个） | [Nieobie/Game-Icon-Pack](https://github.com/Nieobie/game-icon-pack)（另有 Kenney 那批） | 由 `tools/fetch-iconpack.ps1` 下载，**CC0 1.0**（815 个圆角图标，见下方「图标是怎么来的」） |
 | 界面提示音 | Kenney 素材包 | `assets/audio/sfx/` |
@@ -340,6 +370,29 @@ node tools/bundle.mjs           # ③ 重新打包单文件
 | BGM（23 首，ogg(L) 无缝循环版） | [音楽の卵 (ontama-m.com)](https://ontama-m.com/) | 由 `tools/fetch-bgm.ps1` 下载，见下方曲目表 |
 | 字体 | LXGW Neo XiHei Plus（霞鹜新晰黑 Plus） | `assets/fonts/LXGWNeoXiHeiPlus.ttf`，用户提供 |
 | 数值与招式命名 | 52poke 神奇宝贝百科 | 如「地震」威力 100、「羽栖」「龙爪」等 |
+
+### 回合切换立绘（Generation 9 Pack）
+
+回合切换时「由大变小」的那张图来自用户提供的 **Generation 9 Pack v3.3.7.rar**（Essentials 素材包）。
+**rar 本身不进仓库**（`.gitignore` 挡了 `*.rar`）—— 重新导入只要三步：
+
+```powershell
+# 1) 把包里那两个目录解到临时目录（Bandizip 的命令行工具 bz.exe）
+& 'D:\Program Files\bandizip\bz.exe' x -y -o:"$env:TEMP\gen9x" 'Generation 9 Pack v3.3.7.rar' `
+    'Graphics\Pokemon\Front\*' 'Graphics\Pokemon\Back\*'
+# 2) 挑出本作用的 84 只、裁到可见内容的包围盒、写出 assets/gen9/ 与 src/data/gen9.js
+node tools/import-gen9.mjs
+# 3) 重新打包（单文件版会把 168 张图内联成 window.__OASIS_GEN9__）
+node tools/bundle.mjs
+```
+
+为什么要「裁到包围盒」而不是直接用原图：原画布是正面 192²、背面 288² 的固定尺寸，
+但**图案占画布多少**每只都不一样（实测 24% ~ 92%，中位数 51%）——
+不裁的话，界面得为每一只单独算偏移，而且刺尾虫会看起来像「没画出来」。
+裁完之后运行时只需要一个宽高比（`fitArt()`），`canvas` / `box` 两个字段留给诊断脚本核对。
+
+大小差异是**故意保留**的：`artScale = 图案高度÷画布高度 ÷ 0.51`，夹在 0.72~1.24 ——
+所以大岩蛇的立绘大约是小虫子的 1.7 倍高，而不是每只都撑满同一个框。
 
 ### 图标是怎么来的（Game-Icon-Pack + Kenney）
 
@@ -563,6 +616,8 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `diag-float.js` | 战斗浮字 / 选区诊断（`?dgfloat=1`）：一边打一边把每个浮字（伤害、护盾、AP、闪避…）中心点的**完整元素栈**打印出来（标签 / class / 背景色 / 背景图 / 透明度 / z-index），再全屏扫一遍「蓝色背景元素」，用来回答「数字背后那块蓝底是谁画的」；同时断言整页禁止选中文本、表单控件仍然可交互 |
 | `measure-debuff.mjs` | 量敌人的削弱压力：每个招式池里的削弱牌密度 + 一局里玩家防御最低被压到多少 |
 | `dgpreview-script.js` | 内容预览：`?dgpreview=<slug>` 直接和指定物种打一场，核对新敌人的立绘与数值 |
+| `diag-turnart.js` | 回合立绘 + 敏捷预算诊断（`?dgturnart=1`，**31 项断言**）：立绘是不是我方背面 / 敌方正面、图有没有真的加载出来、落点在回合数左边 / 右边、**起始帧（2.6 倍）和落定帧的尺寸比**、起始帧和回合数有没有重叠而落定帧让开、落定帧在不在战斗场地内（别被 `overflow` 切掉）、**整段演出前后回合徽章与两个角色站位逐像素不变**、演出速度设「快」时动画时长跟着缩短、回合切换整体只变长多少毫秒、以及 `出牌 x/y` / `抽牌 n` 两个胶囊的数值与 `balance.js` 的三个公式是否一致（含「出一张牌当场递减」）、HUD「敏」胶囊的 `data-tip` 三项数值 + 悬停真的弹浮层、卡组页「每回合的预算」卡片。`?dgturnart=big\|docked&artside=player\|enemy` 把立绘定格给 `shot.mjs` 截图 |
+| `import-gen9.mjs` | 从 Generation 9 Pack 的 rar 解包里挑出本作 84 只宝可梦的正面 / 背面立绘 → `assets/gen9/<slug>/{front,back}.png`（自带 PNG 解码 / 包围盒裁切 / PNG 编码），并生成 `src/data/gen9.js`（宽高 + 原画布 + 包围盒）。原始 rar 不进仓库 |
 | `fetch-sfx-pansound.ps1` | 从 PANICPUMPKIN 下载战斗音效（读 `tools/sfx-tracks.json`） |
 | `find-dsymphony-track.mjs` | 在 d-symphony 页面里定位某首曲子的下载链接 |
 | `serve.mjs` | 本地静态服务器（`play.cmd` 调的就是它）：端口被占自动换、自动开浏览器、启动前查素材 |
@@ -656,6 +711,11 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | 销毁卡的碎片动画：DOM 里有 16 片、坐标也对，屏幕上却什么都没有 | 两处叠加：① 碎片挂在 `document.body` 上，被战斗场景层盖住（要挂在卡牌自己的父节点坐标系里）；② 碎片的克隆没带 `.in` 类，而 `.played-card` 默认是 `opacity: 0`（只有 `.in` 才显形），所以克隆出来就是全透明的 | 碎片改挂到 `node.offsetParent` 并用父节点坐标定位；克隆时补 `.in` + `opacity: 1`。截图前记得 `shot.mjs` 默认会强制 `prefers-reduced-motion`（动画会被关掉），要拍动画中间帧得加第五个参数 `motion=1` |
 | 敌方给我挂了「虚弱」，可那一回合我的攻击一点没变弱 | 虚弱是在**那一方回合开始**就扣层的：敌人在它的回合给你挂 1 层，你的回合一开始就减到 0 —— 一次都没削弱到（池子里的扬沙 / 岩崩都是 1 层，所以很容易碰上） | 改成**回合结束时**才扣层（`decayWeak()`）：挂上之后那一方打完整整一个回合才掉层。顺手做了 A/B 实测：精英战只难了 1.3~4.7 个百分点（首领几乎无变化）。`tools/test-status.mjs` 钉住这条 |
 | 「防御 -2」的日志、音效、特效全演了一遍，防御数值却纹丝不动 | 属性下降有下限（`BALANCE.debuffFloorPct`，防御最低到基础值一半），`clampDebuffs()` 会把超出的部分夹掉，但事件里报的还是卡面写的 `-2`，界面照着念 | 引擎改成报**实际变化量**：事件带 `amount: delta`（另有 `requested` / `clamped`）。真降不动时日志写「已经降到底了（当前 X）」，界面飘「已到下限」并且**不再放削弱音效** —— 看得见的原因比「什么都没发生」好 |
+| **用户反馈「敏捷影响出牌数，可战斗和 UI 都不显示」** | 信息其实**早就在代码里**：HUD 的「敏」胶囊一直带着一句 `敏捷 N：每回合 X AP，抽 Y 张，出牌上限 Z 张`。问题是它挂在**原生 `title`** 上 —— 那要悬停一两秒才弹出、样式也不受控，而游戏里其它说明全走的是 `data-tip` 那套全站浮层（`src/ui/tips.js`）。等于「写了但没人看得见」。战斗界面里更是只有 AP 有圆点、手牌上限塞在牌堆行里，**出牌上限一个字都没有** | ① 三条信息全部改成 `data-tip`（`hud.js` 的 `chip()` 和战斗角色卡的 `STAT_TIP`），并把公式与当前算出来的数一起写进去；② 战斗底栏新增 `出牌 x/y`（用完变红）与 `抽牌 n` 两个胶囊，每次出牌当场递减；③ 卡组页加一张「每回合的预算（敏捷 N）」卡片，不悬停也看得到。断言：两处 `data-tip` 必须含三个数、**不许再有 `title`**、派发 `mouseover` 后 `.tip-layer` 必须真的出现 |
+| 回合立绘做完之后，我方立绘的落点是 `x=-97` —— **整只跑到屏幕外**（诊断量出来的，肉眼只看到「怎么没出来」） | 立绘位是挂在回合徽章上的绝对定位，而回合徽章当时是 `.battle-middle`（`justify-content: space-between`）的**第一个** flex 项，于是它贴着战斗场地的最左边缘，左边**一像素空间都没有**。而我第一版还以为 `.battle-middle` 只占左半栏、右边的意图胶囊会挡路 —— 实际量出来它占 691px、意图胶囊就贴在最右边 | `.battle-middle` 改成「徽章居中 + 意图另起一行」：徽章在自己那一列正中，两侧各留约 265px，放一张 127px 宽的立绘绰绰有余；意图挪到第二行，免得和右侧立绘抢那 691px。顺手把「立绘不许挤出场地」写成断言（`overflow: hidden` 会把它**静默切掉**，不看数值根本发现不了） |
+| 想给「起始那一帧」截图为证，`?dgturnart=big` 和 `?dgturnart=docked` 截出来**一模一样** | `shot.mjs` 默认带 `--force-prefers-reduced-motion`（为了拿稳定态），而 CSS 里 `@media (prefers-reduced-motion: reduce)` 会把 `.turn-art-img` 的动画整个关掉 —— 于是「定格在起始帧」这个操作什么都没做，截出来就是落定态。差一点就拿这张图当「由大变小」的证据 | 定格不再依赖动画：截图模式直接把起始帧的 `transform: scale(2.6)` 写死在元素上（和 CSS 的 0% 关键帧等价，且不受动效偏好影响），倍数从 `src/core/gen9.js` 的 `ART_FROM_SCALE` 读，只有一个出处 |
+| 诊断脚本里一条「起始帧必须盖满整个回合徽章」的断言，在 1024 宽的窗口下**误报**了 | 立绘高度是 `clamp(52px, 6.6vw, 96px)`，窗口一窄立绘跟着变小，2.6 倍也盖不满 160px 宽的徽章 —— 可这**并不影响观感**：它照样从徽章中间那一带收拢到旁边。写成「必须盖满」是把某一个窗口尺寸下的巧合当成了规则 | 断言改成真正要证的那件事：**起始帧和回合数有重叠、落定帧不重叠**。并在 1440×900 / 1180×620 / 1024×760 / 900×600 四个窗口各跑一遍 |
+| 上一次 `git add -A` 把用户放在工作区里的 **58 MB 素材 rar** 一起提交推送了 | 提交时只想着「把改动都交上去」，`-A` 会把工作区里任何没被忽略的东西都卷进来；而那个 rar 是用户下载来给我取图的第三方素材包，运行时根本不读（`.git` 一下涨到 229 MB，Pages 还会把它当静态文件公开出去） | `git rm --cached` 移出仓库 + `.gitignore` 里加 `*.rar / *.zip / *.7z` 兜底；游戏真正需要的是导入后的 168 张裁切图（共 210 KB）。**历史里还留着那个 blob**，要彻底清掉得改写历史 + 强制推送 |
 
 tools/diagnose-page.mjs 就是为这些 bug 写的：它跑真实页面，逐事件核对引擎数值与 DOM、
 检查头像是否真的渲染、检查事件页能否关闭、量日志与角色的矩形是否重叠。

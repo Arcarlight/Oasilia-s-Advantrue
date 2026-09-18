@@ -971,9 +971,18 @@ button { font-family: inherit; }
 .stat-chips .up { color: var(--good); }
 .stat-chips .down { color: var(--bad); }
 
+/* 底部这条：上面一行是「回合数 + 两侧立绘位」，下面一行是敌方意图。
+   为什么改成两行：立绘要占回合徽章**两侧**的位置，而徽章原来贴在场地最左边 ——
+   诊断量出来我方立绘落定后 x=-97，整只跑到屏幕外去了。
+   现在徽章在自己的列里居中，两侧各留出半个列宽（1440 下约 265px），
+   放一张立绘绰绰有余；意图挪到第二行，免得和右侧立绘抢那 691px。 */
 .battle-middle {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 4px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 4px 0;
   grid-column: 1;
 }
 .turn-badge {
@@ -983,6 +992,95 @@ button { font-family: inherit; }
   box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .22);
   font-size: 12px; font-weight: 700;
 }
+
+/* ------------------------------------------------------------------
+   回合切换立绘
+   回合数显示完整之后，对应一侧的正面/背面图「由大变小」落到回合数旁边
+   （我方在左、敌方在右，和正作一样：自己的宝可梦给看后背）。
+
+   两个立绘位是**绝对定位**挂在徽章容器上的，所以：
+
+   · 立绘无论放大到 2.6 倍还是收回来，都**不会挤动任何布局** ——
+     徽章位置不动、角色站位不动、战斗场地那两行的高度也不变；
+   · 缩放原点是「靠着徽章的那条边 + 底边」，于是放大时它朝屏幕中间
+     （也就是朝徽章）铺开、收拢时退回自己的位置，而不是从旁边长出来；
+   · 高度用 clamp 跟着窗口走，窄窗口自动变小，不需要第二套断点。
+   ------------------------------------------------------------------ */
+.turn-badge-wrap { position: relative; display: inline-flex; align-items: center; }
+.turn-art {
+  --tart-h: clamp(52px, 6.6vw, 96px);
+  position: absolute;
+  bottom: -6px;
+  height: var(--tart-h);
+  width: calc(var(--tart-h) * 2);
+  pointer-events: none;
+  z-index: 6;
+}
+/* 「100% + 4px」= 徽章容器的外沿往外挪 4px：左边给玩家、右边给对手 */
+.turn-art-player { right: calc(100% + 4px); }
+.turn-art-enemy { left: calc(100% + 4px); }
+
+.turn-art-img {
+  position: absolute;
+  bottom: 0;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, .5));
+  animation: turnArtIn var(--tart-in, 560ms) cubic-bezier(.16, .84, .3, 1) both;
+}
+.turn-art-player .turn-art-img { right: 0; transform-origin: 0% 100%; }
+.turn-art-enemy .turn-art-img { left: 0; transform-origin: 100% 100%; }
+
+@keyframes turnArtIn {
+  0%   { opacity: 0; transform: scale(var(--tart-from, 2.6)); }
+  18%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* 淡出单独一个动画：如果想在同一个元素上用两条 animation 叠「入场 + 淡出」，
+   后一条的 backwards 填充会在入场期间就把 transform 覆盖成 scale(1)，入场就不动了 */
+.turn-art-img.turn-art-out,
+.turn-art-glow.turn-art-out {
+  animation: turnArtOut var(--tart-out, 200ms) ease-in both;
+}
+@keyframes turnArtOut {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.82); }
+}
+
+/* 脚下一圈光晕，把立绘从天空背景里托出来 */
+.turn-art-glow {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 226, 170, .55), rgba(255, 226, 170, 0) 72%);
+  animation: turnArtGlow var(--tart-in, 560ms) ease-out both;
+}
+.turn-art-player .turn-art-glow { right: 0; left: auto; }
+.turn-art-enemy .turn-art-glow { left: 0; }
+@keyframes turnArtGlow {
+  0%   { opacity: 0; transform: scale(.6); }
+  30%  { opacity: 1; transform: scale(1); }
+  100% { opacity: .6; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-art-img { animation: none; }
+  .turn-art-glow { animation: none; opacity: .5; }
+}
+
+/* 每回合的预算胶囊（敏捷管的三件事里，出牌上限 / 抽牌数写在这里） */
+.budget-chips { display: flex; gap: 8px; font-size: 11px; }
+.budget-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(20, 12, 7, .5);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+  opacity: .92;
+}
+.budget-chip b { color: var(--accent-2); }
+/* 出牌次数用完了：这一颗变红，玩家一眼知道「打不出去是因为次数」，不是卡住了 */
+.budget-chip.out { background: rgba(90, 22, 16, .7); box-shadow: inset 0 0 0 1px rgba(255, 130, 110, .5); }
+.budget-chip.out b { color: #ffb3a0; }
 .intent {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 14px; border-radius: 999px;

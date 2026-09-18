@@ -6,6 +6,13 @@ kenney_*/
 # 工作区里那份没被任何代码引用的字体（游戏用的是 assets/fonts/LXGWNeoXiHeiPlus.ttf）
 森泽UD新黑 Gb4 R.otf
 
+# Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，
+# 而且是从 %TEMP% 解包后由 tools/import-gen9.mjs 挑图，运行时完全不读它。
+# 顺手加一条 *.rar 兜住别的素材包，免得再被 git add -A 卷进仓库。
+*.rar
+*.zip
+*.7z
+
 # 诊断产物 / 截图 / 浏览器缓存（体积大，与运行无关）
 tools/shots/
 tools/.edge-profile*/

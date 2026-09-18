@@ -158,6 +158,10 @@ async function boot() {
     // 卡面诊断：卡面尺寸 / 文案截断 / 高亮 / 排序 / 详情页 / 手牌溢出
     import('../tools/diag-cards.js').catch((e) => console.error('卡面诊断加载失败', e));
   }
+  if (params.get('dgturnart')) {
+    // 回合立绘诊断：素材来源 / 落点 / 由大变小 / 不挤动布局 / 跟着演出速度
+    import('../tools/diag-turnart.js').catch((e) => console.error('回合立绘诊断加载失败', e));
+  }
   if (params.get('dgfloat')) {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));

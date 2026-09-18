@@ -5,11 +5,12 @@ import { cardEl } from './cards.js';
 import { initTips } from './tips.js';
 import { createAnim, createStill, animInfo, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion, emotionForEvent } from '../core/portraits.js';
+import { turnArt as turnArtOf, fitArt, ART_FROM_SCALE } from '../core/gen9.js';
 import { audio } from '../core/audio.js';
 import { STATUS_INFO, computeHit } from '../core/battle.js';
 import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
-import { BIOMES, speedMulOf, loadBattleSpeed } from '../data/balance.js';
+import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi } from '../data/balance.js';
 import { TIERS } from '../data/enemies.js';
 
 const TIER_LABEL = { mob: '野生', normal: '较强', elite: '精英', boss: '首领' };
@@ -38,6 +39,15 @@ const PACE = {
   turnStart: 280,
   /** 回合切换的光带横扫（和 turnStart 一起构成过场；够慢才看得清回合数） */
   turnSweep: 1250,
+  /**
+   * 回合立绘：由大变小落到回合数旁边。
+   * turnArtLead 是「光带扫到几成才放立绘」（0~1）—— 取 .55 是为了让两段动画叠着走，
+   * 不然每个回合都要平白多等一整段立绘演出。
+   */
+  turnArtLead: 0.55,
+  turnArtIn: 560,
+  turnArtHold: 380,
+  turnArtOut: 200,
   turnEnd: 200,
   draw: 140,
   reshuffle: 190,
@@ -323,7 +333,15 @@ export class BattleScreen {
 
     // ---- 中间：回合 / 敌方意图 ----
     // 回合徽章用时钟（骰子是「随机」，跟回合没关系）
-    this.turnBadge = el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), el('span', { text: '第 1 回合' })]);
+    // 立绘位就挂在徽章容器上（绝对定位），所以立绘无论多大都不会把布局挤动。
+    this.turnArtPlayer = el('div', { class: 'turn-art turn-art-player' });
+    this.turnArtEnemy = el('div', { class: 'turn-art turn-art-enemy' });
+    this.turnBadgeText = el('span', { text: '第 1 回合' });
+    this.turnBadge = el('div', { class: 'turn-badge-wrap' }, [
+      this.turnArtPlayer,
+      el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), this.turnBadgeText]),
+      this.turnArtEnemy,
+    ]);
     this.intentEl = el('div', { class: 'intent' }, [el('span', { class: 'ico-sword' }), el('span', { text: '正在观察……' })]);
 
     // ---- 战斗日志 ----
@@ -335,6 +353,12 @@ export class BattleScreen {
     this.apIco = el('span', { class: 'ap-ico ico-action_points' });
     this.apText = el('div', { class: 'ap-text', text: '3 / 3' });
     this.pileInfo = el('div', { class: 'pile-info' });
+    /**
+     * 每回合的「预算」：敏捷到底给了什么，直接摊在界面上。
+     * 以前只有悬停提示里的一句话，玩家只知道敏捷涨 AP，
+     * 不知道抽牌数和出牌上限也是它管的（反馈：「UI 没显示敏捷的影响」）。
+     */
+    this.budgetEl = el('div', { class: 'budget-chips' });
     this.handEl = el('div', { class: 'hand' });
     this.endTurnBtn = el('button', {
       class: 'btn btn-primary btn-lg',
@@ -343,6 +367,7 @@ export class BattleScreen {
 
     this.battleBar = el('div', { class: 'battle-bar' }, [
       el('div', { class: 'ap-display' }, [this.apOrbs, this.apIco, this.apText]),
+      this.budgetEl,
       this.pileInfo,
       this.endTurnBtn,
     ]);
@@ -737,10 +762,17 @@ export class BattleScreen {
           ['防', b.enemy.def + (dd?.defMod ?? 0), b.enemy.def],
           ['速', b.enemy.agi + (dd?.agiMod ?? 0), b.enemy.agi],
         ];
+    const agi = b.player.agi;
     const STAT_TIP = {
       攻: '攻击：决定你能打出多少伤害。\n实际伤害 =（攻击 + 招式威力）× 60/(60+对手防御)。',
       防: '防御：越高越抗打。\n受到的伤害会乘以 60/(60+防御)，所以防御是「减伤百分比」而不是直接扣血。',
-      速: '敏捷：每回合的行动点、抽牌数、出牌上限都看它。',
+      速: isPlayer
+        // 敏捷管三件事，把当前这一局的具体数值直接算出来，别只说「看它」
+        ? `敏捷 ${agi}：一回合的三项预算全由它决定。\n`
+          + `· 行动点 AP **${apFromAgi(agi)}** 点（2 + 敏捷÷2，上限 8）\n`
+          + `· 每回合抽牌 **${drawFromAgi(agi)}** 张（3 + 敏捷÷5，上限 8）\n`
+          + `· 出牌上限 **${playsFromAgi(agi)}** 张（3 + 敏捷÷2，上限 9）`
+        : '敏捷：对手的行动点、抽牌数与出牌上限都由它决定。',
       运: '幸运：暴击率与闪避率。',
     };
     for (const [label, val, base] of rows) {
@@ -789,11 +821,77 @@ export class BattleScreen {
     band.remove();
   }
 
+  /**
+   * 回合立绘：一张「由大变小」的正面 / 背面图落到回合数旁边（我方在左，敌方在右）。
+   *
+   * 为什么是背面对我方、正面对敌方：和正作一致 —— 玩家永远看着自己宝可梦的后背。
+   * 素材来自 Generation 9 Pack（assets/gen9/，导入时已裁到包围盒，见 tools/import-gen9.mjs）。
+   *
+   * 动画本身：以「靠着徽章的那条边」为缩放原点，从 2.6 倍缩到 1 倍 ——
+   * 于是它一开始是**盖住回合数**的一大团，收拢之后停在回合数旁边，
+   * 而不是从旁边「长出来」。
+   *
+   * 时长跟着「演出速度」缩放（快档下整套只有三分之一长），和 turnSweep 用同一套倍率。
+   */
+  async turnArt(side, turn) {
+    if (this.destroyed) return;
+    const slot = side === 'player' ? this.turnArtPlayer : this.turnArtEnemy;
+    if (!slot) return;
+    slot.replaceChildren();
+
+    const slug = side === 'player' ? this.game.data?.slug : this.battle.enemy?.slug;
+    const kind = side === 'player' ? 'back' : 'front';
+    const art = turnArtOf(slug, kind);
+    // 没素材（新物种 / 内联缺失）就安静跳过：宁可这一回合不画，也不要留个破图
+    if (!art) return;
+
+    /**
+     * 立绘位的实际高度由 CSS 变量 --tart-h 决定。
+     * getComputedStyle 拿的是「已经按窗口宽度 clamp 过」的真实像素值，
+     * 所以窄窗口下立绘会自己变小，不需要第二套断点。
+     */
+    const slotH = parseFloat(getComputedStyle(slot).height) || 80;
+    const { w, h } = fitArt(art, slotH);
+
+    const inMs = Math.max(120, Math.round(PACE.turnArtIn * this.speedMul));
+    const outMs = Math.max(80, Math.round(PACE.turnArtOut * this.speedMul));
+    slot.style.setProperty('--tart-in', `${inMs}ms`);
+    slot.style.setProperty('--tart-out', `${outMs}ms`);
+    slot.style.setProperty('--tart-from', String(ART_FROM_SCALE));
+
+    const img = el('img', {
+      class: 'turn-art-img',
+      src: art.url,
+      alt: '',
+      style: { width: `${w}px`, height: `${h}px` },
+    });
+    img.draggable = false;
+    const glow = el('div', {
+      class: 'turn-art-glow',
+      style: { width: `${Math.round(w * 1.5)}px`, height: `${Math.round(h * 0.7)}px` },
+    });
+    slot.append(glow, img);
+
+    await this.wait(PACE.turnArtIn + PACE.turnArtHold);
+    if (this.destroyed) return;
+    img.classList.add('turn-art-out');
+    glow.classList.add('turn-art-out');
+    await this.wait(PACE.turnArtOut);
+    slot.replaceChildren();
+  }
+
+  /** 清掉立绘位（切屏 / 销毁时用，防止动画节点留在 DOM 里） */
+  clearTurnArt() {
+    this.turnArtPlayer?.replaceChildren();
+    this.turnArtEnemy?.replaceChildren();
+  }
+
   refreshTurn() {
     this.initTips();
     const b = this.battle;
-    this.turnBadge.querySelector('span:last-child').textContent =
+    this.turnBadgeText.textContent =
       `第 ${this.dispTurn} 回合 · ${this.dispActive === 'player' ? '你的行动' : '对手行动'}`;
+    this.refreshBudget();
     // AP 也走「演出血量」那一套：否则敌方回合还没演完，AP 就已经是下一回合的了
     const dp = this.disp.player ?? { ap: b.player.ap, apMax: b.player.apMax };
     clear(this.apOrbs);
@@ -839,6 +937,53 @@ export class BattleScreen {
     }
     this.apOrbs.dataset.tip = `行动点 ${dp.ap}/${max}：打出卡牌要花行动点。\n回合开始时回满，敏捷越高每回合越多。`;
     this._shownAp = dp.ap;
+  }
+
+  /**
+   * 「本回合的预算」胶囊：出牌还剩几张、每回合抽几张。
+   *
+   * 为什么要有它：敏捷决定的三件事里，AP 有球、手牌上限写在牌堆行里，
+   * 但**出牌上限**在界面上完全看不见 —— 玩家只会遇到「牌明明是亮的却打不出去」，
+   * 或者反过来，不知道自己的敏捷升上去之后一回合能连打多少张。
+   * 这里把它写成「还能出 N / M」，并且把算法和当前敏捷值一起放进悬停说明。
+   */
+  refreshBudget() {
+    if (!this.budgetEl) return;
+    const b = this.battle;
+    const p = b.player ?? {};
+    const dp = this.disp.player ?? {};
+    const agi = p.agi ?? 0;
+    const playsMax = dp.playMax ?? p.playMax ?? playsFromAgi(agi);
+    const left = Math.max(0, dp.playsLeft ?? p.playsLeft ?? playsMax);
+    const drawN = dp.drawN ?? p.drawN ?? drawFromAgi(agi);
+    const handMax = dp.handMax ?? p.handMax ?? 8;
+
+    clear(this.budgetEl).append(
+      el('span', {
+        class: `budget-chip${left <= 0 ? ' out' : ''}`,
+        dataset: {
+          tip: `本回合还能打出 **${left}** 张牌（上限 ${playsMax}）。\n`
+            + `出牌上限 = 3 + 敏捷 ÷ 2（向下取整，最高 9）——你现在敏捷 ${agi} → **${playsFromAgi(agi)} 张**。\n`
+            + '打不出去通常不是卡住了：先看这里是不是 0，再看 AP 够不够。',
+        },
+      }, [
+        el('span', { class: 'ico-card', style: { width: '12px', height: '12px' } }),
+        ' 出牌 ',
+        el('b', { text: `${left} / ${playsMax}` }),
+      ]),
+      el('span', {
+        class: 'budget-chip',
+        dataset: {
+          tip: `每回合开始抽 **${drawN}** 张。\n`
+            + `抽牌 = 3 + 敏捷 ÷ 5（向下取整，最高 8）——你现在敏捷 ${agi} → **${drawFromAgi(agi)} 张**。\n`
+            + `手牌上限 ${handMax} 张，抽满之后多出来的会直接进弃牌堆。`,
+        },
+      }, [
+        el('span', { class: 'ico-deck', style: { width: '12px', height: '12px' } }),
+        ' 抽牌 ',
+        el('b', { text: String(drawN) }),
+      ]),
+    );
   }
 
   /** AP 数字滚动：从 from 缓动到 to（ease-out），避免数字直接跳 */
@@ -1082,15 +1227,25 @@ export class BattleScreen {
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.battleStart);
         break;
-      case 'turnStart':
+      case 'turnStart': {
         this.refreshTurn();
         this.refreshSide(ev.side);
+        /**
+         * 立绘等光带扫到 PACE.turnArtLead 的时候才入场。
+         * 那个时刻「第 N 回合」已经在大字幕上停稳了（turnSweepText 在 20%~74% 是静止的），
+         * 所以观感是「数字先落定 → 立绘从大缩到小停在数字旁边」，
+         * 而两段动画叠着走，每个回合只比原来多等收尾的那一点点。
+         */
+        const artDone = this.wait(PACE.turnSweep * PACE.turnArtLead)
+          .then(() => this.turnArt(ev.side, ev.turn));
         await this.turnSweep(ev);
         this.refreshSide(ev.side === 'player' ? 'enemy' : 'player');
         // 意图胶囊也要跟着换（之前漏了这一句，敌方回合里还挂着玩家回合的文案）
         this.refreshIntent();
+        await artDone;
         await this.wait(PACE.turnStart);
         break;
+      }
       case 'turnEnd':
         await this.wait(PACE.turnEnd);
         break;
@@ -1538,6 +1693,7 @@ export class BattleScreen {
     try { this._ro?.disconnect(); } catch { /* 忽略 */ }
     this.playerAnim?.destroy?.();
     this.enemyAnim?.destroy?.();
+    this.clearTurnArt();
     this.screen?.remove();
   }
 }
