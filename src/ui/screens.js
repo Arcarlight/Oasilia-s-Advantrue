@@ -586,7 +586,21 @@ function renderShop(game) {
   }
 
   function pickRemove() {
-    const m = modal({ title: '选择要移除的卡牌', wide: true });
+    // 关掉弹窗 = 放弃这次删卡：**把钱退回去**（以前是钱照扣、卡没删，玩家只会觉得亏了）
+    const m = modal({
+      title: '选择要移除的卡牌',
+      wide: true,
+      onClose: () => {
+        if (!game.pendingRemove) return;
+        const res = game.refundRemove();
+        if (res?.ok) {
+          msg.className = 'result-box bad';
+          msg.textContent = res.text;
+          msg.classList.remove('hidden');
+          paint();
+        }
+      },
+    });
     const grid = el('div', { class: 'card-grid' });
     const counts = new Map();
     for (const id of game.data.deck) counts.set(id, (counts.get(id) ?? 0) + 1);

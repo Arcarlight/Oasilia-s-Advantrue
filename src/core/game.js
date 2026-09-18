@@ -280,18 +280,28 @@ export class Game {
 
   // ================= 战斗 =================
 
-  /** 玩家可以在战斗外挑选出战卡组 */
+  /**
+   * 带进战斗的卡组 = **你拥有的全部卡牌**（不可挑着不带）。
+   *
+   * 以前这里可以自由挑一个子集（2~14 张），结果两头都出问题：
+   *   ① 只带「子弹拳 + 电光一闪」两张 0 费抽 1 的牌 → 两张牌互相抽回来，
+   *      每回合把出牌上限打满，两回合秒掉对手（用户反馈的「无限循环」）；
+   *   ② 把那个连招堵住之后，小卡组又直接变成废物（一回合只能打两张）。
+   *
+   * 所以干脆取消「挑着不带」这个免费开关：**卡组的厚薄变成资源问题** ——
+   * 想精简只能去商店花钱删卡（同一家越删越贵），或者在营地换一张更强的牌。
+   * 这也让「带得少 = 更容易抽到关键牌，带得多 = 每回合总量上限更高」这个取舍
+   * 由玩家自己攒卡 / 花钱决定，而不是开局随手勾两下。
+   */
   activeBattleDeck() {
-    const d = this.data;
-    if (d.battleDeck && d.battleDeck.length >= BALANCE.minBattleDeck) return d.battleDeck;
-    // 默认：卡组里的前 N 张（按稀有度/费用排序后更合理）
-    return this.defaultBattleDeck();
+    return this.data.deck;
   }
 
   /**
-   * 默认出战卡组（玩家没手动挑过时用）。
-   * 以前这里是「按费用升序取前 8 张」，结果默认卡组全是 0 费小牌，输出惨不忍睹；
-   * 现在改成：优先带能造成伤害的牌，再尽量带满上限。
+   * 默认出战卡组（按「先带伤害牌、再按每 AP 伤害排序」挑一批）。
+   *
+   * 现在出战卡组恒等于全部所持卡牌（见 activeBattleDeck），这个函数只留给
+   * 诊断脚本 / 模拟器当「一副合理的牌」的参考，游戏里不再调用。
    */
   defaultBattleDeck() {
     const uniq = [];
@@ -337,11 +347,12 @@ export class Game {
     return out;
   }
 
-  setBattleDeck(ids) {
-    const valid = ids.filter((id) => this.data.deck.includes(id));
-    if (valid.length < BALANCE.minBattleDeck) return { ok: false, reason: `至少要带 ${BALANCE.minBattleDeck} 张卡` };
-    if (valid.length > BALANCE.maxBattleDeck) return { ok: false, reason: `最多带 ${BALANCE.maxBattleDeck} 张卡` };
-    this.data.battleDeck = valid;
+  /**
+   * 兼容旧存档：以前这里能存一份「出战子集」，现在出战卡组恒等于全部卡牌，
+   * 所以这个入口只保留「清掉存档里那份旧数据」的作用。
+   */
+  setBattleDeck() {
+    this.data.battleDeck = null;
     this.save();
     return { ok: true };
   }
@@ -850,6 +861,12 @@ export class Game {
     if (!entry || s.soldOut.includes(index)) return { ok: false, text: '这件已经卖掉了。' };
     if (this.data.gold < entry.price) return { ok: false, text: '金币不够。' };
     this.data.gold -= entry.price;
+    if (entry.kind === 'service') {
+      // 删卡服务**不售罄**：卡组变薄是这一版唯一「精简」手段（不能挑着不带），
+      // 所以允许在一家店里连着删，代价是每删一张这一家的报价就往上跳一截。
+      this.pendingRemove = { index, paid: entry.price };
+      return { ok: true, text: '选择一张要移除的卡牌。', needRemove: true };
+    }
     s.soldOut.push(index);
     if (entry.kind === 'card') {
       this.addCard(entry.id);
@@ -859,27 +876,46 @@ export class Game {
       this.giveItem(entry.id, 1);
       return { ok: true, text: `买下「${entry.name}」。` };
     }
-    if (entry.kind === 'service') {
-      this.pendingRemove = true;
-      return { ok: true, text: '选择一张要移除的卡牌。', needRemove: true };
-    }
     return { ok: true, text: '成交。' };
   }
+
+  /** 删卡服务的报价：同一家店里每删一张就涨一档（75 → 105 → 147 …） */
+  static get REMOVE_PRICE_STEP() { return 1.4; }
 
   doRemove(cardId) {
     const card = CARD_BY_ID[cardId];
     if (!card) return null;
     if (this.data.deck.length <= 3) return { ok: false, text: '卡组已经很少了，不能再删。' };
     this.removeCard(cardId);
-    this.pendingRemove = false;
+    // 涨价：下一张更贵（这一步才算「交易完成」）
+    const pending = this.pendingRemove;
+    if (pending && this.shop) {
+      const svc = this.shop.stock[pending.index];
+      if (svc) svc.price = Math.round(svc.price * Game.REMOVE_PRICE_STEP);
+    }
+    this.pendingRemove = null;
     this.save();
     this.changed();
     return { ok: true, text: `移除了「${card.name}」。` };
   }
 
+  /**
+   * 玩家买了删卡服务、却在选牌弹窗里直接关掉：把钱退回去。
+   * （以前这种情况是钱照扣、卡没删 —— 白白亏一笔，玩家只会觉得是 bug。）
+   */
+  refundRemove() {
+    const pending = this.pendingRemove;
+    if (!pending) return { ok: false, text: '没有待处理的删卡。' };
+    this.data.gold += pending.paid ?? 0;
+    this.pendingRemove = null;
+    this.save();
+    this.changed();
+    return { ok: true, text: `取消删卡，退回 ${pending.paid ?? 0} 金币。` };
+  }
+
   leaveShop() {
     this.shop = null;
-    this.pendingRemove = false;
+    this.pendingRemove = null;
     this.phase = Phase.MAP;
     this.save();
     this.changed();

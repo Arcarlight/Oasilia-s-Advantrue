@@ -145,12 +145,20 @@
     });
     check('状态词带悬停说明', badTip.length === 0, `共 ${withStatus.length} 张带状态词${badTip.length ? '，缺：' + badTip.map((c) => c.name).join('、') : ''}`);
 
-    // ---------- 打开卡组页 ----------
-    const deckModal = showDeck(game, { picking: true });
+    // ---------- 打开卡组页（只读） ----------
+    const deckModal = showDeck(game);
     await wait(120);
     const grid = q('.modal-body .card-grid');
-    const budget = q('.deck-count');
-    log(`卡组页已打开：网格里 ${qa('.card', grid).length} 张，${budget.textContent}`);
+    const uniqInDeck = new Set(game.data.deck).size;
+    log(`卡组页已打开：卡组 ${game.data.deck.length} 张 / ${uniqInDeck} 种，网格里画了 ${qa('.card', grid).length} 张`);
+    check('卡组页把同一张牌合成一张画（角标写 ×N），不是有几张画几张',
+      qa('.card', grid).length === uniqInDeck, `卡组 ${game.data.deck.length} 张 → 网格 ${qa('.card', grid).length} 张`);
+    check('卡组页是只读的：没有勾选圈、没有「保存出战卡组」',
+      qa('.card-check', q('.modal-body')).length === 0 && !qa('.modal-foot .btn').some((b) => b.textContent.includes('保存')),
+      `勾选圈 ${qa('.card-check', q('.modal-body')).length} 个`);
+    check('卡组页说明了「怎么改卡组」（商店删卡 / 营地换卡）',
+      /卡牌移除服务/.test(q('.modal-body').textContent) && /冥想/.test(q('.modal-body').textContent),
+      (q('.help-card:nth-of-type(2)')?.textContent ?? '').slice(0, 60).replace(/\s+/g, ' '));
 
     // ---------- ③ 排序 ----------
     // 注意：卡组里同一张牌可能有多份，所以「非递增」而不是「严格递减」
@@ -254,7 +262,6 @@
     // 挑一张带状态词的牌，保证效果明细和关键词两栏都有东西
     const targetName = CARDS.find((c) => /层中毒|层灼伤|层虚弱/.test(c.text)).name;
     const targetNode = qa('.card', grid).find((n) => q('.card-name', n).textContent === targetName) ?? q('.card', grid);
-    const beforeCount = Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
     targetNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await wait(120);
     const detail = q('.card-detail');
@@ -284,41 +291,12 @@
         kws[0].dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
       }
 
-      // 详情页的两个按钮（加入 / 拿掉），以及「加不了的时候必须把原因写在按钮上」
+      // 详情页现在是只读的：只报「这张牌带了几份」，没有加入 / 拿掉按钮
       {
-        const addB = () => qa('.detail-actions .btn')[0];
-        const remB = () => qa('.detail-actions .btn')[1];
-        const count = () => Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
-        const label = () => `「${addB()?.textContent ?? '-'}」disabled=${addB()?.disabled}`;
-        // 这个目标牌在卡组里只有 1 张、而且已经带上了：
-        // 用户报的就是这个场景 ——「卡组里只能有一张」这件事没写出来，
-        // 点「加入」像没反应。现在必须变成禁用的「只能拥有 1 张」。
-        check('卡组里只有 1 张且已带上时，加入按钮 = 禁用的「只能拥有 1 张」',
-          addB()?.disabled === true && /只能拥有 1 张/.test(addB()?.textContent ?? ''), label());
-        // 禁用的按钮收不到鼠标事件，所以说明必须挂在外层 span 上 —— 量一下真的会弹
-        {
-          const wrap = q('.detail-actions .btn-wrap');
-          wrap?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-          await wait(60);
-          const layer = q('.tip-layer');
-          check('把禁用按钮的说明挂在外层壳上（悬停能看到原因）',
-            !!wrap?.dataset.tip && layer?.classList.contains('show') && /只有 1 张/.test(layer?.textContent ?? ''),
-            `「${wrap?.dataset.tip ?? '-'}」→ 浮层「${(layer?.textContent ?? '').replace(/\n/g, ' / ')}」`);
-          wrap?.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
-        }
-        const c0 = count();
-        addB()?.click();
-        await wait(60);
-        check('点这个禁用的按钮不会再改变张数（但按钮上写着原因）', count() === c0, `${c0} → ${count()}，${label()}`);
-        remB()?.click();
-        await wait(80);
-        check('拿掉一张后按钮恢复可点、并写明还剩几张',
-          addB()?.disabled === false && /加入出战卡组/.test(addB()?.textContent ?? '') && remB()?.classList.contains('hidden'),
-          `${label()}；拿掉按钮 hidden=${remB()?.classList.contains('hidden')}`);
-        addB()?.click();
-        await wait(80);
-        check('再点加入能加回去（于是又变成「只能拥有 1 张」）',
-          /只能拥有 1 张/.test(addB()?.textContent ?? '') && addB()?.disabled === true, `${label()}｜${q('.detail-deckstate')?.textContent}`);
+        const actions = qa('.detail-actions .btn');
+        const st = q('.detail-deckstate')?.textContent ?? '';
+        check('只读的详情页没有加入 / 拿掉按钮，只说明这张牌带了几份',
+          actions.length === 0 && /卡组里有这张：\d+ 张/.test(st), `按钮 ${actions.length} 个｜说明「${st}」`);
       }
 
       if (mode === 'detail') {
@@ -326,7 +304,7 @@
         // 这样「效果明细」一栏能看出它到底能列多少东西
         const rich = CARDS.find((c) => c.id === 'salt_cure') ?? CARDS[0];
         const { showCardDetail } = await import('/src/ui/overlays.js');
-        showCardDetail(rich, { picking: true, state: () => ({ picked: 1, owned: 2 }), onToggle: () => {} });
+        showCardDetail(rich, { state: () => ({ picked: 2, owned: 3, readOnly: true }) });
         await wait(150);
         log(`（截图模式：停在「${rich.name}」的详情页）`);
         log('CARD_DONE');
@@ -338,142 +316,11 @@
       await wait(80);
       check('Esc 关掉详情页', !q('.card-detail'));
       check('Esc 之后底下的卡组页还在', !!q('.sort-bar'), q('.modal-head h3')?.textContent ?? '(没了)');
-
-      // ---------- 勾选 / 保存 ----------
-      const checkBox = q('.card-grid .card-check');
-      if (checkBox) {
-        checkBox.click();
-        await wait(60);
-        const after = Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
-        check('左上角圆圈能加减出战场次', after !== beforeCount, `${beforeCount} → ${after}`);
-        // paint() 重建了整个网格，要重新取一次（旧节点已经脱离文档）
-        q('.card-grid .card-check')?.click();
-        await wait(40);
-        const back = Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
-        check('再点一下能加回来', back === beforeCount, `${after} → ${back}`);
-      }
-
-      // ★ 真实鼠标路径：element.click() 会绕过命中测试，
-      //   所以「脚本里点得动、用户点不动」这种问题必须用 elementFromPoint + 完整指针序列才量得出来。
-      {
-        const cb = q('.card-grid .card-check');
-        const r = cb.getBoundingClientRect();
-        const cx = Math.round(r.left + r.width / 2);
-        const cy = Math.round(r.top + r.height / 2);
-        const hit = document.elementFromPoint(cx, cy);
-        log(`勾选圈中心 (${cx},${cy}) 命中：<${hit?.tagName}> class="${hit?.className}"（应为 card-check 或它里面的 .ico-check）`);
-        const before = Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
-        const opts = { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0, buttons: 1 };
-        hit?.dispatchEvent(new PointerEvent('pointerdown', opts));
-        hit?.dispatchEvent(new MouseEvent('mousedown', opts));
-        hit?.dispatchEvent(new PointerEvent('pointerup', { ...opts, buttons: 0 }));
-        hit?.dispatchEvent(new MouseEvent('mouseup', { ...opts, buttons: 0 }));
-        hit?.dispatchEvent(new MouseEvent('click', { ...opts, buttons: 0 }));
-        await wait(80);
-        const now = Number((budget.textContent.match(/出战卡组 (\d+) 张/) ?? [])[1] ?? -1);
-        check('真实鼠标点击勾选圈能加减出战卡组', now !== before, `${before} → ${now}；命中元素 class="${hit?.className}"`);
-        check('真实鼠标点击不会误开详情页', !q('.card-detail'), q('.card-detail') ? '详情页被误开了' : 'OK');
-      }
-
-      // ★★ 点哪一份就切换哪一份。
-      //   这条是用户报的 bug：「点一下：从出战卡组里拿掉」的圆圈点下去没反应 ——
-      //   因为当时按 id 数份数，「取消」永远扣第一份，玩家点第 4 张那份被取消的却是第 1 张。
-      //   只断言「张数变了」是抓不到它的（张数确实变了），必须断言**变化的是被点的那一张**。
-      {
-        const picked = () => qa('.card-grid .card').map((n) => n.classList.contains('in-deck'));
-        const before = picked();
-        // 找一份「已选」的和一份「没选」的，两份都要点一次
-        const onIdx = before.indexOf(true);
-        const offIdx = before.indexOf(false);
-        const boxes = () => qa('.card-grid .card-check');
-        if (onIdx >= 0) {
-          boxes()[onIdx].click();
-          await wait(60);
-          const after = picked();
-          const othersSame = before.every((v, i) => i === onIdx || v === after[i]);
-          check('点已选的那一份 → 取消的就是这一份', before[onIdx] && !after[onIdx] && othersSame,
-            `${q('.card-grid .card', q('.card-grid')) ? '' : ''}第 ${onIdx + 1} 张：${before[onIdx]} → ${after[onIdx]}；其余没变=${othersSame}`);
-        }
-        if (offIdx >= 0) {
-          const cur = picked();
-          const target = cur.indexOf(false);
-          boxes()[target].click();
-          await wait(60);
-          const after = picked();
-          const othersSame = cur.every((v, i) => i === target || v === after[i]);
-          check('点没选的那一份 → 选上的就是这一份', !cur[target] && after[target] && othersSame,
-            `第 ${target + 1} 张：${cur[target]} → ${after[target]}；其余没变=${othersSame}`);
-        }
-        // 复原成一开始的样子，后面的保存测试才有牌可存
-        const nowPicked = picked();
-        for (let i = 0; i < nowPicked.length; i++) {
-          if (nowPicked[i] !== before[i]) { qa('.card-grid .card-check')[i]?.click(); await wait(30); }
-        }
-        log(`复原后已选 ${picked().filter(Boolean).length} 张（原始 ${before.filter(Boolean).length} 张）`);
-      }
-      // 键盘：焦点在勾选圈上按回车，不该顺手把详情页也开出来
-      // （勾选圈是 <button>，keydown 会冒泡到卡面上的「回车 = 看详情」处理）
-      {
-        const cb = q('.card-grid .card-check');
-        cb?.focus();
-        cb?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-        await wait(60);
-        check('勾选圈上按回车不会误开详情页', !q('.card-detail'), q('.card-detail') ? '详情页被误开了' : 'OK');
-      }
-      const saveBtn = qa('.modal-foot .btn').find((b) => b.textContent.includes('保存'));
-      if (saveBtn) {
-        // 存进去的卡必须正好是界面上打了勾的那些（按出现序号记账之后特别容易搞错）
-        const shownNames = qa('.card-grid .card').filter((n) => n.classList.contains('in-deck'))
-          .map((n) => q('.card-name', n).textContent).sort();
-        saveBtn.click();
-        await wait(120);
-        const saved = (game.data.battleDeck ?? []).map((id) => CARDS.find((c) => c.id === id)?.name ?? id).sort();
-        check('保存按钮真的会关掉弹窗（以前 m 未定义会抛错）', !q('.sort-bar'),
-          `battleDeck = ${(game.data.battleDeck ?? []).length} 张`);
-        check('保存下来的卡与界面上打勾的完全一致', JSON.stringify(saved) === JSON.stringify(shownNames),
-          `界面 ${shownNames.length} 张 / 存档 ${saved.length} 张${JSON.stringify(saved) === JSON.stringify(shownNames) ? '' : `：${shownNames.join('、')} ≠ ${saved.join('、')}`}`);
-      }
-    }
-
-    // ---------- 出战卡组满了：加不进去的时候要给反馈，不能「点了没反应」 ----------
-    if (mode === '1' || mode === 'hand' || mode === 'full') {
-      const keepDeck = game.data.deck.slice();
-      const { BALANCE } = await import('/src/data/balance.js');
-      // 先把卡组撑到比上限多：这样才能真的把 14 张塞满
-      while (game.data.deck.length < BALANCE.maxBattleDeck + 6) game.data.deck.push('tackle');
-      showDeck(game, { picking: true });
-      await wait(150);
-      qa('.deck-toolbar .btn').find((b) => b.textContent.includes('尽量多带'))?.click();
-      await wait(100);
-      const countEl = q('.deck-count');
-      const locked = qa('.card-grid .card-check.locked').length;
-      check('出战卡组满时，还没选的圆圈会画成「锁住」并带说明', locked > 0,
-        `${countEl?.textContent}｜锁住 ${locked} 个，说明＝「${qa('.card-grid .card-check.locked')[0]?.dataset.tip ?? '-'}」`);
-      const c1 = Number((countEl?.textContent.match(/(\d+) 张/) ?? [])[1] ?? -1);
-      q('.card-grid .card-check.locked')?.click();
-      await wait(80);
-      const c2 = Number((countEl?.textContent.match(/(\d+) 张/) ?? [])[1] ?? -1);
-      const toastEl = document.getElementById('toast');
-      check('点锁住的圆圈不会偷偷加进去，并且弹出原因',
-        c1 === c2 && !toastEl?.classList.contains('hidden') && /满了/.test(toastEl?.textContent ?? ''),
-        `${c1} → ${c2} 张；提示＝「${toastEl?.textContent ?? ''}」`);
-      // 详情页：加入按钮必须写着「出战卡组已满」
-      const freeNode = qa('.card-grid .card').find((n) => !n.classList.contains('in-deck'));
-      freeNode?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await wait(120);
-      const addB = qa('.detail-actions .btn')[0];
-      check('满员时详情页的加入按钮 = 禁用的「出战卡组已满（N 张）」',
-        addB?.disabled === true && /出战卡组已满/.test(addB?.textContent ?? ''),
-        `「${addB?.textContent}」disabled=${addB?.disabled}`);
-      qa('.modal-backdrop').forEach((n) => n.remove());   // 关掉详情页和卡组页
-      await wait(80);
-      game.data.deck = keepDeck;                          // 把卡组还原，别影响后面的战斗检查
-      game.data.battleDeck = null;
     }
 
     if (mode === 'codex') {
       // 截图用：展开图鉴并滚到它，看「拿过 / 没拿过」的区分
-      showDeck(game, { picking: true });
+      showDeck(game);
       await wait(180);
       const codexEl = q('.modal-body details');
       if (codexEl) {
@@ -489,36 +336,9 @@
       return;
     }
 
-    if (mode === 'limited' || mode === 'full') {
-      // 截图用：① limited = 卡组里只有 1 张的牌 → 加入按钮写着「只能拥有 1 张」
-      //          ② full = 出战场次塞满 → 没选的圆圈锁住
-      if (mode === 'full') {
-        const { BALANCE } = await import('/src/data/balance.js');
-        while (game.data.deck.length < BALANCE.maxBattleDeck + 6) game.data.deck.push('tackle');
-      }
-      showDeck(game, { picking: true });
-      await wait(180);
-      if (mode === 'full') {
-        qa('.deck-toolbar .btn').find((b) => b.textContent.includes('尽量多带'))?.click();
-        await wait(150);
-        log(`（截图模式：${q('.deck-count')?.textContent}，锁住 ${qa('.card-grid .card-check.locked').length} 个圆圈）`);
-      } else {
-        // 挑一张「卡组里只有 1 张」的牌：这才是「只能拥有 1 张」那个场景
-        const dd = game.data.deck;
-        const onceName = CARDS.find((c) => dd.filter((x) => x === c.id).length === 1)?.name;
-        const node = qa('.card-grid .card').find((n) => q('.card-name', n).textContent === onceName) ?? q('.card-grid .card');
-        node?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await wait(180);
-        const addB = qa('.detail-actions .btn')[0];
-        log(`（截图模式：${q('.modal-head h3')?.textContent} → 加入按钮 =「${addB?.textContent}」disabled=${addB?.disabled}，${q('.detail-deckstate')?.textContent}）`);
-      }
-      log('CARD_DONE');
-      return;
-    }
-
     if (mode === 'tip') {
       // 截图用：把鼠标停在卡面的状态词上，让悬停说明留在屏幕上
-      showDeck(game, { picking: true });
+      showDeck(game);
       await wait(150);
       const span = qa('.card-text .kw-status[data-tip]')[0] ?? qa('.card-text .kw[data-tip]')[0];
       span?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
@@ -537,7 +357,7 @@
 
     if (mode === 'deck') {
       // 上面那串检查已经把弹出关了，重新开一份干净的卡组页用来截图
-      showDeck(game, { picking: true });
+      showDeck(game);
       await wait(150);
       qa('.sort-tab').find((t) => t.textContent === '特殊效果')?.click();
       await wait(80);

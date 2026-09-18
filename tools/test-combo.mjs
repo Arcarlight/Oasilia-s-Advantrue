@@ -131,5 +131,55 @@ console.log('\n⑤ 敌人手上全是「急速折返」时也只打一次');
   ok(b.turn >= 2, '回合正常推进', `现在是第 ${b.turn} 回合`);
 }
 
+// ---------------- ⑥ 卡组厚薄只能靠「拿卡 / 花钱删卡」 ----------------
+console.log('\n⑥ 出战卡组 = 全部所持卡牌（不能挑着不带）');
+{
+  const b = startBattleWith(['tackle', 'tackle', 'bite', 'harden', 'sand_attack']);
+  const inDeck = b.decks.player.draw.length + b.decks.player.discard.length + b.decks.player.hand.length;
+  ok(inDeck === 5, '五张牌全部进了战斗牌堆（没有「没带的牌」）', `牌堆+弃牌+手牌 = ${inDeck}`);
+}
+{
+  // 旧存档里可能留着一份 battleDeck 子集：现在必须被忽略
+  const game = new Game({ seed: 99 });
+  game.newRun();
+  game.data.deck = ['tackle', 'tackle', 'bite', 'harden'];
+  game.data.battleDeck = ['tackle'];            // 模拟旧存档里的「只带一张」
+  game.startBattle('normal', 0);
+  const total = game.battle.decks.player.draw.length + game.battle.decks.player.discard.length + game.battle.decks.player.hand.length;
+  ok(total === 4, '旧存档里的出战子集被忽略，照样按全部卡牌开打', `实际进战斗 ${total} 张`);
+}
+
+// ---------------- ⑦ 商店花钱删卡：能连着删、越删越贵、取消退钱 ----------------
+console.log('\n⑦ 商店「卡牌移除服务」是唯一的精简手段');
+{
+  const game = new Game({ seed: 555 });
+  game.newRun();
+  game.data.deck = ['tackle', 'tackle', 'tackle', 'bite', 'bite', 'harden'];
+  game.data.gold = 1000;
+  game.data.stage = 0;
+  game.startShop('xiaoji_messenger');   // 小箭雀信使：删卡服务 45 金（最便宜的一家）
+  const idx = game.shop.stock.findIndex((s) => s.kind === 'service');
+  ok(idx >= 0, '这家商店有删卡服务', `货架第 ${idx + 1} 项：${game.shop.stock[idx]?.name}`);
+  const price1 = game.shop.stock[idx].price;
+  const gold0 = game.data.gold;
+  const buy1 = game.buy(idx);
+  ok(buy1.needRemove === true, '买下后要求选一张要删的卡', buy1.text);
+  ok(game.data.gold === gold0 - price1, '先扣钱', `${gold0} → ${game.data.gold}（-${price1}）`);
+  // 取消（关闭弹窗）→ 退钱
+  const refund = game.refundRemove();
+  ok(refund.ok && game.data.gold === gold0, '取消删卡会把钱退回来', `${refund.text}，金币回到 ${game.data.gold}`);
+  // 真删两张：服务不售罄，且第二张更贵
+  game.buy(idx);
+  const r1 = game.doRemove('tackle');
+  const price2 = game.shop.stock[idx].price;
+  ok(r1.ok, '删掉一张', `${r1.text}（卡组剩 ${game.data.deck.length} 张）`);
+  ok(price2 > price1, '同一家店里第二张更贵', `${price1} → ${price2}`);
+  const before = game.data.deck.length;
+  game.buy(idx);
+  const r2 = game.doRemove('bite');
+  ok(r2.ok && game.data.deck.length === before - 1, '还能接着删（服务不售罄）', `${r2.text}；报价变成 ${game.shop.stock[idx].price}`);
+  ok(!game.shop.soldOut.includes(idx), '删卡服务没有被标记成「已售出」');
+}
+
 console.log(`\n连招与卡组循环的回归测试：通过 ${pass}，失败 ${fail}`);
 if (fail) process.exitCode = 1;

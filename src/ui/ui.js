@@ -40,11 +40,8 @@ export class UI {
     });
     document.getElementById('btn-deck')?.addEventListener('click', () => {
       audio.ui('open');
-      if (this.game.phase === 'battle') {
-        toast('战斗中不能改卡组——不过这场打完就可以调整了。');
-        return;
-      }
-      if (this.game.data) showDeck(this.game, { picking: true });
+      // 卡组一览是只读的（出战卡组 = 全部所持卡牌），所以战斗中也能看 —— 查牌挺有用的
+      if (this.game.data) showDeck(this.game);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -68,7 +65,7 @@ export class UI {
         return;
       }
       if (e.key === 'd' || e.key === 'D') {
-        if (this.game.data && this.game.phase !== 'title') showDeck(this.game, { picking: true });
+        if (this.game.data && this.game.phase !== 'title') showDeck(this.game);
       }
       if (e.key === 'i' || e.key === 'I') {
         if (this.game.data && this.game.phase !== 'title') showItems(this.game);

@@ -14,85 +14,57 @@ import { BGM_NAMES } from '../core/bgm.js';
 import { renderHud } from './hud.js';
 
 // ============================================================
-// 卡组 / 出战卡牌选择
+// 卡组一览（只读）
 // ============================================================
-export function showDeck(game, opts = {}) {
+/**
+ * 卡组界面。
+ *
+ * 这里**不再是「挑选出战卡牌」**：带进战斗的就是你拥有的全部卡牌。
+ * 以前可以在 2~14 张之间自由勾选，两头都出过问题 ——
+ *   ① 只带「子弹拳 + 电光一闪」两张 0 费抽牌时，两张牌互相抽回来，
+ *      每回合把出牌上限打满、直接秒人（用户反馈的「无限循环」）；
+ *   ② 把连招堵住之后，小卡组又变成废物（一回合只打得出两张）。
+ * 所以「卡组厚薄」改成资源问题：想精简只能去**商店花钱删卡**（同一家越删越贵），
+ * 或者用营地换一张更强的牌。这个界面负责把「你现在带着什么」看清楚：
+ * 排序（含特殊效果分组）、卡牌详情、以及「哪张牌还带着几份」。
+ */
+export function showDeck(game) {
   const d = game.data;
-  const picking = opts.picking === true;
-  /**
-   * 出战卡组按「卡组里的第几张」记账（出现序号），不是按卡牌 id。
-   *
-   * 以前是按 id 数份数：卡组里有 4 张「撞击」时，界面把前 N 份画成已选，
-   * 而「取消」永远是扣掉第一份 —— 玩家点第 4 张卡上的圆圈，被取消的却是第 1 张，
-   * 自己点的那张毫无变化（用户反馈：「这个按钮不起作用了」）。
-   * 现在每一份都有自己的序号，点哪一份就切换哪一份，和眼睛看到的完全一致。
-   */
-  let chosenSet = new Set();
-  /** 按出现序号选卡：用于「自动推荐」这类只给 id 列表的来源 */
-  function selectIds(ids) {
-    const used = new Set();
-    const set = new Set();
-    for (const id of ids) {
-      const k = d.deck.findIndex((x, i) => x === id && !used.has(i));
-      if (k < 0) continue;
-      used.add(k);
-      set.add(k);
-    }
-    return set;
-  }
-  chosenSet = selectIds(d.battleDeck ?? game.defaultBattleDeck());
   /** 当前排序方式：默认 / 伤害 / 特殊效果 / 费用 / 稀有度 */
   let sortMode = 'default';
-  /** 出战卡组（id 数组，保存 / 结算用） */
-  const chosenIds = () => [...chosenSet].sort((a, b) => a - b).map((k) => d.deck[k]);
 
   const body = el('div', {});
 
+  // 卡组构成统计（按类型/费用给个概览，比单纯数张数有用）
+  const kinds = { damage: 0, shield: 0, heal: 0, status: 0, buff: 0, draw: 0, ap: 0, cleanse: 0 };
+  let zeroCost = 0;
+  for (const id of d.deck) {
+    const c = CARD_BY_ID[id];
+    if (!c) continue;
+    if (c.ap === 0) zeroCost += 1;
+    for (const e of c.effects) if (kinds[e.kind] != null) kinds[e.kind] += 1;
+  }
+  const damageCards = d.deck.filter((id) => CARD_BY_ID[id]?.effects.some((e) => e.kind === 'damage')).length;
+
   const statsPanel = el('div', { class: 'help-grid' }, [
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '当前数值' }),
+      el('h4', { text: `卡组（${d.deck.length} 张）` }),
       el('ul', {}, [
-        el('li', { text: `攻击 ${d.atk} ｜ 防御 ${d.def} ｜ 敏捷 ${d.agi} ｜ 幸运 ${d.luck}` }),
-        el('li', { text: `每回合 AP ${apFromAgi(d.agi)} ｜ 抽牌 ${drawFromAgi(d.agi)} 张 ｜ 手牌上限 ${handFromAgi(d.agi)}` }),
-        el('li', { text: `暴击率 ${critChance(d.luck).toFixed(1)}% ｜ 闪避率 ${dodgeChance(d.luck).toFixed(1)}%` }),
+        el('li', { text: `能造成伤害的牌 ${damageCards} 张 ｜ 0 费牌 ${zeroCost} 张` }),
+        el('li', { text: `护盾 ${kinds.shield} ｜ 回复 ${kinds.heal} ｜ 状态 ${kinds.status} ｜ 强化 ${kinds.buff}` }),
+        el('li', { text: `抽牌 ${kinds.draw} ｜ 回 AP ${kinds.ap} ｜ 净化 ${kinds.cleanse}` }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '出战规则' }),
+      el('h4', { text: '怎么改卡组' }),
       el('ul', {}, [
-        el('li', { text: `每次战斗至少带 ${BALANCE.minBattleDeck} 张，最多 ${BALANCE.maxBattleDeck} 张。` }),
-        el('li', { text: picking ? '点卡牌看它的详细说明；点左上角的圆圈加入 / 拿掉。' : '点卡牌可以看它的详细说明。' }),
-        picking ? el('li', { text: '加不进去的时候按钮会直接写明原因：这张牌带满了写「只能拥有 N 张」，出战卡组满 14 张写「出战卡组已满」。' }) : null,
-        el('li', { text: '作战时只从「出战卡组」抽牌（卡组会用弃牌堆循环）。' }),
-        el('li', { text: '带得少 → 更容易抽到核心卡；带得多 → 总伤害上限更高。' }),
+        el('li', { text: '带进战斗的就是你拥有的全部卡牌——不能挑着不带（以前能只带两张，会变成「两张牌互相刷」的无限连招）。' }),
+        el('li', { text: '想精简：去商店买「卡牌移除服务」删掉不要的牌，同一家店里越删越贵。' }),
+        el('li', { text: '想换牌：营地的「冥想」可以把一张牌换成随机的高稀有度牌。' }),
+        el('li', { text: '卡组越薄 → 越容易抽到关键牌；越厚 → 每回合能打出的总量上限更高。' }),
       ]),
     ]),
   ]);
-
-  const toolbar = el('div', { class: 'deck-toolbar' });
-  const countEl = el('span', { class: 'deck-count' });
-  const btnAuto = el('button', {
-    class: 'btn btn-sm btn-ghost',
-    onClick: () => { chosenSet = selectIds(game.defaultBattleDeck()); audio.ui('toggle'); paint(); },
-  }, ['自动推荐']);
-  const btnAll = el('button', {
-    class: 'btn btn-sm btn-ghost',
-    onClick: () => {
-      // 「尽量多带」= 每种先来一张（保持卡组多样性），还不到上限再用剩下的份数补满
-      const set = new Set();
-      const seen = new Set();
-      d.deck.forEach((id, k) => { if (!seen.has(id)) { seen.add(id); set.add(k); } });
-      const trimmed = new Set([...set].slice(0, BALANCE.maxBattleDeck));
-      for (let k = 0; k < d.deck.length && trimmed.size < BALANCE.maxBattleDeck; k++) trimmed.add(k);
-      chosenSet = trimmed;
-      audio.ui('toggle');
-      paint();
-    },
-  }, [`尽量多带（上限 ${BALANCE.maxBattleDeck}）`]);
-  toolbar.append(
-    el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } }, [countEl]),
-    el('div', { style: { display: 'flex', gap: '8px' } }, [btnAuto, btnAll]),
-  );
 
   // ---- 排序条 ----
   const sortHint = el('span', { class: 'sort-hint' });
@@ -117,72 +89,13 @@ export function showDeck(game, opts = {}) {
   sortBar.append(sortHint);
 
   const grid = el('div', { class: 'card-grid' });
-  body.append(statsPanel, toolbar, sortBar, grid);
-
-  const ownedCount = (id) => d.deck.filter((x) => x === id).length;
-  /** 这张牌已经带了几份（详情页显示用） */
-  const pickedOf = (id) => [...chosenSet].filter((k) => d.deck[k] === id).length;
-  /** 出战卡组是不是已经满了 */
-  const deckFull = () => chosenSet.size >= BALANCE.maxBattleDeck;
-
-  /** 点某一份的圆圈：切换的就是**这一份** */
-  function toggleOcc(k) {
-    if (chosenSet.has(k)) {
-      chosenSet.delete(k);
-      audio.ui('toggle');
-    } else {
-      if (deckFull()) {
-        // 加不进去的时候一定要说清为什么 —— 以前只弹个提示就 return，
-        // 玩家看到的是「点了没反应」（用户反馈）。
-        toast(`出战卡组已经满了（${BALANCE.maxBattleDeck} 张）—— 先拿掉几张再加。`, 'bad');
-        return;
-      }
-      chosenSet.add(k);
-      audio.ui('click');
-    }
-    paint();
-  }
-
-  /**
-   * 加一张 / 拿掉一张（详情页那两个按钮用）。
-   * 返回 false 表示「加不了」：卡组里这张牌的所有份数都在出战卡组里了，或者出战卡组满了。
-   * 详情页拿这个结果去改按钮上的字（「只能拥有 X 张」/「出战卡组已满」），
-   * 而不是让按钮点了像没反应。
-   */
-  function addOne(id) {
-    // 先看这张牌还有没有空闲的份数
-    const free = d.deck.findIndex((x, k) => x === id && !chosenSet.has(k));
-    if (free < 0) return false;
-    if (deckFull()) {
-      toast(`出战卡组已经满了（${BALANCE.maxBattleDeck} 张）—— 先拿掉几张再加。`, 'bad');
-      return false;
-    }
-    chosenSet.add(free);
-    audio.ui('click');
-    paint();
-    return true;
-  }
-  function removeOne(id) {
-    const mine = [...chosenSet].filter((k) => d.deck[k] === id).sort((a, b) => a - b);
-    if (!mine.length) return false;
-    chosenSet.delete(mine[mine.length - 1]);
-    audio.ui('toggle');
-    paint();
-    return true;
-  }
+  body.append(statsPanel, sortBar, grid);
 
   function openDetail(card) {
     audio.ui('click2');
+    const owned = d.deck.filter((x) => x === card.id).length;
     showCardDetail(card, {
-      picking,
-      state: () => ({
-        picked: pickedOf(card.id),
-        owned: ownedCount(card.id),
-        full: deckFull(),
-        max: BALANCE.maxBattleDeck,
-      }),
-      onAdd: () => addOne(card.id),
-      onRemove: () => removeOne(card.id),
+      state: () => ({ picked: owned, owned, readOnly: true }),
     });
   }
 
@@ -191,17 +104,13 @@ export function showDeck(game, opts = {}) {
    * 以前图鉴自己抄了一遍「排序后逐张 append」，于是漏了分组标题：
    * 卡组页按「特殊效果」排序有分组，展开图鉴却没有（诊断脚本量出来的）。
    *
-   * items 是 `{ card, occ, state }`：
-   *   occ   = 在卡组里的出现序号（图鉴用 null）
-   *   state = 'deck' 这一局正带着 / 'seen' 以前拿到过 / 'new' 从没见过（只有图鉴用）
-   * sortCards 返回的下标是「传进去那个数组的下标」，所以排序后还能找回是哪一份。
+   * items 是 `{ card, state }`：state = 'deck' 这一局带着 / 'seen' 以前拿过 / 'new' 没见过
    */
-  function fillGrid(container, items, { check = false } = {}) {
+  function fillGrid(container, items) {
     clear(container);
     let lastGroup = null;
-    for (const { i, card, group } of sortCards(items.map((it) => it.card), sortMode)) {
-      const occ = items[i]?.occ ?? null;
-      const state = items[i]?.state ?? 'deck';
+    for (const { card, group } of sortCards(items.map((it) => it.card), sortMode)) {
+      const state = items.find((it) => it.card === card)?.state ?? 'deck';
       // 「按特殊效果」时插分组标题：光靠排序玩家看不出为什么这张排在前面
       if (sortMode === 'effect' && group !== lastGroup) {
         lastGroup = group;
@@ -209,44 +118,35 @@ export function showDeck(game, opts = {}) {
       }
       const badges = [];
       if (sortMode === 'damage') badges.push(`伤害 ${cardDamageTotal(card)}`);
+      // 同一张牌带了几份：卡组里同名卡比较多时一眼看得出来
+      const copies = d.deck.filter((x) => x === card.id).length;
+      if (state === 'deck' && copies > 1) badges.push(`×${copies}`);
       if (state === 'new') badges.push('未获得');
       else if (state === 'seen') badges.push('曾拿过');
-      const node = cardEl(card, {
-        size: 'sm',
-        check,
-        checked: check && occ != null && chosenSet.has(occ),
-        badges,
-        onClick: () => openDetail(card),
-        onCheck: check && occ != null ? () => toggleOcc(occ) : null,
-      });
+      const node = cardEl(card, { size: 'sm', badges, onClick: () => openDetail(card) });
       // 没拿过的卡压暗：图鉴里「全亮」会让玩家以为这些都算已收集（用户反馈）
       if (state === 'new') node.classList.add('card-unowned');
-      // 出战卡组满了：把「还没选」的那些圆圈画成锁住的样子、换上说明，
-      // 免得玩家一个个点过去都是「点了没反应」。
-      if (check && occ != null && !chosenSet.has(occ) && deckFull()) {
-        const box = node.querySelector('.card-check');
-        if (box) {
-          box.classList.add('locked');
-          box.dataset.tip = `出战卡组已经满了（${BALANCE.maxBattleDeck} 张）—— 先拿掉几张再加。`;
-        }
-      }
       container.append(node);
     }
   }
 
   function paint() {
-    fillGrid(grid, d.deck.map((id, k) => ({ card: CARD_BY_ID[id], occ: k })).filter((it) => it.card), { check: picking });
-    const n = chosenSet.size;
-    const ok = n >= BALANCE.minBattleDeck && n <= BALANCE.maxBattleDeck;
-    countEl.className = `deck-count ${ok ? 'ok' : 'bad'}`;
-    countEl.textContent = `出战卡组 ${n} 张（需 ${BALANCE.minBattleDeck} ~ ${BALANCE.maxBattleDeck} 张）`;
+    // 卡组里同一张牌只画一张（角标写 ×N）—— 20 张的卡组里四张撞击画四遍没意义
+    const seen = new Set();
+    const items = [];
+    for (const id of d.deck) {
+      if (seen.has(id) || !CARD_BY_ID[id]) continue;
+      seen.add(id);
+      items.push({ card: CARD_BY_ID[id], state: 'deck' });
+    }
+    fillGrid(grid, items);
     sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint ?? '';
   }
   paint();
 
   /**
    * 图鉴里每张卡的状态：
-   *   deck = 这一局正带着（最亮，没有任何标记）
+   *   deck = 这一局带着（最亮，没有任何标记）
    *   seen = 以前某局拿到过（跨局记录在 save 的 meta 里）
    *   new  = 从没见过（压暗 + 「未获得」）
    */
@@ -267,32 +167,11 @@ export function showDeck(game, opts = {}) {
   // 图鉴也跟着排序走：不然「按伤害排序」只排上半页，图鉴还是乱的
   codex.addEventListener('toggle', () => {
     if (!codex.open) return;
-    fillGrid(codexGrid, CARDS.map((card) => ({ card, occ: null, state: codexState(card.id) })));
+    fillGrid(codexGrid, CARDS.map((card) => ({ card, state: codexState(card.id) })));
   });
   body.append(codex);
 
-  // 存下弹窗句柄再返回：保存按钮要调 m.close()，
-  // 以前这里写的是 `return modal({...})`，于是 m 根本没定义 ——
-  // 点「保存出战卡组」会抛 ReferenceError，卡组存进去了但弹窗不关（看着像没反应）。
-  const m = modal({
-    title: picking ? '挑选出战卡牌' : '卡组一览',
-    wide: true,
-    body,
-    foot: picking ? [
-      el('button', {
-        class: 'btn btn-primary',
-        onClick: () => {
-          const ids = chosenIds();
-          const res = game.setBattleDeck(ids);
-          if (!res.ok) return toast(res.reason, 'bad');
-          toast(`出战卡组已保存（${ids.length} 张）`, 'good');
-          audio.ui('confirm');
-          m.close();
-        },
-      }, [el('span', { class: 'ico-check' }), el('span', { text: '保存出战卡组' })]),
-    ] : null,
-  });
-  return m;
+  return modal({ title: '卡组一览', wide: true, body });
 }
 
 // ============================================================
@@ -313,14 +192,15 @@ export function showCardDetail(card, opts = {}) {
 
   const stateEl = el('div', { class: 'detail-deckstate' });
   /**
-   * 「加入」和「拿掉」拆成两个按钮。
+   * 「加入」和「拿掉」两个按钮（只有**能改卡组**的界面才给，比如商店的删卡服务）。
    *
    * 以前只有一个按钮、按当前份数换文案（没带过 → 加入；带过 → 拿掉），
    * 于是「我已经带了 1 张、想再带一张」这件事根本没有按钮可点 ——
    * 卡组里只有一张的牌更是彻底点不进第二张，玩家看到的就是「点了没反应」。
+   * 加不进去的时候（这张牌全带上了 / 卡组满了）「加入」按钮会禁用并把原因写在按钮上。
    *
-   * 现在加不进去的时候（这张牌的所有份数都带了 / 出战卡组满了）
-   * 「加入」按钮会**禁用并直接把原因写在按钮上**（用户要求：「只能拥有 X 张」）。
+   * 卡组一览现在是**只读**的（出战卡组恒等于全部所持卡牌），那时传进来的
+   * onAdd / onRemove 都是 null，弹窗里只会显示「这张牌带了几份」。
    */
   const addBtn = el('button', {
     class: 'btn btn-primary',
@@ -338,11 +218,15 @@ export function showCardDetail(card, opts = {}) {
   const addWrap = el('span', { class: 'btn-wrap' }, [addBtn]);
   const sync = () => {
     if (!state) { stateEl.textContent = ''; return; }
-    const { picked = 0, owned = 1, full = false, max = 0 } = state();
-    stateEl.textContent = picked > 0
-      ? `出战卡组里有这张：${picked} / ${owned} 张`
-      : `这张还没进出战卡组（卡组里一共有 ${owned} 张）`;
-    if (!picking) return;
+    const { picked = 0, owned = 1, full = false, max = 0, readOnly = false } = state();
+    stateEl.textContent = readOnly
+      ? (owned > 0
+        ? `卡组里有这张：${owned} 张（出战卡组 = 全部所持卡牌）`
+        : `这张还没拿到（去奖励 / 商店 / 事件里找找）`)
+      : (picked > 0
+        ? `出战卡组里有这张：${picked} / ${owned} 张`
+        : `这张还没进出战卡组（卡组里一共有 ${owned} 张）`);
+    if (!picking || readOnly) return;
     if (picked >= owned) {
       // 卡组里就只有这么多张：把话说在按钮上，别让玩家反复点
       addBtn.textContent = `只能拥有 ${owned} 张`;
@@ -413,7 +297,7 @@ export function showCardDetail(card, opts = {}) {
     ]));
   }
 
-  if (picking || state) {
+  if (state) {
     info.append(el('div', { class: 'detail-actions' }, [
       picking ? addWrap : null,
       picking ? removeBtn : null,
@@ -541,12 +425,12 @@ export function showHelp() {
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '卡组与出战' }),
+      el('h4', { text: '卡组' }),
       el('ul', {}, [
-        el('li', { text: '地图上随时可以打开「卡组」，勾选这一场带哪些卡。' }),
-        el('li', { text: `每场战斗至少带 ${BALANCE.minBattleDeck} 张，最多 ${BALANCE.maxBattleDeck} 张。` }),
-        el('li', { text: '带得少更容易抽到核心卡；带得多总输出更高但抽卡更散。' }),
-        el('li', { text: '保存后从下一场战斗开始生效。' }),
+        el('li', { text: '带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。' }),
+        el('li', { html: '想让卡组更精：去商店买<code>卡牌移除服务</code>删掉不要的牌，同一家店里越删越贵。' }),
+        el('li', { html: '想换牌：营地的<code>冥想</code>能把一张牌换成随机的高稀有度牌（只能二选一，不能又休息又冥想）。' }),
+        el('li', { text: '卡组越薄 → 越容易每回合抽到关键牌；越厚 → 每回合能打出的总量上限更高，但抽得散。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [

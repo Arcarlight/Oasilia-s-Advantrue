@@ -64,7 +64,7 @@ async function boot() {
         ui.forceRerender();
         return 'reward';
       }
-      case 'deck': { showDeck(game, { picking: true }); return 'deck'; }
+      case 'deck': { showDeck(game); return 'deck'; }
       case 'gameover': game.phase = 'gameover'; ui.forceRerender(); return 'gameover';
       case 'victory': game.phase = 'victory'; ui.forceRerender(); return 'victory';
       default: return 'unknown';

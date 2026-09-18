@@ -60,6 +60,42 @@
     log(`    脸图：assets/portraits/${m.slug}/${m.emotion}.png（找不到会回退 Normal）`);
     const img = document.querySelector('.merchant-illo img.portrait');
     log(`    界面上头像：${img ? '已渲染 ' + img.naturalWidth + 'x' + img.naturalHeight : '（还没有，可能在等图片加载）'}`);
+
+    // ---- 删卡服务：这是这一版唯一的「精简卡组」手段，界面上必须真的能走完流程 ----
+    // 实测四件事：买到 → 弹选牌窗 → 选一张真的删掉且报价上涨；再买一次取消 → 退钱。
+    if (svc) {
+      // 玩家开局只有 60 金，而删卡服务要 45~100 金 —— 先给够钱再测（不然按钮是禁用的）
+      game.data.gold = Math.max(game.data.gold, 600);
+      ui.forceRerender();
+      await wait(400);
+      const idx = game.shop.stock.findIndex((s) => s.kind === 'service');
+      const deck0 = game.data.deck.length;
+      const gold0 = game.data.gold;
+      const price1 = game.shop.stock[idx].price;
+      const buyBtn = [...document.querySelectorAll('.shop-item')]
+        .find((row) => row.textContent.includes('卡牌移除服务'))?.querySelector('button');
+      if (!buyBtn) { log('  ✗ 货架上找不到删卡服务的购买按钮'); log('DMG_DONE'); return; }
+      buyBtn.click();
+      await wait(300);
+      const picker = [...document.querySelectorAll('.modal-head h3')].find((h) => h.textContent.includes('移除'));
+      log(`  买到删卡服务：金币 ${gold0} → ${game.data.gold}（-${price1}）；选牌窗＝${picker ? '已弹出' : '没弹出 ✗'}`);
+      const firstCard = document.querySelector('.modal-backdrop .card-grid .card');
+      if (firstCard) {
+        firstCard.click();
+        await wait(300);
+        log(`  选了一张：卡组 ${deck0} → ${game.data.deck.length} 张；这家店下一张报价 ${game.shop.stock[idx].price} 金`);
+      } else {
+        log('  ✗ 选牌窗里没有卡面');
+      }
+      // 再买一次然后关掉弹窗：钱要退回来
+      const goldBefore = game.data.gold;
+      buyBtn.click();
+      await wait(250);
+      const closeBtn = [...document.querySelectorAll('.modal-foot .btn, .modal-head .btn')].find((b) => /关闭/.test(b.textContent));
+      closeBtn?.click();
+      await wait(250);
+      log(`  取消删卡：金币 ${goldBefore} → ${game.data.gold}（${game.data.gold === goldBefore ? '退回成功 ✓' : '没退 ✗'}）`);
+    }
     log('DMG_DONE');
   } catch (e) {
     log('FATAL ' + e.message + ' | ' + e.stack);
