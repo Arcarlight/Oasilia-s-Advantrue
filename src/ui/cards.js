@@ -34,6 +34,8 @@ export function cardEl(card, opts = {}) {
   const {
     size = 'md', disabled = false, selected = false, onClick, onClickDisabled = false,
     check = false, checked = false, dmgText = null, cost = null, badges = [], onCheck = null,
+    // 灰卡片被点时的回调：给玩家一句「为什么打不出去」（不传就是老行为：直接吞掉点击）
+    onDisabledClick = null,
   } = opts;
 
   const art = CARD_ART[card.id] ?? { ico: 'ico-star', fx: 'magic_1' };
@@ -117,9 +119,17 @@ export function cardEl(card, opts = {}) {
     node.append(box);
   }
 
-  if (!disabled || onClickDisabled) {
+  if (!disabled || onClickDisabled || onDisabledClick) {
+    const blocked = () => {
+      if (disabled && !onClickDisabled) {
+        // 卡片是灰的也别默默吞掉点击 —— 让调用方给一句「为什么打不出去」
+        onDisabledClick?.(card, node);
+        return true;
+      }
+      return false;
+    };
     node.addEventListener('click', () => {
-      if (disabled && !onClickDisabled) return;
+      if (blocked()) return;
       onClick?.(card, node);
     });
     node.addEventListener('keydown', (e) => {
@@ -128,7 +138,7 @@ export function cardEl(card, opts = {}) {
       if (e.target?.closest?.('.card-check')) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if (disabled && !onClickDisabled) return;
+        if (blocked()) return;
         onClick?.(card, node);
       }
     });

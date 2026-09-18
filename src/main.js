@@ -35,6 +35,23 @@ async function boot() {
   // 它以前是战斗界面自己建的，于是不进战斗就看不到卡组页里的词条解释。
   initTips();
 
+  /**
+   * 未捕获错误的兜底记录。
+   *
+   * 起因：玩家反馈「随机出现打不出卡」。这种偶发问题如果只发生在别人的机器上，
+   * 光靠猜没用 —— 这里把错误原样记下来（控制台 + `window.__oasisLastError`），
+   * 下次再有人遇到，让他发一句控制台里的这行就能定位。
+   */
+  window.addEventListener('error', (e) => {
+    window.__oasisLastError = { at: new Date().toISOString(), message: String(e.message ?? e.error ?? ''), stack: String(e.error?.stack ?? '') };
+    console.error('[oasis] 未捕获的错误：', e.error ?? e.message);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const reason = e.reason;
+    window.__oasisLastError = { at: new Date().toISOString(), message: String(reason?.message ?? reason ?? ''), stack: String(reason?.stack ?? '') };
+    console.error('[oasis] 未处理的 Promise 拒绝：', reason);
+  });
+
   // 调试 / 自动化用的简易接口（也方便我写截图脚本验证界面）
   window.__oasisAuto = (opts = {}) => {
     const { scene = 'title', seed = 20240607, floor = 0, stage = 0 } = opts;
@@ -148,6 +165,14 @@ async function boot() {
   if (params.get('dgloop')) {
     // 无限连招诊断：0 费「抽 1 张」+ 小卡组会不会把出牌刷成死循环
     import('../tools/diag-loop.js').catch((e) => console.error('连招诊断加载失败', e));
+  }
+  if (params.get('dgdodge')) {
+    // 闪避诊断：对方闪开后会不会「卡住、出不了牌」
+    import('../tools/diag-dodge.js').catch((e) => console.error('闪避诊断加载失败', e));
+  }
+  if (params.get('dgstuck')) {
+    // 卡死诊断：主动制造各种「打不出卡」的情形，验证看门狗与提示
+    import('../tools/diag-stuck.js').catch((e) => console.error('卡死诊断加载失败', e));
   }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版

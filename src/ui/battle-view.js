@@ -107,6 +107,63 @@ export class BattleScreen {
     this.captureDisp('enemy');
   }
 
+  /**
+   * 演出看门狗：**保证界面永远不会被「卡住」**。
+   *
+   * 起因（玩家反馈）：「打不出卡」这个问题非常随机，而且卡住的时候手牌是全灰的、
+   * 点上去一点反应都没有。回想一下界面为什么会锁死 —— 出牌/结束回合期间 `busy` 会置位，
+   * 手牌这时整批渲染成 disabled；只要那次演出的 `await` 链因为任何原因没走完
+   * （某个动画的 promise 不 resolve、某处抛异常、切后台被浏览器冻结……），
+   * `busy` 就永远是 true，手牌永远是灰的，而灰卡片的点击是被吞掉的（连提示都没有）。
+   *
+   * 这里的做法不是去猜是哪一次 await 挂了，而是：
+   *   ① 每处理一个事件就记一次时间戳；
+   *   ② 只要「busy 且已经 6 秒没有任何事件推进」，就强制收尾 + 重刷界面；
+   *   ③ 顺便在控制台留下一行现场信息，方便下次复现时定位。
+   * 6 秒是留足余量：一次出牌演出（含慢速档）最长也就 3~4 秒，
+   * 敌人整回合是连续事件、时间戳会一直刷新，所以不会被误判。
+   */
+  startWatchdog() {
+    if (this._watchdog) return;
+    this._eventAt = Date.now();
+    this._watchdog = setInterval(() => {
+      if (!this.busy) { this._eventAt = Date.now(); return; }
+      const stalled = Date.now() - (this._eventAt ?? Date.now());
+      if (stalled < 6000) return;
+      console.warn(`[oasis] 演出卡住 ${(stalled / 1000).toFixed(1)} 秒，强制恢复界面（busy=${this.busy}）`);
+      window.__oasisStuckCount = (window.__oasisStuckCount ?? 0) + 1;
+      this.busy = false;
+      this.forceRecover();
+    }, 500);
+  }
+
+  /**
+   * 强制把界面拉回「可以继续玩」的状态。
+   * 每一步都单独 try：这是兜底路径，不能因为某一步又抛异常而前功尽弃。
+   */
+  forceRecover() {
+    try { clear(this.playerPlay); } catch (err) { console.error(err); }
+    try { clear(this.enemyPlay); } catch (err) { console.error(err); }
+    try { this.resyncDisp(); } catch (err) { console.error(err); }
+    try { this.refreshAll(); } catch (err) { console.error(err); }
+    try { this.renderHand(); } catch (err) { console.error(err); }
+    toast('演出卡了一下，已经自动恢复。', 'bad');
+  }
+
+  /**
+   * 「这张牌为什么打不出去」——点灰卡片时给一句话，而不是默默吞掉点击。
+   * 以前灰卡片的点击是直接 return 的，玩家看到的就是「点了没反应、出不了牌」。
+   */
+  cantPlayReason(entry) {
+    const b = this.battle;
+    const cost = b.cardCost(entry);
+    if (b.over) return '战斗已经结束了。';
+    if (this.busy || b.active !== 'player') return '对手正在行动，稍等一下。';
+    if ((b.player.playsLeft ?? 0) <= 0) return `本回合出牌次数用完了（${b.player.playMax} 张）——按「结束回合」进入下一回合。`;
+    if (cost > b.player.ap) return `AP 不够：这张「${entry.card.name}」要 ${cost} 点，你现在还有 ${b.player.ap} 点。`;
+    return '现在打不出这张牌。';
+  }
+
   /** 把一侧的当前数值抄成「界面自己的副本」，动画期间只用这份副本 */
   captureDisp(key) {
     const s = this.battle[key];
@@ -328,6 +385,7 @@ export class BattleScreen {
       }, 120);
     };
     window.addEventListener('resize', this.onResize);
+    this.startWatchdog();
     /**
      * 光监听窗口还不够：行走图换动作（Idle↔Attack 帧宽不同）、状态图标换行、
      * 日志长高都会改变可用空间，而窗口尺寸没变。所以直接盯住这几个盒子的尺寸变化。
@@ -887,6 +945,9 @@ export class BattleScreen {
         disabled: !canPlay,
         dmgText: this.damageBadge(entry.card),
         onClick: () => this.playCard(entry.uid),
+        // 灰卡片也要能点：点一下告诉玩家「为什么打不出去」。
+        // 以前这里直接吞掉点击，玩家看到的就是「点了没反应 / 出不了牌」。
+        onDisabledClick: () => { audio.bad(); toast(this.cantPlayReason(entry), 'bad'); },
       });
       if (canPlay) node.classList.add('playable');
       if (fresh.has(entry.uid)) {
@@ -950,6 +1011,7 @@ export class BattleScreen {
     }
     audio.cardPlay();
     this.busy = true;
+    this._eventAt = Date.now();
     // 注意：这里不能读引擎数值去刷界面。
     // endTurn() 会把整个敌方回合一次算完，扣血/加盾/变属性全都已经落在引擎上了，
     // 一刷新就会「回合刚开始血就掉完了」。界面只刷演出副本（disp），
@@ -959,8 +1021,11 @@ export class BattleScreen {
       await this.playEvents(this.battle.takeEvents());
     } finally {
       this.busy = false;
-      this.resyncDisp();
-      this.refreshAll();
+      this._eventAt = Date.now();
+      // 兜底：收尾这两步各自 try —— 万一抛异常，手牌会停在「演出中整批禁用」的样子，
+      // 那就成了玩家反馈的「随机打不出卡」。
+      try { this.resyncDisp(); } catch (err) { console.error(err); }
+      try { this.refreshAll(); } catch (err) { console.error(err); this.forceRecover(); }
     }
     if (this.battle.over) await this.settle();
   }
@@ -968,6 +1033,7 @@ export class BattleScreen {
   async onEndTurn() {
     if (this.busy || this.battle.over) return;
     this.busy = true;
+    this._eventAt = Date.now();
     audio.ui('click2');
     this.battle.endTurn();
     // 同上：只刷演出副本，让演出按事件推进
@@ -976,8 +1042,10 @@ export class BattleScreen {
       await this.playEvents(this.battle.takeEvents());
     } finally {
       this.busy = false;
-      this.resyncDisp();
-      this.refreshAll();
+      // 兜底：收尾时也单独 try —— 万一 resyncDisp/refreshAll 抛异常，
+      // 手牌会停在「演出中整批禁用」的样子，那就是玩家说的「打不出卡」。
+      try { this.resyncDisp(); } catch (err) { console.error(err); }
+      try { this.refreshAll(); } catch (err) { console.error(err); this.forceRecover(); }
     }
     if (this.battle.over) await this.settle();
   }
@@ -999,6 +1067,8 @@ export class BattleScreen {
   }
 
   async playEvent(ev) {
+    // 看门狗的心跳：每推进一步就记一次时间，卡住时才看得出来（见 startWatchdog）
+    this._eventAt = Date.now();
     // 先把「界面副本」推进到这条事件之后的状态，再演动画
     this.applyEventToDisp(ev);
     // 大部分事件都可以顺手给对应角色换个表情
@@ -1463,6 +1533,8 @@ export class BattleScreen {
     this.destroyed = true;
     if (this.onResize) window.removeEventListener('resize', this.onResize);
     clearTimeout(this._resizeTimer);
+    clearInterval(this._watchdog);
+    this._watchdog = null;
     try { this._ro?.disconnect(); } catch { /* 忽略 */ }
     this.playerAnim?.destroy?.();
     this.enemyAnim?.destroy?.();
