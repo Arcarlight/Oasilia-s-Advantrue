@@ -25,6 +25,9 @@ const WAIT = Number(process.argv[4] ?? 6000);
 const rest = process.argv.slice(5).filter(Boolean);
 const ALLOW_MOTION = rest.includes('motion=1');
 const SIZE = rest.find((a) => /^\d+,\d+$/.test(a)) ?? '1440,900';
+// 这台机器直连 github.com / *.github.io 是不通的（要走本地代理）。
+// 想拍线上站点就设 SHOT_PROXY，例如：$env:SHOT_PROXY="127.0.0.1:7897"
+const PROXY = process.env.SHOT_PROXY ? process.env.SHOT_PROXY.replace(/^https?:\/\//, '') : '';
 
 await fs.mkdir(path.dirname(OUT), { recursive: true });
 
@@ -41,6 +44,7 @@ const args = [
   '--no-default-browser-check',
   // 默认关闭入场动画，让截图拿到「稳定态」；要拍动画中间帧时传 motion=1
   ...(ALLOW_MOTION ? [] : ['--force-prefers-reduced-motion']),
+  ...(PROXY ? [`--proxy-server=http://${PROXY}`] : []),
   '--user-data-dir=' + path.join(ROOT, 'tools', '.edge-profile'),
   URL_,
 ];
