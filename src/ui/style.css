@@ -1246,13 +1246,15 @@ button { font-family: inherit; }
 /* ============================================================
    卡牌
    ============================================================
-   稀有度不再是「顶上那条 4px 色带」一件事了（玩家反馈「略微看不出来」）。
-   现在一套四件套，全部由下面这四个变量驱动，加稀有度只要改变量：
-     --rarity-wash   卡面整体色调（直接铺在纸色上，一眼看出「这张是蓝的」）
-     --rarity-frame  描边颜色（原来是统一的褐色描边）
-     --rarity-ink    卡名颜色（原来是统一的墨色）
-     --rarity-glow   外发光（只有稀有 / 史诗有）
-   —— 之所以做成变量而不是四套重复规则：以前箱阴影那几行就是复制粘贴出来的，
+   稀有度靠**整套配色**区分，全部由下面这几个变量驱动，加一档稀有度只要加一组变量：
+     --card-paper-1/2/3  卡面纸色（整张卡的底色，不是一层会淡出的叠加 —— 第一版就是叠加，
+                         结果只有顶上一点点染色，玩家反馈「卡的底色并没有更改」）
+     --card-art-1/2      美术横幅的底色（原来固定是褐色，整张卡看着还是褐的）
+     --card-body-ink     正文颜色（跟着底色走，蓝底上用蓝黑而不是褐墨）
+     --rarity-frame      描边颜色
+     --rarity-ink        卡名颜色
+     --rarity-glow       外发光（只有精良以上有）
+   —— 做成变量而不是四套重复规则：以前箱阴影那几行就是复制粘贴出来的，
    改一处忘一处，结果「战斗里的稀有卡同时带 card-common 和 card-rare」时谁也说不清哪条赢。 */
 .card {
   position: relative;
@@ -1263,14 +1265,18 @@ button { font-family: inherit; }
   padding: 8px 9px 9px;
   cursor: pointer;
   color: var(--ink);
-  --rarity-wash: transparent;
+  --card-paper-1: #f0dcb6;
+  --card-paper-2: #e2c795;
+  --card-paper-3: #c9a974;
+  --card-art-1: #d9bb8b;
+  --card-art-2: #ad8551;
+  --card-body-ink: #4a3524;
   --rarity-frame: rgba(90, 60, 30, .5);
   --rarity-ink: #2b1a0a;
   --rarity-glow: 0 0 0 rgba(0, 0, 0, 0);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 30%),
-    radial-gradient(130% 85% at 50% 0%, var(--rarity-wash), transparent 72%),
-    linear-gradient(168deg, var(--paper) 0%, var(--paper-2) 62%, #c9a974 100%);
+    linear-gradient(168deg, var(--card-paper-1) 0%, var(--card-paper-2) 62%, var(--card-paper-3) 100%);
   box-shadow:
     inset 0 0 0 2px var(--rarity-frame),
     inset 0 0 0 4px rgba(255, 240, 210, .35),
@@ -1342,14 +1348,14 @@ button { font-family: inherit; }
   border-radius: 9px;
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 240, 210, .5), transparent 70%),
-    linear-gradient(180deg, #d9bb8b, #ad8551);
+    linear-gradient(180deg, var(--card-art-1), var(--card-art-2));
   box-shadow: inset 0 0 0 2px rgba(90, 60, 30, .35), inset 0 4px 10px rgba(90, 60, 30, .3);
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 .card-art canvas { image-rendering: pixelated; max-width: 96%; max-height: 96%; }
-.card-art .art-ico { width: var(--card-ico); height: var(--card-ico); opacity: 1; }
+.card-art .art-ico { width: var(--card-ico); height: var(--card-ico); opacity: 1; background-color: var(--card-body-ink); }
 .card-art .art-fx {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
@@ -1360,7 +1366,7 @@ button { font-family: inherit; }
 .card-text {
   font-size: var(--card-text-fs);
   line-height: 1.45;
-  color: #4a3524;
+  color: var(--card-body-ink);
   order: 3;
   flex: 1 1 auto;
   min-width: 0;
@@ -1427,27 +1433,47 @@ button { font-family: inherit; }
 .card-rare .card-band { background: var(--rarity-rare); }
 .card-epic .card-band { background: var(--rarity-epic); }
 
-/* 稀有度四件套：色调 / 描边 / 卡名颜色 / 外发光。
-   色相保持和 --rarity-* 一致，玩家看到蓝边就知道是稀有，不用去背图例。 */
+/* 稀有度整套配色：纸色 / 美术横幅 / 正文色 / 描边 / 卡名 / 外发光。
+   色相和 --rarity-* 保持一致，玩家看到蓝底蓝边就知道是稀有，不用去背图例。 */
 .card-common {
-  --rarity-wash: transparent;
+  --card-paper-1: #f0dcb6;
+  --card-paper-2: #e2c795;
+  --card-paper-3: #c9a974;
+  --card-art-1: #d9bb8b;
+  --card-art-2: #ad8551;
+  --card-body-ink: #4a3524;
   --rarity-frame: rgba(90, 60, 30, .5);
   --rarity-ink: #2b1a0a;
 }
 .card-uncommon {
-  --rarity-wash: rgba(111, 211, 160, .22);
+  --card-paper-1: #e4eeda;
+  --card-paper-2: #d0e4c5;
+  --card-paper-3: #a6c69a;
+  --card-art-1: #bdd4a9;
+  --card-art-2: #83a672;
+  --card-body-ink: #2f4a2c;
   --rarity-frame: rgba(38, 122, 82, .72);
   --rarity-ink: #14563a;
   --rarity-glow: 0 0 14px rgba(111, 211, 160, .22);
 }
 .card-rare {
-  --rarity-wash: rgba(127, 184, 255, .30);
+  --card-paper-1: #dde8fc;
+  --card-paper-2: #c9d9f8;
+  --card-paper-3: #9db6e2;
+  --card-art-1: #b4c7ec;
+  --card-art-2: #7890c2;
+  --card-body-ink: #26364f;
   --rarity-frame: rgba(46, 104, 186, .85);
   --rarity-ink: #17457e;
   --rarity-glow: 0 0 18px rgba(127, 184, 255, .40);
 }
 .card-epic {
-  --rarity-wash: rgba(208, 140, 255, .34);
+  --card-paper-1: #eaddfc;
+  --card-paper-2: #d9c7f7;
+  --card-paper-3: #b295dd;
+  --card-art-1: #c9b3ec;
+  --card-art-2: #8f73c4;
+  --card-body-ink: #3a2a55;
   --rarity-frame: rgba(136, 58, 200, .9);
   --rarity-ink: #5c1f8f;
   --rarity-glow: 0 0 22px rgba(208, 140, 255, .5);

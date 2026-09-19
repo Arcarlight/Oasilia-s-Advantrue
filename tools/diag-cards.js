@@ -66,6 +66,31 @@
     // 让四种稀有度 + 保护/代价标记同屏出现，方便人眼核对配色
     if (new URLSearchParams(location.search).get('dgcards') === 'shot') {
       const { showDeck } = await import('../src/ui/overlays.js');
+      const q2 = new URLSearchParams(location.search);
+      // &grid=rarity → 四种稀有度各一张并排（最直观的配色对照图）
+      if (q2.get('grid') === 'rarity') {
+        const host = document.createElement('div');
+        host.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(24,14,10,.94);'
+          + 'display:flex;align-items:center;justify-content:center;gap:22px;padding:24px;';
+        for (const r of ['common', 'uncommon', 'rare', 'epic']) {
+          const card = CARDS.find((c) => c.rarity === r && !c.enemyOnly);
+          const box = document.createElement('div');
+          box.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;';
+          box.append(cardEl(card, { size: 'lg' }));
+          const label = document.createElement('div');
+          label.textContent = `${r} · ${card.name}`;
+          label.style.cssText = 'color:#f0e0c0;font:700 14px/1.3 system-ui;';
+          box.append(label);
+          host.append(box);
+        }
+        document.body.append(host);
+        await wait(400);
+        const z0 = Number(q2.get('zoom') ?? 0);
+        if (z0 > 0) { document.documentElement.style.zoom = String(z0); await wait(300); }
+        log('四种稀有度已并排（截图模式）');
+        log('CARD_DONE');
+        return;
+      }
       game.data.deck = CARDS.slice(0, 40).map((c) => c.id);   // 让网格里有各种稀有度
       showDeck(game);
       await wait(400);
@@ -285,21 +310,37 @@
           bg: cs.backgroundImage,
           frame: cs.boxShadow,
           ink: getComputedStyle(q('.card-name', n)).color,
+          bodyInk: getComputedStyle(q('.card-text', n)).color,
+          art: getComputedStyle(q('.card-art', n)).backgroundImage,
           gem: getComputedStyle(q('.rarity-gem', n)).backgroundColor,
+          // 卡面纸色本身（这才是「底色」）—— 第一版只叠了一层会淡出的色调，
+          // 玩家反馈「卡的底色并没有更改」，所以这里直接盯住这三个变量
+          paper1: cs.getPropertyValue('--card-paper-1').trim(),
+          paper2: cs.getPropertyValue('--card-paper-2').trim(),
+          paper3: cs.getPropertyValue('--card-paper-3').trim(),
+          artColor: cs.getPropertyValue('--card-art-2').trim(),
         };
         host.remove();
         return out;
       };
       const r = { common: probe('common'), uncommon: probe('uncommon'), rare: probe('rare'), epic: probe('epic') };
-      // 卡面底纹必须**真的不同**（不是只有色带）
+      const uniq = (key) => new Set([r.common[key], r.uncommon[key], r.rare[key], r.epic[key]]).size;
+      // 卡面**底色本身**必须四档各不相同（不是只有描边和色带）
+      check('卡面底色（纸色）按稀有度不同', uniq('paper1') === 4 && uniq('paper2') === 4 && uniq('paper3') === 4,
+        `普通 ${r.common.paper1} / 精良 ${r.uncommon.paper1} / 稀有 ${r.rare.paper1} / 史诗 ${r.epic.paper1}`);
+      check('美术横幅底色也跟着稀有度走', uniq('artColor') === 4,
+        `普通 ${r.common.artColor} / 稀有 ${r.rare.artColor} / 史诗 ${r.epic.artColor}`);
+      check('正文颜色跟着底色走（蓝底用蓝黑，不是一律褐墨）', uniq('bodyInk') === 4,
+        `普通 ${r.common.bodyInk} / 稀有 ${r.rare.bodyInk} / 史诗 ${r.epic.bodyInk}`);
       check('卡面底纹按稀有度不同',
         new Set([r.common.bg, r.uncommon.bg, r.rare.bg, r.epic.bg]).size === 4,
         `普通/精良/稀有/史诗 四种底纹互不相同`);
+      check('美术横幅底纹按稀有度不同',
+        new Set([r.common.art, r.rare.art, r.epic.art]).size === 3, '三种横幅底纹互不相同');
       check('描边颜色按稀有度不同',
         new Set([r.common.frame, r.rare.frame, r.epic.frame]).size === 3,
         `普通 ${r.common.frame.slice(0, 24)}… / 稀有 ${r.rare.frame.slice(0, 24)}…`);
-      check('卡名颜色按稀有度不同（普通最深、史诗偏紫）',
-        new Set([r.common.ink, r.uncommon.ink, r.rare.ink, r.epic.ink]).size === 4,
+      check('卡名颜色按稀有度不同（普通最深、史诗偏紫）', uniq('ink') === 4,
         `普通 ${r.common.ink} / 精良 ${r.uncommon.ink} / 稀有 ${r.rare.ink} / 史诗 ${r.epic.ink}`);
       check('底栏有稀有度宝石，且颜色跟着稀有度走',
         r.rare.gem !== r.common.gem && r.epic.gem !== r.rare.gem,
