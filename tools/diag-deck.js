@@ -38,6 +38,12 @@
     while (ui.battleScreen?.busy && Date.now() < bandDeadline) await wait(100);
     await wait(300);
 
+    // 这个诊断要跑很多步才能覆盖牌组轮换，所以把敌人血量顶到打不死 ——
+    // 否则第 1 章的小怪一两个回合就倒下，战斗结束、界面收摊，
+    // 就会报出「DOM 0 张 vs 引擎 2 张」这种**假**的不一致（其实是战斗已经打完了）。
+    bs.battle.enemy.maxHp = 9999;
+    bs.battle.enemy.hp = 9999;
+
     const nameOfHandNode = (n) => n.querySelector('.card-name')?.textContent?.trim() ?? '';
     const probe = (where) => {
       const hand = bs.battle.hand('player');
@@ -65,6 +71,9 @@
           if (!playable.length) break;
           await bs.playCard(playable[0].uid);
           steps += 1;
+          // 这一张把对手打死了：战斗结束、界面收摊，手牌 DOM 被清空是正常的，
+          // 不能再拿它跟引擎手牌比（那是假的「多画一张」）
+          if (bs.battle.over) break;
           const q = probe(`第${turn + 1}回合-出牌后`);
           if (!mismatch && (q.domCount !== q.engCount || q.domRoost !== q.engRoost)) mismatch = q;
           roostPeakDom = Math.max(roostPeakDom, q.domRoost);

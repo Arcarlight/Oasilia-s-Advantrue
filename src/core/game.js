@@ -435,13 +435,15 @@ export class Game {
    * 于是「每回合只放一张防御牌」混到死（玩家实测反馈）。
    * 现在：牌组放大到跟它的抽牌速度匹配，伤害牌有数量下限，同一张牌有份数上限。
    */
-  buildEnemyDeck(pool, kind, scaled) {
+  buildEnemyDeck(pool, kind, scaled, signature = []) {
     // 牌组大小：敌人每回合要抽 6~8 张，牌组太小等于一回合打穿整副牌
     const SIZE = { normal: 14, elite: 18, boss: 22 }[kind] ?? 14;
     // 伤害牌下限：保证「后期还有牌可打」，不会被销毁牌掏空
     const MIN_DAMAGE = { normal: 9, elite: 12, boss: 15 }[kind] ?? 9;
-    const MAX_AVG = { normal: 4.6, elite: 6.2, boss: 7.2 }[kind] ?? 4.6;
-    const MAX_SINGLE = { normal: 8, elite: 10, boss: 11 }[kind] ?? 8;
+    // 平均威力上限：威力是**攻击力百分比**（见 battle.js 的 computeHit），
+    // 所以这里的单位也是百分比。乱塞高威力牌 = 一回合三张地震把玩家秒掉。
+    const MAX_AVG = { normal: 110, elite: 170, boss: 210 }[kind] ?? 110;
+    const MAX_SINGLE = { normal: 240, elite: 380, boss: 500 }[kind] ?? 240;
     const MAX_DEBUFF = { normal: 1, elite: 2, boss: 2 }[kind] ?? 1;
     /** 同一张非伤害牌最多几份（白雾 ×4 这种事不能再出现） */
     const COPY_UTILITY = 1;
@@ -451,54 +453,79 @@ export class Game {
       .filter((e) => e.kind === 'damage')
       .reduce((s, e) => s + e.power * (e.hits ?? 1), 0);
     const isDamage = (id) => powerOf(id) > 0;
-    /** 「纯削弱/降属性」的牌（有伤害的顺手降防不算） */
+    /**
+     * 「纯削弱」的牌 —— 用来限制敌人牌组里的削弱密度。
+     *
+     * 必须**排除带伤害的牌**：像「尖石攻击」这种「造成伤害 + 顺手降对手防御」的牌，
+     * 它的身份是攻击牌。以前这里漏了这条排除（注释里写了、代码里没写），
+     * 于是首领牌组里塞进两张尖石/落石之后，削弱额度就满了，
+     * 后面几圈**再也加不进来任何一张带降防的攻击牌** ——
+     * 剩下的位置全被「撞击」兜底灌满，一副 22 张的牌平均威力只有 105%，
+     * 首领打起来像小怪（tools/diag-enemydeck.mjs 实测）。
+     */
     const isDebuff = (id) => {
       const card = CARD_BY_ID[id];
       if (!card) return false;
-      const hasDamage = card.effects.some((e) => e.kind === 'damage');
-      return card.effects.some((e) => (e.kind === 'buff' && e.amount < 0 && e.target === 'enemy')
-        || (e.kind === 'status' && !hasDamage));
+      if (card.effects.some((e) => e.kind === 'damage')) return false;
+      return card.effects.some((e) => (e.kind === 'buff' && e.target === 'enemy' && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0))
+        || e.kind === 'status');
     };
 
     const uniq = [...new Set(pool)].filter((id) => CARD_BY_ID[id] && powerOf(id) <= MAX_SINGLE);
-    const dmgPool = uniq.filter(isDamage).sort((a, b) => powerOf(a) - powerOf(b));  // 低威力优先
+    /**
+     * 强招优先还是弱招优先。
+     *
+     * 旧版是「低威力优先」，本意是压住平均威力，结果第 6 章首领的 22 张牌里塞了 **6 张撞击**
+     * （威力 25%），一副牌的平均威力只有 105% —— 首领打起来像小怪（tools/diag-enemydeck 实测）。
+     * 现在精英 / 首领**从强到弱**挑（它们的卖点就是那几张大招），
+     * 杂兵 / 较强仍然从弱到强（短平快，不靠单张牌打人）。
+     */
+    const strongFirst = kind !== 'normal';
+    const dmgPool = uniq.filter(isDamage)
+      .sort((a, b) => (strongFirst ? powerOf(b) - powerOf(a) : powerOf(a) - powerOf(b)));
     const utilPool = uniq.filter((id) => !isDamage(id));
     // 同一张伤害牌最多几份：按「把牌组填满还需要重复几轮」来定，
-    // 免得池子小而重复上限又低时，剩下的位置全被最弱的普攻（撞击）灌满 —— 首领池只有 6 张伤害牌，
-    // 上限给 2 的话 22 张里要塞 8 张「撞击」，打起来就很难看。
+    // 免得池子小而重复上限又低时，剩下的位置全被最弱的普攻（撞击）灌满
     const COPY_DAMAGE = Math.max(2, Math.ceil((SIZE - utilPool.length) / Math.max(1, dmgPool.length)));
 
     const deck = [];
     const copies = new Map();
     const count = (id) => copies.get(id) ?? 0;
     const add = (id) => { deck.push(id); copies.set(id, count(id) + 1); };
+
+    // ⓪ 专属招式：首领 / 精英的招牌招一定进牌组（各一份），
+    //    否则它可能被随机抽牌的骰子漏掉，玩家永远见不到「这一只怪的特点」。
+    for (const id of signature) {
+      if (CARD_BY_ID[id] && !copies.has(id)) add(id);
+    }
+
     const dmgCount = () => deck.reduce((n, id) => n + (isDamage(id) ? 1 : 0), 0);
     const debuffCount = () => deck.reduce((n, id) => n + (isDebuff(id) ? 1 : 0), 0);
     const sumPower = () => deck.reduce((s, id) => s + powerOf(id), 0);
     const projAvg = (id) => (sumPower() + powerOf(id)) / (deck.length + 1);
-    const okToAdd = (id) => count(id) < (isDamage(id) ? COPY_DAMAGE : COPY_UTILITY)
-      && !(isDebuff(id) && debuffCount() >= MAX_DEBUFF);
 
-    // ① 伤害牌：低威力优先凑够 MIN_DAMAGE；只有「已经够数」时才用平均威力上限挡掉强牌
-    let guard = 0, i = 0;
-    while (dmgCount() < MIN_DAMAGE && guard++ < 600 && dmgPool.length) {
-      const id = dmgPool[i++ % dmgPool.length];
-      if (!okToAdd(id)) continue;
-      if (projAvg(id) > MAX_AVG && dmgCount() >= MIN_DAMAGE) continue;
-      add(id);
+    /**
+     * 按「池子里每张牌轮流各来一份」铺满牌组，而不是「先把弱招堆够再补」。
+     *
+     * 旧写法有两种翻车方式：① 弱招优先 → 首领牌组一半是撞击；
+     * ② 纯随机抽 → 抽不到招牌招。轮流铺开之后，一副牌里池子里的每张牌都有份，
+     * 只有池子太小（份数上限转满）时才用普攻兜底。
+     */
+    let guard = 0;
+    for (let round = 0; deck.length < SIZE && round < 12 && guard++ < 40; round++) {
+      for (const id of [...dmgPool, ...utilPool]) {
+        if (deck.length >= SIZE) break;
+        // 第一圈每种伤害牌各来一份（保证「每张池子里的牌都见得到」），之后才允许重复
+        const cap = isDamage(id) ? (round === 0 ? 1 : COPY_DAMAGE) : COPY_UTILITY;
+        if (count(id) >= cap) continue;
+        if (isDebuff(id) && debuffCount() >= MAX_DEBUFF) continue;
+        // 平均威力上限：已经凑够伤害牌之后，再塞强招会被挡掉（防止「一回合三张地震」秒人）
+        if (isDamage(id) && projAvg(id) > MAX_AVG && dmgCount() >= MIN_DAMAGE) continue;
+        add(id);
+      }
     }
-    while (dmgCount() < MIN_DAMAGE) add(BASIC);            // 池子里伤害牌不够就用普攻补
-    // ② 非伤害牌：每张只塞一份，补到 SIZE 为止
-    for (const id of utilPool) {
-      if (deck.length >= SIZE) break;
-      if (okToAdd(id)) add(id);
-    }
-    // ③ 还不够就继续塞伤害牌，最后兜底普攻
-    i = 0;
-    while (deck.length < SIZE && guard++ < 900 && dmgPool.length) {
-      const id = dmgPool[i++ % dmgPool.length];
-      if (okToAdd(id)) add(id);
-    }
+    // 池子里的伤害牌不够 MIN_DAMAGE 就用普攻补足，最后兜底填满
+    while (dmgCount() < MIN_DAMAGE && deck.length < SIZE) add(BASIC);
     while (deck.length < SIZE) add(BASIC);
     return deck;
   }
@@ -532,7 +559,7 @@ export class Game {
     });
     // 敌人卡组：从招式池里抽 9 张，并限制「单场平均威力」，
     // 免得同一回合抽到三张大地震把玩家直接秒掉（平衡细节见 tools/check-balance.mjs）
-    const deck = this.buildEnemyDeck(enemyDef.deck ?? ['tackle'], kind, scaled);
+    const deck = this.buildEnemyDeck(enemyDef.deck ?? ['tackle'], kind, scaled, enemyDef.signature ?? []);
 
     this.battleKind = kind;
     this.battleContext = { kind, enemyDef, scaled, retry };

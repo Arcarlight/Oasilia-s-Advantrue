@@ -295,13 +295,23 @@
     bs.clearTurnIntro();
 
     // ---- 敏捷预算胶囊 ----
+    // 注意用的是**有效敏捷**：敌人现在会按自己的属性甩「流沙地狱 / 鬼脸」这类降敏捷的招，
+    // 敏捷被削之后 AP / 抽牌 / 出牌上限会一起降 —— 这是设计内的行为，
+    // 拿基础敏捷去比会把「数值正确」误报成「敏捷算错了」。
     const agi = bs.battle.player.agi;
-    const want = `出牌 ${bs.battle.player.playsLeft} / ${bal.playsFromAgi(agi)}`;
-    const wantDraw = `抽牌 ${bal.drawFromAgi(agi)}`;
+    const effAgi = agi + (bs.battle.player.agiMod ?? 0);
+    const shown = bs.disp.player.playsLeft ?? bs.battle.player.playsLeft;
+    const want = `出牌 ${shown} / ${bal.playsFromAgi(effAgi)}`;
+    const wantDraw = `抽牌 ${bal.drawFromAgi(effAgi)}`;
     const txt = bs.budgetEl.textContent.replace(/\s+/g, ' ').trim();
-    log(`预算胶囊文本 = 「${txt}」`);
-    ok(txt.includes(want), `出牌上限跟着敏捷（敏捷 ${agi} → ${bal.playsFromAgi(agi)} 张）`, `期望包含「${want}」`);
-    ok(txt.includes(wantDraw), `抽牌数跟着敏捷（敏捷 ${agi} → ${bal.drawFromAgi(agi)} 张）`, `期望包含「${wantDraw}」`);
+    log(`预算胶囊文本 = 「${txt}」（敏捷 ${agi}${effAgi !== agi ? ` → 被削到 ${effAgi}` : ''}）`);
+    // 界面上这一行读的是「演出副本」（disp），而 disp 是按事件队列推进的；
+    // 断言用它自己的那份数字来比，另外单独检查副本有没有跟引擎跑偏 ——
+    // 混在一起比会在「演出还没播完」时误报成「敏捷算错了」。
+    ok(shown === bs.battle.player.playsLeft, '演出副本和引擎的「还能出几张」一致',
+      `界面 ${shown} vs 引擎 ${bs.battle.player.playsLeft}`);
+    ok(txt.includes(want), `出牌上限跟着敏捷（有效敏捷 ${effAgi} → ${bal.playsFromAgi(effAgi)} 张）`, `期望包含「${want}」`);
+    ok(txt.includes(wantDraw), `抽牌数跟着敏捷（有效敏捷 ${effAgi} → ${bal.drawFromAgi(effAgi)} 张）`, `期望包含「${wantDraw}」`);
     ok(bs.budgetEl.querySelector('.budget-chip')?.dataset.tip?.includes(`敏捷 ${agi}`), '胶囊的悬停说明里写了当前敏捷值');
 
     // 出一张牌之后，「还能出几张」要当场减一（这是玩家最容易困惑的地方）

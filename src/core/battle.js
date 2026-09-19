@@ -13,11 +13,46 @@ import { CARD_BY_ID } from '../data/cards.js';
 import { makeRng } from './rng.js';
 
 export const STATUS_INFO = {
-  poison: { name: '中毒', art: 'flask_half', color: '#a86ce0', desc: '回合开始流失等于层数的生命，然后层数 -1。' },
-  burn: { name: '灼伤', art: 'flare_1', color: '#ff8a3c', desc: '回合开始流失等于层数的生命，层数不减。' },
+  poison: {
+    name: '中毒',
+    art: 'flask_half',
+    color: '#a86ce0',
+    desc: '回合开始流失「最大生命的 0.8% × 层数」，然后层数 -1。目标是血越厚掉得越多。',
+  },
+  toxic: {
+    name: '剧毒',
+    art: 'flask_full',
+    color: '#7a3fd0',
+    desc: '回合开始流失「最大生命的 0.6% × 层数」，然后层数 **+1**（不衰减，越拖越痛）。',
+  },
+  burn: {
+    name: '灼伤',
+    art: 'flare_1',
+    color: '#ff8a3c',
+    desc: '回合开始流失「最大生命的 0.4% × 层数」，层数不减 —— 挂上去就一直烧。',
+  },
   weak: { name: '虚弱', art: 'smoke_1', color: '#8f8f8f', desc: '攻击力下降 25%。' },
-  bleed: { name: '出血', art: 'slash_1', color: '#e35b5b', desc: '每次受到攻击额外流失层数的生命。' },
+  bleed: {
+    name: '出血',
+    art: 'slash_1',
+    color: '#e35b5b',
+    desc: '每次受到攻击额外流失「最大生命的 0.5% × 层数」——打得越多掉得越多。',
+  },
 };
+
+/** 会随时间流失生命的状态（其余是标记类） */
+export const DOT_STATUSES = ['poison', 'toxic', 'burn'];
+/** 全部负面状态（净化 / 白雾要清的名单） */
+export const ALL_STATUSES = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
+
+/**
+ * 一层持续伤害值 = 目标最大生命 × 百分比 + 1。
+ * 「+1」是为了让前期（血量两三百）的毒依然有存在感，不至于取整成 0。
+ */
+export function dotTickDamage(side, stacks, pct) {
+  if (!stacks || !pct) return 0;
+  return Math.max(0, Math.round((side.maxHp * pct + 1) * stacks));
+}
 
 function cloneSide(base) {
   return {
@@ -29,6 +64,7 @@ function cloneSide(base) {
     agiMod: 0,
     luckMod: 0,
     poison: 0,
+    toxic: 0,
     burn: 0,
     weak: 0,
     bleed: 0,
@@ -55,29 +91,72 @@ export function effectiveLuck(side) {
 }
 
 /**
- * 削弱下限：攻击 / 防御 / 敏捷 的下降最多到「基础值的 debuffFloorPct」（默认一半）。
+ * 削弱下限：属性的下降最多到「基础值的 debuffFloorPct」（按项配置，默认一半）。
  * 每次应用 buff 后（recalcDerived）与读取数值时都会走一遍，
  * 保证不管历史数据怎么写，防御都不会被压成负数（0 防御＝减伤公式形同虚设）。
+ * 敏捷单独有一个更浅的下限，因为它一个人管着 AP / 抽牌 / 出牌上限三件事。
  */
+/** 某一项属性的削弱下限比例（读配置；配置既可以是数字也可以是按项的对象） */
+export function debuffFloor(stat) {
+  const cfg = BALANCE.debuffFloorPct ?? 0.5;
+  return typeof cfg === 'number' ? cfg : (cfg[stat] ?? 0.5);
+}
+
 export function clampDebuffs(s) {
-  const floor = BALANCE.debuffFloorPct ?? 0.5;
-  const clampOne = (base, mod) => Math.max(-Math.max(0, Math.round((base ?? 0) * (1 - floor))), mod ?? 0);
-  s.atkMod = clampOne(s.atk, s.atkMod);
-  s.defMod = clampOne(s.def, s.defMod);
-  s.agiMod = clampOne(s.agi, s.agiMod);
+  const clampOne = (stat, base, mod) => Math.max(-Math.max(0, Math.round((base ?? 0) * (1 - debuffFloor(stat)))), mod ?? 0);
+  s.atkMod = clampOne('atk', s.atk, s.atkMod);
+  s.defMod = clampOne('def', s.def, s.defMod);
+  s.agiMod = clampOne('agi', s.agi, s.agiMod);
+  s.luckMod = clampOne('luck', s.luck, s.luckMod);
   return s;
+}
+
+/**
+ * 一条伤害效果在**当前场面**下的实际威力。
+ *
+ * 卡牌的 power 是基础值，另外几种条件会临时加上去：
+ *   execThreshold  斩杀：目标血量低于阈值时加成（稀有攻击牌的收尾手段）
+ *   bonusPerStack  随目标身上的某一状态层数加成（出血流 / 毒流的「越叠越疼」）
+ *   bonusIfDot     目标身上只要有持续伤害就加成
+ *   plusShield     把**自己的护盾**折算成威力（坦克流的输出方式）
+ * 引擎算伤害、AI 打分、界面预估三处都调它 —— 以前这三处各写一份，
+ * 加了新机制就会漏掉一两处（AI 会看不见新牌的价值，界面上数字对不上）。
+ */
+export function damagePowerOf(attacker, defender, eff) {
+  let power = eff.power;
+  if (eff.execThreshold != null && defender.hp / defender.maxHp < eff.execThreshold) {
+    power += eff.execBonus ?? 0;
+  }
+  if (eff.bonusPerStack) {
+    const list = Array.isArray(eff.bonusPerStack.status) ? eff.bonusPerStack.status : [eff.bonusPerStack.status];
+    const stacks = list.reduce((n, s) => n + (defender[s] ?? 0), 0);
+    power += Math.min(eff.bonusPerStack.max ?? 9999, stacks * (eff.bonusPerStack.per ?? 0));
+  }
+  if (eff.bonusIfDot && ['poison', 'toxic', 'burn'].some((s) => (defender[s] ?? 0) > 0)) {
+    power += eff.bonusIfDot;
+  }
+  if (eff.plusShield) {
+    // 「每 1 点护盾折算成 plusShield 点威力百分比」。
+    // 曾经写成 round(护盾 / 攻击 × 100 × plusShield) —— 想让「护盾转伤害」跟攻击力脱钩，
+    // 结果反过来了：攻击力**越低**、同样一层护盾折出来的威力越高。
+    // 实测一个攻击力 3、叠了一身盾的首领能靠一张「重磅冲撞」打出 40+ 伤害，
+    // 直接把推导工具的打桩测量污染成「攻击力 3 也能秒人」。现在不做除法，只做乘法。
+    power += Math.min(eff.maxShieldBonus ?? 240, Math.round((attacker.shield ?? 0) * eff.plusShield));
+  }
+  return power;
 }
 
   /** 单次命中的伤害计算（opts.attackMul 用于敌方输出修正） */
 export function computeHit(attacker, defender, power, opts = {}) {
   const { ignoreDefPct = 0, critMult = BALANCE.luckCritMult, isCrit = false, attackMul = 1 } = opts;
   const effAtk = effectiveAtk(attacker) * attackMul;
-  // 注意：这里必须先取整再算减伤，否则小数值的攻击力会被四舍五入吃掉
-  const raw = Math.round(effAtk + (power + (attacker.strength ?? 0)) * attackMul);
+  // 威力是「攻击力的百分比」：power + strength 就是这一下打出的攻击力倍数（100 = 一倍攻击）。
+  // 必须先取整再算减伤，否则小数值的攻击力会被四舍五入吃掉。
+  const raw = Math.round((effAtk * (power + (attacker.strength ?? 0))) / 100);
   const def = effectiveDef(defender) * (1 - ignoreDefPct);
   let dmg = Math.round((raw * BALANCE.armorK) / (BALANCE.armorK + def));
   if (isCrit) dmg = Math.round(dmg * critMult);
-  dmg += defender.bleed ?? 0;
+  dmg += dotTickDamage(defender, defender.bleed ?? 0, BALANCE.statusPct?.bleed ?? 0);
   return Math.max(BALANCE.minDamage, dmg);
 }
 
@@ -277,17 +356,31 @@ export class Battle {
     this.beginPlayerTurn();
   }
 
-  /** 回合开始的持续伤害与状态结算 */
+  /**
+   * 回合开始的持续伤害与状态结算。
+   *
+   * 伤害按「最大生命的百分比 × 层数」算（见 BALANCE.statusPct）：
+   * 这是「后期上毒只扣个位数」的修复 —— 固定值在血量上千之后等于没有。
+   * 中毒每回合减 1 层（会自己结束），剧毒每回合 **加 1 层**（越拖越痛），灼伤层数不变。
+   */
   tickStatuses(key) {
     const s = this[key];
+    const pct = BALANCE.statusPct ?? {};
     if (s.poison > 0) {
-      const dmg = s.poison;
+      const dmg = dotTickDamage(s, s.poison, pct.poison);
       this.dealTrueDamage(key, dmg, '中毒');
       s.poison = Math.max(0, s.poison - 1);
       this.emit({ type: 'status', side: key, status: 'poison', delta: -1, value: s.poison });
     }
+    if (s.toxic > 0) {
+      const dmg = dotTickDamage(s, s.toxic, pct.toxic);
+      this.dealTrueDamage(key, dmg, '剧毒');
+      s.toxic += 1;
+      this.emit({ type: 'status', side: key, status: 'toxic', delta: 1, value: s.toxic });
+    }
     if (s.burn > 0) {
-      this.dealTrueDamage(key, s.burn, '灼伤');
+      const dmg = dotTickDamage(s, s.burn, pct.burn);
+      this.dealTrueDamage(key, dmg, '灼伤');
     }
     // 虚弱**不在这里**扣层：见 decayWeak()。
   }
@@ -323,8 +416,10 @@ export class Battle {
     this.turn += 1;
     this.active = 'player';
     const p = this.player;
-    // 护盾在自身回合开始时清空（保留一整个敌方回合）
-    p.shield = 0;
+    // 护盾在自身回合开始时清空（保留一整个敌方回合）；
+    // 「广域防守」这类牌会给一份 keepShield 标记，那一次的护盾留着不丢。
+    if (p.keepShield) p.keepShield = false;
+    else p.shield = 0;
     p.ap = p.apMax + p.blockBonus;
     p.blockBonus = 0;
     p.playsLeft = p.playMax;
@@ -434,6 +529,8 @@ export class Battle {
         const scale = 1 + (eff.scaleWithDef ? effectiveDef(self) / 12 : 0);
         const amount = Math.round(eff.amount * scale * (1 + (self.shieldBonus ?? 0)));
         self.shield += amount;
+        // keep：这一份护盾「下回合不清空」（普通护盾在持有者回合开始时归零）
+        if (eff.keep) self.keepShield = true;
         this.emitLogged({ type: 'shield', side: sourceKey, amount, total: self.shield }, `${self.name} 获得 ${amount} 点护盾。`, 'good');
         break;
       }
@@ -463,24 +560,89 @@ export class Battle {
         // 所以这里必须报**实际变化量**：夹住之后 delta 可能是 -1 甚至 0，
         // 以前不管夹没夹都照报 eff.amount（例如「防御 -2」），于是界面上日志、音效、
         // 特效全演了一遍，数值却一动不动 —— 看起来就像「削弱没附加成功」。
+        //
+        // amount 是固定值，pct 是「按目标基础属性的百分比」：后期敌人防御只有 16 上下，
+        // 固定 -5 两下就顶到底，所以稀有卡改用百分比削弱（-30% 永远有效）。
+        const amount = eff.pct != null ? Math.round((t[eff.stat] ?? 0) * eff.pct) : eff.amount;
         const before = this.statValue(targetKey, eff.stat);
-        if (eff.stat === 'atk') t.atkMod += eff.amount;
-        else if (eff.stat === 'def') t.defMod += eff.amount;
-        else if (eff.stat === 'agi') t.agiMod += eff.amount;
-        else if (eff.stat === 'luck') t.luckMod += eff.amount;
+        if (eff.stat === 'atk') t.atkMod += amount;
+        else if (eff.stat === 'def') t.defMod += amount;
+        else if (eff.stat === 'agi') t.agiMod += amount;
+        else if (eff.stat === 'luck') t.luckMod += amount;
         this.recalcDerived();
         const after = this.statValue(targetKey, eff.stat);
         const delta = after - before;
-        const clamped = delta !== eff.amount;
+        const clamped = delta !== amount;
         const label = `${t.name} 的${statName(eff.stat)}`;
         const text = delta === 0
           ? `${label}已经降到底了（当前 ${after}），这次没能再降。`
           : `${label} ${delta > 0 ? '+' : ''}${delta}（当前 ${after}）${clamped ? '，已经到底了' : ''}。`;
         this.emitLogged(
-          { type: 'buff', side: targetKey, stat: eff.stat, amount: delta, requested: eff.amount, clamped, value: after },
+          { type: 'buff', side: targetKey, stat: eff.stat, amount: delta, requested: amount, clamped, value: after },
           text,
           delta > 0 ? 'good' : 'bad'
         );
+        break;
+      }
+      /**
+       * 力量：接下来每一次攻击的威力都 +n（百分比）。
+       * 和 buff 的区别是它不改属性面板，只在伤害公式里加在「威力」上 ——
+       * 所以它不吃削弱上限，也不影响敏捷/抽牌这些派生值。
+       */
+      case 'strength': {
+        // 力量有上限：它是永久叠加的，而「打完回牌堆底端」意味着同一张加力量的牌
+        // 一个回合里能被再抽回来。没有上限时敌人（比如带 3 张「过热」的火系精英）
+        // 打到第五回合就叠到 +480%，之后每张牌都是五倍伤害（见 BALANCE.strengthCap）。
+        const cap = BALANCE.strengthCap ?? 9999;
+        const before = self.strength ?? 0;
+        self.strength = Math.min(cap, before + eff.n);
+        const gained = self.strength - before;
+        this.emitLogged(
+          { type: 'strength', side: sourceKey, amount: gained, value: self.strength, capped: gained !== eff.n },
+          gained > 0
+            ? `${self.name} 的攻击威力 +${gained}%（本场战斗累计 ${self.strength}%${self.strength >= cap ? '，已经到上限' : ''}）。`
+            : `${self.name} 的攻击威力已经到上限了（${self.strength}%）。`,
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      }
+      /** 额外行动点 / 出牌次数：把「这一回合能做的事」本身当成资源卖 */
+      case 'apBonus':
+        self.blockBonus = (self.blockBonus ?? 0) + eff.n;
+        this.emitLogged(
+          { type: 'gainAp', side: sourceKey, amount: eff.n, ap: self.ap + eff.n },
+          `${self.name} 下回合额外获得 ${eff.n} 点行动点。`,
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      case 'plays': {
+        self.playsLeft = (self.playsLeft ?? 0) + eff.n;
+        this.emitLogged(
+          { type: 'plays', side: sourceKey, amount: eff.n, value: self.playsLeft },
+          `${self.name} 本回合多出 ${eff.n} 次出牌机会。`,
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      }
+      /**
+       * 引爆：把对手身上的中毒 / 剧毒层数立刻结算成伤害并清掉。
+       * 毒流派的收尾手段 —— 没有它，「上毒」永远要等对方自己掉血。
+       */
+      case 'detonate': {
+        const stacks = DOT_STATUSES.reduce((s, st) => s + (foe[st] ?? 0), 0);
+        if (stacks <= 0) {
+          this.emitLogged({ type: 'detonate', side: foeKey, amount: 0 }, `${foe.name} 身上没有可以引爆的持续伤害。`, 'info');
+          break;
+        }
+        const per = eff.perStack ?? 3;
+        const dmg = Math.round(foe.maxHp * (BALANCE.statusPct?.poison ?? 0.008) * stacks * per);
+        for (const st of DOT_STATUSES) foe[st] = 0;
+        this.emitLogged(
+          { type: 'detonate', side: foeKey, amount: dmg, stacks },
+          `引爆了 ${foe.name} 身上 ${stacks} 层持续伤害！`,
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        this.dealTrueDamage(foeKey, dmg, '引爆');
         break;
       }
       case 'status': {
@@ -506,9 +668,12 @@ export class Battle {
         );
         break;
       }
-      case 'selfDmg':
-        this.dealTrueDamage(sourceKey, eff.amount, '反作用力');
+      case 'selfDmg': {
+        // pct 版本按最大生命算（血祭类的代价随血量走，后期不会变成「几乎不痛」）
+        const amount = eff.pct != null ? Math.round(self.maxHp * eff.pct) : eff.amount;
+        this.dealTrueDamage(sourceKey, amount, eff.reason ?? '反作用力');
         break;
+      }
       case 'discard': {
         const d = this.decks[sourceKey];
         const n = Math.min(eff.n, d.hand.length);
@@ -538,7 +703,7 @@ export class Battle {
         if ((self.defMod ?? 0) < 0) { removed.push(`防御 ${self.defMod}`); self.defMod = 0; }
         if ((self.agiMod ?? 0) < 0) { removed.push(`敏捷 ${self.agiMod}`); self.agiMod = 0; }
         if (eff.statuses) {
-          for (const st of ['poison', 'burn', 'weak', 'bleed']) {
+          for (const st of ALL_STATUSES) {
             if ((self[st] ?? 0) > 0) { removed.push(`${STATUS_INFO[st].name} ${self[st]}`); self[st] = 0; }
           }
         }
@@ -579,11 +744,7 @@ export class Battle {
 
     // 暴击判定
     const crit = this.rng() * 100 < critChance(effectiveLuck(attacker));
-    let power = eff.power;
-    // 斩杀类：目标血量低于阈值时额外加成
-    if (eff.execThreshold != null && defender.hp / defender.maxHp < eff.execThreshold) {
-      power += eff.execBonus ?? 0;
-    }
+    const power = damagePowerOf(attacker, defender, eff);
     const dmg = computeHit(attacker, defender, power, {
       ignoreDefPct: eff.ignoreDefPct ?? 0,
       isCrit: crit,
@@ -672,7 +833,8 @@ export class Battle {
   beginEnemyTurn() {
     if (this.over) return;
     const e = this.enemy;
-    e.shield = 0;
+    if (e.keepShield) e.keepShield = false;
+    else e.shield = 0;
     e.ap = e.apMax + e.blockBonus;
     e.blockBonus = 0;
     e.playsLeft = e.playMax;
@@ -744,8 +906,7 @@ export class Battle {
         case 'damage': {
           const hits = eff.hits ?? 1;
           const mul = key === 'enemy' ? BALANCE.enemyAtkMul * (self.powerMul ?? 1) : 1;
-          let perHit = computeHit(self, foe, eff.power, { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
-          if (eff.execThreshold != null && foe.hp / foe.maxHp < eff.execThreshold) perHit += eff.execBonus ?? 0;
+          const perHit = computeHit(self, foe, damagePowerOf(self, foe, eff), { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
           // 能直接斩杀就大幅加分
           score += perHit * hits * 1.0;
           if (perHit * hits >= foe.hp + foe.shield) score += 40;
@@ -761,13 +922,30 @@ export class Battle {
         case 'shield':
           score += eff.amount * (1 + (eff.scaleWithDef ? effectiveDef(self) / 12 : 0)) * 0.5;
           break;
-        case 'buff':
+        case 'buff': {
           // 场面型增益不能当输出用，否则 AI 会一直叠 buff 不打人
-          score += eff.amount > 0 ? Math.min(6, eff.amount * 1.1) : 4;
+          const amt = eff.pct != null ? Math.round((self[eff.stat] ?? 0) * eff.pct) : eff.amount;
+          score += amt > 0 ? Math.min(6, amt * 1.1) : 4;
           break;
-        case 'status':
-          score += Math.min(8, eff.stacks * 2.5);
+        }
+        case 'status': {
+          // 持续伤害的价值随目标血量上升（百分比结算），所以这里按层数 + 血量估
+          const w = eff.status === 'toxic' ? 3.4 : eff.status === 'poison' ? 3 : 2.5;
+          score += Math.min(14, eff.stacks * w);
           break;
+        }
+        case 'strength':
+          score += Math.min(8, Math.abs(eff.n) * 0.25);
+          break;
+        case 'detonate': {
+          const stacks = DOT_STATUSES.reduce((n, st) => n + (foe[st] ?? 0), 0);
+          score += stacks > 0 ? Math.min(30, stacks * 3) : -5;
+          break;
+        }
+        case 'plays':
+          score += 5;
+          break;
+        case 'apBonus':
         case 'draw':
         case 'ap':
           score += 2;
@@ -799,8 +977,7 @@ export class Battle {
     let total = 0;
     for (const eff of card.effects) {
       if (eff.kind !== 'damage') continue;
-      let perHit = computeHit(self, foe, eff.power, { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
-      if (eff.execThreshold != null && foe.hp / foe.maxHp < eff.execThreshold) perHit += eff.execBonus ?? 0;
+      const perHit = computeHit(self, foe, damagePowerOf(self, foe, eff), { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
       total += perHit * (eff.hits ?? 1);
     }
     return total;
@@ -870,7 +1047,8 @@ export class Battle {
       shield: s.shield, ap: s.ap, apMax: s.apMax,
       playsLeft: s.playsLeft ?? 0, playMax: s.playMax ?? 0,
       atk: effectiveAtk(s), def: effectiveDef(s), agi: effectiveAgi(s), luck: effectiveLuck(s),
-      poison: s.poison, burn: s.burn, weak: s.weak, bleed: s.bleed,
+      poison: s.poison, toxic: s.toxic, burn: s.burn, weak: s.weak, bleed: s.bleed,
+      strength: s.strength ?? 0,
       hand: this.decks[key].hand.map((c) => c.id),
       drawCount: this.decks[key].draw.length,
       discardCount: this.decks[key].discard.length,

@@ -54,7 +54,7 @@
     const { CARDS } = await import('../src/data/cards.js');
     const { cardEl } = await import('../src/ui/cards.js');
     const { showDeck } = await import('../src/ui/overlays.js');
-    const { cardDamageTotal } = await import('../src/ui/cardtext.js');
+    const { cardPowerTotal } = await import('../src/ui/cardtext.js');
 
     game.newRun(20240607);
     game.phase = 'map';
@@ -169,16 +169,18 @@
       await wait(60);
       return tab;
     };
-    await clickSort('伤害');
+    await clickSort('威力');
+    // 角标现在是「威力 N%」（攻击力百分比，与玩家当前属性无关），
+    // 所以排序后的比较基准也换成 cardPowerTotal —— 用实际伤害比会在不同攻击力下误报
     const dmgOrder = qa('.card', grid).map((n) => {
-      const badge = qa('.card-foot span', n).find((s) => s.textContent.startsWith('伤害 '));
-      return { name: q('.card-name', n).textContent, dmg: badge ? Number(badge.textContent.replace('伤害 ', '')) : 0 };
+      const badge = qa('.card-foot span', n).find((s) => s.textContent.startsWith('威力 '));
+      return { name: q('.card-name', n).textContent, dmg: badge ? Number(badge.textContent.replace('威力 ', '').replace('%', '')) : 0 };
     });
     const sortedOk = dmgOrder.every((v, i, a) => i === 0 || a[i - 1].dmg >= v.dmg);
-    check('按伤害排序 = 伤害降序', sortedOk, dmgOrder.slice(0, 8).map((d) => `${d.name}${d.dmg}`).join(' > '));
-    check('排序后伤害值来自 cardtext 的计算', dmgOrder.every((d, i) => {
+    check('按威力排序 = 威力降序', sortedOk, dmgOrder.slice(0, 8).map((d) => `${d.name}${d.dmg}`).join(' > '));
+    check('排序后威力值来自 cardtext 的计算', dmgOrder.every((d) => {
       const card = CARDS.find((c) => c.name === d.name);
-      return !card || cardDamageTotal(card) === d.dmg;
+      return !card || cardPowerTotal(card) === d.dmg;
     }));
 
     await clickSort('特殊效果');

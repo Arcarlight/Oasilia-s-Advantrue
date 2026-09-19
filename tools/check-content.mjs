@@ -111,13 +111,19 @@ for (const [id, it] of Object.entries(ITEMS)) {
  * 所以这里一旦对不上，玩家就会在同一块屏幕上看到「文案写 3 层、明细写 1 层」。
  * （真事：剧毒 / 火焰牙 / 热风 三张牌的文案写 3/2/3 层，效果却都只挂 1 层 ——
  *   卡面文案是设计意图，实测按文案补齐。）
+ *
+ * 注意「对手**每有** 1 层出血，威力 +20%」这类是**加成条件**而不是在上状态，
+ * 所以要先把这种句式摘掉再对账，否则会把「暗影爪」判成错的。
  */
 {
-  const NAME = { poison: '中毒', burn: '灼伤', weak: '虚弱', bleed: '出血' };
+  const NAME = { poison: '中毒', toxic: '剧毒', burn: '灼伤', weak: '虚弱', bleed: '出血' };
   const mismatched = [];
   for (const c of CARDS) {
+    const applied = c.text
+      .replace(/每有\s*\d+\s*层/g, '')
+      .replace(/每\s*\d+\s*层/g, '');
     const fromText = {};
-    for (const m of c.text.matchAll(/(\d+)\s*层\s*(中毒|灼伤|虚弱|出血|流血)/g)) {
+    for (const m of applied.matchAll(/(\d+)\s*层\s*(中毒|剧毒|灼伤|虚弱|出血|流血)/g)) {
       const key = m[2] === '流血' ? '出血' : m[2];
       fromText[key] = (fromText[key] ?? 0) + Number(m[1]);
     }
@@ -186,30 +192,64 @@ for (const r of Object.keys(RARITY)) {
 }
 const zeroCost = CARDS.filter((c) => c.ap === 0).length;
 if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length} 张，占比偏高（默认出战卡组会全是小牌）`);
-for (const [name, pool] of Object.entries(MOVE_POOLS)) {
-  const avg = pool.reduce((s, id) => s + (CARDS.find((c) => c.id === id)?.effects.filter((e) => e.kind === 'damage').reduce((a, e) => a + e.power * (e.hits ?? 1), 0) ?? 0), 0) / pool.length;
-  if (avg > 9) warn(`招式池 ${name} 的平均威力 ${avg.toFixed(1)} 偏高（野生怪用强招会秒人）`);
+/**
+ * 招式池体检。招式池现在分两类：
+ *   · 旧的四档池（weak/basic/strong/elite/boss）—— 敌人已经不再指向它们，留着是给诊断脚本用
+ *   · 属性包 kit_<type> / kit_<type>_hi —— 每个敌人都按自己的属性挑一个
+ * 无论哪一类，下面几条「实测被吐槽过的坑」都不能踩：
+ *   ① 0 费还抽牌 = 白嫖价值（敌人的费用本来就不是限制）
+ *   ② 低挡池不该有永久强化（小怪不该有成长性）—— 判定按**谁在用这个池**来算
+ *   ③ 削弱牌不能扎堆（玩家会被磨到没法还手）
+ *   ④ 降防御的牌不能太多
+ */
+const poolUsers = new Map();   // 池名 → 用它的敌人（含档位）
+for (const e of ENEMIES) {
+  const key = typeof e.deck === 'string' ? e.deck : null;
+  if (!key) continue;
+  if (!poolUsers.has(key)) poolUsers.set(key, []);
+  poolUsers.get(key).push(e);
+}
 
-  // ---- 敌人招式池的「威胁度」检查：下面几条都是实测被吐槽过的问题，别让它悄悄回来 ----
+for (const [name, pool] of Object.entries(MOVE_POOLS)) {
+  const powerOf = (id) => CARDS.find((c) => c.id === id)?.effects.filter((e) => e.kind === 'damage')
+    .reduce((a, e) => a + e.power * (e.hits ?? 1), 0) ?? 0;
+  const avg = pool.reduce((s, id) => s + powerOf(id), 0) / pool.length;
+  // 威力是「攻击力百分比」：池子平均值超过 160% 就说明这个池子里的招太狠
+  // （实测：敌人攻击 44 × 1.6 ≈ 70 点一下，一回合三四张就是玩家半管血）
+  if (avg > 160) warn(`招式池 ${name} 的平均威力 ${avg.toFixed(1)}% 偏高（野生怪用强招会秒人）`);
+
   const cardsOf = pool.map((id) => CARDS.find((c) => c.id === id)).filter(Boolean);
 
-  // ① 0 费还抽牌 = 白嫖价值（敌人的费用本来就不是限制）
+  // ① 0 费还抽牌
   for (const c of cardsOf) {
     const draw = c.effects.filter((e) => e.kind === 'draw').reduce((s, e) => s + e.n, 0);
     if (c.ap === 0 && draw > 0) err(`招式池 ${name} 里有「0 费还抽牌」的卡「${c.name}」——敌人用它等于白拿价值`);
   }
-  // ② 低挡池（小怪 / 较强）不该有永久强化与抽牌
-  if (name === 'weak' || name === 'basic') {
+
+  // ② 低挡使用者（野生 / 较强）不该拿到永久强化
+  const users = poolUsers.get(name) ?? [];
+  const usedByLowTier = users.some((e) => e.tier === 'mob' || e.tier === 'normal');
+  const legacyLow = name === 'weak' || name === 'basic';
+  if (usedByLowTier || legacyLow) {
     for (const c of cardsOf) {
-      if (c.effects.some((e) => e.kind === 'buff' && e.amount > 0)) err(`低挡招式池 ${name} 里有永久强化牌「${c.name}」——小怪不该有成长性`);
-      if (c.effects.some((e) => e.kind === 'draw')) warn(`低挡招式池 ${name} 里有抽牌牌「${c.name}」`);
+      if (c.effects.some((e) => e.kind === 'buff' && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0))) {
+        err(`低挡招式池 ${name} 里有永久强化牌「${c.name}」——小怪不该有成长性`);
+      }
     }
   }
-  // ③ 削弱牌不能扎堆
-  const debuffs = cardsOf.filter((c) => c.effects.some((e) => (e.kind === 'buff' && e.amount < 0 && e.target === 'enemy')
-    || (e.kind === 'status' && !c.effects.some((x) => x.kind === 'damage'))));
+
+  // ③ 削弱牌不能扎堆（只算**纯削弱**：带伤害的顺手降防属于攻击牌）
+  const isPureDebuff = (c) => {
+    if (c.effects.some((e) => e.kind === 'damage')) return false;
+    return c.effects.some((e) => (e.kind === 'buff' && e.target === 'enemy' && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0))
+      || e.kind === 'status');
+  };
+  const debuffs = cardsOf.filter(isPureDebuff);
   if (debuffs.length / pool.length > 0.4) err(`招式池 ${name} 有 ${debuffs.length}/${pool.length} 张是削弱牌，占比过高（玩家会被磨到没法还手）`);
-  const defDown = cardsOf.filter((c) => c.effects.some((e) => e.kind === 'buff' && e.stat === 'def' && e.amount < 0 && e.target === 'enemy'));
+
+  // ④ 降防御的牌不能太多
+  const defDown = cardsOf.filter((c) => c.effects.some((e) => e.kind === 'buff' && e.stat === 'def'
+    && e.target === 'enemy' && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0)));
   if (defDown.length > 3) err(`招式池 ${name} 有 ${defDown.length} 张「降防御」牌（上限 3）`);
 }
 for (const id of STARTER_DECK) if (!CARDS.find((c) => c.id === id)) err(`初始卡组的 ${id} 不存在`);

@@ -2,7 +2,7 @@
 
 import { el, clear } from './dom.js';
 import { createPortrait } from '../core/portraits.js';
-import { apFromAgi, drawFromAgi, playsFromAgi, critChance, dodgeChance } from '../data/balance.js';
+import { apFromAgi, drawFromAgi, playsFromAgi, critChance, dodgeChance, BALANCE } from '../data/balance.js';
 
 /**
  * 记录已经挂好的头像节点，避免每次刷新 HUD 都重建 <img>。
@@ -40,8 +40,8 @@ export function renderHud(game) {
   // title 是浏览器原生提示，要悬停一两秒才出来、样式也不受控，
   // 等于「敏捷影响什么」这件事在界面上根本看不见（用户反馈过）。
   stats.append(
-    chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}：决定你打出多少伤害。\n伤害 =（攻击 + 招式威力）× 60 ÷ (60 + 对手防御)。`),
-    chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 60/(60+${d.def})。`),
+    chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}：决定你打出多少伤害。\n伤害 = 攻击 × 招式威力% × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对手防御)。\n卡面上的伤害数字就是按这个攻击力实时算的。`),
+    chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+${d.def})。`),
     chip('ico-shoe', '敏', d.agi,
       `敏捷 ${d.agi}：**一回合的三项预算全看它**。\n`
       + `· 行动点 AP = 2 + 敏捷÷2（上限 8）→ 你现在 **${apFromAgi(d.agi)} 点**\n`

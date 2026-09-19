@@ -8,6 +8,8 @@ globalThis.localStorage = { _m: new Map(), getItem(k) { return this._m.get(k) ??
 
 const { Game } = await imp('src/core/game.js');
 const { BALANCE } = await imp('src/data/balance.js');
+const { STARTER_DECK, rollCard } = await imp('src/data/cards.js');
+const { STAGE_BIOME } = await imp('src/data/balance.js');
 
 const RUNS = Number(process.argv[2] ?? 300);
 // 各章开始时的「玩家画像」：按每章 +9 攻击 / +6 防御 / +45 生命 / +2.5 敏捷 的成长速度外推
@@ -19,10 +21,21 @@ const GROWTH = [
   { atk: 50, def: 39, maxHp: 430, agi: 24, luck: 16, deck: 30 },
   { atk: 57, def: 44, maxHp: 470, agi: 24, luck: 18, deck: 34 },
 ];
-// 真实卡组里一定混着防御/辅助牌，这里按比例混进去，
-// 避免「全攻击牌」这种玩家拿不到的理想卡组把难度估低了。
-const EXTRA_ATTACK = ['bite', 'rock_throw', 'double_kick', 'crunch', 'dragon_breath', 'rock_slide', 'earth_power', 'dragon_claw', 'earthquake', 'superpower', 'dragon_darts', 'fire_fang'];
-const EXTRA_UTIL = ['bulk_up', 'iron_defense', 'roost', 'protect', 'dragon_dance', 'sandstorm', 'harden', 'screech']; 
+/**
+ * 牌组模型：**起始卡组 + 一路拿到的奖励牌**，按真实稀有度权重抽（rollCard）。
+ *
+ * 必须和 tools/derive-enemy-curve.mjs 用同一套。以前这里是「75% 从一张固定强牌表里抽、
+ * 25% 从辅助表里抽」，等于假设玩家每一张都是龙爪 / 地震 / 超级冲击，
+ * 牌组比真实情况强一大截 —— 于是「调难度」的工具和「验收难度」的工具对同一张表
+ * 能给出相差几十个百分点的胜率（实测第 1 章精英：11% vs 73%），
+ * 谁也不知道该信哪个。现在两边都是「起始卡组 + 按稀有度抽到的奖励」。
+ */
+function buildDeck(size) {
+  const out = STARTER_DECK.slice(0, size);
+  let guard = 0;
+  while (out.length < size && guard++ < 200) out.push(rollCard(0.12, []).id);
+  return out;
+}
 
 function autoPlay(b) {
   let g = 0;
@@ -44,11 +57,10 @@ function measure(stage, kind, runs) {
     game.newRun();
     const g = GROWTH[stage];
     Object.assign(game.data, { atk: g.atk, def: g.def, maxHp: g.maxHp, hp: g.maxHp, agi: g.agi, luck: g.luck, stage });
-    while (game.data.deck.length < g.deck) {
-      // 约 3/4 攻击牌 + 1/4 防御辅助牌，贴近真实卡组
-      const pool = Math.random() < 0.75 ? EXTRA_ATTACK : EXTRA_UTIL;
-      game.data.deck.push(pool[Math.floor(Math.random() * pool.length)]);
-    }
+    game.data.deck = buildDeck(g.deck);
+    // 地图是 newRun() 按第 1 章生成的：直接改 stage 不会换地图，
+    // 于是「第 6 章」一直在打沙漠的怪。这里把 biome 一起改掉。
+    game.data.map.biome = STAGE_BIOME[Math.min(STAGE_BIOME.length - 1, stage)];
     game.data.battleDeck = null;
     game.startBattle(kind, 0);
     const b = game.battle;

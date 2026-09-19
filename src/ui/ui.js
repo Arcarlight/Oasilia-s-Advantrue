@@ -10,7 +10,10 @@ import {
 } from './screens.js';
 import { audio } from '../core/audio.js';
 import { bgmKeyFor } from '../core/bgm.js';
-import { BIOMES } from '../data/balance.js';
+import { BALANCE, BIOMES } from '../data/balance.js';
+import { enemyDefFor } from '../data/enemies.js';
+import { effectiveDef } from '../core/battle.js';
+import { setCardTextContext } from './cardtext.js';
 import { applyCursorTheme } from './cursor.js';
 import { stageCount } from '../data/mapgen.js';
 
@@ -78,6 +81,19 @@ export class UI {
   render() {
     const g = this.game;
     const phase = g.phase;
+
+    /**
+     * 卡面上的伤害数字是**实时算**的（威力 × 你的攻击力），所以在每次渲染之前
+     * 先把「拿什么攻击力、对什么防御去估」这件事更新一遍。
+     * 战斗中用当前敌人的真实防御，战斗外用本章普通怪的防御 ——
+     * 以前卡面印死数字，玩家一进第二章看到的就是过期信息。
+     */
+    setCardTextContext({
+      atk: g.data?.atk ?? BALANCE.player.atk,
+      def: phase === 'battle' && g.battle
+        ? effectiveDef(g.battle.enemy)
+        : enemyDefFor('normal', g.data?.stage ?? 0),
+    });
 
     // 场景 BGM：地图与战斗都按**当前地图**换曲（每章不同），找不到专属曲就退回通用曲
     const biome = g.data?.map?.biome ?? 'desert';

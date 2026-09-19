@@ -18,8 +18,8 @@ const ROOT = path.resolve(here, '..');
 const CONTENT = path.join(ROOT, 'content');
 
 // 战斗引擎能解释的效果种类（改 battle.js 的 resolveEffect 时要同步这里）
-const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'buff', 'status', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
-const STATUS_KINDS = ['poison', 'burn', 'weak', 'bleed'];
+const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
+const STATUS_KINDS = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 const BUFF_STATS = ['atk', 'def', 'agi', 'luck'];
 const RARITIES = ['common', 'uncommon', 'rare', 'epic'];
 const TIERS = ['mob', 'normal', 'elite', 'boss'];
@@ -157,10 +157,33 @@ function validateCards(data, iconNames) {
     if (!Array.isArray(c.effects) || !c.effects.length) err(`${at} 至少要有一个 effects`);
     for (const eff of c.effects ?? []) {
       if (!ENGINE_EFFECT_KINDS.includes(eff.kind)) err(`${at} 用了引擎不认识的效果 kind=${eff.kind}`);
-      if (eff.kind === 'damage' && typeof eff.power !== 'number') err(`${at} 的伤害效果缺 power`);
       if (eff.kind === 'buff') {
         if (!BUFF_STATS.includes(eff.stat)) err(`${at} 的 buff stat 必须是 ${BUFF_STATS.join('/')}`);
-        if (typeof eff.amount !== 'number') err(`${at} 的 buff 缺 amount`);
+        // amount（固定值）和 pct（按目标基础属性的百分比）二选一
+        if (typeof eff.amount !== 'number' && typeof eff.pct !== 'number') err(`${at} 的 buff 缺 amount / pct`);
+      }
+      if (eff.kind === 'strength' && typeof eff.n !== 'number') err(`${at} 的 strength 缺 n`);
+      if (eff.kind === 'plays' && typeof eff.n !== 'number') err(`${at} 的 plays 缺 n`);
+      if (eff.kind === 'apBonus' && typeof eff.n !== 'number') err(`${at} 的 apBonus 缺 n`);
+      if (eff.kind === 'selfDmg' && typeof eff.amount !== 'number' && typeof eff.pct !== 'number') err(`${at} 的 selfDmg 缺 amount / pct`);
+      // 伤害的几种条件加成（见 battle.js 的 damagePowerOf）：字段名写错就等于没生效，所以逐个卡一遍
+      if (eff.kind === 'damage') {
+        if (eff.bonusPerStack) {
+          const st = eff.bonusPerStack.status;
+          for (const s of (Array.isArray(st) ? st : [st])) {
+            if (!STATUS_KINDS.includes(s)) err(`${at} 的 bonusPerStack.status=${s} 不是已知状态`);
+          }
+          if (typeof eff.bonusPerStack.per !== 'number') err(`${at} 的 bonusPerStack 缺 per`);
+        }
+        if (eff.plusShield != null && typeof eff.plusShield !== 'number') err(`${at} 的 plusShield 必须是数字`);
+        if (eff.execThreshold != null && typeof eff.execBonus !== 'number') err(`${at} 有 execThreshold 但没有 execBonus`);
+      }
+      if (eff.kind === 'shield' && eff.keep != null && typeof eff.keep !== 'boolean') err(`${at} 的 shield.keep 必须是 true/false`);
+      // 威力改成「攻击力的百分比」之后，卡面上写死的伤害数字必须是 {d} 占位符
+      // （否则第 2 章起卡面就是错的，见 tools/placeholder-damage-text.mjs）
+      if (eff.kind === 'damage' && typeof eff.power !== 'number') err(`${at} 的伤害效果缺 power`);
+      if (eff.kind === 'damage' && (eff.power < 5 || eff.power > 900)) {
+        warn(`${at} 的威力 ${eff.power} 不在 5~900（攻击力百分比）区间里，确认一下是不是漏乘了 100`);
       }
       if (eff.kind === 'status' && !STATUS_KINDS.includes(eff.status)) err(`${at} 的 status 必须是 ${STATUS_KINDS.join('/')}`);
       if (eff.kind === 'draw' && typeof eff.n !== 'number') err(`${at} 的 draw 缺 n`);
@@ -219,6 +242,10 @@ function validateEnemies(data, cardIds, biomeKeys) {
     } else if (Array.isArray(deck)) {
       for (const id of deck) if (!cards.has(id)) err(`${at} 的 deck 引用了不存在的卡牌 ${id}`);
     } else err(`${at} 的 deck 必须是招式池名或卡牌 id 数组`);
+    for (const id of e.signature ?? []) {
+      if (!cards.has(id)) err(`${at} 的专属招式 ${id} 不存在`);
+    }
+    if (e.tier === 'boss' && !(e.signature?.length)) warn(`${at} 是首领但没有专属招式（signature）`);
     if (e.tier === 'boss' && !e.bossTitle) warn(`${at} 是首领但没有 bossTitle`);
     if (ids.has(e.id)) err(`敌人 id 重复：${e.id}`);
     ids.add(e.id);
@@ -483,6 +510,9 @@ function emitEnemies(tiers, movePools, enemies, species) {
     lines.push(`    "tier": ${JSON.stringify(e.tier)},`);
     lines.push(`    "biome": ${JSON.stringify(e.biome)},`);
     lines.push(`    "deck": ${typeof e.deck === 'string' ? `MOVE_POOLS.${e.deck}` : J(e.deck).replace(/\n\s*/g, ' ')},`);
+    // 专属招式：一定会进这副牌组（见 game.js 的 buildEnemyDeck），
+    // 所以首领的招牌招不会被随机抽牌漏掉
+    if (e.signature?.length) lines.push(`    "signature": ${J(e.signature).replace(/\n\s*/g, ' ')},`);
     lines.push(`    "lines": ${J(e.lines).replace(/\n\s*/g, ' ')},`);
     if (e.bossTitle) lines.push(`    "bossTitle": ${JSON.stringify(e.bossTitle)},`);
     if (e.final) lines.push('    "final": true,');

@@ -234,13 +234,23 @@ console.log('\n④ 奖励保底：既没有回血牌、也没有解状态牌时�
   ok(noCleanse === 0, '缺解状态牌时奖励里必有一张解状态牌', `${N} 次里缺 ${noCleanse} 次`);
   ok(malformed === 0, '两个保底各占一个槽位，选项不重复也不丢', `${malformed} 次异常`);
 
-  // 第 1 章不该出解状态保底（README 里承诺的规则）
-  let cleanseInStage0 = 0;
-  for (let i = 0; i < 100; i++) {
-    const g = mk(7000 + i, 0);
-    if (kindsOf(g.withSustainPity([{ id: 'a' }, { id: 'b' }, { id: 'c' }])).has('cleanse')) cleanseInStage0 += 1;
+  // 第 1 章不该出解状态保底（README 里承诺的规则）。
+  //
+  // 这里必须用**固定的三个选项**来测，不能靠「随机抽出来的结果里有没有 cleanse」：
+  // 卡池里有好几种解状态牌，随机抽本身就有几个百分点会抽中，
+  // 断言「100 次里一次都不出现」等于在赌卡池大小 —— 卡池一扩就会假警报。
+  // 现在直接喂三个已知卡，看保底**换进来**的是不是解状态牌。
+  {
+    const feed = () => [
+      { ...CARD_BY_ID.tackle }, { ...CARD_BY_ID.bite }, { ...CARD_BY_ID.harden },
+    ];
+    const stage0 = kindsOf(mk(7000, 0).withSustainPity(feed()));
+    const stage1 = kindsOf(mk(7001, 1).withSustainPity(feed()));
+    ok(stage0.has('heal') && !stage0.has('cleanse'),
+      '第 1 章只触发回血保底，不触发解状态保底', `第 1 章拿到 ${[...stage0].join('/')}；第 2 章拿到 ${[...stage1].join('/')}`);
+    ok(stage1.has('heal') && stage1.has('cleanse'),
+      '第 2 章起两条保底各占一个槽位，都在', `第 2 章拿到 ${[...stage1].join('/')}`);
   }
-  ok(cleanseInStage0 === 0, '第 1 章不会触发解状态保底（只留回血保底）', `100 次里出现 ${cleanseInStage0} 次`);
 
   // 保底只动末尾，前两个随机选项要保留
   let frontTouched = 0;

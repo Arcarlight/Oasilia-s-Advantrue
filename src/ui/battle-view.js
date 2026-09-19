@@ -2,15 +2,16 @@
 
 import { el, clear, sleep, floatAt, toast } from './dom.js';
 import { cardEl } from './cards.js';
+import { setCardTextContext } from './cardtext.js';
 import { initTips } from './tips.js';
 import { createAnim, createStill, animInfo, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion, emotionForEvent } from '../core/portraits.js';
 import { turnArt as turnArtOf, fitArt, ART_FROM_SCALE } from '../core/gen9.js';
 import { audio } from '../core/audio.js';
-import { STATUS_INFO, computeHit } from '../core/battle.js';
+import { STATUS_INFO, computeHit, effectiveAtk, effectiveDef } from '../core/battle.js';
 import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
-import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi } from '../data/balance.js';
+import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
 import { TIERS } from '../data/enemies.js';
 
 const TIER_LABEL = { mob: '野生', normal: '较强', elite: '精英', boss: '首领' };
@@ -21,6 +22,7 @@ const TIER_LABEL = { mob: '野生', normal: '较强', elite: '精英', boss: '�
  */
 const STATUS_ICO = {
   poison: 'ico-poison',
+  toxic: 'ico-skull',
   burn: 'ico-flame',
   weak: 'ico-temperature_down',
   bleed: 'ico-heart_break_02',
@@ -184,7 +186,7 @@ export class BattleScreen {
       hp: s.hp, maxHp: s.maxHp, shield: s.shield,
       ap: s.ap, apMax: s.apMax, playsLeft: s.playsLeft ?? 0, playMax: s.playMax ?? 0,
       atkMod: s.atkMod ?? 0, defMod: s.defMod ?? 0, agiMod: s.agiMod ?? 0, luckMod: s.luckMod ?? 0,
-      poison: s.poison ?? 0, burn: s.burn ?? 0, weak: s.weak ?? 0, bleed: s.bleed ?? 0,
+      poison: s.poison ?? 0, toxic: s.toxic ?? 0, burn: s.burn ?? 0, weak: s.weak ?? 0, bleed: s.bleed ?? 0,
     };
     this.dispHp[key] = s.hp;
     this.dispShield[key] = s.shield;
@@ -729,7 +731,7 @@ export class BattleScreen {
     // （血量/护盾早就走 disp 了，状态这块当初漏了 —— 和当年那个「血条不动」是同一类 bug。）
     const dd = this.disp[key] ?? {};
     clear(statusEl);
-    for (const st of ['poison', 'burn', 'weak', 'bleed']) {
+    for (const st of ['poison', 'toxic', 'burn', 'weak', 'bleed']) {
       const val = dd[st] ?? 0;
       if (val > 0) {
         const info = STATUS_INFO[st];
@@ -760,8 +762,8 @@ export class BattleScreen {
         ];
     const agi = b.player.agi;
     const STAT_TIP = {
-      攻: '攻击：决定你能打出多少伤害。\n实际伤害 =（攻击 + 招式威力）× 60/(60+对手防御)。',
-      防: '防御：越高越抗打。\n受到的伤害会乘以 60/(60+防御)，所以防御是「减伤百分比」而不是直接扣血。',
+      攻: `攻击：决定你能打出多少伤害。\n实际伤害 = 攻击 × 招式威力% × ${BALANCE.armorK}/(${BALANCE.armorK}+对手防御)。\n威力是攻击力的百分比，所以攻击力涨了，每张牌都按比例更疼。`,
+      防: `防御：越高越抗打。\n受到的伤害会乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+防御)，所以防御是「减伤百分比」而不是直接扣血。`,
       速: isPlayer
         // 敏捷管三件事，把当前这一局的具体数值直接算出来，别只说「看它」
         ? `敏捷 ${agi}：一回合的三项预算全由它决定。\n`
@@ -1106,6 +1108,9 @@ export class BattleScreen {
   renderHand() {
     const b = this.battle;
     const hand = b.hand('player');
+    // 卡面文案里的 {d} 是实时算的，所以画手牌之前先把上下文对齐到当前这只敌人
+    // （战斗外的界面由 ui.js 统一设置，这里是战斗中更准的一份）
+    setCardTextContext({ atk: effectiveAtk(b.player), def: effectiveDef(b.enemy) });
     // 找出「这次新抽到的牌」：给它们放「从屏幕下方滑上来」的入场动画。
     // 用 uid 对比（每场战斗内唯一），所以打牌后重画手牌不会让老牌又动一次。
     const seen = this._handSeen ?? (this._handSeen = new Set());
@@ -1357,12 +1362,12 @@ export class BattleScreen {
         break;
       }
       case 'status': {
-        if (ev.status === 'poison') audio.poison();
+        if (ev.status === 'poison' || ev.status === 'toxic') audio.poison();
         else if (ev.status === 'burn') audio.burn();
         else if (ev.status === 'weak') audio.dizzy();
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
-        // 中毒=绿雾、灼伤=火光、虚弱=紫旋、出血=红痕
-        const STATUS_FX = { poison: 'magic_1', burn: 'flare_1', weak: 'twirl_1', bleed: 'slash_1' };
+        // 中毒=绿雾、剧毒=深紫雾、灼伤=火光、虚弱=紫旋、出血=红痕
+        const STATUS_FX = { poison: 'magic_1', toxic: 'magic_1', burn: 'flare_1', weak: 'twirl_1', bleed: 'slash_1' };
         this.burstFx(body, STATUS_FX[ev.status] ?? 'magic_1', {
           size: 124, ms: 520, klass: `fx-status fx-status-${ev.status}`,
         });

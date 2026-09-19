@@ -3,6 +3,7 @@
 
 import { el, clear, toast, modal, floatAt } from './dom.js';
 import { cardEl, CARD_ART } from './cards.js';
+import { resolveCardText } from './cardtext.js';
 import { createAnim, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion } from '../core/portraits.js';
 import { audio } from '../core/audio.js';
@@ -582,7 +583,8 @@ function renderShop(game) {
               }, [el('span', { class: 'ico-action_points', style: { width: '11px', height: '11px' } }), String(card.ap)])
             : null,
         ]),
-        el('p', { text: card ? card.text : (s.desc ?? '') }),
+        // 卡牌那一行的描述也要走 {d} 解析（伤害是按当前攻击力实时算的）
+        el('p', { text: card ? resolveCardText(card) : (s.desc ?? '') }),
         el('div', { class: 'row' }, [
           el('span', { class: 'price' }, [el('span', { class: 'ico-money' }), String(s.price)]),
           el('button', {

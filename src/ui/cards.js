@@ -3,7 +3,7 @@
 import { el } from './dom.js';
 import { audio } from '../core/audio.js';
 import { RARITY } from '../data/balance.js';
-import { cardTextEl, richHTML } from './cardtext.js';
+import { cardTextEl, richHTML, resolveCardText } from './cardtext.js';
 // 卡牌美术（图标 mask 类名 + 背景特效图）的唯一数据源是 content/cards.json 的 ico/fx：
 // build-content.mjs 把它生成成 src/data/cards.js 的 CARD_ART。这里以前手抄了一份，
 // 于是「改了 content/cards.json 却看不到界面变化」——现在直接吃生成的那份，一份都不留。
@@ -53,7 +53,7 @@ export function cardEl(card, opts = {}) {
     ].filter(Boolean).join(' '),
     role: 'button',
     tabindex: opts.tabIndex ?? 0,
-    'aria-label': `${card.name}，消耗 ${ap} AP：${card.text}`,
+    'aria-label': `${card.name}，消耗 ${ap} AP：${resolveCardText(card)}`,
     'aria-disabled': disabled ? 'true' : 'false',
   });
 
@@ -94,7 +94,7 @@ export function cardEl(card, opts = {}) {
     artBox,
     // 描述走富文本：数字 / 状态 / 关键词分别染色（见 cardtext.js），
     // 以前是一整块同色纯文本，扫一眼看不出哪张牌打得疼、给什么状态。
-    cardTextEl(card.text),
+    cardTextEl(card),
   ]));
 
   const foot = [el('span', { text: cardTag(card) })];
@@ -157,7 +157,7 @@ export function cardRow(card, opts = {}) {
     el('div', { style: { flex: '1 1 auto' } }, [
       el('h4', { text: `${card.name}  ·  ${card.ap} AP`, style: { fontSize: '14px' } }),
       // 商店行里也一样高亮：数字 / 状态一眼能挑出来
-      el('p', { html: richHTML(card.text), style: { minHeight: 'auto' } }),
+      el('p', { html: richHTML(resolveCardText(card)), style: { minHeight: 'auto' } }),
     ]),
     opts.trailing ?? null,
   ]);

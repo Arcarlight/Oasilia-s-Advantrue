@@ -13,7 +13,7 @@ const ROOT = path.resolve(here, '..');
 const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);
 globalThis.localStorage = { _m: new Map(), getItem: () => null, setItem: () => {}, removeItem: () => {} };
 
-const { Battle, effectiveDef } = await imp('src/core/battle.js');
+const { Battle, effectiveDef, debuffFloor } = await imp('src/core/battle.js');
 const { CARD_BY_ID } = await imp('src/data/cards.js');
 const { BALANCE } = await imp('src/data/balance.js');
 
@@ -87,15 +87,15 @@ const pick = (evs, type) => evs.filter((e) => e.type === type);
 {
   const b = makeBattle();
   b.rng = () => 0.999;
-  const floorPct = BALANCE.debuffFloorPct ?? 0.5;
-  // 把防御压到下限（基础 12 → 下限 6）
-  b.player.defMod = -Math.ceil(b.player.def * (1 - floorPct));
+  // 下限按项配置（防御 25%）：直接用引擎那个 helper 读，别在这儿再抄一遍配置结构
+  const floorMod = -Math.max(0, Math.round(b.player.def * (1 - debuffFloor('def'))));
+  b.player.defMod = floorMod;
   b.recalcDerived();
   const defAtFloor = effectiveDef(b.player);
   b.resolveCard('enemy', CARD_BY_ID.crunch);
   const buff = pick(b.takeEvents(), 'buff')[0];
   const texts = b.log.map((l) => l.text).join(' | ');
-  check('已经在下降下限上', b.player.defMod === -Math.ceil(b.player.def * (1 - floorPct)), 'defMod=' + b.player.defMod);
+  check('已经在下降下限上', b.player.defMod === floorMod, 'defMod=' + b.player.defMod);
   check('事件报的是 0（实际变化量）而不是 -2', !!buff && buff.amount === 0 && buff.clamped === true, JSON.stringify(buff));
   check('日志说清了「已经降到底」而不是「防御 -2」',
     texts.includes('已经降到底') && !texts.includes('防御 -2'), texts);
@@ -109,6 +109,93 @@ const pick = (evs, type) => evs.filter((e) => e.type === type);
   b.resolveCard('enemy', CARD_BY_ID.crunch);
   const buff = pick(b.takeEvents(), 'buff')[0];
   check('没到下限时正常降 2 点', !!buff && buff.amount === -2 && buff.clamped === false, JSON.stringify(buff));
+}
+
+// ---- 6) 持续伤害按**最大生命的百分比**结算（用户反馈「上毒只扣个位数」）----
+// 这一条是这次改动的核心：固定值的毒在后期（敌人血量上千）等于没有。
+{
+  const pct = BALANCE.statusPct;
+  // 一个「血厚」的敌人：中毒 3 层每回合应该掉 最大生命 × 0.8% × 层数
+  const b = makeBattle({ enemy: { maxHp: 1000, hp: 1000 } });
+  b.rng = () => 0.999;
+  b.enemy.poison = 3;
+  const before = b.enemy.hp;
+  b.tickStatuses('enemy');
+  const tick = before - b.enemy.hp;
+  const want = Math.round((1000 * pct.poison + 1) * 3);
+  check('中毒伤害 = 最大生命 × 百分比 × 层数（1000 血 → 3 层）', tick === want && tick > 20,
+    `实际 ${tick}，期望 ${want}（旧的固定值只有 3 点）`);
+  check('中毒层数 -1', b.enemy.poison === 2, 'poison=' + b.enemy.poison);
+
+  // 剧毒层数**不减反增**，而且血越厚掉得越多
+  const b2 = makeBattle({ enemy: { maxHp: 2000, hp: 2000 } });
+  b2.rng = () => 0.999;
+  b2.enemy.toxic = 2;
+  const t1 = b2.enemy.hp;
+  b2.tickStatuses('enemy');
+  const d1 = t1 - b2.enemy.hp;
+  check('剧毒结算后层数 +1（不衰减）', b2.enemy.toxic === 3, 'toxic=' + b2.enemy.toxic);
+  const t2 = b2.enemy.hp;
+  b2.tickStatuses('enemy');
+  const d2 = t2 - b2.enemy.hp;
+  check('剧毒越拖越痛（第二回合掉得比第一回合多）', d2 > d1, `${d1} → ${d2}`);
+  // 同层数、不同血量：血越厚掉得越多（这就是「毒在后期依然有用」的关键）
+  const b3 = makeBattle({ enemy: { maxHp: 1000, hp: 1000 } });
+  b3.rng = () => 0.999;
+  b3.enemy.toxic = 2;
+  const t3 = b3.enemy.hp;
+  b3.tickStatuses('enemy');
+  const d3 = t3 - b3.enemy.hp;
+  check('同一层数下，血越厚的目标掉得越多', d1 > d3, `2000 血 2 层 ${d1} vs 1000 血 2 层 ${d3}`);
+
+  // 出血按「每次受到攻击」结算
+  const def = { def: 0, defMod: 0, bleed: 3, maxHp: 1000, hp: 1000 };
+  const atk = { atk: 30, atkMod: 0, weak: 0, strength: 0 };
+  const { computeHit } = await imp('src/core/battle.js');
+  const withBleed = computeHit(atk, def, 100);
+  const withoutBleed = computeHit(atk, { ...def, bleed: 0 }, 100);
+  check('出血按最大生命百分比加成每一次命中', withBleed - withoutBleed === Math.round((1000 * pct.bleed + 1) * 3),
+    `${withBleed} vs ${withoutBleed}`);
+}
+
+// ---- 7) 引爆：把持续伤害一次性爆掉并清空 ----
+{
+  const b = makeBattle({ enemy: { maxHp: 1000, hp: 1000 } });
+  b.rng = () => 0.999;
+  b.enemy.poison = 3;
+  b.enemy.burn = 2;
+  const before = b.enemy.hp;
+  b.resolveCard('player', CARD_BY_ID.venom_burst);
+  const evs = b.takeEvents();
+  const det = pick(evs, 'detonate')[0];
+  const lost = before - b.enemy.hp;
+  check('引爆真的扣了血', lost > 0, `扣了 ${lost}`);
+  check('引爆后持续伤害被清空', b.enemy.poison === 0 && b.enemy.burn === 0,
+    `poison=${b.enemy.poison} burn=${b.enemy.burn}`);
+  check('引爆伤害随层数放大', !!det && det.stacks === 5, JSON.stringify(det));
+}
+
+// ---- 8) 百分比削弱：后期敌人防御只有十几点，固定值两下就顶到底 ----
+{
+  const b = makeBattle({ enemy: { def: 11 } });
+  b.rng = () => 0.999;
+  b.resolveCard('player', CARD_BY_ID.corrode);
+  check('腐蚀按基础防御的 30% 削弱', b.enemy.defMod === -3, 'defMod=' + b.enemy.defMod + '（11 × 30% ≈ 3）');
+  const b2 = makeBattle({ enemy: { def: 11 } });
+  b2.rng = () => 0.999;
+  // 下限 25%：def 11 最低只能削到 3 点（-8）
+  for (let i = 0; i < 10; i++) b2.resolveCard('player', CARD_BY_ID.corrode);
+  check('削弱下限是基础值的 25%（不是一半）', effectiveDef(b2.enemy) === 3,
+    `防御 ${effectiveDef(b2.enemy)}（下限 ${Math.round(11 * debuffFloor('def'))}）`);
+
+  // 敏捷单独一档：它管着 AP / 抽牌 / 出牌上限三件事，不能削到和防御一样深
+  const b3 = makeBattle({ player: { agi: 10 } });
+  b3.rng = () => 0.999;
+  for (let i = 0; i < 10; i++) b3.resolveCard('enemy', CARD_BY_ID.scary_face);
+  const floorAgi = Math.round(10 * debuffFloor('agi'));
+  check('敏捷的下限比攻防浅（不被削成「没有回合」）',
+    b3.player.agi + b3.player.agiMod >= floorAgi && floorAgi > Math.round(10 * debuffFloor('def')),
+    `敏捷 ${b3.player.agi + b3.player.agiMod}（攻防类下限 ${Math.round(10 * debuffFloor('def'))}，敏捷下限 ${floorAgi}）`);
 }
 
 console.log('');

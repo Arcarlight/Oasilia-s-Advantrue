@@ -128,6 +128,328 @@ export const MOVE_POOLS = {
     "iron_defense",
     "mob_growl",
     "mob_stare"
+  ],
+  "kit_ground": [
+    "mob_scratch",
+    "tackle",
+    "rock_throw",
+    "bulldoze",
+    "sand_tomb",
+    "rock_slide",
+    "mob_guard",
+    "earth_power"
+  ],
+  "kit_ground_hi": [
+    "mob_scratch",
+    "tackle",
+    "rock_throw",
+    "bulldoze",
+    "sand_tomb",
+    "rock_slide",
+    "mob_guard",
+    "earth_power",
+    "earthquake",
+    "body_press",
+    "bulk_up"
+  ],
+  "kit_rock": [
+    "mob_scratch",
+    "tackle",
+    "rock_throw",
+    "harden",
+    "mob_guard",
+    "rock_blast",
+    "stone_edge",
+    "mob_stare"
+  ],
+  "kit_rock_hi": [
+    "mob_scratch",
+    "tackle",
+    "rock_throw",
+    "harden",
+    "mob_guard",
+    "rock_blast",
+    "stone_edge",
+    "mob_stare",
+    "rock_slide",
+    "protect",
+    "iron_defense"
+  ],
+  "kit_steel": [
+    "mob_scratch",
+    "tackle",
+    "iron_head",
+    "harden",
+    "mob_guard",
+    "metal_sound",
+    "headbutt",
+    "double_kick"
+  ],
+  "kit_steel_hi": [
+    "mob_scratch",
+    "tackle",
+    "iron_head",
+    "harden",
+    "mob_guard",
+    "metal_sound",
+    "headbutt",
+    "double_kick",
+    "iron_defense",
+    "protect",
+    "bulk_up"
+  ],
+  "kit_bug": [
+    "mob_scratch",
+    "tackle",
+    "twineedle",
+    "fury_cutter",
+    "poison_sting",
+    "bug_buzz",
+    "u_turn",
+    "mob_sand"
+  ],
+  "kit_bug_hi": [
+    "mob_scratch",
+    "tackle",
+    "twineedle",
+    "fury_cutter",
+    "poison_sting",
+    "bug_buzz",
+    "u_turn",
+    "mob_sand",
+    "megahorn",
+    "bullet_seed",
+    "swords_dance"
+  ],
+  "kit_grass": [
+    "mob_scratch",
+    "tackle",
+    "absorb",
+    "razor_leaf",
+    "leech_seed",
+    "spore",
+    "giga_drain",
+    "mob_guard"
+  ],
+  "kit_grass_hi": [
+    "mob_scratch",
+    "tackle",
+    "absorb",
+    "razor_leaf",
+    "leech_seed",
+    "spore",
+    "giga_drain",
+    "mob_guard",
+    "synthesis",
+    "leaf_storm",
+    "quiver_dance"
+  ],
+  "kit_poison": [
+    "mob_scratch",
+    "tackle",
+    "poison_sting",
+    "acid_armor",
+    "venom_drain",
+    "sludge_bomb",
+    "toxic",
+    "mob_sand"
+  ],
+  "kit_poison_hi": [
+    "mob_scratch",
+    "tackle",
+    "poison_sting",
+    "acid_armor",
+    "venom_drain",
+    "sludge_bomb",
+    "toxic",
+    "mob_sand",
+    "toxic_spikes",
+    "plague",
+    "venom_burst"
+  ],
+  "kit_water": [
+    "mob_scratch",
+    "tackle",
+    "water_pulse",
+    "aqua_ring",
+    "withdraw",
+    "brine",
+    "whirlpool",
+    "mob_guard"
+  ],
+  "kit_water_hi": [
+    "mob_scratch",
+    "tackle",
+    "water_pulse",
+    "aqua_ring",
+    "withdraw",
+    "brine",
+    "whirlpool",
+    "mob_guard",
+    "surf",
+    "moonlight",
+    "guardian_oath"
+  ],
+  "kit_flying": [
+    "mob_scratch",
+    "tackle",
+    "nuzzle",
+    "air_slash",
+    "acrobatics",
+    "tailwind",
+    "storm_throw",
+    "mob_sand"
+  ],
+  "kit_flying_hi": [
+    "mob_scratch",
+    "tackle",
+    "nuzzle",
+    "air_slash",
+    "acrobatics",
+    "tailwind",
+    "storm_throw",
+    "mob_sand",
+    "feather_dance",
+    "water_shuriken",
+    "dragon_ascension"
+  ],
+  "kit_fire": [
+    "mob_scratch",
+    "tackle",
+    "flame_charge",
+    "fire_fang",
+    "heat_wave",
+    "slash",
+    "bite",
+    "mob_sand"
+  ],
+  "kit_fire_hi": [
+    "mob_scratch",
+    "tackle",
+    "flame_charge",
+    "fire_fang",
+    "heat_wave",
+    "slash",
+    "bite",
+    "mob_sand",
+    "overheat",
+    "last_stand",
+    "howl"
+  ],
+  "kit_dark": [
+    "mob_scratch",
+    "tackle",
+    "bite",
+    "crunch",
+    "knock_off",
+    "night_slash",
+    "headbutt",
+    "mob_guard"
+  ],
+  "kit_dark_hi": [
+    "mob_scratch",
+    "tackle",
+    "bite",
+    "crunch",
+    "knock_off",
+    "night_slash",
+    "headbutt",
+    "mob_guard",
+    "scary_face",
+    "blood_price",
+    "charm"
+  ],
+  "kit_dragon": [
+    "mob_scratch",
+    "tackle",
+    "dragon_breath",
+    "dragon_claw",
+    "dragon_tail",
+    "bite",
+    "mob_guard",
+    "mob_sand"
+  ],
+  "kit_dragon_hi": [
+    "mob_scratch",
+    "tackle",
+    "dragon_breath",
+    "dragon_claw",
+    "dragon_tail",
+    "bite",
+    "mob_guard",
+    "mob_sand",
+    "dragon_rush",
+    "draco_meteor",
+    "dragon_ascension"
+  ],
+  "kit_ghost": [
+    "mob_scratch",
+    "tackle",
+    "toxic_thread",
+    "night_slash",
+    "mob_stare",
+    "sand_tomb",
+    "bite",
+    "mob_sand"
+  ],
+  "kit_ghost_hi": [
+    "mob_scratch",
+    "tackle",
+    "toxic_thread",
+    "night_slash",
+    "mob_stare",
+    "sand_tomb",
+    "bite",
+    "mob_sand",
+    "toxic_overflow",
+    "moonlight",
+    "venom_burst"
+  ],
+  "kit_fighting": [
+    "mob_scratch",
+    "tackle",
+    "double_kick",
+    "rolling_kick",
+    "headbutt",
+    "bite",
+    "mob_guard",
+    "mob_sand"
+  ],
+  "kit_fighting_hi": [
+    "mob_scratch",
+    "tackle",
+    "double_kick",
+    "rolling_kick",
+    "headbutt",
+    "bite",
+    "mob_guard",
+    "mob_sand",
+    "superpower",
+    "bulk_up",
+    "body_press"
+  ],
+  "kit_normal": [
+    "mob_scratch",
+    "tackle",
+    "bite",
+    "mob_sand",
+    "mob_guard",
+    "double_kick",
+    "headbutt",
+    "mob_stare"
+  ],
+  "kit_normal_hi": [
+    "mob_scratch",
+    "tackle",
+    "bite",
+    "mob_sand",
+    "mob_guard",
+    "double_kick",
+    "headbutt",
+    "mob_stare",
+    "bulk_up",
+    "last_stand",
+    "recycle"
   ]
 };
 
@@ -143,7 +465,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "它把自己团成一个球滚过来。", "「沙子进眼睛了！」" ],
   },
   {
@@ -157,7 +479,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "它张开手臂要一个拥抱。你决定不给。", "沙地上冒出一排新的刺。" ],
   },
   {
@@ -172,7 +494,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_dragon,
     "lines": [ "它一口咬在沙丘上，然后看着你。", "它好像在笑。也可能是牙疼。" ],
   },
   {
@@ -187,7 +509,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_flying,
     "lines": [ "它把你的头巾当成了云，落在上面。", "它哼着歌，节奏很像沙漠蜻蜓的振翅声。" ],
   },
   {
@@ -201,7 +523,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "desert",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "它的背刺在正午的阳光下反着白光。" ],
   },
   {
@@ -216,7 +538,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "desert",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "它在白天一动不动，现在开始动了。" ],
   },
   {
@@ -231,7 +553,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "desert",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "地面开始有规律地抖动。" ],
   },
   {
@@ -246,7 +568,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "desert",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "它从沙丘背面滑翔下来，尾巴上的钩子闪着光。" ],
   },
   {
@@ -261,7 +583,8 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "desert",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_steel_hi,
+    "signature": [ "sig_iron_tail_wall" ],
     "lines": [ "沙面裂开，一条由铁组成的蛇从中升起。" ],
   },
   {
@@ -276,7 +599,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "desert",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_rock_hi,
+    "signature": [ "sig_sand_fang" ],
     "lines": [ "沙暴忽然停了。因为掀沙暴的那个东西来了。" ],
     "bossTitle": "流沙之主",
   },
@@ -292,7 +616,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_fire,
     "lines": [ "岩壁上的石头在动，而且很烫。" ],
   },
   {
@@ -306,7 +630,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_fighting,
     "lines": [ "它正在举一块比你大的石头，看到你之后举了两块。" ],
   },
   {
@@ -320,7 +644,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "canyon",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "峡谷底部有一朵花，花开的方向一直对着你。" ],
   },
   {
@@ -334,7 +658,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "canyon",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_poison,
     "lines": [ "岩缝里传来鳞片摩擦石头的声音。" ],
   },
   {
@@ -348,7 +672,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "canyon",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_fighting,
     "lines": [ "它把一条岩柱当成沙袋，正在打。" ],
   },
   {
@@ -362,7 +686,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "canyon",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_fire_hi,
     "lines": [ "一道橙色的影子沿着峡谷壁跑了三个来回，然后停在你面前。" ],
   },
   {
@@ -377,7 +701,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "canyon",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_rock_hi,
     "lines": [ "天空一暗。有什么东西挡住了太阳。" ],
   },
   {
@@ -392,7 +716,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "canyon",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_dragon_hi,
+    "signature": [ "sig_dual_chomp" ],
     "lines": [ "它从峡谷另一头抬起眼睛看你。距离大概是四十米，但它已经在考虑要不要过来了。" ],
     "bossTitle": "峡谷的暴君",
   },
@@ -408,7 +733,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "night",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "沙里冒出一个脑袋，正在啃一块石头。" ],
   },
   {
@@ -423,7 +748,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "night",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_dragon,
     "lines": [ "它的爪子在星尘里划出三道亮痕。" ],
   },
   {
@@ -438,7 +763,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "night",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "大地像鼓一样响了一下。" ],
   },
   {
@@ -453,7 +778,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "night",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_dragon_hi,
     "lines": [ "它想飞，但这里没有天空。它决定先解决掉你。" ],
   },
   {
@@ -467,7 +792,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "night",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_fighting_hi,
     "lines": [ "四条手臂同时向你比划「过来」。" ],
   },
   {
@@ -482,7 +807,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "night",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_steel_hi,
+    "signature": [ "sig_meteor_mash" ],
     "lines": [ "一颗星星从天上掉下来，没有砸出坑，而是站了起来。" ],
     "bossTitle": "坠落的星",
   },
@@ -498,7 +824,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "night",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_dragon_hi,
+    "signature": [ "sig_land_wrath" ],
     "lines": [ "沙丘背面浮出一张由绿色细胞拼成的脸。「……你走得太远了，沙漠的孩子。」" ],
     "bossTitle": "生态的秩序",
     "final": true,
@@ -515,7 +842,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_bug,
     "lines": [ "落叶底下有两只眼睛在看你，背上还长着蘑菇。", "它走过来的时候，蘑菇先动。" ],
   },
   {
@@ -530,7 +857,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "一丛叶子从土里拔出来，然后开始走。", "它把叶子对着你，像是在闻。" ],
   },
   {
@@ -545,7 +872,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_bug,
     "lines": [ "树皮上有一条黄色的东西正在往上爬，爬到你面前停住了。", "它头上的角对着你。" ],
   },
   {
@@ -560,7 +887,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "它把根从土里抽出来，晃了晃，像是在热身。", "它的头一直在点，你分不清是点头还是准备咬。" ],
   },
   {
@@ -575,7 +902,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "forest",
-    "deck": MOVE_POOLS.forest_mid,
+    "deck": MOVE_POOLS.kit_bug,
     "lines": [ "那只蘑菇现在长得比它的身子还大，而且看起来才是真正在走路的那个。" ],
   },
   {
@@ -590,7 +917,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "forest",
-    "deck": MOVE_POOLS.forest_mid,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "空气里忽然有股说不上来的味道。你顺着味道找到了它。" ],
   },
   {
@@ -605,7 +932,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "forest",
-    "deck": MOVE_POOLS.forest_mid,
+    "deck": MOVE_POOLS.kit_bug,
     "lines": [ "嗡声是从上面来的。你抬头，看到三根针正对着你。" ],
   },
   {
@@ -619,7 +946,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "forest",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_bug_hi,
     "lines": [ "两根角夹住了一棵小树，树断了。它转头看你，像是在问你有没有更硬的。" ],
   },
   {
@@ -634,7 +961,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "forest",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_bug_hi,
     "lines": [ "它从树干里拔出一根角，树汁顺着角往下滴。它很有礼貌地等你准备好。" ],
   },
   {
@@ -648,7 +975,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "forest",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_grass_hi,
+    "signature": [ "sig_leaf_blade" ],
     "lines": [ "树叶全部停止摇晃。有东西从树冠上下来，落地的声音很轻。「走出去。这里不欢迎沙子。」" ],
     "bossTitle": "密林的守林人",
   },
@@ -664,7 +992,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "浅水里飘着一颗红宝石，下面连着十几条透明的线。", "它在水里一鼓一鼓的，像在呼吸，也像在等你下水。" ],
   },
   {
@@ -678,7 +1006,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "一块紫色的贝壳从盐壳底下顶出来，然后合上了。", "贝壳缝里伸出一条舌头，很快又缩回去。" ],
   },
   {
@@ -692,7 +1020,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "它在浅滩里横着走，钳子举得比头高。", "它把你的一片影子当成了对手，先夹了一下试试。" ],
   },
   {
@@ -706,7 +1034,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "一条鱼把水吸进嘴里，然后对着你吐了出来。", "它瞄准的时候会歪一下头。" ],
   },
   {
@@ -721,7 +1049,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "tide",
-    "deck": MOVE_POOLS.tide_mid,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "整片浅水同时泛起红色。你意识到那不是水色。" ],
   },
   {
@@ -736,7 +1064,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "tide",
-    "deck": MOVE_POOLS.tide_mid,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "礁石上那朵「花」张开了，里面全是尖的。" ],
   },
   {
@@ -751,7 +1079,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "tide",
-    "deck": MOVE_POOLS.tide_mid,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "它把一只螃蟹的壳拆开，扔在一边，然后看向你。" ],
   },
   {
@@ -765,7 +1093,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "tide",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_water_hi,
     "lines": [ "一只钳子砸在盐壳上，盐壳裂了一条缝。它比你高。" ],
   },
   {
@@ -780,7 +1108,8 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "tide",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_water_hi,
+    "signature": [ "sig_rage_wave" ],
     "lines": [ "水面被从下面顶开，一条蓝色的东西升起来，比你在沙丘上见过的任何东西都长。" ],
   },
   {
@@ -794,7 +1123,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "tide",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_water_hi,
+    "signature": [ "sig_origin_pulse" ],
     "lines": [ "潮水全部退了下去，露出底下睡了很久的东西。它睁开一只眼睛，海水就开始往回涨。" ],
     "bossTitle": "盐海的心跳",
   },
@@ -810,7 +1140,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "你差点一脚踩上去。它睁眼，很不高兴。", "它把自己从岩壁上掰下来，跳到你面前。" ],
   },
   {
@@ -825,7 +1155,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_flying,
     "lines": [ "一只鸟在你的头顶绕圈，一圈比一圈低。", "它落在岩架上，用一只眼睛看你。" ],
   },
   {
@@ -840,7 +1170,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_steel,
     "lines": [ "一堆铁在动。是它在吃岩壁上的锈。", "它撞过来的时候发出了金属声。" ],
   },
   {
@@ -855,7 +1185,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_flying,
     "lines": [ "它从风里冲下来，完全不减速。", "它站在风口上，像是在等什么。" ],
   },
   {
@@ -870,7 +1200,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "cliff",
-    "deck": MOVE_POOLS.cliff_mid,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "一段岩壁站了起来，然后滚了下来——用滚的。" ],
   },
   {
@@ -885,7 +1215,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "cliff",
-    "deck": MOVE_POOLS.cliff_mid,
+    "deck": MOVE_POOLS.kit_flying,
     "lines": [ "它在高空停住不动，然后收翅，直直地掉下来。" ],
   },
   {
@@ -900,7 +1230,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "cliff",
-    "deck": MOVE_POOLS.cliff_mid,
+    "deck": MOVE_POOLS.kit_steel,
     "lines": [ "它用头撞岩壁，岩壁让了。它转过头来找下一个目标。" ],
   },
   {
@@ -915,7 +1245,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "cliff",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_steel_hi,
     "lines": [ "风里有刀。你终于看清那把刀长着翅膀。" ],
   },
   {
@@ -930,7 +1260,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "cliff",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_ground_hi,
     "lines": [ "崖壁上倒挂着一只天蝎，比你见过的大三倍，尾巴上挂着碎石。" ],
   },
   {
@@ -945,7 +1275,8 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "cliff",
-    "deck": MOVE_POOLS.boss,
+    "deck": MOVE_POOLS.kit_steel_hi,
+    "signature": [ "sig_heavy_slam" ],
     "lines": [ "整段崖壁开始往下掉，因为有个东西正从里面走出来。它每一步都砸出一个坑。" ],
     "bossTitle": "峭壁的锤子",
   },
@@ -960,7 +1291,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "night",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "夜里的背刺反着星光，像一排小小的路灯。", "它从沙里只露出背，正在慢慢接近。" ],
   },
   {
@@ -975,7 +1306,7 @@ export const ENEMIES = [
 ],
     "tier": "normal",
     "biome": "night",
-    "deck": MOVE_POOLS.strong,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "沙里有个硬壳在震，里面的东西还没出来，但已经很生气了。" ],
   },
   {
@@ -990,7 +1321,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "night",
-    "deck": MOVE_POOLS.elite,
+    "deck": MOVE_POOLS.kit_steel_hi,
     "lines": [ "地底传来很长的一串响。等它出来的时候，你已经在它的影子里了。" ],
   },
   {
@@ -1004,7 +1335,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "沙里张开一个漏斗形的坑，坑底有东西在等。", "它把下颚张到最大，然后一动不动 —— 那是它的捕猎方式。" ],
   },
   {
@@ -1019,7 +1350,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "沙面下有两道细细的波纹朝你移动。", "它只把眼睛露在外面，看你的时候顺便眨掉一层沙。" ],
   },
   {
@@ -1033,7 +1364,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "一大团沙子从沙丘后面挪过来，挪到一半停了，打了个哈欠。", "它鼻孔一张，喷出一小股沙暴。" ],
   },
   {
@@ -1048,7 +1379,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_ghost,
     "lines": [ "一个沙堆长了嘴。它张开得很慢，像在等你主动走进去。", "它身上的沙一直往下掉，但永远掉不完。" ],
   },
   {
@@ -1062,7 +1393,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "desert",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "它拖着一身干泥走过来，看起来不太高兴被打扰。", "它喷了口气，脚下就多了一个小坑。" ],
   },
   {
@@ -1077,7 +1408,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_fire,
     "lines": [ "岩壁后面传来呼噜声，走近一看，它背上在冒热气。", "它慢吞吞地转过头，热气把空气扭了一下。" ],
   },
   {
@@ -1091,7 +1422,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "你踢到一颗石头，石头生气了。", "它没有眼睛，但你确定它在看你。" ],
   },
   {
@@ -1105,7 +1436,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "它在岩壁上蹭脖子，蹭出一串火星。", "它摇尾巴的时候扫到了石头，石头碎了。" ],
   },
   {
@@ -1119,7 +1450,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "树干上贴着一只小蜥蜴，尾巴上还挂着一片叶子。", "它从树上一路滑下来，落地时几乎没有声音。" ],
   },
   {
@@ -1133,7 +1464,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "它昂着头站在路中间，像是嫌你走得慢。", "它用尾巴把你的影子拨开了一点，然后看你。" ],
   },
   {
@@ -1147,7 +1478,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_bug,
     "lines": [ "腐叶下面伸出一对很大的颚。", "它咬着树根往后拖，拖不动的样子很执着。" ],
   },
   {
@@ -1161,7 +1492,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "一株草举起了两把刀。", "它把叶片上的水抖掉，然后摆了个很像招式起手的姿势。" ],
   },
   {
@@ -1176,7 +1507,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "forest",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_grass,
     "lines": [ "一颗带刺的铁球从坡上滚下来，撞到你的腿，很有礼貌地停住了。", "它插在土里，刺上挂着别的宝可梦的毛。" ],
   },
   {
@@ -1190,7 +1521,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "盐壳上的浅水里趴着一团软软的东西，慢慢换了个形状。", "它爬过的地方留下一条亮亮的痕。" ],
   },
   {
@@ -1204,7 +1535,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "一小群鱼挤在一起，挤成了一个比它们单个大得多的形状。", "它们同时转向你，整齐得有点吓人。" ],
   },
   {
@@ -1219,7 +1550,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "礁石上那朵花在动，而且带着毒刺。", "它伸出一条触手试探你，被你躲开之后又伸出两条。" ],
   },
   {
@@ -1233,7 +1564,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "tide",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_water,
     "lines": [ "浅滩上一坨黑色的东西，看不出哪边是头。", "它对着你吐出了自己的内脏，然后又收回去 —— 好像在打招呼。" ],
   },
   {
@@ -1248,7 +1579,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_flying,
     "lines": [ "一只小鸟在风口上挂着不动，尾巴上的红羽毛很显眼。", "它冲你叫了两声，声音比它自己大。" ],
   },
   {
@@ -1263,7 +1594,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ghost,
     "lines": [ "岩缝里传出心跳一样的回声。", "它倒挂着，用耳朵对着你 —— 那是它的眼睛。" ],
   },
   {
@@ -1278,7 +1609,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_rock,
     "lines": [ "一颗小星星从上面掉下来，砸在岩架上，壳裂了一条缝。", "硬壳下面有橙色的光在动。" ],
   },
   {
@@ -1292,7 +1623,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "cliff",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_normal,
     "lines": [ "一只毛球在碎石堆里滚，滚到你面前停住了。", "它把一只耳朵卷起来又放开，像在量你有多高。" ],
   },
   {
@@ -1307,7 +1638,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "night",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ghost,
     "lines": [ "沙丘上有一盏灯在慢慢靠近，火光很温柔。", "你注意到自己被照出来的影子，比那盏灯长得多。" ],
   },
   {
@@ -1321,7 +1652,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "night",
-    "deck": MOVE_POOLS.weak,
+    "deck": MOVE_POOLS.kit_ghost,
     "lines": [ "沙里露出半张面具，面具在哭。", "它举着面具看你，像是在确认你是不是它等的那个人。" ],
   },
   {
@@ -1336,7 +1667,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "night",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_steel,
     "lines": [ "一把剑插在沙里，剑柄上的布条在无风的时候动了一下。", "你还没伸手，它自己先动了。" ],
   },
   {
@@ -1350,7 +1681,7 @@ export const ENEMIES = [
 ],
     "tier": "mob",
     "biome": "canyon",
-    "deck": MOVE_POOLS.basic,
+    "deck": MOVE_POOLS.kit_ground,
     "lines": [ "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。", "它一头扎进岩缝，再从你脚边冒出来。" ],
   }
 ];
@@ -1384,6 +1715,16 @@ export function powerFactor(stats, stage) {
   return Math.max(BALANCE.powerScaleMin, Math.min(BALANCE.powerScaleMax, scaled));
 }
 
+/**
+ * 某一档敌人放在某一章时的**防御**。
+ * scaleEnemy 和「卡面伤害估算」（战斗外拿它当参照防御）共用这一份 ——
+ * 抄两遍的话，卡面数字会渐渐和实际打出来的对不上。
+ */
+export function enemyDefFor(tier, stage) {
+  const t = TIERS[tier] ?? TIERS.normal;
+  return Math.round(t.baseDef + stage * 1.5);
+}
+
 /** 计算实际数值：查 balance.js 的战力表 + 章内深度 + 玩家战力对齐 */
 export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null) {
   const tier = TIERS[enemy.tier];
@@ -1398,7 +1739,7 @@ export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null) {
 
   const hp = Math.max(10, Math.round(hpTable[s] * depthHp * pf));
   const atk = Math.max(2, Math.round(atkTable[s] * depthAtk * (0.85 + 0.15 * pf)));
-  const def = Math.round(tier.baseDef + stage * 1.5);
+  const def = enemyDefFor(enemy.tier, stage);
   const agi = Math.round(tier.agi[0] + Math.random() * (tier.agi[1] - tier.agi[0]) + stage * 1.5);
 
   return {

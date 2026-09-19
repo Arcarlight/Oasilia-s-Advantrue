@@ -92,6 +92,9 @@ console.log('\n③ 正常卡组（10 张，初始卡组那种）');
 {
   const deck = ['tackle', 'tackle', 'tackle', 'tackle', 'sand_attack', 'harden', 'double_kick', 'bite', 'bite', 'bite'];
   const b = startBattleWith(deck);
+  // 这一节测的是「牌组轮换 / 抽牌」而不是战斗胜负，所以把敌人血量顶到打不死 ——
+  // 否则第一回合就把第 1 章的小怪打死，战斗直接结束，根本走不到「下回合」。
+  b.enemy.maxHp = 9999; b.enemy.hp = 9999;
   const before = b.decks.player.hand.length;
   ok(before >= 4, '开局照常抽到 4 张以上手牌', `手牌 ${before} 张，卡组剩 ${b.decks.player.draw.length} 张`);
   const played = playOutTurn(b);
@@ -100,10 +103,11 @@ console.log('\n③ 正常卡组（10 张，初始卡组那种）');
   // 打完这一回合，下回合必须能重新抽到牌
   b.endTurn();
   b.takeEvents();
-  b.endTurn();   // 敌人回合结束 → 回到玩家回合（会重新抽牌）
-  b.takeEvents();
+  if (!b.over) { b.endTurn(); b.takeEvents(); }   // 敌人回合结束 → 回到玩家回合（会重新抽牌）
   const handIds = b.hand('player').map((c) => c.card.id);
-  ok(handIds.length >= 4, '下回合手牌数量正常', `${handIds.length} 张：${handIds.map(nameOf).join('、')}`);
+  ok(!b.over && handIds.length >= 4, '下回合手牌数量正常',
+    `${handIds.length} 张：${handIds.map(nameOf).join('、')}`
+    + `（第 ${b.turn} 回合结束，玩家 HP ${b.player.hp}/${b.player.maxHp}，敌人 HP ${b.enemy.hp}/${b.enemy.maxHp}）`);
 }
 
 // ---------- ④ 回 AP 的牌：能刷 AP，但出牌上限兜住 ----------

@@ -3,7 +3,8 @@
 import { el, clear, modal, toast } from './dom.js';
 import { cardEl, cardTag } from './cards.js';
 import {
-  SORT_MODES, sortCards, groupLabel, cardDamageTotal, richHTML, collectKeywords, effectLines,
+  SORT_MODES, sortCards, groupLabel, cardDamageTotal, cardPowerTotal, richHTML, resolveCardText,
+  collectKeywords, effectLines,
 } from './cardtext.js';
 import { audio } from '../core/audio.js';
 import { music } from '../core/bgm.js';
@@ -132,7 +133,7 @@ export function showDeck(game) {
         container.append(el('div', { class: 'grid-group' }, [el('span', { text: groupLabel(group) })]));
       }
       const badges = [];
-      if (sortMode === 'damage') badges.push(`伤害 ${cardDamageTotal(card)}`);
+      if (sortMode === 'damage') badges.push(`威力 ${cardPowerTotal(card)}%`);
       // 同一张牌带了几份：卡组里同名卡比较多时一眼看得出来
       const copies = d.deck.filter((x) => x === card.id).length;
       if (state === 'deck' && copies > 1) badges.push(`×${copies}`);
@@ -179,7 +180,7 @@ export function showDeck(game) {
   ]);
   const codexGrid = el('div', { class: 'card-grid', style: { marginTop: '10px' } });
   codex.append(codexGrid);
-  // 图鉴也跟着排序走：不然「按伤害排序」只排上半页，图鉴还是乱的
+  // 图鉴也跟着排序走：不然「按威力排序」只排上半页，图鉴还是乱的
   codex.addEventListener('toggle', () => {
     if (!codex.open) return;
     fillGrid(codexGrid, CARDS.map((card) => ({ card, state: codexState(card.id) })));
@@ -274,10 +275,10 @@ export function showCardDetail(card, opts = {}) {
       el('span', { class: `detail-chip rarity-${card.rarity}`, text: rarity }),
       el('span', { class: 'detail-chip' }, [el('span', { class: 'ico-action_points', style: { width: '12px', height: '12px' } }), el('span', { text: `${card.ap} AP` })]),
       el('span', { class: 'detail-chip', text: cardTag(card) }),
-      dmg ? el('span', { class: 'detail-chip', text: `卡面伤害 ${dmg}` }) : null,
+      dmg ? el('span', { class: 'detail-chip', text: `当前伤害 ${dmg}` }) : null,
       card.exhaust ? el('span', { class: 'detail-chip', text: '用后销毁' }) : null,
     ]),
-    el('div', { class: 'detail-desc', html: richHTML(card.text) }),
+    el('div', { class: 'detail-desc', html: richHTML(resolveCardText(card)) }),
   ]);
 
   // 效果明细：一行一条，把 effects 翻成人话
@@ -296,7 +297,7 @@ export function showCardDetail(card, opts = {}) {
   }
 
   // 关键词：文案里出现过的词条，悬停看用处
-  const kws = collectKeywords(card.text);
+  const kws = collectKeywords(resolveCardText(card));
   if (kws.length) {
     const wrap = el('div', { class: 'detail-kw' });
     for (const k of kws) {
@@ -443,7 +444,9 @@ export function showHelp() {
       el('h4', { text: '战斗规则' }),
       el('ul', {}, [
         el('li', { html: `每回合 AP 回满，由<code>敏捷</code>决定：AP = 2 + 敏捷 ÷ 2（上限 ${BALANCE.apMax}）。` }),
-        el('li', { html: '伤害 =（攻击 + 卡牌威力）× 60 ÷ (60 + 对方防御)，最低 1 点；先扣<code>护盾</code>。' }),
+        el('li', { html: `伤害 = 攻击 × <b>威力%</b> × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对方防御)，最低 1 点；先扣<code>护盾</code>。` }),
+        el('li', { html: `<b>威力是攻击力的百分比</b>：卡面写「威力 110」就是打出 1.1 倍攻击。费用买的就是这个倍率 —— 1 费约 95~140%、2 费约 200~260%、3 费约 310~420%、4 费约 430~560%。<b>每点 AP 买到的威力随费用上升</b>，所以把 AP 花在贵牌上永远比连打 0 费牌划算（0 费牌只有 25~45%，它卖的是附加效果和「不花 AP」）。` }),
+        el('li', { html: '卡面上写的伤害数字是<b>按你当前攻击力实时算的</b>：战斗外按本章普通怪的防御估，战斗中按当前这只敌人的防御。' }),
         el('li', { html: `每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = 3 + 敏捷 ÷ 5（上限 ${BALANCE.drawMax}），出牌上限 = 3 + 敏捷 ÷ 2（上限 ${BALANCE.playMax}）。这三项在你战斗界面的底栏写着当前数值。` }),
         el('li', { html: `抽上来的牌比手牌上限（3 + 敏捷 ÷ 5，上限 ${BALANCE.handMax}）多，多出来的会自动进弃牌堆——所以不要囤牌。` }),
         el('li', { html: `<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×${BALANCE.luckCritMult}。` }),
@@ -476,13 +479,16 @@ export function showHelp() {
     el('div', { class: 'help-card' }, [
       el('h4', { text: '状态效果' }),
       el('ul', {}, [
-        el('li', {}, [el('span', { class: 'help-ico ico-poison' }), '中毒：回合开始流失等于层数的生命，然后层数 -1。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-flame' }), '灼伤：回合开始流失等于层数的生命，层数不减少。']),
+        el('li', {}, [el('span', { class: 'help-ico ico-poison' }), `中毒：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.poison)} × 层数」，然后层数 -1。`]),
+        el('li', {}, [el('span', { class: 'help-ico ico-skull' }), `剧毒：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.toxic)} × 层数」，然后层数 <b>+1</b> —— 不衰减，越拖越痛。`]),
+        el('li', {}, [el('span', { class: 'help-ico ico-flame' }), `灼伤：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.burn)} × 层数」，层数不减少。`]),
         el('li', {}, [el('span', { class: 'help-ico ico-temperature_down' }), '虚弱：攻击力降低 25%。挂上之后那一方要打完整整一个回合才掉 1 层，所以「1 层」= 削弱对方一个回合。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), '出血：每次受到攻击额外流失层数的生命。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), '护盾：先于 HP 承受伤害，回合开始时清空。']),
-        el('li', { text: '属性被削有下限：最多削到基础值的一半，不会被磨成负数。' }),
-        el('li', { text: '「白雾」清自己所有属性下降，「焕然一新」连负面状态一起清 —— 被削弱得难受时找这两张。' }),
+        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), `出血：对方每次受到攻击额外流失「最大生命的 ${pct(BALANCE.statusPct.bleed)} × 层数」—— 连击牌越多越疼。`]),
+        el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), '护盾：先于 HP 承受伤害，回合开始时清空（「广域防守」给的那一份不会清）。']),
+        el('li', { html: '持续伤害按<b>最大生命的百分比</b>结算，所以它打血厚的敌人最划算 —— 打首领时上毒比硬拼攻击力更省事。' }),
+        el('li', { html: '「毒爆」这类<code>引爆</code>牌能把对手身上的持续伤害一次性爆成伤害并清空，是毒流的收尾手段。' }),
+        el('li', { html: `属性被削有下限：攻击 / 防御最多削到基础值的 <b>${pct(typeof BALANCE.debuffFloorPct === 'object' ? BALANCE.debuffFloorPct.atk : BALANCE.debuffFloorPct)}</b>（后期敌人防御只有十几点，固定值削弱两下就顶到底，所以稀有牌改用百分比削弱）；<b>敏捷与幸运只削到一半</b> —— 敏捷一个人管着 AP、抽牌、出牌上限三件事，削太深等于直接没收回合。` }),
+        el('li', { text: '「白雾」清自己所有属性下降，「焕然一新」「月光」连负面状态一起清 —— 被削弱得难受时找这几张。' }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
