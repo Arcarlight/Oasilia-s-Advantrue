@@ -57,29 +57,29 @@ export function showDeck(game) {
 
   const statsPanel = el('div', { class: 'help-grid' }, [
     el('div', { class: 'help-card' }, [
-      el('h4', { text: `每回合的预算（敏捷 ${d.agi}）` }),
+      el('h4', { text: t('每回合的预算（敏捷 {agi}）', { agi: d.agi }) }),
       el('ul', {}, [
-        el('li', { text: `行动点 AP ${apFromAgi(d.agi)} 点 —— 回合开始回满，出牌花的就是它。` }),
-        el('li', { text: `抽牌 ${drawFromAgi(d.agi)} 张 —— 手牌上限 ${handFromAgi(d.agi)} 张，抽到手牌满为止（放不下的留在牌堆顶，不会消失）。` }),
-        el('li', { text: `出牌上限 ${playsFromAgi(d.agi)} 张 —— 一回合最多打这么多张，AP 再多也越不过它。` }),
-        el('li', { text: '三项都由敏捷决定；每场战斗胜利涨属性时，它们会跟着一起涨。' }),
+        el('li', { text: t('行动点 AP {ap} 点 —— 回合开始回满，出牌花的就是它。', { ap: apFromAgi(d.agi) }) }),
+        el('li', { text: t('抽牌 {draw} 张 —— 手牌上限 {hand} 张，抽到手牌满为止（放不下的留在牌堆顶，不会消失）。', { draw: drawFromAgi(d.agi), hand: handFromAgi(d.agi) }) }),
+        el('li', { text: t('出牌上限 {plays} 张 —— 一回合最多打这么多张，AP 再多也越不过它。', { plays: playsFromAgi(d.agi) }) }),
+        el('li', { text: t('三项都由敏捷决定；每场战斗胜利涨属性时，它们会跟着一起涨。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: `卡组（${d.deck.length} 张）` }),
+      el('h4', { text: t('卡组（{n} 张）', { n: d.deck.length }) }),
       el('ul', {}, [
-        el('li', { text: `能造成伤害的牌 ${damageCards} 张 ｜ 0 费牌 ${zeroCost} 张` }),
-        el('li', { text: `护盾 ${kinds.shield} ｜ 回复 ${kinds.heal} ｜ 状态 ${kinds.status} ｜ 强化 ${kinds.buff}` }),
-        el('li', { text: `抽牌 ${kinds.draw} ｜ 回 AP ${kinds.ap} ｜ 净化 ${kinds.cleanse}` }),
+        el('li', { text: t('能造成伤害的牌 {damageCards} 张 ｜ 0 费牌 {zeroCost} 张', { damageCards, zeroCost }) }),
+        el('li', { text: t('护盾 {shield} ｜ 回复 {heal} ｜ 状态 {status} ｜ 强化 {buff}', { shield: kinds.shield, heal: kinds.heal, status: kinds.status, buff: kinds.buff }) }),
+        el('li', { text: t('抽牌 {draw} ｜ 回 AP {ap} ｜ 净化 {cleanse}', { draw: kinds.draw, ap: kinds.ap, cleanse: kinds.cleanse }) }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '怎么改卡组' }),
+      el('h4', { text: t('怎么改卡组') }),
       el('ul', {}, [
-        el('li', { text: '带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。' }),
-        el('li', { text: '想精简：去商店买「卡牌移除服务」删掉不要的牌，同一家店里越删越贵。' }),
-        el('li', { text: '想换牌：营地的「冥想」可以把一张牌换成随机的高稀有度牌。' }),
-        el('li', { text: '卡组越薄 → 越容易抽到关键牌；越厚 → 每回合能打出的总量上限更高。' }),
+        el('li', { text: t('带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。') }),
+        el('li', { text: t('想精简：去商店买「卡牌移除服务」删掉不要的牌，同一家店里越删越贵。') }),
+        el('li', { text: t('想换牌：营地的「冥想」可以把一张牌换成随机的高稀有度牌。') }),
+        el('li', { text: t('卡组越薄 → 越容易抽到关键牌；越厚 → 每回合能打出的总量上限更高。') }),
       ]),
     ]),
   ]);
@@ -87,19 +87,19 @@ export function showDeck(game) {
   // ---- 排序条 ----
   const sortHint = el('span', { class: 'sort-hint' });
   const sortBar = el('div', { class: 'sort-bar' }, [
-    el('span', { class: 'sort-label', text: '排序：' }),
+    el('span', { class: 'sort-label', text: t('排序：') }),
   ]);
   const sortTabs = SORT_MODES.map((m) => {
     const tab = el('button', {
       class: `sort-tab${m.key === sortMode ? ' active' : ''}`,
-      dataset: { tip: m.hint },
+      dataset: { tip: m.hint() },
       onClick: () => {
         sortMode = m.key;
         audio.ui('toggle');
         for (const t of sortTabs) t.classList.toggle('active', t.dataset.sort === sortMode);
         paint();
       },
-    }, [m.label]);
+    }, [m.label()]);
     tab.dataset.sort = m.key;
     sortBar.append(tab);
     return tab;
@@ -135,12 +135,12 @@ export function showDeck(game) {
         container.append(el('div', { class: 'grid-group' }, [el('span', { text: groupLabel(group) })]));
       }
       const badges = [];
-      if (sortMode === 'damage') badges.push(`威力 ${cardPowerTotal(card)}%`);
+      if (sortMode === 'damage') badges.push(t('威力 {n}%', { n: cardPowerTotal(card) }));
       // 同一张牌带了几份：卡组里同名卡比较多时一眼看得出来
       const copies = d.deck.filter((x) => x === card.id).length;
       if (state === 'deck' && copies > 1) badges.push(`×${copies}`);
-      if (state === 'new') badges.push('未获得');
-      else if (state === 'seen') badges.push('曾拿过');
+      if (state === 'new') badges.push(t('未获得'));
+      else if (state === 'seen') badges.push(t('曾拿过'));
       const node = cardEl(card, { size: 'sm', badges, onClick: () => openDetail(card) });
       // 没拿过的卡压暗：图鉴里「全亮」会让玩家以为这些都算已收集（用户反馈）
       if (state === 'new') node.classList.add('card-unowned');
@@ -158,7 +158,7 @@ export function showDeck(game) {
       items.push({ card: CARD_BY_ID[id], state: 'deck' });
     }
     fillGrid(grid, items);
-    sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint ?? '';
+    sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint() ?? '';
   }
   paint();
 
@@ -176,8 +176,8 @@ export function showDeck(game) {
 
   const codex = el('details', { style: { marginTop: '14px' } }, [
     el('summary', { style: { cursor: 'pointer', padding: '6px 0', fontWeight: '700' } }, [
-      el('span', { text: '卡牌图鉴' }),
-      el('span', { style: { opacity: '.75', fontWeight: '400' }, text: `（已收集 ${collectedCount()} / ${CARDS.length} 种，点开可以逐个看详情）` }),
+      el('span', { text: t('卡牌图鉴') }),
+      el('span', { style: { opacity: '.75', fontWeight: '400' }, text: t('（已收集 {got} / {total} 种，点开可以逐个看详情）', { got: collectedCount(), total: CARDS.length }) }),
     ]),
   ]);
   const codexGrid = el('div', { class: 'card-grid', style: { marginTop: '10px' } });
@@ -189,7 +189,7 @@ export function showDeck(game) {
   });
   body.append(codex);
 
-  return modal({ title: '卡组一览', wide: true, body });
+  return modal({ title: t('卡组一览'), wide: true, body });
 }
 
 // ============================================================
@@ -221,8 +221,8 @@ export function showCardDetail(card, opts = {}) {
     if (!state) { stateEl.textContent = ''; return; }
     const { owned = 0 } = state();
     stateEl.textContent = owned > 0
-      ? `你的卡组里有这张：${owned} 张`
-      : '这张还没拿到（去奖励 / 商店 / 事件里找找）';
+      ? t('你的卡组里有这张：{owned} 张', { owned })
+      : t('这张还没拿到（去奖励 / 商店 / 事件里找找）');
   };
 
   // 大卡面：只是展示，所以不可交互（说明文字在下面另有一份可悬停的）
@@ -235,8 +235,8 @@ export function showCardDetail(card, opts = {}) {
       el('span', { class: `detail-chip rarity-${card.rarity}`, text: rarity }),
       el('span', { class: 'detail-chip' }, [el('span', { class: 'ico-action_points', style: { width: '12px', height: '12px' } }), el('span', { text: `${card.ap} AP` })]),
       el('span', { class: 'detail-chip', text: cardTag(card) }),
-      dmg ? el('span', { class: 'detail-chip', text: `当前伤害 ${dmg}` }) : null,
-      card.exhaust ? el('span', { class: 'detail-chip', text: '用后销毁' }) : null,
+      dmg ? el('span', { class: 'detail-chip', text: t('当前伤害 {dmg}', { dmg }) }) : null,
+      card.exhaust ? el('span', { class: 'detail-chip', text: t('用后销毁') }) : null,
     ]),
     el('div', { class: 'detail-desc', html: richHTML(resolveCardText(card)) }),
   ]);
@@ -253,7 +253,7 @@ export function showCardDetail(card, opts = {}) {
         r.note ? el('span', { class: 'dr-note', text: r.note }) : null,
       ]));
     }
-    info.append(el('div', { class: 'detail-sec' }, [el('h4', { text: '效果明细' }), box]));
+    info.append(el('div', { class: 'detail-sec' }, [el('h4', { text: t('效果明细') }), box]));
   }
 
   // 关键词：文案里出现过的词条，悬停看用处
@@ -269,7 +269,7 @@ export function showCardDetail(card, opts = {}) {
       }));
     }
     info.append(el('div', { class: 'detail-sec' }, [
-      el('h4', { text: '关键词（鼠标停上去看说明）' }),
+      el('h4', { text: t('关键词（鼠标停上去看说明）') }),
       wrap,
     ]));
   }
@@ -284,7 +284,7 @@ export function showCardDetail(card, opts = {}) {
   ]);
   sync();
 
-  return modal({ title: `卡牌详情 · ${card.name}`, wide: true, body });
+  return modal({ title: t('卡牌详情 · {name}', { name: card.name }), wide: true, body });
 }
 
 // ============================================================
@@ -301,7 +301,7 @@ export function showItems(game) {
     // 照单全收的话开局就有一行「厉害伤药 ×0」配着「使用」按钮，点了只说「现在用不了」
     const entries = inventoryEntries(game.data.items);
     if (!entries.length) {
-      body.append(el('p', { text: '背包是空的。地图上的宝箱和商店会给你补货。' }));
+      body.append(el('p', { text: t('背包是空的。地图上的宝箱和商店会给你补货。') }));
     } else {
       const list = el('div', { class: 'shop-list' });
       for (const [id, n] of entries) {
@@ -326,7 +326,7 @@ export function showItems(game) {
             paint();
             renderHud(game);
           } else {
-            toast(res?.text ?? '现在用不了。', 'bad');
+            toast(res?.text ?? t('现在用不了。'), 'bad');
           }
         };
         // 背包以前一行图标都没有，只能读名字；现在用注册表给道具挑的图标
@@ -341,36 +341,36 @@ export function showItems(game) {
               ? el('button', {
                   class: 'btn btn-sm btn-primary',
                   disabled: blocked,
-                  dataset: blocked ? { tip: 'HP 已经满了，喝了也是浪费 —— 受伤之后再来。' } : null,
+                  dataset: blocked ? { tip: t('HP 已经满了，喝了也是浪费 —— 受伤之后再来。') } : null,
                   onClick: use,
-                }, [blocked ? 'HP 已满' : '使用'])
-              : el('span', { class: 'price', dataset: { tip: '这类道具拿到手就已经生效了，不需要使用。' } }, ['已生效']),
+                }, [blocked ? t('HP 已满') : t('使用')])
+              : el('span', { class: 'price', dataset: { tip: t('这类道具拿到手就已经生效了，不需要使用。') } }, [t('已生效')]),
           ]),
         ]));
       }
       body.append(list);
     }
     body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
-      el('h4', { text: '道具怎么用' }),
+      el('h4', { text: t('道具怎么用') }),
       el('ul', {}, [
-        el('li', { text: '药水留在背包里，想什么时候喝就点「使用」——不占出牌次数，战斗中也随时能用（按 I 打开背包）。' }),
-        el('li', { html: '护符 / 活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>了，不会留在背包里。' }),
+        el('li', { text: t('药水留在背包里，想什么时候喝就点「使用」——不占出牌次数，战斗中也随时能用（按 I 打开背包）。') }),
+        el('li', { html: t('护符 / 活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>了，不会留在背包里。') }),
       ]),
     ]));
     body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
-      el('h4', { text: '地图上的回血方式' }),
+      el('h4', { text: t('地图上的回血方式') }),
       el('ul', {}, [
         // 数字全部现算：这几条以前写死成 35% / 4%，和 BALANCE 里的 40% / 12% 早就对不上了
-        el('li', { text: `绿洲营地：回复最大生命的 ${Math.round(BALANCE.restHealPct * 100)}%（营地还可以把一张卡换成更强的卡）。` }),
-        el('li', { text: '卡牌：羽栖、文柚果、急救等回复类卡牌，战斗中随时可用。' }),
-        el('li', { text: '事件：不少选项能直接回血，或者提升最大生命。' }),
-        el('li', { text: `每场战斗胜利后自动回复最大生命的 ${Math.round(BALANCE.healAfterBattlePct * 100)}%。` }),
-        el('li', { text: `走到首领节点前会先自动回复 ${Math.round(BALANCE.preBossHealPct * 100)}% 生命。` }),
+        el('li', { text: t('绿洲营地：回复最大生命的 {pct}%（营地还可以把一张卡换成更强的卡）。', { pct: Math.round(BALANCE.restHealPct * 100) }) }),
+        el('li', { text: t('卡牌：羽栖、文柚果、急救等回复类卡牌，战斗中随时可用。') }),
+        el('li', { text: t('事件：不少选项能直接回血，或者提升最大生命。') }),
+        el('li', { text: t('每场战斗胜利后自动回复最大生命的 {pct}%。', { pct: Math.round(BALANCE.healAfterBattlePct * 100) }) }),
+        el('li', { text: t('走到首领节点前会先自动回复 {pct}% 生命。', { pct: Math.round(BALANCE.preBossHealPct * 100) }) }),
       ]),
     ]));
   };
   paint();
-  return modal({ title: '背包与补给', body: wrap, wide: true });
+  return modal({ title: t('背包与补给'), body: wrap, wide: true });
 }
 
 // ============================================================
@@ -388,98 +388,98 @@ export function showHelp() {
   const stages = stageCount();
   const body = el('div', { class: 'help-grid' }, [
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '怎么玩' }),
+      el('h4', { text: t('怎么玩') }),
       el('ul', {}, [
-        el('li', { text: '在分叉地图上选择前进路线：战斗 / 事件 / 宝箱 / 商店 / 营地 / 首领。' }),
-        el('li', { text: '战斗胜利后可以拿卡、拿金币、拿道具。击败章节首领进入下一章。' }),
-        el('li', { text: 'HP 在战斗之间保留，降到 0 这一局就灰溜溜地回家了。' }),
-        el('li', { text: `${stages} 章都走完就算通关，看看你能走多远。` }),
+        el('li', { text: t('在分叉地图上选择前进路线：战斗 / 事件 / 宝箱 / 商店 / 营地 / 首领。') }),
+        el('li', { text: t('战斗胜利后可以拿卡、拿金币、拿道具。击败章节首领进入下一章。') }),
+        el('li', { text: t('HP 在战斗之间保留，降到 0 这一局就灰溜溜地回家了。') }),
+        el('li', { text: t('{stages} 章都走完就算通关，看看你能走多远。', { stages }) }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '战斗规则' }),
+      el('h4', { text: t('战斗规则') }),
       el('ul', {}, [
-        el('li', { html: `每回合 AP 回满，由<code>敏捷</code>决定：AP = ${BALANCE.apBase} + 敏捷 ÷ ${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）。` }),
-        el('li', { html: `伤害 = 攻击 × <b>威力%</b> × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对方防御)，最低 ${BALANCE.minDamage} 点；先扣<code>护盾</code>。` }),
-        el('li', { html: `<b>威力是攻击力的百分比</b>：卡面写「威力 110」就是打出 1.1 倍攻击。费用买的就是这个倍率 —— 1 费约 95~140%、2 费约 200~260%、3 费约 310~420%、4 费约 430~560%。<b>每点 AP 买到的威力随费用上升</b>，所以把 AP 花在贵牌上永远比连打 0 费牌划算（0 费牌只有 25~45%，它卖的是附加效果和「不花 AP」）。` }),
-        el('li', { html: '卡面上写的伤害数字是<b>按你当前攻击力实时算的</b>：战斗外按本章普通怪的防御估，战斗中按当前这只敌人的防御。' }),
-        el('li', { html: `每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = ${BALANCE.drawBase} + 敏捷 ÷ ${BALANCE.drawPerAgi}（上限 ${BALANCE.drawMax}），出牌上限 = ${BALANCE.playBase} + 敏捷 ÷ ${BALANCE.playPerAgi}（上限 ${BALANCE.playMax}）。这三项在你战斗界面的底栏写着当前数值。` }),
-        el('li', { html: `抽上来的牌比手牌上限（${BALANCE.handBase} + 敏捷 ÷ ${BALANCE.handPerAgi}，上限 ${BALANCE.handMax}）多时，<b>只抽到手牌满为止</b>，剩下的留在牌堆顶 —— 不会凭空丢掉。` }),
-        el('li', { html: `<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×${BALANCE.luckCritMult}。` }),
-        el('li', { html: '打出去的牌进<code>弃牌区</code>；标着<code>销毁</code>的卡一场战斗只能用一次（进销毁区，不会洗回来）。' }),
-        el('li', { html: '牌堆抽空、还要再抽的时候，<code>弃牌区</code>才会洗回牌堆 —— 所以牌组薄的时候同一张牌一轮里能被打上好几次（这是<code>花了钱删卡</code>换来的构筑），但每回合能打几张仍然卡死在出牌上限。' }),
-        el('li', { text: '护盾在持有者自己的回合开始时清空，所以它其实是「这一轮的减伤」。' }),
-        el('li', { html: '每次进入新回合会有一条<code>回合光带</code>扫过屏幕，写着「第 N 回合」和这一侧的正 / 背面立绘。<b>它不挡操作</b> —— 光带还在飘的时候你已经可以出牌了。' }),
+        el('li', { html: t('每回合 AP 回满，由<code>敏捷</code>决定：AP = {base} + 敏捷 ÷ {per}（上限 {max}）。', { base: BALANCE.apBase, per: BALANCE.apPerAgi, max: BALANCE.apMax }) }),
+        el('li', { html: t('伤害 = 攻击 × <b>威力%</b> × {K} ÷ ({K} + 对方防御)，最低 {min} 点；先扣<code>护盾</code>。', { K: BALANCE.armorK, min: BALANCE.minDamage }) }),
+        el('li', { html: t('<b>威力是攻击力的百分比</b>：卡面写「威力 110」就是打出 1.1 倍攻击。费用买的就是这个倍率 —— 1 费约 95~140%、2 费约 200~260%、3 费约 310~420%、4 费约 430~560%。<b>每点 AP 买到的威力随费用上升</b>，所以把 AP 花在贵牌上永远比连打 0 费牌划算（0 费牌只有 25~45%，它卖的是附加效果和「不花 AP」）。') }),
+        el('li', { html: t('卡面上写的伤害数字是<b>按你当前攻击力实时算的</b>：战斗外按本章普通怪的防御估，战斗中按当前这只敌人的防御。') }),
+        el('li', { html: t('每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = {dBase} + 敏捷 ÷ {dPer}（上限 {dMax}），出牌上限 = {pBase} + 敏捷 ÷ {pPer}（上限 {pMax}）。这三项在你战斗界面的底栏写着当前数值。', { dBase: BALANCE.drawBase, dPer: BALANCE.drawPerAgi, dMax: BALANCE.drawMax, pBase: BALANCE.playBase, pPer: BALANCE.playPerAgi, pMax: BALANCE.playMax }) }),
+        el('li', { html: t('抽上来的牌比手牌上限（{base} + 敏捷 ÷ {per}，上限 {max}）多时，<b>只抽到手牌满为止</b>，剩下的留在牌堆顶 —— 不会凭空丢掉。', { base: BALANCE.handBase, per: BALANCE.handPerAgi, max: BALANCE.handMax }) }),
+        el('li', { html: t('<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×{mult}。', { mult: BALANCE.luckCritMult }) }),
+        el('li', { html: t('打出去的牌进<code>弃牌区</code>；标着<code>销毁</code>的卡一场战斗只能用一次（进销毁区，不会洗回来）。') }),
+        el('li', { html: t('牌堆抽空、还要再抽的时候，<code>弃牌区</code>才会洗回牌堆 —— 所以牌组薄的时候同一张牌一轮里能被打上好几次（这是<code>花了钱删卡</code>换来的构筑），但每回合能打几张仍然卡死在出牌上限。') }),
+        el('li', { text: t('护盾在持有者自己的回合开始时清空，所以它其实是「这一轮的减伤」。') }),
+        el('li', { html: t('每次进入新回合会有一条<code>回合光带</code>扫过屏幕，写着「第 N 回合」和这一侧的正 / 背面立绘。<b>它不挡操作</b> —— 光带还在飘的时候你已经可以出牌了。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '道具与背包' }),
+      el('h4', { text: t('道具与背包') }),
       el('ul', {}, [
-        el('li', { html: `按 <code>I</code> 打开背包。药水（好伤药 ${pct(0.25)} / 厉害伤药 ${pct(0.5)}）留在背包里，想喝就点「使用」——<b>不占出牌次数</b>，战斗中随时能用。` }),
-        el('li', { html: '护符与活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>，不会留在背包里。' }),
-        el('li', { text: '来源：宝箱、事件、商店（铁匠铺一定有护符、药草摊一定有药），以及首领奖励。' }),
+        el('li', { html: t('按 <code>I</code> 打开背包。药水（好伤药 {small} / 厉害伤药 {big}）留在背包里，想喝就点「使用」——<b>不占出牌次数</b>，战斗中随时能用。', { small: pct(0.25), big: pct(0.5) }) }),
+        el('li', { html: t('护符与活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>，不会留在背包里。') }),
+        el('li', { text: t('来源：宝箱、事件、商店（铁匠铺一定有护符、药草摊一定有药），以及首领奖励。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '成长与续航' }),
+      el('h4', { text: t('成长与续航') }),
       el('ul', {}, [
-        el('li', { text: '每场战斗胜利都会永久提升属性（精英与首领给得更多），这是跟得上后续章节的关键。' }),
-        el('li', { text: `走到首领节点时会先自动恢复 ${pct(BALANCE.preBossHealPct)} 生命。` }),
-        el('li', { text: BALANCE.fullHealAfterBoss ? '打完章节首领完全回血，然后进入下一章。' : '打完章节首领后进入下一章。' }),
-        el('li', { text: `每场战斗胜利后自动回复最大生命的 ${pct(BALANCE.healAfterBattlePct)}；绿洲营地回复 ${pct(BALANCE.restHealPct)}。` }),
-        el('li', { text: '回复类卡牌里，羽栖 / 急救 / 水流环 / 睡觉按最大生命的百分比回，文柚果 / 寄生种子 / 生命水滴是固定值 —— 前期固定值更顶用，后期百分比更顶用。' }),
-        el('li', { text: '护盾类卡牌（变硬、铁壁、守住）的量会随你的防御成长。' }),
+        el('li', { text: t('每场战斗胜利都会永久提升属性（精英与首领给得更多），这是跟得上后续章节的关键。') }),
+        el('li', { text: t('走到首领节点时会先自动恢复 {pct} 生命。', { pct: pct(BALANCE.preBossHealPct) }) }),
+        el('li', { text: BALANCE.fullHealAfterBoss ? t('打完章节首领完全回血，然后进入下一章。') : t('打完章节首领后进入下一章。') }),
+        el('li', { text: t('每场战斗胜利后自动回复最大生命的 {after}；绿洲营地回复 {rest}。', { after: pct(BALANCE.healAfterBattlePct), rest: pct(BALANCE.restHealPct) }) }),
+        el('li', { text: t('回复类卡牌里，羽栖 / 急救 / 水流环 / 睡觉按最大生命的百分比回，文柚果 / 寄生种子 / 生命水滴是固定值 —— 前期固定值更顶用，后期百分比更顶用。') }),
+        el('li', { text: t('护盾类卡牌（变硬、铁壁、守住）的量会随你的防御成长。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '状态效果' }),
+      el('h4', { text: t('状态效果') }),
       el('ul', {}, [
-        el('li', {}, [el('span', { class: 'help-ico ico-poison' }), `中毒：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.poison)} × 层数」，然后层数 -1。`]),
-        el('li', {}, [el('span', { class: 'help-ico ico-skull' }), `剧毒：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.toxic)} × 层数」，然后层数 <b>+1</b> —— 不衰减，越拖越痛。`]),
-        el('li', {}, [el('span', { class: 'help-ico ico-flame' }), `灼伤：回合开始流失「最大生命的 ${pct(BALANCE.statusPct.burn)} × 层数」，层数不减少。`]),
-        el('li', {}, [el('span', { class: 'help-ico ico-temperature_down' }), '虚弱：攻击力降低 25%。挂上之后那一方要打完整整一个回合才掉 1 层，所以「1 层」= 削弱对方一个回合。']),
-        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), `出血：对方每次受到攻击额外流失「最大生命的 ${pct(BALANCE.statusPct.bleed)} × 层数」—— 连击牌越多越疼。`]),
-        el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), '护盾：先于 HP 承受伤害，回合开始时清空（「广域防守」给的那一份不会清）。']),
-        el('li', { html: '持续伤害按<b>最大生命的百分比</b>结算，所以它打血厚的敌人最划算 —— 打首领时上毒比硬拼攻击力更省事。' }),
-        el('li', { html: '「毒爆」这类<code>引爆</code>牌能把对手身上的持续伤害一次性爆成伤害并清空，是毒流的收尾手段。' }),
-        el('li', { html: `属性被削有下限：攻击 / 防御最多削到基础值的 <b>${pct(typeof BALANCE.debuffFloorPct === 'object' ? BALANCE.debuffFloorPct.atk : BALANCE.debuffFloorPct)}</b>（后期敌人防御只有十几点，固定值削弱两下就顶到底，所以稀有牌改用百分比削弱）；<b>敏捷与幸运只削到一半</b> —— 敏捷一个人管着 AP、抽牌、出牌上限三件事，削太深等于直接没收回合。` }),
-        el('li', { text: '「白雾」清自己所有属性下降，「焕然一新」「月光」连负面状态一起清 —— 被削弱得难受时找这几张。' }),
+        el('li', {}, [el('span', { class: 'help-ico ico-poison' }), t('中毒：回合开始流失「最大生命的 {pct} × 层数」，然后层数 -1。', { pct: pct(BALANCE.statusPct.poison) })]),
+        el('li', {}, [el('span', { class: 'help-ico ico-skull' }), t('剧毒：回合开始流失「最大生命的 {pct} × 层数」，然后层数 <b>+1</b> —— 不衰减，越拖越痛。', { pct: pct(BALANCE.statusPct.toxic) })]),
+        el('li', {}, [el('span', { class: 'help-ico ico-flame' }), t('灼伤：回合开始流失「最大生命的 {pct} × 层数」，层数不减少。', { pct: pct(BALANCE.statusPct.burn) })]),
+        el('li', {}, [el('span', { class: 'help-ico ico-temperature_down' }), t('虚弱：攻击力降低 25%。挂上之后那一方要打完整整一个回合才掉 1 层，所以「1 层」= 削弱对方一个回合。')]),
+        el('li', {}, [el('span', { class: 'help-ico ico-heart_break_02' }), t('出血：对方每次受到攻击额外流失「最大生命的 {pct} × 层数」—— 连击牌越多越疼。', { pct: pct(BALANCE.statusPct.bleed) })]),
+        el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), t('护盾：先于 HP 承受伤害，回合开始时清空（「广域防守」给的那一份不会清）。')]),
+        el('li', { html: t('持续伤害按<b>最大生命的百分比</b>结算，所以它打血厚的敌人最划算 —— 打首领时上毒比硬拼攻击力更省事。') }),
+        el('li', { html: t('「毒爆」这类<code>引爆</code>牌能把对手身上的持续伤害一次性爆成伤害并清空，是毒流的收尾手段。') }),
+        el('li', { html: t('属性被削有下限：攻击 / 防御最多削到基础值的 <b>{pct}</b>（后期敌人防御只有十几点，固定值削弱两下就顶到底，所以稀有牌改用百分比削弱）；<b>敏捷与幸运只削到一半</b> —— 敏捷一个人管着 AP、抽牌、出牌上限三件事，削太深等于直接没收回合。', { pct: pct(typeof BALANCE.debuffFloorPct === 'object' ? BALANCE.debuffFloorPct.atk : BALANCE.debuffFloorPct) }) }),
+        el('li', { text: t('「白雾」清自己所有属性下降，「焕然一新」「月光」连负面状态一起清 —— 被削弱得难受时找这几张。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '卡组' }),
+      el('h4', { text: t('卡组') }),
       el('ul', {}, [
-        el('li', { text: '带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。' }),
-        el('li', { html: '想让卡组更精：去商店买<code>卡牌移除服务</code>删掉不要的牌，同一家店里越删越贵（最多删到剩 3 张）。' }),
-        el('li', { html: '想换牌：营地的<code>冥想</code>能把一张牌换成随机的高稀有度牌（只能二选一，不能又休息又冥想）。' }),
-        el('li', { text: '卡组越薄 → 越容易每回合抽到关键牌；越厚 → 每回合能打出的总量上限更高，但抽得散。' }),
-        el('li', { text: '卡组一览里可以排序、点开单卡看详情，每种卡带了几张会标成 ×N，还能展开卡牌图鉴看收集进度。' }),
+        el('li', { text: t('带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。') }),
+        el('li', { html: t('想让卡组更精：去商店买<code>卡牌移除服务</code>删掉不要的牌，同一家店里越删越贵（最多删到剩 3 张）。') }),
+        el('li', { html: t('想换牌：营地的<code>冥想</code>能把一张牌换成随机的高稀有度牌（只能二选一，不能又休息又冥想）。') }),
+        el('li', { text: t('卡组越薄 → 越容易每回合抽到关键牌；越厚 → 每回合能打出的总量上限更高，但抽得散。') }),
+        el('li', { text: t('卡组一览里可以排序、点开单卡看详情，每种卡带了几张会标成 ×N，还能展开卡牌图鉴看收集进度。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '快捷键' }),
+      el('h4', { text: t('快捷键') }),
       el('ul', {}, [
-        el('li', { html: '<code>1</code> ~ <code>9</code> 打出手牌中第 N 张。' }),
-        el('li', { html: '<code>空格</code> 结束回合。' }),
-        el('li', { html: '<code>D</code> 打开卡组一览（只读：能排序、看详情、看图鉴）。' }),
-        el('li', { html: '<code>I</code> 打开背包（喝药在这里）。' }),
-        el('li', { html: '<code>H</code> 或 <code>?</code> 打开这一页。' }),
-        el('li', { html: '<code>Esc</code> 关闭弹窗（叠了好几层时只关最上面那层）。' }),
+        el('li', { html: t('<code>1</code> ~ <code>9</code> 打出手牌中第 N 张。') }),
+        el('li', { html: t('<code>空格</code> 结束回合。') }),
+        el('li', { html: t('<code>D</code> 打开卡组一览（只读：能排序、看详情、看图鉴）。') }),
+        el('li', { html: t('<code>I</code> 打开背包（喝药在这里）。') }),
+        el('li', { html: t('<code>H</code> 或 <code>?</code> 打开这一页。') }),
+        el('li', { html: t('<code>Esc</code> 关闭弹窗（叠了好几层时只关最上面那层）。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
-      el('h4', { text: '关于素材' }),
+      el('h4', { text: t('关于素材') }),
       el('ul', {}, [
-        el('li', { text: '宝可梦精灵图与表情头像来自 PMDCollab/SpriteCollab（各作者署名见仓库 credits.txt）。' }),
-        el('li', { text: '回合切换立绘来自 Generation 9 Pack（正面 / 背面图）。' }),
-        el('li', { text: '界面图标、面板、音效、粒子来自 Kenney 素材包与 Game-Icon-Pack（都是 CC0）。' }),
-        el('li', { text: 'BGM 来自「音楽の卵」(ontama-m.com)：个人/法人均可免费使用、无需报告、无需署名、可商用。' }),
-        el('li', { text: '宝可梦译名以 52poke 神奇宝贝百科为准。' }),
-        el('li', { text: '非商业同人练习作品。' }),
+        el('li', { text: t('宝可梦精灵图与表情头像来自 PMDCollab/SpriteCollab（各作者署名见仓库 credits.txt）。') }),
+        el('li', { text: t('回合切换立绘来自 Generation 9 Pack（正面 / 背面图）。') }),
+        el('li', { text: t('界面图标、面板、音效、粒子来自 Kenney 素材包与 Game-Icon-Pack（都是 CC0）。') }),
+        el('li', { text: t('BGM 来自「音楽の卵」(ontama-m.com)：个人/法人均可免费使用、无需报告、无需署名、可商用。') }),
+        el('li', { text: t('宝可梦译名以 52poke 神奇宝贝百科为准。') }),
+        el('li', { text: t('非商业同人练习作品。') }),
       ]),
     ]),
   ]);
-  return modal({ title: '沙漠精灵 · 玩法说明', body, wide: true });
+  return modal({ title: t('沙漠精灵 · 玩法说明'), body, wide: true });
 }
 
 // ============================================================
@@ -512,39 +512,39 @@ export function showSettings() {
       }, [l.name]))),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '音效音量' }),
+      el('label', { text: t('音效音量') }),
       el('input', {
         type: 'range', min: '0', max: '100', value: String(Math.round(audio.sfxVolume * 100)),
         onInput: (e) => audio.setSfxVolume(Number(e.target.value) / 100),
       }),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: 'BGM 音量' }),
+      el('label', { text: t('BGM 音量') }),
       el('input', {
         type: 'range', min: '0', max: '100', value: String(Math.round(audio.musicVolume * 100)),
         onInput: (e) => audio.setMusicVolume(Number(e.target.value) / 100),
       }),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', {}, ['当前曲目', el('br'), nowPlaying]),
+      el('label', {}, [t('当前曲目'), el('br'), nowPlaying]),
       el('button', {
         class: 'btn btn-sm',
         onClick: () => { nowPlaying.textContent = musicState(); },
-      }, ['刷新']),
+      }, [t('刷新')]),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '声音开关（音效 + BGM）' }),
+      el('label', { text: t('声音开关（音效 + BGM）') }),
       el('button', {
         class: 'btn btn-sm',
         onClick: (e) => {
           const on = audio.toggle();
-          e.currentTarget.textContent = on ? '已开启' : '已静音';
+          e.currentTarget.textContent = on ? t('已开启') : t('已静音');
           nowPlaying.textContent = musicState();
         },
-      }, [audio.enabled ? '已开启' : '已静音']),
+      }, [audio.enabled ? t('已开启') : t('已静音')]),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '战斗演出速度' }),
+      el('label', { text: t('战斗演出速度') }),
       // 注意：<select> 上写 value 属性是没用的（属性不会选中 option），
       // 必须给对应的 option 加 selected，否则界面显示的选择和实际速度会对不上。
       el('select', {
@@ -552,48 +552,48 @@ export function showSettings() {
         onChange: (e) => {
           const v = e.target.value;
           try { localStorage.setItem(BATTLE_SPEED_KEY, v); } catch { /* 忽略 */ }
-          toast(`战斗演出速度：${SPEED_OPTIONS.find((o) => o.key === v)?.label ?? v}（下场战斗生效）`, 'good');
+          toast(t('战斗演出速度：{label}（下场战斗生效）', { label: t(SPEED_OPTIONS.find((o) => o.key === v)?.label ?? v) }), 'good');
         },
       }, SPEED_OPTIONS.map((o) => el('option', {
         value: o.key,
-        text: o.label,
+        text: t(o.label),
         selected: o.key === loadBattleSpeed(),
       }))),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '切换 BGM（试听）' }),
+      el('label', { text: t('切换 BGM（试听）') }),
       el('select', {
         style: { minHeight: '36px', borderRadius: '8px', padding: '4px 8px', background: '#241610', color: '#f7ecd6', border: '1px solid rgba(232,207,162,.3)' },
         onChange: (e) => { audio.playBgm(e.target.value, { restart: true }); nowPlaying.textContent = musicState(); },
       }, Object.entries(BGM_NAMES).map(([k, name]) => el('option', { value: k, text: `${name}（${k}）` }))),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '导出存档' }),
+      el('label', { text: t('导出存档') }),
       el('button', {
         class: 'btn btn-sm',
         onClick: () => {
           const data = save.readRun();
-          if (!data) return toast('当前没有进行中的存档。', 'bad');
+          if (!data) return toast(t('当前没有进行中的存档。'), 'bad');
           save.exportFile(data);
-          toast('已导出 oasis-save.json', 'good');
+          toast(t('已导出 oasis-save.json'), 'good');
         },
-      }, ['导出 JSON']),
+      }, [t('导出 JSON')]),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: '清空存档' }),
+      el('label', { text: t('清空存档') }),
       el('button', {
         class: 'btn btn-sm btn-danger',
-        onClick: () => { save.clearRun(); toast('存档已清空。', 'good'); },
-      }, ['删除进度']),
+        onClick: () => { save.clearRun(); toast(t('存档已清空。'), 'good'); },
+      }, [t('删除进度')]),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: 'BGM 出处' }),
-      el('span', { style: { fontSize: '12px', opacity: '.75', textAlign: 'right' }, text: '音楽の卵 (ontama-m.com)：免费使用、无需报告、可商用' }),
+      el('label', { text: t('BGM 出处') }),
+      el('span', { style: { fontSize: '12px', opacity: '.75', textAlign: 'right' }, text: t('音楽の卵 (ontama-m.com)：免费使用、无需报告、可商用') }),
     ]),
   );
 
   // 打开时顺手刷新一下当前曲目
   setTimeout(() => { nowPlaying.textContent = musicState(); }, 0);
 
-  return modal({ title: '设置', body });
+  return modal({ title: t('设置'), body });
 }

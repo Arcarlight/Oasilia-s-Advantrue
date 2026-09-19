@@ -14,6 +14,7 @@
 import { el } from './dom.js';
 import { STATUS_INFO, computeHit } from '../core/battle.js';
 import { BALANCE } from '../data/balance.js';
+import { t } from '../core/i18n.js';
 
 /** 文案里出现的状态词 → 引擎里的状态 key（「流血」和引擎的「出血」是同一个东西） */
 const STATUS_WORD = { 中毒: 'poison', 剧毒: 'toxic', 灼伤: 'burn', 虚弱: 'weak', 出血: 'bleed', 流血: 'bleed' };
@@ -80,39 +81,39 @@ export function resolveCardText(card, ctx = {}) {
 // 「卡面上的深墨紫被搬到详情页的深色底上，字直接看不见」这种事。
 
 const STAT_DESC = {
-  攻击: `攻击：决定你打出多少伤害。实际伤害 = 攻击 × 招式威力% × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对手防御)。\n所以「攻击 +4」等于后面每一张牌都按比例更疼，越到后期越值钱。`,
-  防御: '防御：越高越抗打，公式里它是「减伤百分比」。\n降对手防御 = 你后面每一张攻击牌都更疼。',
-  敏捷: '敏捷：每回合的行动点、抽牌数、出牌上限都看它。',
-  幸运: `幸运：暴击率与闪避率，暴击伤害 ×${BALANCE.luckCritMult}。`,
+  攻击: () => t('攻击：决定你打出多少伤害。实际伤害 = 攻击 × 招式威力% × {K} ÷ ({K} + 对手防御)。\n所以「攻击 +4」等于后面每一张牌都按比例更疼，越到后期越值钱。', { K: BALANCE.armorK }),
+  防御: () => t('防御：越高越抗打，公式里它是「减伤百分比」。\n降对手防御 = 你后面每一张攻击牌都更疼。'),
+  敏捷: () => t('敏捷：每回合的行动点、抽牌数、出牌上限都看它。'),
+  幸运: () => t('幸运：暴击率与闪避率，暴击伤害 ×{mult}。', { mult: BALANCE.luckCritMult }),
 };
-const STAT_ICO = { 攻击: 'ico-sword', 防御: 'ico-shield', 敏捷: 'ico-shoe', 幸运: 'ico-clover' };
+const STAT_ICO = { atk: 'ico-sword', def: 'ico-shield', agi: 'ico-shoe', luck: 'ico-clover' };
 
 const TIP = {
-  shield: '护盾：先于 HP 承受伤害，持有者自己的回合开始时清空——所以它是「撑过这一轮」的资源。',
+  shield: () => t('护盾：先于 HP 承受伤害，持有者自己的回合开始时清空——所以它是「撑过这一轮」的资源。'),
   // 引擎算护盾是 amount × (1 + 防御 ÷ 12)，所以「加多少」跟着**每张卡自己的基数**走：
   // 基数 9 的卡是「+防御×0.75」，基数 13 的卡是「+防御×1.08」。
   // 这里以前写成固定的「×0.75」，基数不是 9 的卡悬停看到的公式就是错的。
-  shieldScale: `护盾量随**防御**成长：实际护盾 = 卡面基数 × (1 + 防御 ÷ 12)。\n所以基数越大的护盾牌，吃到的防御加成也越多。`,
-  exhaust: '销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。',
-  exhaustHand: '销毁手牌：把手里剩下的牌全部销毁。',
-  discard: '弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。',
-  draw: '抽牌：从卡组顶抽到手牌。\n打出去的牌会进**弃牌区**，牌堆抽空、还要再抽的时候，弃牌区才会洗回牌堆。所以牌组薄的时候，同一张牌一轮里能被打上好几次 —— 但每回合的出牌次数是有限的。',
-  ap: `行动点（AP）：每回合回满，数量 = ${BALANCE.apBase} + 敏捷 ÷ ${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）。打出卡牌要花 AP。`,
-  heal: '回复：按固定值或**最大生命**的百分比恢复 HP。百分比类的后期一样有用。',
-  maxHp: '最大生命：治疗百分比、中毒 / 灼伤这些持续伤害都按它算。',
-  luck: `暴击与闪避都看**幸运**：暴击伤害 ×${BALANCE.luckCritMult}，闪避直接免掉这一下。`,
-  recoil: '反伤：这一下打出去，自己也要吃一份固定伤害（打不死自己）。',
-  cleanse: '净化：清掉自己身上所有的属性下降与负面状态（中毒 / 剧毒 / 灼伤 / 虚弱 / 出血）。',
-  pierce: '破防：这一下的伤害计算里，对手防御只按剩余比例生效。',
-  cost: '费用买的是威力：**威力是攻击力的百分比**（威力 110 = 打出 1.1 倍攻击）。\n每点 AP 买到的威力随费用上升，所以「把 AP 花在贵牌上」永远比连打 0 费牌划算。',
-  strength: '力量：不改属性面板，直接给**每一次攻击**的威力加一个百分比。\n和攻击力的区别是它不会被「攻击 -N」之类的削弱吃掉。',
+  shieldScale: () => t('护盾量随**防御**成长：实际护盾 = 卡面基数 × (1 + 防御 ÷ {div})。\n所以基数越大的护盾牌，吃到的防御加成也越多。', { div: DEF_PER_SHIELD }),
+  exhaust: () => t('销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。'),
+  exhaustHand: () => t('销毁手牌：把手里剩下的牌全部销毁。'),
+  discard: () => t('弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。'),
+  draw: () => t('抽牌：从卡组顶抽到手牌。\n打出去的牌会进**弃牌区**，牌堆抽空、还要再抽的时候，弃牌区才会洗回牌堆。所以牌组薄的时候，同一张牌一轮里能被打上好几次 —— 但每回合的出牌次数是有限的。'),
+  ap: () => t('行动点（AP）：每回合回满，数量 = {base} + 敏捷 ÷ {per}（上限 {max}）。打出卡牌要花 AP。', { base: BALANCE.apBase, per: BALANCE.apPerAgi, max: BALANCE.apMax }),
+  heal: () => t('回复：按固定值或**最大生命**的百分比恢复 HP。百分比类的后期一样有用。'),
+  maxHp: () => t('最大生命：治疗百分比、中毒 / 灼伤这些持续伤害都按它算。'),
+  luck: () => t('暴击与闪避都看**幸运**：暴击伤害 ×{mult}，闪避直接免掉这一下。', { mult: BALANCE.luckCritMult }),
+  recoil: () => t('反伤：这一下打出去，自己也要吃一份固定伤害（打不死自己）。'),
+  cleanse: () => t('净化：清掉自己身上所有的属性下降与负面状态（中毒 / 剧毒 / 灼伤 / 虚弱 / 出血）。'),
+  pierce: () => t('破防：这一下的伤害计算里，对手防御只按剩余比例生效。'),
+  cost: () => t('费用买的是威力：**威力是攻击力的百分比**（威力 110 = 打出 1.1 倍攻击）。\n每点 AP 买到的威力随费用上升，所以「把 AP 花在贵牌上」永远比连打 0 费牌划算。'),
+  strength: () => t('力量：不改属性面板，直接给**每一次攻击**的威力加一个百分比。\n和攻击力的区别是它不会被「攻击 -N」之类的削弱吃掉。'),
 };
 
 function statusTip(word) {
   const key = STATUS_WORD[word];
   const info = STATUS_INFO[key];
   if (!info) return '';
-  return `${info.name}：${info.desc}\n解法：「白雾」「焕然一新」这类解状态牌能直接清掉；层数就是强度。`;
+  return t('{name}：{desc}\n解法：「白雾」「焕然一新」这类解状态牌能直接清掉；层数就是强度。', { name: info.name, desc: info.desc });
 }
 
 /**
@@ -139,7 +140,7 @@ const RULES = [
   { src: '反伤', cls: 'kw-recoil', tip: TIP.recoil },
   { src: '威力', cls: 'kw-ap', tip: TIP.cost },
   { src: '力量', cls: 'kw-stat', tip: TIP.strength },
-  { src: '(攻击|防御|敏捷|幸运)', cls: 'kw-stat', tip: (m) => STAT_DESC[m[1]] },
+  { src: '(攻击|防御|敏捷|幸运)', cls: 'kw-stat', tip: (m) => STAT_DESC[m[1]]?.() },
   { src: '[+\\-]?\\d+(?:\\.\\d+)?%?', cls: 'card-num', tip: null },
 ].map((r) => ({ ...r, re: new RegExp(r.src, 'y') }));
 
@@ -248,15 +249,15 @@ const RARITY_ORDER = { common: 0, uncommon: 1, rare: 2, epic: 3 };
 
 /** 特殊效果的分类：按「这张牌除了伤害还干什么」归到一个组里（顺序 = 排序时的先后） */
 const SPECIAL_GROUPS = [
-  { key: 'status', label: '赋予状态（持续掉血）' },
-  { key: 'weaken', label: '削弱对手' },
-  { key: 'buff', label: '强化自身' },
+  { key: 'status', label: () => t('赋予状态（持续掉血）') },
+  { key: 'weaken', label: () => t('削弱对手') },
+  { key: 'buff', label: () => t('强化自身') },
   // 净化排在「回复与护盾」前面：白雾这类牌同时给护盾，但它的身份是「解状态」，
   // 按护盾归类会让玩家在一堆防御牌里找不到它。
-  { key: 'cleanse', label: '净化与解状态' },
-  { key: 'sustain', label: '回复与护盾' },
-  { key: 'tempo', label: '抽牌与行动点' },
-  { key: 'plain', label: '纯伤害（无附加效果）' },
+  { key: 'cleanse', label: () => t('净化与解状态') },
+  { key: 'sustain', label: () => t('回复与护盾') },
+  { key: 'tempo', label: () => t('抽牌与行动点') },
+  { key: 'plain', label: () => t('纯伤害（无附加效果）') },
 ];
 const GROUP_INDEX = Object.fromEntries(SPECIAL_GROUPS.map((g, i) => [g.key, i]));
 
@@ -277,11 +278,11 @@ export function specialGroup(card) {
 }
 
 export const SORT_MODES = [
-  { key: 'default', label: '默认', hint: '按卡组里的原始顺序（拿到手的先后）。' },
-  { key: 'damage', label: '威力', hint: '按卡牌自身的威力（攻击力百分比）从高到低排 —— 和你的攻击力无关，所以谁的屏幕上都一样。' },
-  { key: 'effect', label: '特殊效果', hint: '按「除了伤害还干什么」分七组：状态 / 削弱 / 强化 / 净化 / 回复护盾 / 抽牌 / 纯伤害。' },
-  { key: 'ap', label: '费用', hint: '按行动点费用从低到高排。' },
-  { key: 'rarity', label: '稀有度', hint: '按稀有度从高到低排。' },
+  { key: 'default', label: () => t('默认'), hint: () => t('按卡组里的原始顺序（拿到手的先后）。') },
+  { key: 'damage', label: () => t('威力'), hint: () => t('按卡牌自身的威力（攻击力百分比）从高到低排 —— 和你的攻击力无关，所以谁的屏幕上都一样。') },
+  { key: 'effect', label: () => t('特殊效果'), hint: () => t('按「除了伤害还干什么」分七组：状态 / 削弱 / 强化 / 净化 / 回复护盾 / 抽牌 / 纯伤害。') },
+  { key: 'ap', label: () => t('费用'), hint: () => t('按行动点费用从低到高排。') },
+  { key: 'rarity', label: () => t('稀有度'), hint: () => t('按稀有度从高到低排。') },
 ];
 
 /**
@@ -304,7 +305,7 @@ export function sortCards(cards, mode) {
 
 /** 分组标题（「特殊效果」排序时插在网格里） */
 export function groupLabel(key) {
-  return SPECIAL_GROUPS.find((g) => g.key === key)?.label ?? '';
+  return SPECIAL_GROUPS.find((g) => g.key === key)?.label() ?? '';
 }
 
 // ============================================================
@@ -326,7 +327,7 @@ const STATUS_ICO = {
   poison: 'ico-poison', toxic: 'ico-skull', burn: 'ico-flame',
   weak: 'ico-temperature_down', bleed: 'ico-heart_break_02',
 };
-const STAT_NAME = { atk: '攻击', def: '防御', agi: '敏捷', luck: '幸运' };
+const STAT_NAME = { atk: () => t('攻击'), def: () => t('防御'), agi: () => t('敏捷'), luck: () => t('幸运') };
 
 /**
  * 把 effects 翻成明细行：{ ico, label, value, note? }
@@ -345,24 +346,24 @@ export function effectLines(card) {
         const useText = dmg && !dmgUsed;
         dmgUsed = true;
         const value = useText
-          ? (dmg.hits > 1 ? `${dmg.per} × ${dmg.hits} 次 = ${dmg.total} 点` : `${dmg.total} 点`)
-          : '按攻防结算';
+          ? (dmg.hits > 1 ? t('{per} × {hits} 次 = {total} 点', { per: dmg.per, hits: dmg.hits, total: dmg.total }) : t('{total} 点', { total: dmg.total }))
+          : t('按攻防结算');
         const notes = [];
-        if (e.ignoreDefPct >= 1) notes.push('无视对手全部防御');
-        else if (e.ignoreDefPct > 0) notes.push(`无视对手 ${Math.round(e.ignoreDefPct * 100)}% 防御`);
-        if (dmg?.alt && e.execThreshold) notes.push(`对手 HP 低于 ${Math.round(e.execThreshold * 100)}% 时改为 ${dmg.alt} 点`);
-        if (e.drainPct) notes.push(`回复所造成伤害的 ${Math.round(e.drainPct * 100)}%`);
-        if (e.recoilPct) notes.push(`自身受到约 ${Math.round((dmg?.total ?? 0) * e.recoilPct)} 点反伤（伤害的 ${Math.round(e.recoilPct * 100)}%）`);
-        rows.push({ ico: 'ico-sword', label: '伤害', value, note: notes.join('；') });
+        if (e.ignoreDefPct >= 1) notes.push(t('无视对手全部防御'));
+        else if (e.ignoreDefPct > 0) notes.push(t('无视对手 {pct}% 防御', { pct: Math.round(e.ignoreDefPct * 100) }));
+        if (dmg?.alt && e.execThreshold) notes.push(t('对手 HP 低于 {threshold}% 时改为 {alt} 点', { threshold: Math.round(e.execThreshold * 100), alt: dmg.alt }));
+        if (e.drainPct) notes.push(t('回复所造成伤害的 {pct}%', { pct: Math.round(e.drainPct * 100) }));
+        if (e.recoilPct) notes.push(t('自身受到约 {n} 点反伤（伤害的 {pct}%）', { n: Math.round((dmg?.total ?? 0) * e.recoilPct), pct: Math.round(e.recoilPct * 100) }));
+        rows.push({ ico: 'ico-sword', label: t('伤害'), value, note: notes.join('；') });
         break;
       }
       case 'status': {
         const info = STATUS_INFO[e.status];
-        const chance = e.chance ? `${Math.round(e.chance * 100)}% 概率命中（对手可能抵抗）` : (info?.desc ?? '');
+        const chance = e.chance ? t('{pct}% 概率命中（对手可能抵抗）', { pct: Math.round(e.chance * 100) }) : (info?.desc ?? '');
         rows.push({
           ico: STATUS_ICO[e.status] ?? 'ico-warn',
-          label: `对手 · ${info?.name ?? e.status}`,
-          value: `${e.stacks ?? 1} 层`,
+          label: t('对手 · {name}', { name: info?.name ?? e.status }),
+          value: t('{n} 层', { n: e.stacks ?? 1 }),
           note: chance,
           // 详情页是深色底，这里用战斗界面那套亮色（STATUS_INK 是给米黄卡面压暗用的）
           ink: info?.color,
@@ -370,43 +371,43 @@ export function effectLines(card) {
         break;
       }
       case 'buff': {
-        const who = e.target === 'enemy' ? '对手' : '自身';
+        const who = e.target === 'enemy' ? t('对手') : t('自身');
         const amount = e.pct != null
-          ? `${e.pct > 0 ? '+' : '−'}${Math.abs(Math.round(e.pct * 100))}%（按基础值）`
+          ? t('{sign}{pct}%（按基础值）', { sign: e.pct > 0 ? '+' : '−', pct: Math.abs(Math.round(e.pct * 100)) })
           : `${(e.amount ?? 0) > 0 ? '+' : ''}${e.amount}`;
         const down = e.pct != null ? e.pct < 0 : (e.amount ?? 0) < 0;
         rows.push({
-          ico: STAT_ICO[STAT_NAME[e.stat]] ?? 'ico-star',
-          label: `${who} · ${STAT_NAME[e.stat] ?? e.stat}`,
-          value: `${amount}（本场战斗）`,
+          ico: STAT_ICO[e.stat] ?? 'ico-star',
+          label: t('{who} · {stat}', { who, stat: STAT_NAME[e.stat]?.() ?? e.stat }),
+          value: t('{amount}（本场战斗）', { amount }),
           note: e.target === 'enemy'
             ? (down
-              ? '对手被削弱，你后面每一张攻击牌都更疼。\n属性下降最多削到基础值的 25%，之后就会提示「已经降到底了」。'
-              : '把对手的属性堆上去。')
-            : '战斗结束就复原。',
+              ? t('对手被削弱，你后面每一张攻击牌都更疼。\n属性下降最多削到基础值的 25%，之后就会提示「已经降到底了」。')
+              : t('把对手的属性堆上去。'))
+            : t('战斗结束就复原。'),
         });
         break;
       }
       case 'strength':
         rows.push({
           ico: KIND_ICO.strength,
-          label: '攻击威力',
+          label: t('攻击威力'),
           value: `+${e.n}%`,
-          note: '加在每一次攻击的**威力**上，不会被「攻击 -N」这类削弱吃掉。',
+          note: t('加在每一次攻击的**威力**上，不会被「攻击 -N」这类削弱吃掉。'),
         });
         break;
       case 'plays':
-        rows.push({ ico: KIND_ICO.plays, label: '出牌次数', value: `+${e.n} 次`, note: '本回合立刻多打几张牌。' });
+        rows.push({ ico: KIND_ICO.plays, label: t('出牌次数'), value: t('+{n} 次', { n: e.n }), note: t('本回合立刻多打几张牌。') });
         break;
       case 'apBonus':
-        rows.push({ ico: KIND_ICO.apBonus, label: '下回合行动点', value: `+${e.n}`, note: '在你**下个**回合开始时额外给。' });
+        rows.push({ ico: KIND_ICO.apBonus, label: t('下回合行动点'), value: `+${e.n}`, note: t('在你**下个**回合开始时额外给。') });
         break;
       case 'detonate':
         rows.push({
           ico: KIND_ICO.detonate,
-          label: '引爆持续伤害',
-          value: '立刻结算',
-          note: `把对手身上的中毒 / 剧毒 / 灼伤层数立刻爆成伤害（每层约 ${(e.perStack ?? 3)} 倍中毒伤害）并清空。`,
+          label: t('引爆持续伤害'),
+          value: t('立刻结算'),
+          note: t('把对手身上的中毒 / 剧毒 / 灼伤层数立刻爆成伤害（每层约 {per} 倍中毒伤害）并清空。', { per: e.perStack ?? 3 }),
         });
         break;
       case 'shield':
@@ -414,33 +415,33 @@ export function effectLines(card) {
         // （这里以前写死 0.75：基数 9 的卡碰巧对，基数 13 的卡就少算了三成）
         rows.push({
           ico: KIND_ICO.shield,
-          label: '护盾',
-          value: e.scaleWithDef ? `约 ${e.amount} + 防御 × ${(e.amount / DEF_PER_SHIELD).toFixed(2)}` : `${e.amount} 点`,
-          note: e.scaleWithDef ? '随防御成长，后期一样有用。' : '回合开始时清空。',
+          label: t('护盾'),
+          value: e.scaleWithDef ? t('约 {amount} + 防御 × {k}', { amount: e.amount, k: (e.amount / DEF_PER_SHIELD).toFixed(2) }) : t('{amount} 点', { amount: e.amount }),
+          note: e.scaleWithDef ? t('随防御成长，后期一样有用。') : t('回合开始时清空。'),
         });
         break;
       case 'heal':
         rows.push({
           ico: KIND_ICO.heal,
-          label: '回复',
-          value: e.pct ? `最大生命的 ${Math.round(e.pct * 100)}%` : `${e.amount} 点 HP`,
-          note: e.pct ? '按最大生命算，血量越厚回得越多。' : '',
+          label: t('回复'),
+          value: e.pct ? t('最大生命的 {pct}%', { pct: Math.round(e.pct * 100) }) : t('{amount} 点 HP', { amount: e.amount }),
+          note: e.pct ? t('按最大生命算，血量越厚回得越多。') : '',
         });
         break;
       case 'draw':
-        rows.push({ ico: KIND_ICO.draw, label: '抽牌', value: `${e.n} 张`, note: '卡组抽空时把弃牌堆洗回来。' });
+        rows.push({ ico: KIND_ICO.draw, label: t('抽牌'), value: t('{n} 张', { n: e.n }), note: t('卡组抽空时把弃牌堆洗回来。') });
         break;
       case 'ap':
-        rows.push({ ico: KIND_ICO.ap, label: '行动点', value: `+${e.n}`, note: '可以立刻再打一张牌。' });
+        rows.push({ ico: KIND_ICO.ap, label: t('行动点'), value: `+${e.n}`, note: t('可以立刻再打一张牌。') });
         break;
       case 'cleanse':
-        rows.push({ ico: KIND_ICO.cleanse, label: '净化', value: '清空自身负面', note: '属性下降与中毒 / 剧毒 / 灼伤 / 虚弱 / 出血全部清掉。' });
+        rows.push({ ico: KIND_ICO.cleanse, label: t('净化'), value: t('清空自身负面'), note: t('属性下降与中毒 / 剧毒 / 灼伤 / 虚弱 / 出血全部清掉。') });
         break;
       case 'exhaustHand':
-        rows.push({ ico: 'ico-trash', label: '销毁手牌', value: '打出时清空手牌', note: TIP.exhaustHand });
+        rows.push({ ico: 'ico-trash', label: t('销毁手牌'), value: t('打出时清空手牌'), note: TIP.exhaustHand() });
         break;
       case 'discard':
-        rows.push({ ico: 'ico-shuffle', label: '弃牌', value: `${e.n ?? 1} 张`, note: TIP.discard });
+        rows.push({ ico: 'ico-shuffle', label: t('弃牌'), value: t('{n} 张', { n: e.n ?? 1 }), note: TIP.discard() });
         break;
       default:
         rows.push({ ico: 'ico-star', label: e.kind, value: '', note: '' });
@@ -448,7 +449,7 @@ export function effectLines(card) {
   }
 
   if (card?.exhaust) {
-    rows.push({ ico: 'ico-trash', label: '销毁', value: '使用后进销毁区', note: '本场战斗不会再抽到，一场只能打一次。' });
+    rows.push({ ico: 'ico-trash', label: t('销毁'), value: t('使用后进销毁区'), note: t('本场战斗不会再抽到，一场只能打一次。') });
   }
   return rows;
 }

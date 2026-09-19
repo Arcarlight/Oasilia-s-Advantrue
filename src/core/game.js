@@ -10,6 +10,8 @@ import { pickMerchant, MERCHANTS } from '../data/merchants.js';
 import { makeRng } from './rng.js';
 import { Battle } from './battle.js';
 import { save } from './save.js';
+import { t } from './i18n.js';
+import { STAT_NAMES } from './ui-words.js';
 
 export const Phase = {
   TITLE: 'title',
@@ -25,7 +27,9 @@ export const Phase = {
   DECK: 'deck',
 };
 
-const STAT_NAMES = { atk: '攻击', def: '防御', maxHp: '最大生命', agi: '敏捷', luck: '幸运' };
+// 属性名的中文表搬到了 src/core/ui-words.js（纯数据模块：待翻清单靠扫源码收集，
+// 表藏在引擎/界面模块里工具既扫不到「谁在用」也 import 不起来）。
+// 这里继续导出一次：src/ui/screens.js 等照旧从 game.js 取 STAT_NAMES。
 export { STAT_NAMES };
 
 // ================= 道具 =================
@@ -207,19 +211,19 @@ export class Game {
     const item = ITEMS[id];
     if (!item || (this.data.items[id] ?? 0) <= 0) return null;
     const eff = itemEffect(item);
-    if (!eff) return { ok: false, text: `「${item.name}」没有可以主动使用的效果。` };
+    if (!eff) return { ok: false, text: t('「{name}」没有可以主动使用的效果。', { name: item.name }) };
     if (eff.kind === 'heal') {
       const amount = eff.pct ? Math.round(this.data.maxHp * eff.pct) : eff.flat;
-      if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: 'HP 已经满了。' };
+      if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: t('HP 已经满了。') };
       this.consumeItem(id);
       const h = this.heal(amount);
-      return { ok: true, text: `使用「${item.name}」，回复 ${h} 点 HP。` };
+      return { ok: true, text: t('使用「{name}」，回复 {hp} 点 HP。', { name: item.name, hp: h }) };
     }
     // 属性类：正常情况下拿到时就已经生效了（见 giveItem），
     // 这里留着是为了兜住老存档里已经躺在背包里的那几件
     this.consumeItem(id);
     const gained = this.gainStat(eff.key, eff.amount);
-    return { ok: true, text: `使用「${item.name}」，${STAT_NAMES[eff.key] ?? eff.key} +${gained}。` };
+    return { ok: true, text: t('使用「{name}」，{stat} +{n}。', { name: item.name, stat: t(STAT_NAMES[eff.key] ?? eff.key), n: gained }) };
   }
 
   consumeItem(id) {
@@ -325,15 +329,15 @@ export class Game {
     const healLines = [];
     if (BALANCE.fullHealAfterBoss) {
       const healed = this.heal(d.maxHp);
-      if (healed > 0) healLines.push(`HP 完全恢复（+${healed}）`);
+      if (healed > 0) healLines.push(t('HP 完全恢复（+{n}）', { n: healed }));
     }
     d.map = generateMap(d.stage, this.rng);
     d.nodeId = null;
     d.floor = 0;
     this.phase = Phase.MAP;
     this.message = {
-      title: `进入 ${BIOMES[d.map.biome].name}`,
-      text: `${BIOMES[d.map.biome].desc}\n\n章节通关奖励：金币 +${bonus}${healLines.length ? '，' + healLines.join('，') : ''}`,
+      title: t('进入 {biome}', { biome: BIOMES[d.map.biome].name }),
+      text: `${t(BIOMES[d.map.biome].desc)}\n\n${t('章节通关奖励：金币 +{gold}', { gold: bonus })}${healLines.length ? '，' + healLines.join('，') : ''}`,
       tone: 'good',
     };
     this.save();
@@ -706,9 +710,9 @@ export class Game {
       getPotion: true,
       potion: 'potion_small',
       isBoss: false,
-      enemyName: '穿山鼠',
+      enemyName: t('穿山鼠'),
       growth,
-      growthText: growth.map((g) => `${STAT_NAMES[g.stat]} +${g.amount}`).join('，'),
+      growthText: growth.map((g) => `${t(STAT_NAMES[g.stat])} +${g.amount}`).join('，'),
     };
   }
 
@@ -742,7 +746,7 @@ export class Game {
     const parts = [];
     for (const g of growth) {
       const gained = this.gainStat(g.stat, g.amount);
-      if (gained !== 0) parts.push(`${STAT_NAMES[g.stat]} +${gained}`);
+      if (gained !== 0) parts.push(`${t(STAT_NAMES[g.stat])} +${gained}`);
     }
     return parts.join('，');
   }
@@ -788,7 +792,7 @@ export class Game {
     if (!ev) return null;
     const opt = ev.options[index];
     if (!opt) return null;
-    const result = opt.run(this) ?? { text: '……什么也没发生。', tone: 'neutral' };
+    const result = opt.run(this) ?? { text: t('……什么也没发生。'), tone: 'neutral' };
     this.eventResult = { index, ...result };
     this.save();
     return this.eventResult;
@@ -811,21 +815,21 @@ export class Game {
     if (roll < 0.36) {
       const gold = this.rng.int(45, 95) + d.stage * 20;
       d.gold += gold;
-      chest = { kind: 'gold', gold, text: `一整袋金币，还有几颗碎宝石。\n「沉是沉了点，不过我不嫌弃。」\n金币 +${gold}。` };
+      chest = { kind: 'gold', gold, text: t('一整袋金币，还有几颗碎宝石。\n「沉是沉了点，不过我不嫌弃。」\n金币 +{gold}。', { gold }) };
     } else if (roll < 0.74) {
       const card = rollCard(0.5, []);
       this.addCard(card.id);
       const gold = this.rng.int(15, 35);
       d.gold += gold;
-      chest = { kind: 'card', cardId: card.id, gold, text: `箱底压着一张卡，还有一点零钱。\n「压在最底下的多半是好东西。」\n获得「${card.name}」，金币 +${gold}。` };
+      chest = { kind: 'card', cardId: card.id, gold, text: t('箱底压着一张卡，还有一点零钱。\n「压在最底下的多半是好东西。」\n获得「{card}」，金币 +{gold}。', { card: card.name, gold }) };
     } else if (roll < 0.9) {
       const big = this.rng.chance(0.5);
       this.giveItem(big ? 'potion_big' : 'potion_small', big ? 1 : 2);
       const healed = this.heal(Math.round(d.maxHp * 0.12));
-      chest = { kind: 'item', text: `一堆补给。你顺手给自己处理了伤口。\n「正好用得上。」\n获得${big ? '厉害伤药 ×1' : '好伤药 ×2'}，HP +${healed}。` };
+      chest = { kind: 'item', text: t('一堆补给。你顺手给自己处理了伤口。\n「正好用得上。」\n获得{potion}，HP +{hp}。', { potion: big ? t('厉害伤药 ×1') : t('好伤药 ×2'), hp: healed }) };
     } else {
       // 宝箱怪！
-      chest = { kind: 'mimic', text: '箱子说话了。而且它很饿。\n「……那我不开了。」' };
+      chest = { kind: 'mimic', text: t('箱子说话了。而且它很饿。\n「……那我不开了。」') };
     }
     this.chest = chest;
     this.phase = Phase.CHEST;
@@ -928,8 +932,8 @@ export class Game {
       ?? pickMerchant(biome, `${d.stage}:${d.nodeId ?? '?'}`);
     // 兜底：万一某张地图没有配商人（build-content 会拦，但别让运行期崩）
     const p = merchant ?? {
-      id: 'default', name: '沙漠商队', role: '杂货商人', slug: null, emotion: 'happy',
-      greet: '「钱货两清，概不赊账。」店主是一只戴着帽子的沙河马。', leave: '离开商队',
+      id: 'default', name: t('沙漠商队'), role: t('杂货商人'), slug: null, emotion: 'happy',
+      greet: t('「钱货两清，概不赊账。」店主是一只戴着帽子的沙河马。'), leave: t('离开商队'),
       priceMul: 1, cards: 5, items: 3, rarityBoost: 0.35, mustItems: [], service: 'remove', servicePrice: 70,
     };
 
@@ -962,7 +966,7 @@ export class Game {
     }
 
     if (p.service === 'remove') {
-      stock.push({ kind: 'service', id: 'remove', name: '卡牌移除服务', desc: '从卡组里删掉一张卡。', price: p.servicePrice });
+      stock.push({ kind: 'service', id: 'remove', name: t('卡牌移除服务'), desc: t('从卡组里删掉一张卡。'), price: p.servicePrice });
     }
     this.shop = { merchant: p, stock, soldOut: [] };
     this.phase = Phase.SHOP;
@@ -972,10 +976,10 @@ export class Game {
 
   buy(index) {
     const s = this.shop;
-    if (!s) return { ok: false, text: '没有商店' };
+    if (!s) return { ok: false, text: t('没有商店') };
     const entry = s.stock[index];
-    if (!entry || s.soldOut.includes(index)) return { ok: false, text: '这件已经卖掉了。' };
-    if (this.data.gold < entry.price) return { ok: false, text: '金币不够。' };
+    if (!entry || s.soldOut.includes(index)) return { ok: false, text: t('这件已经卖掉了。') };
+    if (this.data.gold < entry.price) return { ok: false, text: t('金币不够。') };
     /**
      * 删卡服务：卡组太小就**在收钱之前**拦住。
      *
@@ -985,30 +989,30 @@ export class Game {
      * 注意这个判断必须在 `data.gold -= price` **之前**（第一版写在后面，钱照样扣了）。
      */
     if (entry.kind === 'service' && this.data.deck.length <= 3) {
-      return { ok: false, text: `卡组只剩 ${this.data.deck.length} 张了，不能再删 —— 再删就没牌可打了。` };
+      return { ok: false, text: t('卡组只剩 {n} 张了，不能再删 —— 再删就没牌可打了。', { n: this.data.deck.length }) };
     }
     this.data.gold -= entry.price;
     if (entry.kind === 'service') {
       // 删卡服务**不售罄**：卡组变薄是这一版唯一「精简」手段（不能挑着不带），
       // 所以允许在一家店里连着删，代价是每删一张这一家的报价就往上跳一截。
       this.pendingRemove = { index, paid: entry.price };
-      return { ok: true, text: '选择一张要移除的卡牌。', needRemove: true };
+      return { ok: true, text: t('选择一张要移除的卡牌。'), needRemove: true };
     }
     s.soldOut.push(index);
     if (entry.kind === 'card') {
       this.addCard(entry.id);
-      return { ok: true, text: `买下「${entry.name}」，已放入卡组。` };
+      return { ok: true, text: t('买下「{name}」，已放入卡组。', { name: entry.name }) };
     }
     if (entry.kind === 'item') {
       const got = this.giveItem(entry.id, 1);
       // 护符 / 活力药是**拿到就生效**的（见 giveItem）：文案要说清「已经加上了」，
       // 否则玩家会去背包里找 —— 那里根本没有，看起来就像买了个没用的东西
       if (got.applied) {
-        return { ok: true, text: `买下「${entry.name}」，${STAT_NAMES[got.applied.key] ?? got.applied.key} +${got.applied.amount}（本局有效）。` };
+        return { ok: true, text: t('买下「{name}」，{stat} +{n}（本局有效）。', { name: entry.name, stat: t(STAT_NAMES[got.applied.key] ?? got.applied.key), n: got.applied.amount }) };
       }
-      return { ok: true, text: `买下「${entry.name}」，已放进背包（按 I 打开，点「使用」）。` };
+      return { ok: true, text: t('买下「{name}」，已放进背包（按 I 打开，点「使用」）。', { name: entry.name }) };
     }
-    return { ok: true, text: '成交。' };
+    return { ok: true, text: t('成交。') };
   }
 
   /** 删卡服务的报价：同一家店里每删一张就涨一档（75 → 105 → 147 …） */
@@ -1017,7 +1021,7 @@ export class Game {
   doRemove(cardId) {
     const card = CARD_BY_ID[cardId];
     if (!card) return null;
-    if (this.data.deck.length <= 3) return { ok: false, text: '卡组已经很少了，不能再删。' };
+    if (this.data.deck.length <= 3) return { ok: false, text: t('卡组已经很少了，不能再删。') };
     /**
      * 真的删掉了才算成功。
      *
@@ -1026,7 +1030,7 @@ export class Game {
      * 回去一看牌还在，那就是标准的「根本删不掉」。现在删不掉就直说。
      */
     if (!this.removeCard(cardId)) {
-      return { ok: false, text: `卡组里已经没有「${card.name}」了。` };
+      return { ok: false, text: t('卡组里已经没有「{name}」了。', { name: card.name }) };
     }
     // 涨价：下一张更贵（这一步才算「交易完成」）
     const pending = this.pendingRemove;
@@ -1037,7 +1041,7 @@ export class Game {
     this.pendingRemove = null;
     this.save();
     this.changed();
-    return { ok: true, text: `移除了「${card.name}」。` };
+    return { ok: true, text: t('移除了「{name}」。', { name: card.name }) };
   }
 
   /**
@@ -1046,12 +1050,12 @@ export class Game {
    */
   refundRemove() {
     const pending = this.pendingRemove;
-    if (!pending) return { ok: false, text: '没有待处理的删卡。' };
+    if (!pending) return { ok: false, text: t('没有待处理的删卡。') };
     this.data.gold += pending.paid ?? 0;
     this.pendingRemove = null;
     this.save();
     this.changed();
-    return { ok: true, text: `取消删卡，退回 ${pending.paid ?? 0} 金币。` };
+    return { ok: true, text: t('取消删卡，退回 {gold} 金币。', { gold: pending.paid ?? 0 }) };
   }
 
   leaveShop() {
@@ -1085,7 +1089,7 @@ export class Game {
     const d = this.data;
     if (!d) return '';
     const biome = BIOMES[d.map?.biome ?? 'desert'];
-    return `${biome.name} · 第 ${d.floor + 1} 步 / 第 ${d.stage + 1} 章`;
+    return t('{biome} · 第 {floor} 步 / 第 {stage} 章', { biome: biome.name, floor: d.floor + 1, stage: d.stage + 1 });
   }
 }
 

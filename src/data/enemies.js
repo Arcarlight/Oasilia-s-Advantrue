@@ -1261,7 +1261,7 @@ export const ENEMIES = [
     "tier": "elite",
     "biome": "cliff",
     "deck": MOVE_POOLS.kit_ground_hi,
-    "lines": [ "崖壁上倒挂着一只天蝎，比你见过的大三倍，尾巴上挂着碎石。" ],
+    "lines": [ "崖壁上倒挂着一只天蝎王，比你见过的大三倍，尾巴上挂着碎石。" ],
   },
   {
     "id": "aggron",

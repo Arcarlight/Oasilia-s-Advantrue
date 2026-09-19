@@ -13,8 +13,10 @@ import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
 import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
 import { TIERS } from '../data/enemies.js';
-
-const TIER_LABEL = { mob: '野生', normal: '较强', elite: '精英', boss: '首领' };
+import { t } from '../core/i18n.js';
+// 属性短标签 / 悬停说明放在纯数据模块里（待翻清单靠扫源码收，见那个文件的说明）。
+// 读取处照旧 t(STAT_SHORT.…)、t(STAT_TIP[label], { … })。
+import { STAT_SHORT, STAT_TIP, STAT_TIP_FOE } from '../core/ui-words.js';
 
 /**
  * 状态胶囊的图标。以前胶囊上只有一个纯色小圆点，「中毒/灼伤/虚弱/流血」全靠读文字区分；
@@ -202,7 +204,7 @@ export class BattleScreen {
     try { this.resyncDisp(); } catch (err) { console.error(err); }
     try { this.refreshAll(); } catch (err) { console.error(err); }
     try { this.renderHand(); } catch (err) { console.error(err); }
-    toast('演出卡了一下，已经自动恢复。', 'bad');
+    toast(t('演出卡了一下，已经自动恢复。'), 'bad');
   }
 
   /**
@@ -212,11 +214,11 @@ export class BattleScreen {
   cantPlayReason(entry) {
     const b = this.battle;
     const cost = b.cardCost(entry);
-    if (b.over) return '战斗已经结束了。';
-    if (this.busy || b.active !== 'player') return '对手正在行动，稍等一下。';
-    if ((b.player.playsLeft ?? 0) <= 0) return `本回合出牌次数用完了（${b.player.playMax} 张）——按「结束回合」进入下一回合。`;
-    if (cost > b.player.ap) return `AP 不够：这张「${entry.card.name}」要 ${cost} 点，你现在还有 ${b.player.ap} 点。`;
-    return '现在打不出这张牌。';
+    if (b.over) return t('战斗已经结束了。');
+    if (this.busy || b.active !== 'player') return t('对手正在行动，稍等一下。');
+    if ((b.player.playsLeft ?? 0) <= 0) return t('本回合出牌次数用完了（{n} 张）——按「结束回合」进入下一回合。', { n: b.player.playMax });
+    if (cost > b.player.ap) return t('AP 不够：这张「{card}」要 {cost} 点，你现在还有 {ap} 点。', { card: entry.card.name, cost, ap: b.player.ap });
+    return t('现在打不出这张牌。');
   }
 
   /** 把一侧的当前数值抄成「界面自己的副本」，动画期间只用这份副本 */
@@ -348,7 +350,7 @@ export class BattleScreen {
         el('div', { class: 'fighter-info' }, [
           el('div', { class: 'fighter-name' }, [
             el('span', { text: b.enemy.name }),
-            el('span', { class: `tier tier-${b.enemy.tier}`, text: TIER_LABEL[b.enemy.tier] ?? '' }),
+            el('span', { class: `tier tier-${b.enemy.tier}`, text: TIERS[b.enemy.tier]?.name ?? '' }),
           ]),
           el('div', { class: 'fighter-types', text: this.enemySubtitle() }),
         ]),
@@ -377,9 +379,9 @@ export class BattleScreen {
         el('div', { class: 'fighter-info' }, [
           el('div', { class: 'fighter-name' }, [
             el('span', { text: this.game.data.name }),
-            el('span', { class: 'tier', text: '♀ 沙漠蜻蜓' }),
+            el('span', { class: 'tier', text: t('♀ 沙漠蜻蜓') }),
           ]),
-          el('div', { class: 'fighter-types', text: '地面 / 龙 · 特性：飘浮' }),
+          el('div', { class: 'fighter-types', text: t('地面 / 龙 · 特性：飘浮') }),
         ]),
       ]),
       this.playerShield,
@@ -393,9 +395,9 @@ export class BattleScreen {
 
     // ---- 中间：回合 / 敌方意图 ----
     // 回合徽章用时钟（骰子是「随机」，跟回合没关系）
-    this.turnBadgeText = el('span', { text: '第 1 回合' });
+    this.turnBadgeText = el('span', { text: t('第 1 回合') });
     this.turnBadge = el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), this.turnBadgeText]);
-    this.intentEl = el('div', { class: 'intent' }, [el('span', { class: 'ico-sword' }), el('span', { text: '正在观察……' })]);
+    this.intentEl = el('div', { class: 'intent' }, [el('span', { class: 'ico-sword' }), el('span', { text: t('正在观察……') })]);
 
     // ---- 战斗日志 ----
     this.logEl = el('div', { class: 'battle-log' });
@@ -416,7 +418,7 @@ export class BattleScreen {
     this.endTurnBtn = el('button', {
       class: 'btn btn-primary btn-lg',
       onClick: () => this.onEndTurn(),
-    }, [el('span', { class: 'ico-check' }), el('span', { text: '结束回合' })]);
+    }, [el('span', { class: 'ico-check' }), el('span', { text: t('结束回合') })]);
 
     this.battleBar = el('div', { class: 'battle-bar' }, [
       el('div', { class: 'ap-display' }, [this.apOrbs, this.apIco, this.apText]),
@@ -774,7 +776,7 @@ export class BattleScreen {
     if (shieldVal > 0) {
       shieldEl.classList.remove('hidden');
       // 护盾值用盾牌（圆角款）：和「防御属性」的基础盾区分开
-      shieldEl.dataset.tip = `护盾 ${shieldVal}：先替你吃伤害，吃光之后剩下的才掉血。\n持有者自己的回合开始时清空，所以它是「撑过这一轮」的资源。`;
+      shieldEl.dataset.tip = t('护盾 {n}：先替你吃伤害，吃光之后剩下的才掉血。\n持有者自己的回合开始时清空，所以它是「撑过这一轮」的资源。', { n: shieldVal });
       /**
        * 只在数字真的变了时才重建内容。
        *
@@ -810,37 +812,38 @@ export class BattleScreen {
     clear(statsEl);
     const rows = isPlayer
       ? [
-          ['攻', b.player.atk + (dd?.atkMod ?? 0), b.player.atk],
-          ['防', b.player.def + (dd?.defMod ?? 0), b.player.def],
-          ['速', b.player.agi + (dd?.agiMod ?? 0), b.player.agi],
-          ['运', (b.player.luck ?? 0) + (dd?.luckMod ?? 0), b.player.luck ?? 0],
+          [STAT_SHORT.atk, b.player.atk + (dd?.atkMod ?? 0), b.player.atk],
+          [STAT_SHORT.def, b.player.def + (dd?.defMod ?? 0), b.player.def],
+          [STAT_SHORT.agi, b.player.agi + (dd?.agiMod ?? 0), b.player.agi],
+          [STAT_SHORT.luck, (b.player.luck ?? 0) + (dd?.luckMod ?? 0), b.player.luck ?? 0],
         ]
       : [
-          ['攻', b.enemy.atk + (dd?.atkMod ?? 0), b.enemy.atk],
-          ['防', b.enemy.def + (dd?.defMod ?? 0), b.enemy.def],
-          ['速', b.enemy.agi + (dd?.agiMod ?? 0), b.enemy.agi],
+          [STAT_SHORT.atk, b.enemy.atk + (dd?.atkMod ?? 0), b.enemy.atk],
+          [STAT_SHORT.def, b.enemy.def + (dd?.defMod ?? 0), b.enemy.def],
+          [STAT_SHORT.agi, b.enemy.agi + (dd?.agiMod ?? 0), b.enemy.agi],
         ];
     const agi = b.player.agi;
-    const STAT_TIP = {
-      攻: `攻击：决定你能打出多少伤害。\n实际伤害 = 攻击 × 招式威力% × ${BALANCE.armorK}/(${BALANCE.armorK}+对手防御)。\n威力是攻击力的百分比，所以攻击力涨了，每张牌都按比例更疼。`,
-      防: `防御：越高越抗打。\n受到的伤害会乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+防御)，所以防御是「减伤百分比」而不是直接扣血。`,
-      速: isPlayer
-        // 敏捷管三件事，把当前这一局的具体数值直接算出来，别只说「看它」；
-        // 公式里的数字取自 BALANCE（写死过一份，改平衡时不会跟着动）
-        ? `敏捷 ${agi}：一回合的三项预算全由它决定。\n`
-          + `· 行动点 AP **${apFromAgi(agi)}** 点（${BALANCE.apBase} + 敏捷÷${BALANCE.apPerAgi}，上限 ${BALANCE.apMax}）\n`
-          + `· 每回合抽牌 **${drawFromAgi(agi)}** 张（${BALANCE.drawBase} + 敏捷÷${BALANCE.drawPerAgi}，上限 ${BALANCE.drawMax}）\n`
-          + `· 出牌上限 **${playsFromAgi(agi)}** 张（${BALANCE.playBase} + 敏捷÷${BALANCE.playPerAgi}，上限 ${BALANCE.playMax}）`
-        : '敏捷：对手的行动点、抽牌数与出牌上限都由它决定。',
-      运: '幸运：暴击率与闪避率。',
+    /**
+     * 悬停说明里的数字：表在 src/core/ui-words.js（纯数据，工具扫得到），
+     * 表里的 `{…}` 由 t() 的第二个参数填 —— 公式取自 BALANCE，属性取当前值，
+     * 所以改平衡时文案跟着动（以前这几句把 3 / 2 / 9 / 5 / 8 抄成了死数字）。
+     */
+    const TIP_VARS = {
+      K: BALANCE.armorK,
+      agi,
+      ap: apFromAgi(agi), apBase: BALANCE.apBase, apPerAgi: BALANCE.apPerAgi, apMax: BALANCE.apMax,
+      draw: drawFromAgi(agi), drawBase: BALANCE.drawBase, drawPerAgi: BALANCE.drawPerAgi, drawMax: BALANCE.drawMax,
+      plays: playsFromAgi(agi), playBase: BALANCE.playBase, playPerAgi: BALANCE.playPerAgi, playMax: BALANCE.playMax,
     };
     for (const [label, val, base] of rows) {
       const diff = val - base;
+      // 对手那几格只说结论（不摊开算公式），只有「速」单独一句，其余回落到 STAT_TIP
+      const tip = (isPlayer ? STAT_TIP[label] : (STAT_TIP_FOE[label] ?? STAT_TIP[label])) ?? '';
       statsEl.append(el('span', {
-        dataset: { tip: `${STAT_TIP[label] ?? ''}${diff < 0 ? `\n当前被削弱了 ${-diff} 点。` : ''}` },
+        dataset: { tip: `${t(tip, TIP_VARS)}${diff < 0 ? '\n' + t('当前被削弱了 {n} 点。', { n: -diff }) : ''}` },
       }, [
         el('span', { class: STAT_ICO[label] ?? 'ico-star', style: { width: '11px', height: '11px' } }),
-        el('span', { text: label }),
+        el('span', { text: t(label) }),
         el('b', { class: diff > 0 ? 'up' : diff < 0 ? 'down' : '', text: String(val) }),
       ]));
     }
@@ -872,7 +875,7 @@ export class BattleScreen {
     for (const st of want) {
       const val = dd[st];
       const info = STATUS_INFO[st];
-      const tip = `${info.name} ${val} 层\n${info.desc}\n解法：「白雾」「焕然一新」这类解状态牌可以直接清掉。`;
+      const tip = `${info.name} ${t('{n} 层', { n: val })}\n${info.desc}\n${t('解法：「白雾」「焕然一新」这类解状态牌可以直接清掉。')}`;
       let node = have.get(st);
       if (!node) {
         node = el('span', {
@@ -1012,8 +1015,8 @@ export class BattleScreen {
       el('div', { class: 'turn-sweep-row' }, [
         artPlayer,
         el('div', { class: 'turn-sweep-mid' }, [
-          el('div', { class: 'turn-sweep-text', text: `第 ${turn} 回合` }),
-          el('div', { class: 'turn-sweep-sub', text: side === 'player' ? '你的行动' : '对手行动' }),
+          el('div', { class: 'turn-sweep-text', text: t('第 {n} 回合', { n: turn }) }),
+          el('div', { class: 'turn-sweep-sub', text: side === 'player' ? t('你的行动') : t('对手行动') }),
         ]),
         artEnemy,
       ]),
@@ -1108,7 +1111,7 @@ export class BattleScreen {
     this.initTips();
     const b = this.battle;
     this.turnBadgeText.textContent =
-      `第 ${this.dispTurn} 回合 · ${this.dispActive === 'player' ? '你的行动' : '对手行动'}`;
+      t('第 {n} 回合 · {side}', { n: this.dispTurn, side: this.dispActive === 'player' ? t('你的行动') : t('对手行动') });
     this.refreshBudget();
     // AP 也走「演出血量」那一套：否则敌方回合还没演完，AP 就已经是下一回合的了
     const dp = this.disp.player ?? { ap: b.player.ap, apMax: b.player.apMax };
@@ -1153,7 +1156,7 @@ export class BattleScreen {
     } else {
       this.apText.textContent = `${dp.ap} / ${max}`;
     }
-    this.apOrbs.dataset.tip = `行动点 ${dp.ap}/${max}：打出卡牌要花行动点。\n回合开始时回满，敏捷越高每回合越多。`;
+    this.apOrbs.dataset.tip = t('行动点 {ap}/{max}：打出卡牌要花行动点。\n回合开始时回满，敏捷越高每回合越多。', { ap: dp.ap, max });
     this._shownAp = dp.ap;
   }
 
@@ -1181,33 +1184,33 @@ export class BattleScreen {
      * 公式里的数字全部从 BALANCE 取（别抄第二份）：这几句以前把 3 / 2 / 9 / 5 / 8 写死了，
      * 改平衡时改的只有 balance.js，文案会悄悄和实际脱节。
      */
-    const agiTip = `行动点 = ${BALANCE.apBase} + 敏捷 ÷ ${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）`;
-    const playTip = `出牌上限 = ${BALANCE.playBase} + 敏捷 ÷ ${BALANCE.playPerAgi}（向下取整，最高 ${BALANCE.playMax}）`;
-    const drawTip = `抽牌 = ${BALANCE.drawBase} + 敏捷 ÷ ${BALANCE.drawPerAgi}（向下取整，最高 ${BALANCE.drawMax}）`;
+    const agiTip = t('行动点 = {base} + 敏捷 ÷ {perAgi}（上限 {max}）', { base: BALANCE.apBase, perAgi: BALANCE.apPerAgi, max: BALANCE.apMax });
+    const playTip = t('出牌上限 = {base} + 敏捷 ÷ {perAgi}（向下取整，最高 {max}）', { base: BALANCE.playBase, perAgi: BALANCE.playPerAgi, max: BALANCE.playMax });
+    const drawTip = t('抽牌 = {base} + 敏捷 ÷ {perAgi}（向下取整，最高 {max}）', { base: BALANCE.drawBase, perAgi: BALANCE.drawPerAgi, max: BALANCE.drawMax });
 
     clear(this.budgetEl).append(
       el('span', {
         class: `budget-chip${left <= 0 ? ' out' : ''}`,
         dataset: {
-          tip: `本回合还能打出 **${left}** 张牌（上限 ${playsMax}）。\n`
-            + `${playTip}——你现在敏捷 ${agi} → **${playsFromAgi(agi)} 张**。\n`
-            + '打不出去通常不是卡住了：先看这里是不是 0，再看 AP 够不够。',
+          tip: t('本回合还能打出 **{left}** 张牌（上限 {max}）。\n', { left, max: playsMax })
+            + t('{tip}——你现在敏捷 {agi} → **{n} 张**。\n', { tip: playTip, agi, n: playsFromAgi(agi) })
+            + t('打不出去通常不是卡住了：先看这里是不是 0，再看 AP 够不够。'),
         },
       }, [
         el('span', { class: 'ico-card', style: { width: '12px', height: '12px' } }),
-        ' 出牌 ',
+        ' ' + t('出牌') + ' ',
         el('b', { text: `${left} / ${playsMax}` }),
       ]),
       el('span', {
         class: 'budget-chip',
         dataset: {
-          tip: `每回合开始抽 **${drawN}** 张。\n`
-            + `${drawTip}——你现在敏捷 ${agi} → **${drawFromAgi(agi)} 张**。\n`
-            + `手牌上限 ${handMax} 张，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。`,
+          tip: t('每回合开始抽 **{n}** 张。\n', { n: drawN })
+            + t('{tip}——你现在敏捷 {agi} → **{n} 张**。\n', { tip: drawTip, agi, n: drawFromAgi(agi) })
+            + t('手牌上限 {n} 张，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。', { n: handMax }),
         },
       }, [
         el('span', { class: 'ico-deck', style: { width: '12px', height: '12px' } }),
-        ' 抽牌 ',
+        ' ' + t('抽牌') + ' ',
         el('b', { text: String(drawN) }),
       ]),
     );
@@ -1237,10 +1240,10 @@ export class BattleScreen {
     clear(this.pileInfo);
     const mk = (tip, children) => el('span', { dataset: { tip } }, children);
     this.pileInfo.append(
-      mk('牌堆：还没抽到的牌。抽完会把弃牌洗回来。', [el('span', { class: 'ico-cards', style: { width: '13px', height: '13px' } }), ' 卡组 ', el('b', { text: String(d.draw.length) })]),
-      mk('弃牌：打出去的牌会进这里（不进牌堆）。牌堆抽空、还要再抽的时候，这里才洗回牌堆。', ['弃牌 ', el('b', { text: String(d.discard.length) })]),
-      mk('销毁：带「使用后销毁」的牌打完就进这里，本场战斗不会再出现。', ['销毁 ', el('b', { text: String(d.exhaust.length) })]),
-      mk('手牌：当前能打出的牌。上限由敏捷决定，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。', ['手牌 ', el('b', { text: `${d.hand.length}/${this.battle.player.handMax}` })]),
+      mk(t('牌堆：还没抽到的牌。抽完会把弃牌洗回来。'), [el('span', { class: 'ico-cards', style: { width: '13px', height: '13px' } }), ' ' + t('卡组') + ' ', el('b', { text: String(d.draw.length) })]),
+      mk(t('弃牌：打出去的牌会进这里（不进牌堆）。牌堆抽空、还要再抽的时候，这里才洗回牌堆。'), [t('弃牌') + ' ', el('b', { text: String(d.discard.length) })]),
+      mk(t('销毁：带「使用后销毁」的牌打完就进这里，本场战斗不会再出现。'), [t('销毁') + ' ', el('b', { text: String(d.exhaust.length) })]),
+      mk(t('手牌：当前能打出的牌。上限由敏捷决定，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。'), [t('手牌') + ' ', el('b', { text: `${d.hand.length}/${this.battle.player.handMax}` })]),
     );
   }
 
@@ -1255,40 +1258,42 @@ export class BattleScreen {
   refreshIntent() {
     const b = this.battle;
     // 悬停说明：这个胶囊到底在算什么（很多人第一眼会当成「他一定会打我这么多」）
-    this.intentEl.dataset.tip = '对手下回合**最坏情况**能打出的伤害上界（拿它整副牌 + 下回合的行动点模拟出来的）。\n真抽到什么牌仍然随机，所以文案写「最多约」，不是断言。';
+    this.intentEl.dataset.tip = t('对手下回合**最坏情况**能打出的伤害上界（拿它整副牌 + 下回合的行动点模拟出来的）。\n真抽到什么牌仍然随机，所以文案写「最多约」，不是断言。');
     if (b.over) {
       this.intentEl.className = 'intent calm';
-      clear(this.intentEl).append(el('span', { class: 'ico-dice' }), el('span', { text: '战斗结束' }));
+      clear(this.intentEl).append(el('span', { class: 'ico-dice' }), el('span', { text: t('战斗结束') }));
       return;
     }
     if (this.dispActive !== 'player') {
       this.intentEl.className = 'intent calm';
-      clear(this.intentEl).append(el('span', { class: 'ico-dice' }), el('span', { text: '对手正在行动……' }));
+      clear(this.intentEl).append(el('span', { class: 'ico-dice' }), el('span', { text: t('对手正在行动……') }));
       return;
     }
 
-    const t = b.predictEnemyThreat();
+    // 局部变量以前叫 t，和 i18n 的 t() 撞名了（改名叫 threat，否则下面 t('…') 会变成
+    // 「拿预测结果当函数调」—— 直接 TypeError）。
+    const threat = b.predictEnemyThreat();
     const hpNow = this.dispHp?.player ?? b.player.hp;
-    const pct = t.damage / Math.max(1, hpNow);
+    const pct = threat.damage / Math.max(1, hpNow);
     clear(this.intentEl);
-    if (t.damage <= 0) {
+    if (threat.damage <= 0) {
       this.intentEl.className = 'intent calm';
       this.intentEl.append(
         el('span', { class: 'ico-shield' }),
-        el('span', { text: '下回合对手以变化招式为主' }),
+        el('span', { text: t('下回合对手以变化招式为主') }),
       );
       return;
     }
     // 伤害已经够打死自己了，就把这个胶囊标成警告色
-    const deadly = t.damage >= hpNow;
+    const deadly = threat.damage >= hpNow;
     this.intentEl.className = `intent${deadly ? ' danger' : pct >= 0.3 ? ' warn' : ''}`;
-    this.intentEl.title = '按对手整副牌 + 它下回合的行动点/出牌数估算的上界；它实际抽到什么牌是随机的。';
+    this.intentEl.title = t('按对手整副牌 + 它下回合的行动点/出牌数估算的上界；它实际抽到什么牌是随机的。');
     this.intentEl.append(
       el('span', { class: deadly ? 'ico-skull' : 'ico-sword' }),
       el('span', {
         text: deadly
-          ? `危险：下回合最多 ${t.damage} 伤害，会被打倒`
-          : `下回合最多约 ${t.damage} 伤害${t.topName ? `（最狠：${t.topName}）` : ''}`,
+          ? t('危险：下回合最多 {d} 伤害，会被打倒', { d: threat.damage })
+          : t('下回合最多约 {d} 伤害{extra}', { d: threat.damage, extra: threat.topName ? t('（最狠：{name}）', { name: threat.topName }) : '' }),
       }),
     );
   }
@@ -1312,7 +1317,7 @@ export class BattleScreen {
     if (!hand.length) {
       // 别写「让沙暴把卡牌送回来」——听起来像打出去的牌会自己回来。
       // 现在打出去的牌在弃牌区，只有牌堆抽空时才会洗回来，所以只说「结束回合、下回合再抽」。
-      this.handEl.append(el('div', { class: 'hand-empty', text: '手牌空了 —— 结束回合，下回合会重新抽牌。' }));
+      this.handEl.append(el('div', { class: 'hand-empty', text: t('手牌空了 —— 结束回合，下回合会重新抽牌。') }));
       return;
     }
     let freshIndex = 0;
@@ -1527,7 +1532,7 @@ export class BattleScreen {
       }
       case 'shield': {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
-        floatAt(body, `+${ev.amount} 护盾`, 'float-shield');
+        floatAt(body, t('+{n} 护盾', { n: ev.amount }), 'float-shield');
         audio.shieldUp();
         // 「变硬」这类防御强化也要闪一下白光，玩家才知道这回合真的硬了
         this.flash(body);
@@ -1584,7 +1589,7 @@ export class BattleScreen {
           this.burstFx(body, 'light_1', { size: 150, ms: 480 });
           this.burstFx(body, 'spark_1', { size: 120, ms: 520, klass: 'fx-heal' });
           if (this.markPurge(ev.side)) {
-            floatAt(body, '净化', 'float-heal');
+            floatAt(body, t('净化'), 'float-heal');
             // 先让那几个胶囊亮一下白光：不然「哪几个被清掉了」根本看不见
             await this.wait(PACE.purge);
           }
@@ -1603,7 +1608,7 @@ export class BattleScreen {
         if ((ev.stacks ?? 0) > 0) {
           audio.poison();
           this.burstFx(body, 'magic_1', { size: 150, ms: 560, klass: 'fx-status fx-status-toxic' });
-          floatAt(body, `引爆 ×${ev.stacks}`, 'float-dmg');
+          floatAt(body, t('引爆 ×{n}', { n: ev.stacks }), 'float-dmg');
           if (this.markPurge(ev.side)) await this.wait(PACE.purge);
           this.refreshSide(ev.side);
         }
@@ -1616,7 +1621,7 @@ export class BattleScreen {
         // amount 是**实际变化量**（引擎已经把下降下限算进去了）。为 0 就是「已到下限、没变化」：
         // 这时候不该再放削弱音效和特效（以前会照放，看起来像附加成功了但数值没动）。
         if (ev.amount === 0 && body) {
-          floatAt(body, '已到下限', 'float-miss');
+          floatAt(body, t('已到下限'), 'float-miss');
           audio.miss();
           await this.wait(PACE.buff);
         } else {
@@ -1629,7 +1634,7 @@ export class BattleScreen {
       }
       case 'dodge': {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
-        floatAt(body, '闪避！', 'float-miss');
+        floatAt(body, t('闪避！'), 'float-miss');
         audio.miss();
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.dodge);
@@ -1638,7 +1643,7 @@ export class BattleScreen {
       case 'resist':
         // 说清「抵抗了什么」：光两个字「抵抗」没人看得懂（岩崩的虚弱是有概率的）
         floatAt(ev.side === 'player' ? this.playerBody : this.enemyBody,
-          `抵抗${STATUS_INFO[ev.status]?.name ?? ''}`, 'float-miss');
+          t('抵抗{status}', { status: STATUS_INFO[ev.status]?.name ?? '' }), 'float-miss');
         audio.miss();
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.resist);
@@ -1742,10 +1747,10 @@ export class BattleScreen {
     const stat = ev.stat;
     // 每种属性给一套「看得出是哪一项」的贴图与颜色
     const LOOK = {
-      atk: { fx: 'flare_1', tone: 'screen', text: '攻' },
-      def: { fx: 'trace_1', tone: 'screen', text: '防' },
-      agi: { fx: 'twirl_1', tone: 'screen', text: '速' },
-      luck: { fx: 'star_1', tone: 'screen', text: '运' },
+      atk: { fx: 'flare_1', tone: 'screen', text: t(STAT_SHORT.atk) },
+      def: { fx: 'trace_1', tone: 'screen', text: t(STAT_SHORT.def) },
+      agi: { fx: 'twirl_1', tone: 'screen', text: t(STAT_SHORT.agi) },
+      luck: { fx: 'star_1', tone: 'screen', text: t(STAT_SHORT.luck) },
     };
     const look = LOOK[stat] ?? { fx: 'magic_1', tone: 'screen', text: '' };
     if (up) {
@@ -1772,7 +1777,7 @@ export class BattleScreen {
     this.layoutBattle();
     const node = el('div', { class: `played-card played-${side}` }, [
       // 标一句是谁打的，免得对手的牌摊在自己半场里让人困惑
-      el('div', { class: 'played-label', text: side === 'enemy' ? '对手使用了' : '你使用了' }),
+      el('div', { class: 'played-label', text: side === 'enemy' ? t('对手使用了') : t('你使用了') }),
       // 用**正常尺寸**的卡面（不是卡组列表里那种 sm 小卡）：之前 92px 宽会把卡名挤成
       // 「电光…」、描述竖着一列列断行，玩家根本看不清对手打的是什么。
       cardEl(card, { size: 'md', disabled: true, cost: cost ?? card.ap }),
@@ -1907,7 +1912,7 @@ export class BattleScreen {
   async hitAnim(ev, body, cardEl) {
     const tier = ev.crit ? 'float-crit' : 'float-dmg';
     floatAt(body, `-${ev.amount}${ev.crit ? '!' : ''}`, tier);
-    if (ev.absorbed > 0) floatAt(cardEl, `挡下 ${ev.absorbed}`, 'float-block', -14);
+    if (ev.absorbed > 0) floatAt(cardEl, t('挡下 {n}', { n: ev.absorbed }), 'float-block', -14);
     audio.hit(Math.min(1, ev.amount / Math.max(1, this.battle.player.maxHp * 0.18)));
     body.classList.add('fighter-hurt');
     // 命中特效：会心一击更大更亮，被护盾挡下时改放一圈蓝光
@@ -1948,10 +1953,10 @@ export class BattleScreen {
     if (ev.winner === 'player') {
       audio.down();
       audio.win();
-      toast('战斗胜利！', 'good');
+      toast(t('战斗胜利！'), 'good');
     } else {
       audio.lose();
-      toast(`${this.game.data.name} 倒下了……`, 'bad');
+      toast(t('{name} 倒下了……', { name: this.game.data.name }), 'bad');
     }
     this.refreshAll();
     await this.wait(PACE.battleEnd);

@@ -30,6 +30,7 @@ const { EVENTS } = await import('../src/data/events.js');
 const { BIOMES, STAGE_BIOME, BALANCE, RARITY } = await import('../src/data/balance.js');
 const { NODE_TYPES } = await import('../src/data/mapgen.js');
 const { BGM_FILES } = await import('../src/core/bgm.js').catch(() => ({ BGM_FILES: null }));
+const { STATUS_INFO } = await import('../src/core/battle.js');
 
 const stageCount = STAGE_BIOME.length;
 
@@ -539,6 +540,75 @@ if (BGM_FILES) {
       err(`多语言有 ${holes.length} 条译文的占位符对不上（{d} / {K} 这类必须原样保留，少一个界面上就少一个数字）：`
         + `${holes.slice(0, 3).join(' ｜ ')}${holes.length > 3 ? ' …' : ''}`);
     }
+
+    /**
+     * 译文里混着中文。
+     *
+     * 为什么是**一份手写的小词表**而不是「有汉字就报」：中日共用汉字，日文里出现汉字完全正常
+     * （地面 / 吸血 / 出血 / 敏捷 / 威力 都是正经日语词，拿它们当判据会淹掉真问题）。
+     * 所以只列那些**日文里根本不会这么写**的词 —— 换句话说，出现即漏翻。
+     * 这条不是空想出来的：`引爆` 就漏了四处（`引爆 ×{n}`、`…を引爆した！`、help 页的 `<code>引爆</code>`），
+     * 而当时所有体检都是绿的。
+     */
+    const CN_ONLY = ['引爆', '出牌', '抽牌', '手牌', '牌堆', '洗牌', '卡池', '回合', '玩家', '播放', '手感', '战力', '强弱', '无视'];
+    for (const lg of ['ja', 'en']) {
+      const dict = JSON.parse(await fs.readFile(path.join(ROOT, `content/i18n/${lg}.json`), 'utf8').catch(() => '{}'));
+      const hits = [];
+      for (const [zh, v] of Object.entries(dict)) {
+        const found = CN_ONLY.filter((w) => String(v).includes(w));
+        if (found.length) hits.push(`${JSON.stringify(zh.slice(0, 24))} → ${JSON.stringify(String(v).slice(0, 40))}（${found.join('、')}）`);
+      }
+      if (hits.length) {
+        err(`多语言 ${lg} 有 ${hits.length} 条译文里残留中文专有词（这类词日文里不会这么写，出现即漏翻）：`
+          + `${hits.slice(0, 3).join(' ｜ ')}${hits.length > 3 ? ' …' : ''}`);
+      }
+    }
+  }
+}
+
+// ---------- 9. 日文专有名词的写法（宝可梦原版风格） ----------
+/**
+ * 用户要求：「招式名称应该模仿宝可梦原版只出现片假名或是平假名而没有汉字」。
+ *
+ * 宝可梦日文原版的命名习惯就是这样：**招式名、道具名、属性名、物种名一律不写汉字**
+ * （たいあたり／キズぐすり／じめん／フライゴン），**状态名连片假名都不用、全平假名**
+ * （どく／もうどく／やけど／まひ）；汉字只出现在说明文里。
+ * 名片上出现「流砂の落とし穴」或「弱体」这种写法，一眼就不像宝可梦。
+ *
+ * 所以这里当门禁卡住：招式名（卡名）与道具名一旦冒出汉字就报错 ——
+ * 新加的卡很容易顺手写成汉字名，靠人盯是盯不住的。
+ */
+{
+  const jaPath = path.join(ROOT, 'content/i18n/ja.json');
+  const ja = JSON.parse(await fs.readFile(jaPath, 'utf8').catch(() => '{}'));
+  const KANJI = /[\u3400-\u4dbf\u4e00-\u9fff]/;
+  const HIRA_ONLY = /[^\u3041-\u3096\u309d\u309eー]/;   // 平假名 + 长音符，别的都不许有
+  const bad = [];
+  for (const c of CARDS) if (ja[c.name] && KANJI.test(ja[c.name])) bad.push(`招式「${c.name}」→「${ja[c.name]}」`);
+  for (const it of Object.values(ITEMS)) if (ja[it.name] && KANJI.test(ja[it.name])) bad.push(`道具「${it.name}」→「${ja[it.name]}」`);
+  const species = [...new Set(ENEMIES.map((e) => e.name))];
+  for (const n of species) if (ja[n] && KANJI.test(ja[n])) bad.push(`物种「${n}」→「${ja[n]}」`);
+  const types = [...new Set(ENEMIES.flatMap((e) => e.types ?? []))];
+  for (const n of types) if (ja[n] && KANJI.test(ja[n])) bad.push(`属性「${n}」→「${ja[n]}」`);
+  const statuses = Object.values(STATUS_INFO).map((s) => [s.name, ja[s.name] ?? s.name]);
+  for (const [zh, v] of statuses) if (HIRA_ONLY.test(v)) bad.push(`状态「${zh}」→「${v}」（要全平假名）`);
+  // 卡名撞车：两张不同的卡翻成同一个名字，玩家在手里根本分不出谁是谁（第一次跑就抓到三组）
+  for (const [lg, dict] of [['ja', ja], ['en', JSON.parse(await fs.readFile(path.join(ROOT, 'content/i18n/en.json'), 'utf8').catch(() => '{}'))]]) {
+    const seen = new Map();
+    for (const c of CARDS) {
+      const v = dict[c.name];
+      if (!v) continue;
+      if (!seen.has(v)) seen.set(v, []);
+      seen.get(v).push(c.name);
+    }
+    for (const [v, names] of seen) if (names.length > 1) bad.push(`${lg} 卡名撞车：「${v}」同时是 ${names.join(' / ')}`);
+  }
+  if (bad.length) {
+    err(`日文专有名词的写法不像宝可梦原版（招式 / 道具 / 属性 / 物种名一律用假名、不写汉字；状态名要全平假名），或有卡名撞车：`
+      + `${bad.slice(0, 8).join('、')}${bad.length > 8 ? ' …' : ''}`);
+  } else {
+    note(`日文招式 / 道具 / 属性 / 物种名 ${CARDS.length + Object.keys(ITEMS).length + species.length + types.length} 条无汉字`
+      + `、状态名 ${statuses.length} 条全平假名 —— 和宝可梦原版一致`);
   }
 }
 

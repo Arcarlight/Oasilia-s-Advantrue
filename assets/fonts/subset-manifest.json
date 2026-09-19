@@ -1,25 +1,25 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了",
-  "textSha256": "157056fb4eb8622867088aae9eff40328b2a517bd1bb263ce2ed59f64f7b04f5",
-  "chars": 2183,
+  "textSha256": "68eda9489d4fc9cdd367526275e38daa20b31943526cc528f9582263f0b9afa6",
+  "chars": 2457,
   "fonts": [
     {
       "out": "SGHr-Regular-subset.woff2",
       "src": "SGHr-Regular.ttf",
       "label": "正文",
       "srcBytes": 4120572,
-      "outBytes": 330052,
-      "codepoints": 1915,
-      "missingCount": 268,
-      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゅゆょよらりるれろわをんァアイウェエォオカガキギクグケゲコゴサザシジスズセソタダチッツテデトドナニネノハバパヒビピフブプヘベペホボポマミムメモャュョラリルレロワンー乗傘効動勝収啰営執場塩増変層嵐強復応態戦払掛撃敗昇時書枠楽歩殻毎気氾決浄減満滅濫無熱獲現異畳発礎竜約終組絵続聴華薬蝕襲見視計設語読貸車込連遊運達遠長開間闇闘陣険陽霊頂風飛️０１２３４５６７８９"
+      "outBytes": 341760,
+      "codepoints": 1980,
+      "missingCount": 477,
+      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩々あいうえおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろわをんァアィイウェエォオカガキギクグケゲコゴサザシジスズセソゾタダチッツテデトドナニネノハバパヒビピフブプヘベペホボポマミムメモャヤュョヨラリルレロワンー両並乗亀仮伝価係倉個値側傘備傷傾儀償優処別則剣効動勝勢匂収呂呑唸問啰営噂噛噴団囲図執報場塊塩増壊売変実対層嵐巣巻帯帰幹幾広庫廃張強弾彫復徴応恵悪態戦戻払抜択拠捨掛掲揃換揮揺撃擁敗敵斉昇時晩書枠業楽構様標樹機歓歩歯歴殻毎気決況浄渇済渉減測湧湯満準溝滅潰瀬無焼煙熱獲現異畳発盤砕確礎禿種積竜節築約紋紐純紙細終組結絞給絵絶継続総緑緒線締練縦縮罠羅習聞聴職脇脈臓葉蓋薬蝕裏補襲見規視覗覚覧親計記設訳試詰話詳認語説読誰調談諦護貝負貨買貸費資質購跡車転軽輝輪辺込這連進遅遊運過達違遠選針鈍鈴鉄鉤銭鋏錆錠録鍛鍵鏡鑑長閉開間関閲闇闘陣陰険陽隊際隠雑離雲霊霧響頂順頭頼顎顔風飛飲駄魚鮮鱗鳥鳴鷲黒️０１２３４５６７８９"
     },
     {
       "out": "WenYuanSerifSC-Bold-subset.woff2",
       "src": "WenYuanSerifSC-Bold.ttf",
       "label": "粗体（卡名 / 商店名…）",
       "srcBytes": 15238244,
-      "outBytes": 471044,
-      "codepoints": 2179,
+      "outBytes": 528608,
+      "codepoints": 2453,
       "missingCount": 4,
       "missing": "⚠⟨⟩️"
     },
@@ -28,31 +28,31 @@
       "src": "YShiWrittenSC-Regular.ttf",
       "label": "手写体（写意体 SC）",
       "srcBytes": 3994192,
-      "outBytes": 331424,
-      "codepoints": 2084,
-      "missingCount": 99,
-      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘効動勝収啰営執場塩増変層嵐強復応態戦払掛撃敗昇時書枠楽歩殻毎気氾決浄減満滅濫無熱獲現異畳発礎竜約終組絵続聴華薬蝕襲見視計設語読貸車込連遊運達遠長開間闇闘陣険陽霊頂風飛️－～"
+      "outBytes": 344028,
+      "codepoints": 2155,
+      "missingCount": 302,
+      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩両並乗亀仮伝価係倉個値側傘備傷傾儀償優処別則剣効動勝勢匂収呂呑唸問啰営噂噛噴団囲図執報場塊塩増壊売変実対層嵐巣巻帯帰幹幾広庫廃張強弾彫復徴応恵悪態戦戻払抜択拠捨掛掲揃換揮揺撃擁敗敵斉昇時晩書枠業楽構様標樹機歓歩歯歴殻毎気決況浄渇済渉減測湧湯満準溝滅潰瀬無焼煙熱獲現異畳発盤砕確礎禿種積竜節築約紋紐純紙細終組結絞給絵絶継続総緑緒線締練縦縮罠羅習聞聴職脇脈臓葉蓋薬蝕裏補襲見規視覗覚覧親計記設訳試詰話詳認語説読誰調談諦護貝負貨買貸費資質購跡車転軽輝輪辺込這連進遅遊運過達違遠選針鈍鈴鉄鉤銭鋏錆錠録鍛鍵鏡鑑長閉開間関閲闇闘陣陰険陽隊際隠雑離雲霊霧響頂順頭頼顎顔風飛飲駄魚鮮鱗鳥鳴鷲黒️－～"
     }
   ],
   "patch": {
     "base": "YShiWrittenSC-Regular.ttf",
-    "wants": 99,
+    "wants": 302,
     "out": "851LakeusNightWriting-patch.woff2",
     "srcBytes": 28880528,
-    "outBytes": 40852,
+    "outBytes": 131192,
     "stillMissing": "⟨⟩️"
   },
   "ja": {
-    "textSha256": "744daac6cadbd6caca223e57b9a4f1b3d86cd461bc7c83ce34831c291ae68499",
-    "chars": 575,
+    "textSha256": "714cbb0bd0546a55c7e1eed0a961288dbe1a38a22cea0456aac50d2892afc3f4",
+    "chars": 1193,
     "fonts": [
       {
         "out": "HanaZome-subset.woff2",
         "src": "はなぞめフォント.otf",
         "label": "日语粗体（卡名 / 商店名 / 标题）",
         "srcBytes": 2133800,
-        "outBytes": 132388,
-        "codepoints": 575,
+        "outBytes": 293516,
+        "codepoints": 1193,
         "missingCount": 0,
         "missing": ""
       },
@@ -61,8 +61,8 @@
         "src": "XiaoshanCircle.ttf",
         "label": "日语正文",
         "srcBytes": 2558160,
-        "outBytes": 59348,
-        "codepoints": 570,
+        "outBytes": 161268,
+        "codepoints": 1188,
         "missingCount": 5,
         "missing": "¥·–—ゔ"
       },
@@ -71,8 +71,8 @@
         "src": "YOzBS_.otf",
         "label": "日语手写（旁白 / 对白）",
         "srcBytes": 11638200,
-        "outBytes": 386320,
-        "codepoints": 575,
+        "outBytes": 798852,
+        "codepoints": 1193,
         "missingCount": 0,
         "missing": ""
       }

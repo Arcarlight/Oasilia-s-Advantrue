@@ -1,5 +1,7 @@
 // 通用 DOM 小工具
 
+import { t } from '../core/i18n.js';
+
 /** 建 DOM：el('div', {class:'x', text:'hi'}, [child1, child2]) */
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
@@ -80,7 +82,7 @@ export function modal({ title, body, foot, wide = false, onClose }) {
   const box = el('div', { class: 'modal panel', style: wide ? { width: 'min(1100px, 97vw)' } : {} }, [
     el('div', { class: 'modal-head' }, [
       el('h3', { text: title ?? '' }),
-      el('button', { class: 'btn btn-ghost btn-sm', onClick: () => close() }, ['关闭']),
+      el('button', { class: 'btn btn-ghost btn-sm', onClick: () => close() }, [t('关闭')]),
     ]),
     el('div', { class: 'modal-body' }, [body]),
     foot ? el('div', { class: 'modal-foot' }, [].concat(foot)) : null,

@@ -14,12 +14,14 @@ import { EVENTS } from '../data/events.js';
 import { MERCHANTS } from '../data/merchants.js';
 import { ENEMIES, TIERS } from '../data/enemies.js';
 import { BIOMES, RARITY, BALANCE } from '../data/balance.js';
+import { NODE_TYPES } from '../data/mapgen.js';
 import { STATUS_INFO } from './battle.js';
+import { STAT_NAMES, STAT_SHORT, STAT_TIP, STAT_TIP_FOE } from './ui-words.js';
 
 /**
  * 需要跟着语言走的表。
  * 键名要和 i18n.js 里的 CONTENT_FIELDS 对齐
- * （card / enemy / event / merchant / item / species / biome / rarity / status / tier / player）。
+ * （card / enemy / event / merchant / item / species / biome / rarity / status / tier / player / node）。
  */
 export const I18N_TABLES = {
   card: CARDS,
@@ -32,7 +34,15 @@ export const I18N_TABLES = {
   rarity: RARITY,
   status: STATUS_INFO,
   player: BALANCE.player,  // 主角的名字与物种名（「欧亚西莉亚 · 沙漠蜻蜓」）
+  node: NODE_TYPES,        // 地图节点：野生宝可梦 / 商队 / 营地…（名字与悬停说明）
 };
+
+/**
+ * 界面上的「小词表」：它们在代码里是查表读出来的（t(STAT_NAMES[k])），静态扫不到，
+ * 所以单独登记一份给 tools/build-i18n.mjs 收进待翻清单。**键和值都要收**（键如「攻」也会显示）。
+ * 表本体在 src/core/ui-words.js（纯数据模块，工具 import 得起来）。
+ */
+export const I18N_WORD_TABLES = { statName: STAT_NAMES, statShort: STAT_SHORT, statTip: STAT_TIP, statTipFoe: STAT_TIP_FOE };
 
 /** 把所有表的可见字段刷成当前语言；返回命中数（诊断拿它算覆盖率） */
 export function refreshI18nTables() {

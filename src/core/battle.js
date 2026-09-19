@@ -14,6 +14,7 @@ import { CARD_BY_ID } from '../data/cards.js';
 import { makeRng } from './rng.js';
 // 日志文本也是给玩家看的，所以引擎里每一句模板都走 t()（见 src/core/i18n.js 顶部的说明）
 import { t } from './i18n.js';
+import { STAT_NAMES } from './ui-words.js';
 
 export const STATUS_INFO = {
   poison: {
@@ -372,19 +373,19 @@ export class Battle {
     const pct = BALANCE.statusPct ?? {};
     if (s.poison > 0) {
       const dmg = dotTickDamage(s, s.poison, pct.poison);
-      this.dealTrueDamage(key, dmg, '中毒');
+      this.dealTrueDamage(key, dmg, t('中毒'));
       s.poison = Math.max(0, s.poison - 1);
       this.emit({ type: 'status', side: key, status: 'poison', delta: -1, value: s.poison });
     }
     if (s.toxic > 0) {
       const dmg = dotTickDamage(s, s.toxic, pct.toxic);
-      this.dealTrueDamage(key, dmg, '剧毒');
+      this.dealTrueDamage(key, dmg, t('剧毒'));
       s.toxic += 1;
       this.emit({ type: 'status', side: key, status: 'toxic', delta: 1, value: s.toxic });
     }
     if (s.burn > 0) {
       const dmg = dotTickDamage(s, s.burn, pct.burn);
-      this.dealTrueDamage(key, dmg, '灼伤');
+      this.dealTrueDamage(key, dmg, t('灼伤'));
     }
     // 虚弱**不在这里**扣层：见 decayWeak()。
   }
@@ -436,15 +437,15 @@ export class Battle {
 
   /** 玩家出牌 */
   playCard(uid, opts = {}) {
-    if (this.over || this.active !== 'player') return { ok: false, reason: '不是你的回合' };
+    if (this.over || this.active !== 'player') return { ok: false, reason: t('不是你的回合') };
     const d = this.decks.player;
     const idx = d.hand.findIndex((c) => c.uid === uid);
-    if (idx < 0) return { ok: false, reason: '手牌里没有这张卡' };
+    if (idx < 0) return { ok: false, reason: t('手牌里没有这张卡') };
     const entry = d.hand[idx];
     const card = entry.card;
     const cost = this.cardCost(entry);
-    if (cost > this.player.ap) return { ok: false, reason: 'AP 不足' };
-    if ((this.player.playsLeft ?? 0) <= 0) return { ok: false, reason: '本回合出牌次数已用完' };
+    if (cost > this.player.ap) return { ok: false, reason: t('AP 不足') };
+    if ((this.player.playsLeft ?? 0) <= 0) return { ok: false, reason: t('本回合出牌次数已用完') };
 
     this.player.ap -= cost;
     this.player.playsLeft -= 1;
@@ -660,7 +661,7 @@ export class Battle {
           t('引爆了 {name} 身上 {n} 层持续伤害！', { name: foe.name, n: stacks }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
-        this.dealTrueDamage(foeKey, dmg, '引爆');
+        this.dealTrueDamage(foeKey, dmg, t('引爆'));
         break;
       }
       case 'status': {
@@ -689,7 +690,7 @@ export class Battle {
       case 'selfDmg': {
         // pct 版本按最大生命算（血祭类的代价随血量走，后期不会变成「几乎不痛」）
         const amount = eff.pct != null ? Math.round(self.maxHp * eff.pct) : eff.amount;
-        this.dealTrueDamage(sourceKey, amount, eff.reason ?? '反作用力');
+        this.dealTrueDamage(sourceKey, amount, eff.reason ?? t('反作用力'));
         break;
       }
       case 'discard': {
@@ -803,7 +804,7 @@ export class Battle {
 
     if (eff.recoilPct) {
       const recoil = Math.max(1, Math.round(dmg * eff.recoilPct));
-      this.dealTrueDamage(sourceKey, recoil, '反作用力');
+      this.dealTrueDamage(sourceKey, recoil, t('反作用力'));
     }
     return { dodged: false, dmg, crit };
   }
@@ -1108,5 +1109,7 @@ export class Battle {
 }
 
 function statName(stat) {
-  return t({ atk: '攻击', def: '防御', agi: '敏捷', luck: '幸运' }[stat] ?? stat);
+  // 属性名的中文表在 src/core/ui-words.js（纯数据模块，待翻清单扫得到）；
+  // 以前这里手抄了一份，抄在函数里的字面量既进不了清单、也和别处容易走散。
+  return t(STAT_NAMES[stat] ?? stat);
 }

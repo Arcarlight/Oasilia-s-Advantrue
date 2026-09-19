@@ -195,12 +195,12 @@ function renderMap(game) {
 
   const biomeIco = BIOME_ICO[biome.key] ?? 'ico-drought';
   screen.append(el('div', { class: 'map-header' }, [
-    el('div', { class: 'map-chapter', text: biome.sub }),
+    el('div', { class: 'map-chapter', text: t(biome.sub) }),
     el('h2', { class: 'map-name' }, [
       el('span', { class: `map-name-ico ${biomeIco}` }),
       el('span', { text: biome.name }),
     ]),
-    el('div', { class: 'map-desc', text: biome.desc }),
+    el('div', { class: 'map-desc', text: t(biome.desc) }),
   ]));
 
   const body = el('div', { class: 'map-body' });
@@ -242,14 +242,14 @@ function renderMap(game) {
   // 节点
   for (const n of map.nodes) {
     const type = NODE_TYPES[n.type] ?? NODE_TYPES.battle;
-    const name = nodeName(n.type, map.biome);   // 商队/营地按地图换叫法
+    const name = t(nodeName(n.type, map.biome));   // 商队/营地按地图换叫法
     const p = posOf(n);
     const isAvail = available.includes(n.id);
     const isCurrent = game.data.nodeId === n.id;
     const node = el('button', {
       class: ['map-node', isAvail ? 'available' : '', n.visited ? 'done' : '', isCurrent ? 'current' : '', n.type === 'boss' ? 'boss' : '', n.visited && !isAvail ? 'locked' : ''].filter(Boolean).join(' '),
       style: { left: `${(p.x / 1000) * 100}%`, top: `${(p.y / H) * 100}%`, color: type.color },
-      title: `${name}：${type.desc}`,
+      title: `${name}：${t(type.desc)}`,
       'aria-label': `${name}`,
       disabled: !isAvail,
       onClick: () => {
@@ -268,22 +268,22 @@ function renderMap(game) {
   // 图例
   // 图例也和地图上的节点用同一套图标 + 同一套叫法（以前是一个纯色圆点，看不出节点长什么样）
   // 这里**不要**再给它加背景渐变：内联样式会盖掉 CSS，之前就是它在图例底下垫了一条黑带。
-  const legend = el('div', { class: 'map-legend' }, Object.entries(NODE_TYPES).map(([type, t]) => el('span', { class: 'legend-item' }, [
-    el('span', { class: `node-ico legend-ico ${nodeIco(type, map.biome)}`, style: { color: t.color } }),
-    el('span', { text: nodeName(type, map.biome) }),
+  const legend = el('div', { class: 'map-legend' }, Object.entries(NODE_TYPES).map(([type, def]) => el('span', { class: 'legend-item' }, [
+    el('span', { class: `node-ico legend-ico ${nodeIco(type, map.biome)}`, style: { color: def.color } }),
+    el('span', { text: t(nodeName(type, map.biome)) }),
   ])));
   body.append(legend);
 
   // 底部操作
   screen.append(el('div', { class: 'map-actions' }, [
     el('button', { class: 'btn', onClick: () => { audio.ui('open'); showDeck(game); } }, [
-      el('span', { class: 'ico-deck' }), el('span', { text: `卡组 (${game.data.deck.length})` }),
+      el('span', { class: 'ico-deck' }), el('span', { text: t('卡组 ({n})', { n: game.data.deck.length }) }),
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showItems(game); } }, [
-      el('span', { class: 'ico-backpack' }), el('span', { text: '背包' }),
+      el('span', { class: 'ico-backpack' }), el('span', { text: t('背包') }),
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showHelp(); } }, [
-      el('span', { class: 'ico-question_mark' }), el('span', { text: '说明' }),
+      el('span', { class: 'ico-question_mark' }), el('span', { text: t('说明') }),
     ]),
   ]));
 
@@ -347,7 +347,7 @@ function renderEvent(game) {
           game.leaveEvent();
           game.onChange?.(game);
         },
-      }, [el('span', { class: 'ico-check' }), el('span', { text: '继续前进' })]),
+      }, [el('span', { class: 'ico-check' }), el('span', { text: t('继续前进') })]),
     ]));
   }
 
@@ -372,7 +372,7 @@ function renderChest(game) {
   panel.append(el('div', { class: 'scene-illo' }, [
     el('span', { class: isMimic ? 'ico-death' : 'ico-chest', style: { width: '56px', height: '56px', color: isMimic ? '#8f2c22' : '#8a5a2b' } }),
   ]));
-  panel.append(el('h2', { class: 'panel-title', text: isMimic ? '宝箱……动了' : '宝箱' }));
+  panel.append(el('h2', { class: 'panel-title', text: isMimic ? t('宝箱……动了') : t('宝箱') }));
   panel.append(el('div', { class: 'scene-text', text: chest.text }));
 
   if (!isMimic) {
@@ -384,8 +384,8 @@ function renderChest(game) {
       panel.append(grid);
     } else {
       const pills = el('div', { class: 'reward-row' });
-      if (chest.gold) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), `金币 +${chest.gold}`]));
-      pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-pouch' }), '已收入囊中']));
+      if (chest.gold) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), t('金币 +{n}', { n: chest.gold })]));
+      pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-pouch' }), t('已收入囊中')]));
       panel.append(pills);
     }
   } else {
@@ -402,7 +402,7 @@ function renderChest(game) {
       },
     }, [
       el('span', { class: isMimic ? 'ico-sword' : 'ico-check' }),
-      el('span', { text: isMimic ? '迎战！' : '继续前进' }),
+      el('span', { text: isMimic ? t('迎战！') : t('继续前进') }),
     ]),
   ]));
 
@@ -426,7 +426,7 @@ function renderRest(game) {
   panel.append(el('div', { class: 'scene-illo' }, [
     el('span', { class: 'ico-tent', style: { width: '56px', height: '56px', color: '#7ee08a' } }),
   ]));
-  panel.append(el('h2', { class: 'panel-title', text: '绿洲营地' }));
+  panel.append(el('h2', { class: 'panel-title', text: t('绿洲营地') }));
   // 这句话要跟着状态变：机会用掉之后就别再说「你可以做一件事」了
   const sceneText = el('div', { class: 'scene-text' });
   panel.append(sceneText);
@@ -439,8 +439,8 @@ function renderRest(game) {
     // 休息和冥想共用一个「机会」：做过任何一件，两件都不能再点
     const spent = !!rest.done;
     sceneText.textContent = spent
-      ? '这里该做的事已经做完了——直接出发吧。'
-      : '篝火很旺，水是凉的。你可以做一件事——只有一件。';
+      ? t('这里该做的事已经做完了——直接出发吧。')
+      : t('篝火很旺，水是凉的。你可以做一件事——只有一件。');
 
     body.append(el('button', {
       class: `option ${spent ? 'disabled' : ''}`,
@@ -449,23 +449,23 @@ function renderRest(game) {
         audio.heal();
         const healed = game.restHeal();
         if (healed == null) return;          // 机会已经用掉了
-        toast(`回复了 ${healed} 点 HP`, 'good');
+        toast(t('回复了 {n} 点 HP', { n: healed }), 'good');
         paint();
       },
     }, [
       el('span', { class: 'option-label' }, [
         el('span', { class: 'ico-heal' }),
-        el('span', { text: `休息一下（回复 ${rest.healAmount} HP，约最大生命的 ${Math.round(BALANCE.restHealPct * 100)}%）` }),
+        el('span', { text: t('休息一下（回复 {hp} HP，约最大生命的 {pct}%）', { hp: rest.healAmount, pct: Math.round(BALANCE.restHealPct * 100) }) }),
       ]),
       el('small', {
         text: rest.used
-          ? (rest.healResult > 0 ? `已经休息过了（回了 ${rest.healResult} 点）。` : '已经休息过了（当时是满血）。')
+          ? (rest.healResult > 0 ? t('已经休息过了（回了 {n} 点）。', { n: rest.healResult }) : t('已经休息过了（当时是满血）。'))
           : spent
-            ? '这次机会已经用在冥想上了。'
+            ? t('这次机会已经用在冥想上了。')
             : game.data.hp >= game.data.maxHp
               // 满血还休息就白扔一次机会，事先说清楚
-              ? `当前 HP ${game.data.hp} / ${game.data.maxHp}（满血，休息会浪费这次机会）`
-              : `当前 HP ${game.data.hp} / ${game.data.maxHp}`,
+              ? t('当前 HP {hp} / {maxHp}（满血，休息会浪费这次机会）', { hp: game.data.hp, maxHp: game.data.maxHp })
+              : t('当前 HP {hp} / {maxHp}', { hp: game.data.hp, maxHp: game.data.maxHp }),
       }),
     ]));
 
@@ -483,14 +483,14 @@ function renderRest(game) {
     }, [
       el('span', { class: 'option-label' }, [
         el('span', { class: 'ico-arrow_up' }),
-        el('span', { text: '在此地冥想（把一张卡换成更强的卡）' }),
+        el('span', { text: t('在此地冥想（把一张卡换成更强的卡）') }),
       ]),
       el('small', {
         text: rest.upgraded
-          ? `已经把「${rest.upgradeResult?.removed ?? '一张卡'}」换掉了。`
+          ? t('已经把「{card}」换掉了。', { card: rest.upgradeResult?.removed ?? t('一张卡') })
           : spent
-            ? '这次机会已经用在休息上了。'
-            : '随机替换为一张更高稀有度的卡',
+            ? t('这次机会已经用在休息上了。')
+            : t('随机替换为一张更高稀有度的卡'),
       }),
     ]));
 
@@ -499,8 +499,8 @@ function renderRest(game) {
       onClick: () => { audio.ui('click'); game.leaveRest(); },
     }, [el('span', { class: 'option-label' }, [
       el('span', { class: 'ico-arrow_right' }),
-      el('span', { text: '直接出发' }),
-    ]), el('small', { text: spent ? '出发去下一个节点。' : '不消费这次机会。' })]));
+      el('span', { text: t('直接出发') }),
+    ]), el('small', { text: spent ? t('出发去下一个节点。') : t('不消费这次机会。') })]));
   }
 
   paint();
@@ -510,10 +510,10 @@ function renderRest(game) {
 
 function showUpgradePicker(game, rest, done) {
   const m = modal({
-    title: '选择要替换的卡牌',
+    title: t('选择要替换的卡牌'),
     wide: true,
     body: el('div', {}, [
-      el('p', { text: '这张卡会从卡组里移除，并换成一张随机的高稀有度卡牌。', style: { marginTop: 0, opacity: .8 } }),
+      el('p', { text: t('这张卡会从卡组里移除，并换成一张随机的高稀有度卡牌。'), style: { marginTop: 0, opacity: .8 } }),
     ]),
   });
   const grid = el('div', { class: 'card-grid' });
@@ -561,11 +561,11 @@ function renderShop(game) {
     });
   }
   panel.append(face);
-  panel.append(el('h2', { class: 'panel-title', text: merchant?.name ?? '商队' }));
+  panel.append(el('h2', { class: 'panel-title', text: merchant?.name ?? t('商队') }));
   if (merchant) {
     panel.append(el('div', { class: 'panel-sub', text: `${merchant.role} · ${biome.name}` }));
   }
-  panel.append(el('div', { class: 'scene-text', text: merchant?.greet ?? '「钱货两清，概不赊账。」' }));
+  panel.append(el('div', { class: 'scene-text', text: merchant?.greet ?? t('「钱货两清，概不赊账。」') }));
 
   /**
    * 头顶挂一行「卡组 N 张 / 金币 M」。
@@ -578,8 +578,8 @@ function renderShop(game) {
   const refreshLedger = () => {
     clear(ledger);
     ledger.append(
-      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-deck' }), `卡组 ${game.data.deck.length} 张`]),
-      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), `金币 ${game.data.gold}`]),
+      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-deck' }), t('卡组 {n} 张', { n: game.data.deck.length })]),
+      el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), t('金币 {n}', { n: game.data.gold })]),
     );
   };
   refreshLedger();
@@ -619,7 +619,7 @@ function renderShop(game) {
           card
             ? el('span', {
                 class: 'shop-ap',
-                dataset: { tip: `行动点费用：打出这张牌要花 ${card.ap} 点行动点。` },
+                dataset: { tip: t('行动点费用：打出这张牌要花 {ap} 点行动点。', { ap: card.ap }) },
               }, [el('span', { class: 'ico-action_points', style: { width: '11px', height: '11px' } }), String(card.ap)])
             : null,
         ]),
@@ -641,7 +641,7 @@ function renderShop(game) {
               }
               paint();
             },
-          }, [sold ? '已售出' : '购买']),
+          }, [sold ? t('已售出') : t('购买')]),
         ]),
       ]);
       list.append(node);
@@ -653,7 +653,7 @@ function renderShop(game) {
     // 结果统一走 toast：doRemove() 会让商店界面整体重画，挂在旧界面上的那行文字
     // （msg 盒子）那时已经脱离文档了 —— 玩家什么都看不到，只会以为「付了钱没删掉」。
     const m = modal({
-      title: '选择要移除的卡牌',
+      title: t('选择要移除的卡牌'),
       wide: true,
       onClose: () => {
         if (!game.pendingRemove) return;
@@ -691,7 +691,7 @@ function renderShop(game) {
             refreshLedger();
           } else {
             audio.bad();
-            toast(res?.text ?? '删卡失败（钱已经退回）。', 'bad');
+            toast(res?.text ?? t('删卡失败（钱已经退回）。'), 'bad');
           }
           paint();
         },
@@ -699,7 +699,7 @@ function renderShop(game) {
     }
     if (!shown) {
       m.close();
-      toast('卡组里没有可以删除的卡。', 'bad');
+      toast(t('卡组里没有可以删除的卡。'), 'bad');
       return;
     }
     m.box.querySelector('.modal-body').append(grid);
@@ -708,7 +708,7 @@ function renderShop(game) {
   paint();
   panel.append(el('div', { class: 'reward-row', style: { justifyContent: 'flex-start' } }, [
     el('button', { class: 'btn btn-primary', onClick: () => { audio.ui('click'); game.leaveShop(); } }, [
-      el('span', { class: 'ico-check' }), el('span', { text: merchant?.leave ?? '离开商队' }),
+      el('span', { class: 'ico-check' }), el('span', { text: merchant?.leave ?? t('离开商队') }),
     ]),
   ]));
 
@@ -729,25 +729,25 @@ function renderReward(game) {
   const panel = el('div', { class: 'panel scene-panel' });
   screen.append(panel);
 
-  panel.append(el('h2', { class: 'panel-title', text: `${r.enemyName} 被击败了！` }));
+  panel.append(el('h2', { class: 'panel-title', text: t('{name} 被击败了！', { name: r.enemyName }) }));
   const pills = el('div', { class: 'reward-row' });
-  pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), `金币 +${r.gold}`]));
-  if (r.healed > 0) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-heal' }), `战后恢复 +${r.healed} HP`]));
-  if (r.growthText) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-arrow_up' }), `成长：${r.growthText}`]));
+  pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), t('金币 +{n}', { n: r.gold })]));
+  if (r.healed > 0) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-heal' }), t('战后恢复 +{n} HP', { n: r.healed })]));
+  if (r.growthText) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-arrow_up' }), t('成长：{text}', { text: r.growthText })]));
   // 道具 / 遗物各自用注册表里给它挑的图标（以前两个都是 ico-star，压根看不出拿的是什么）
-  if (r.potion) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.potion]?.ico ?? 'ico-flask' }), `获得 ${ITEMS[r.potion].name}`]));
+  if (r.potion) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.potion]?.ico ?? 'ico-flask' }), t('获得 {name}', { name: ITEMS[r.potion].name })]));
   if (r.relic) {
     const relic = ITEMS[r.relic];
     const eff = itemEffect(relic);
     // 护符类拿到就生效了（见 Game.giveItem），所以把「加了什么」直接写在奖励条上 ——
     // 只写「获得 锐爪护符」，玩家会以为还得自己去背包里用一次
-    const note = eff?.kind === 'stat' ? `（${STAT_NAMES[eff.key] ?? eff.key} +${eff.amount}，本局有效）` : '';
-    pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.relic]?.ico ?? 'ico-clover' }), `获得 ${relic?.name ?? r.relic}${note}`]));
+    const note = eff?.kind === 'stat' ? t('（{stat} +{n}，本局有效）', { stat: t(STAT_NAMES[eff.key] ?? eff.key), n: eff.amount }) : '';
+    pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.relic]?.ico ?? 'ico-clover' }), `${t('获得 {name}', { name: relic?.name ?? r.relic })}${note}`]));
   }
   panel.append(pills);
 
   if (r.cardChoices?.length) {
-    panel.append(el('div', { class: 'panel-sub', text: '选择一张加入卡组（也可以跳过）：' }));
+    panel.append(el('div', { class: 'panel-sub', text: t('选择一张加入卡组（也可以跳过）：') }));
     const row = el('div', { class: 'reward-cards' });
     for (const card of r.cardChoices) {
       row.append(cardEl(card, {
@@ -758,14 +758,14 @@ function renderReward(game) {
     panel.append(row);
     panel.append(el('div', { class: 'reward-row' }, [
       el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('click2'); game.takeRewardCard(null); } }, [
-        el('span', { class: 'ico-cross' }), el('span', { text: '跳过，不要卡牌' }),
+        el('span', { class: 'ico-cross' }), el('span', { text: t('跳过，不要卡牌') }),
       ]),
     ]));
   } else {
-    panel.append(el('div', { class: 'panel-sub', text: '这次没有掉落卡牌。' }));
+    panel.append(el('div', { class: 'panel-sub', text: t('这次没有掉落卡牌。') }));
     panel.append(el('div', { class: 'reward-row' }, [
       el('button', { class: 'btn btn-primary', onClick: () => { audio.ui('confirm'); game.takeRewardCard(null); } }, [
-        el('span', { class: 'ico-check' }), el('span', { text: '继续前进' }),
+        el('span', { class: 'ico-check' }), el('span', { text: t('继续前进') }),
       ]),
     ]));
   }
@@ -797,27 +797,27 @@ function renderGameOver(game) {
   inner.append(el('div', { class: 'title-illo' }, [
     el('span', { class: 'ico-death', style: { width: '54px', height: '54px', color: '#e8cfa2' } }),
   ]));
-  inner.append(el('h1', { text: '灰溜溜地回家了' }));
+  inner.append(el('h1', { text: t('灰溜溜地回家了') }));
   inner.append(el('div', {
     class: 'title-quote',
     // 失败**不写成**「她倒下了 / 沙子盖住了一切」：这一局只是没打完，人好好的。
     // （这里以前还跟着第二段「风很快就把她的痕迹吹平了——但沙漠记住了她走过」，
     //   那是旧版「她死了」的挽歌，和上一段「回家洗澡、下次再来」自相矛盾，已删。）
-    text: `${d.name} 在${biome.name}撑到第 ${d.floor + 1} 步，还是决定先回家。\n抖干净沙子、泡了个澡、把卡组重新洗了一遍——下次再来。`,
+    text: t('{name} 在{biome}撑到第 {floor} 步，还是决定先回家。\n抖干净沙子、泡了个澡、把卡组重新洗了一遍——下次再来。', { name: d.name, biome: biome.name, floor: d.floor + 1 }),
   }));
 
   inner.append(el('div', { class: 'run-stats' }, [
-    statBox('抵达步数', d.floor + 1),
-    statBox('推进章节', `${d.stage + 1} / ${stageCount()}`),
-    statBox('击败对手', d.kills),
-    statBox('战斗回合', d.turnsThisRun),
-    statBox('卡组张数', d.deck.length),
-    statBox('金币结余', d.gold),
+    statBox(t('抵达步数'), d.floor + 1),
+    statBox(t('推进章节'), `${d.stage + 1} / ${stageCount()}`),
+    statBox(t('击败对手'), d.kills),
+    statBox(t('战斗回合'), d.turnsThisRun),
+    statBox(t('卡组张数'), d.deck.length),
+    statBox(t('金币结余'), d.gold),
   ]));
 
   inner.append(el('div', { class: 'title-menu' }, [
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
-      el('span', { class: 'ico-refresh' }), el('span', { text: '再来一次' }),
+      el('span', { class: 'ico-refresh' }), el('span', { text: t('再来一次') }),
     ]),
     // 走「改 phase + 交给 UI 渲染」这条路，而不是直接 renderTitle()：
     // renderTitle 要等精灵图，直接调用的话它会绕过 UI 的换屏记账（见那里的说明）
@@ -825,11 +825,11 @@ function renderGameOver(game) {
       class: 'btn btn-ghost',
       onClick: () => { audio.ui('click'); game.phase = 'title'; game.onChange?.(game); },
     }, [
-      el('span', { class: 'ico-home' }), el('span', { text: '回到标题' }),
+      el('span', { class: 'ico-home' }), el('span', { text: t('回到标题') }),
     ]),
   ]));
 
-  inner.append(el('div', { class: 'title-foot', text: `历史最远：${meta.bestDistance ?? 0} 步 ｜ 累计击败：${meta.kills ?? 0}` }));
+  inner.append(el('div', { class: 'title-foot', text: t('历史最远：{best} 步 ｜ 累计击败：{kills}', { best: meta.bestDistance ?? 0, kills: meta.kills ?? 0 }) }));
 
   host.append(screen);
   audio.lose();
@@ -853,34 +853,34 @@ function renderVictory(game) {
   inner.append(el('div', { class: 'title-illo' }, [
     el('span', { class: 'ico-award', style: { width: '54px', height: '54px', color: '#f0b95c' } }),
   ]));
-  inner.append(el('h1', { text: '你走到了沙的尽头' }));
+  inner.append(el('h1', { text: t('你走到了沙的尽头') }));
   inner.append(el('p', {
     class: 'title-quote',
-    text: `夜砂墓原的尽头不是墙，是一片什么都没有的平地。\n绿色细胞拼成的脸慢慢散开，落回沙里。\n「……好吧。你走得够远了，沙漠的孩子。」\n\n${d.name} 展开翅膀，第一次觉得风是干净的。`,
+    text: t('夜砂墓原的尽头不是墙，是一片什么都没有的平地。\n绿色细胞拼成的脸慢慢散开，落回沙里。\n「……好吧。你走得够远了，沙漠的孩子。」\n\n{name} 展开翅膀，第一次觉得风是干净的。', { name: d.name }),
   }));
 
   inner.append(el('div', { class: 'run-stats' }, [
-    statBox('推进章节', `${stageCount()} / ${stageCount()} 通关`),
-    statBox('总步数', d.floor + 1),
-    statBox('击败对手', d.kills),
-    statBox('战斗回合', d.turnsThisRun),
-    statBox('最终攻击', d.atk),
-    statBox('最终防御', d.def),
-    statBox('最终敏捷', d.agi),
-    statBox('最终幸运', d.luck),
-    statBox('卡组张数', d.deck.length),
-    statBox('剩余金币', d.gold),
+    statBox(t('推进章节'), t('{n} / {total} 通关', { n: stageCount(), total: stageCount() })),
+    statBox(t('总步数'), d.floor + 1),
+    statBox(t('击败对手'), d.kills),
+    statBox(t('战斗回合'), d.turnsThisRun),
+    statBox(t('最终攻击'), d.atk),
+    statBox(t('最终防御'), d.def),
+    statBox(t('最终敏捷'), d.agi),
+    statBox(t('最终幸运'), d.luck),
+    statBox(t('卡组张数'), d.deck.length),
+    statBox(t('剩余金币'), d.gold),
   ]));
 
   inner.append(el('div', { class: 'title-menu' }, [
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
-      el('span', { class: 'ico-refresh' }), el('span', { text: '再来一次（更难的手感）' }),
+      el('span', { class: 'ico-refresh' }), el('span', { text: t('再来一次（更难的手感）') }),
     ]),
     el('button', {
       class: 'btn btn-ghost',
       onClick: () => { audio.ui('click'); game.phase = 'title'; game.onChange?.(game); },
     }, [
-      el('span', { class: 'ico-home' }), el('span', { text: '回到标题' }),
+      el('span', { class: 'ico-home' }), el('span', { text: t('回到标题') }),
     ]),
   ]));
 

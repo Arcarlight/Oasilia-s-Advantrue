@@ -119,7 +119,13 @@ export const CONTENT_FIELDS = {
   merchant: ['name', 'role', 'greet'],
   item: ['name', 'desc'],
   species: ['name'],
-  biome: ['name'],
+  // 地图的 sub（副标题）/ desc（简介）也是玩家看得见的（地图页头部「第 N 章 / 简介」）——
+  // 以前只挂了 name，于是切到日语时那两行永远留在中文。
+  biome: ['name', 'sub', 'desc'],
+  // 地图节点的名字与说明（战斗 / 事件 / 宝箱 / 商店 / 营地 / 首领）；
+  // `names` 是「同一个节点在不同地图上的叫法」（沙漠商队 / 峡谷货栈…），是个嵌套小字典 ——
+  // 读取处（screens.js 的 `t(nodeName(...))`）会查表，所以这里挂上它只为**进待翻清单**。
+  node: ['name', 'desc', 'names'],
   rarity: ['name'],
   status: ['name', 'desc'],
   tier: ['name'],
@@ -220,7 +226,8 @@ function applyEventOptions(events) {
 export function applyContentLang(tables = {}) {
   const out = { hit: 0, total: 0 };
   for (const [kind, list] of Object.entries(tables)) {
-    if (kind === 'event') continue;                   // 事件的正文走 applyTable，选项单独走
+    // 事件的 name / text 就在字段表里，和其它内容一样走 applyTable；
+    // 它的**选项**（label / hint / text）是数组下标，字段表表达不了，下面单独走一遍。
     const r = applyTable(kind, list);
     out.hit += r.hit;
     out.total += r.total;

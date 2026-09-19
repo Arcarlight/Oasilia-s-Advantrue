@@ -109,6 +109,48 @@
       '界面文案两边都翻到了', `开始新的冒险 → ${dictOf('ja')['开始新的冒险']} / ${dictOf('en')['开始新的冒险']}`);
     ok(!hasTranslation('不存在的句子', 'ja'), '查不到就返回原文（不会显示键名）', '不存在的句子');
 
+    /**
+     * ⑦ 内容表逐个过一遍：**不许有「本该翻却还留着中文」的字段**。
+     *
+     * 这一条是补课：事件正文曾经整个漏掉（applyContentLang 里 skip 了 event 表），
+     * 而当时的自检只看了卡名和状态名 —— 于是「事件标题和正文一直是中文」这件事
+     * 在体检全绿的情况下活了下来，直到截图才被发现。
+     *
+     * 判据不用 _zh（表要是压根没被 apply 过，_zh 也不存在，判据会空过），
+     * 而是**直接看界面上的值**：只要某个可见字段的值**正好是日语表里的一个键**，
+     * 就说明它还是中文原文 —— 这就是玩家看到中文的那个瞬间。
+     */
+    log('⑦ 内容表逐字段：还有没有「本该翻却留着中文」的');
+    {
+      const { I18N_TABLES } = await import('../src/core/i18n-tables.js');
+      const { CONTENT_FIELDS, entriesOf } = await import('../src/core/i18n.js');
+      changeLanguage('ja');
+      await wait(300);
+      let totalFields = 0; let lazy = 0;
+      for (const [kind, list] of Object.entries(I18N_TABLES)) {
+        const fields = CONTENT_FIELDS[kind];
+        if (!fields) continue;
+        let n = 0; let bad = 0; let sample = '';
+        for (const obj of entriesOf(list, fields)) {
+          if (!obj || typeof obj !== 'object') continue;
+          for (const f of fields) {
+            const v = obj[f];
+            const vals = Array.isArray(v) ? v : [v];
+            for (const one of vals) {
+              if (typeof one !== 'string') continue;
+              n += 1;
+              // 译文和原文**一模一样**的不算问题：「野生」在日语里本来就是「野生」，
+              // 「敏捷」「威力」这类中日同形词也一样 —— 那种「没变」是正确的。
+              if (ja[one] !== undefined && ja[one] !== one) { bad += 1; if (!sample) sample = `${kind}.${f} 还是「${one.slice(0, 14)}」`; }
+            }
+          }
+        }
+        totalFields += n; lazy += bad;
+        ok(bad === 0, `${kind} 表 ${n - bad}/${n} 个可见字段已跟着语言走`, bad ? sample : '');
+      }
+      ok(totalFields > 800, '确实扫到了足够多的字段（判据不是空跑）', `${totalFields} 个字段，其中没翻的 ${lazy} 个`);
+    }
+
     if (fails.length) log(`I18N_ERRORS=[${fails.join(' | ')}]`);
     else log('多语言自检：通过 ✓');
     log('I18N_DONE');

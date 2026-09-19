@@ -1,6 +1,7 @@
 // 卡牌渲染：把 CARDS 数据变成可点的一张卡。卡面美术复用工作区的粒子/图标素材。
 
 import { el } from './dom.js';
+import { t } from '../core/i18n.js';
 import { audio } from '../core/audio.js';
 import { RARITY } from '../data/balance.js';
 import { cardTextEl, richHTML, resolveCardText } from './cardtext.js';
@@ -16,13 +17,13 @@ export { CARD_ART };
  */
 export function cardTag(card) {
   const kinds = new Set(card.effects.map((e) => e.kind));
-  if (kinds.has('damage') && (kinds.has('shield') || kinds.has('heal'))) return '攻守';
-  if (kinds.has('damage')) return '攻击';
-  if (kinds.has('heal')) return '回复';
-  if (kinds.has('shield')) return '防御';
-  if (kinds.has('buff') || kinds.has('status')) return '变化';
-  if (kinds.has('draw') || kinds.has('ap')) return '辅助';
-  return '技能';
+  if (kinds.has('damage') && (kinds.has('shield') || kinds.has('heal'))) return t('攻守');
+  if (kinds.has('damage')) return t('攻击');
+  if (kinds.has('heal')) return t('回复');
+  if (kinds.has('shield')) return t('防御');
+  if (kinds.has('buff') || kinds.has('status')) return t('变化');
+  if (kinds.has('draw') || kinds.has('ap')) return t('辅助');
+  return t('技能');
 }
 
 /**
@@ -55,23 +56,23 @@ export function cardRoles(card) {
     roles.push({
       key: 'cost',
       ico: 'ico-heart_break_02',
-      label: '代价',
-      tip: `代价：这张牌会让你自己付出点什么。\n${detail([
-        selfHurt ? '· 自身受伤（反伤 / 自伤）' : null,
-        selfWeak ? '· 本场战斗削弱自己' : null,
-      ])}\n打之前先算一下值不值。`,
+      label: t('代价'),
+      tip: `${t('代价：这张牌会让你自己付出点什么。')}\n${detail([
+        selfHurt ? t('· 自身受伤（反伤 / 自伤）') : null,
+        selfWeak ? t('· 本场战斗削弱自己') : null,
+      ])}\n${t('打之前先算一下值不值。')}`,
     });
   }
   if (gainsShield || heals || raisesDef || cleanses) {
     roles.push({
       key: 'protect',
       ico: 'ico-protect',
-      label: '保护',
-      tip: `保护：保命的那一类。\n${detail([
-        gainsShield ? '· 获得护盾' : null,
-        heals ? '· 回复生命（含吸血）' : null,
-        raisesDef ? '· 提升自己的防御' : null,
-        cleanses ? '· 清除自身负面' : null,
+      label: t('保护'),
+      tip: `${t('保护：保命的那一类。')}\n${detail([
+        gainsShield ? t('· 获得护盾') : null,
+        heals ? t('· 回复生命（含吸血）') : null,
+        raisesDef ? t('· 提升自己的防御') : null,
+        cleanses ? t('· 清除自身负面') : null,
       ])}`,
     });
   }
@@ -111,14 +112,14 @@ export function cardEl(card, opts = {}) {
     ].filter(Boolean).join(' '),
     role: 'button',
     tabindex: opts.tabIndex ?? 0,
-    'aria-label': `${card.name}，消耗 ${ap} AP：${resolveCardText(card)}`,
+    'aria-label': t('{name}，消耗 {ap} AP：{text}', { name: card.name, ap, text: resolveCardText(card) }),
     'aria-disabled': disabled ? 'true' : 'false',
   });
 
   node.append(el('div', { class: 'card-band' }));
   node.append(el('div', { class: 'card-top' }, [
     el('div', { class: 'card-name', text: card.name }),
-    el('div', { class: 'card-ap', text: String(ap), title: `${ap} 点行动点` }),
+    el('div', { class: 'card-ap', text: String(ap), title: t('{ap} 点行动点', { ap }) }),
   ]));
 
   const artBox = el('div', { class: 'card-art' }, [
@@ -129,7 +130,7 @@ export function cardEl(card, opts = {}) {
     artBox.append(el('div', {
       class: 'card-dmg-badge',
       text: dmgText,
-      title: '按当前攻防估算的伤害',
+      title: t('按当前攻防估算的伤害'),
       style: {
         position: 'absolute', right: '5px', bottom: '5px',
         padding: '1px 7px', borderRadius: '999px', fontSize: '11px', fontWeight: '800',
@@ -144,11 +145,11 @@ export function cardEl(card, opts = {}) {
   // 角标贴在美术横幅的左下角（以前它自己占一整行，卡面本来就不高，白吃掉一行文字的空间）。
   const acts = [];
   const act = (has, cls, tip) => { if (has) acts.push(el('span', { class: `card-act ${cls}`, dataset: { tip } })); };
-  act(card.effects.some((e) => e.kind === 'draw'), 'ico-cards', '抽牌：从牌堆再抽一张。');
-  act(roles.weakensFoe, 'ico-temperature_down', '削弱对手：降它的属性 / 挂负面状态 —— 你后面每一张牌都更疼。');
-  act(card.exhaust, 'ico-trash', '销毁：打出后进入销毁区，本场战斗不会再出现。');
-  act(card.effects.some((e) => e.kind === 'exhaustHand'), 'ico-trash', '销毁手牌：把手里剩下的牌全部销毁。');
-  act(card.effects.some((e) => e.kind === 'discard'), 'ico-shuffle', '弃牌：把牌弃进弃牌堆（牌堆抽空时会洗回来）。');
+  act(card.effects.some((e) => e.kind === 'draw'), 'ico-cards', t('抽牌：从牌堆再抽一张。'));
+  act(roles.weakensFoe, 'ico-temperature_down', t('削弱对手：降它的属性 / 挂负面状态 —— 你后面每一张牌都更疼。'));
+  act(card.exhaust, 'ico-trash', t('销毁：打出后进入销毁区，本场战斗不会再出现。'));
+  act(card.effects.some((e) => e.kind === 'exhaustHand'), 'ico-trash', t('销毁手牌：把手里剩下的牌全部销毁。'));
+  act(card.effects.some((e) => e.kind === 'discard'), 'ico-shuffle', t('弃牌：把牌弃进弃牌堆（牌堆抽空时会洗回来）。'));
   if (acts.length) artBox.append(el('div', { class: 'card-acts' }, acts));
 
   node.append(el('div', { class: 'card-mid' }, [
@@ -166,7 +167,7 @@ export function cardEl(card, opts = {}) {
    * 描边颜色、卡名颜色，再加这颗宝石（悬停会说出稀有度叫什么）。
    */
   const footLeft = el('span', { class: 'foot-left' }, [
-    el('span', { class: 'rarity-gem', dataset: { tip: `稀有度：${rarityLabel(card) || card.rarity}\n卡面配色、描边、卡名颜色都跟着稀有度走。` } }),
+    el('span', { class: 'rarity-gem', dataset: { tip: t('稀有度：{rarity}\n卡面配色、描边、卡名颜色都跟着稀有度走。', { rarity: rarityLabel(card) || card.rarity }) } }),
     el('span', { class: 'card-tag', text: cardTag(card) }),
   ]);
   for (const r of roles.roles) {

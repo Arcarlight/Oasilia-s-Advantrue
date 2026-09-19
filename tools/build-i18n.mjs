@@ -98,7 +98,18 @@ async function collectContentStrings() {
     if (!out.has(s)) out.set(s, []);
     if (!out.get(s).includes(where)) out.get(s).push(where);
   };
-  const { I18N_TABLES } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
+  /**
+   * 字段值可能是字符串、字符串数组，**也可能是嵌套的小字典** ——
+   * 例：`NODE_TYPES.shop.names = { desert: '沙漠商队', canyon: '峡谷货栈', … }`
+   * （同一个节点在不同地图上叫不同的名字）。以前只认前两种，这 12 条就两头都进不去：
+   * 运行时改不到、清单里也没有，于是切到日语还是中文。这里递归一层收全。
+   */
+  const addDeep = (v, where) => {
+    if (typeof v === 'string') { add(v, where); return; }
+    if (Array.isArray(v)) { for (const s of v) addDeep(s, where); return; }
+    if (v && typeof v === 'object') for (const s of Object.values(v)) addDeep(s, where);
+  };
+  const { I18N_TABLES, I18N_WORD_TABLES = {} } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
   const { CONTENT_FIELDS, entriesOf } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
 
   for (const [kind, list] of Object.entries(I18N_TABLES)) {
@@ -107,11 +118,7 @@ async function collectContentStrings() {
     for (const obj of entriesOf(list, fields)) {
       if (!obj || typeof obj !== 'object') continue;
       const where = `${kind}:${obj.id ?? obj.slug ?? obj.key ?? '?'}`;
-      for (const f of fields) {
-        const v = obj[f];
-        if (typeof v === 'string') add(v, where);
-        else if (Array.isArray(v)) for (const s of v) add(s, where);
-      }
+      for (const f of fields) addDeep(obj[f], where);
       if (typeof obj.name === 'string' && typeof obj.en === 'string') official.set(obj.name, obj.en);
       // 事件的选项（label / hint / text）是数组下标，不在字段表里，单独收
       for (const opt of obj.options ?? []) {
@@ -120,6 +127,21 @@ async function collectContentStrings() {
         add(opt.hint, where);
         add(opt.text, where);
       }
+    }
+  }
+
+  /**
+   * 界面上的「小词表」（属性名 / 短标签 / 悬停说明…）。
+   *
+   * 它们在代码里是**查表读出来**的（`t(STAT_NAMES[k])`），静态扫 `t('…')` 扫不到 ——
+   * 表藏在界面模块里（那些模块 import 了 DOM，工具跑不起来）。
+   * 所以由 src/core/i18n-tables.js 登记一份纯数据的词表，这里连**键和值一起**收：
+   * 键（如「攻」）也会直接显示在界面上，一样要翻。
+   */
+  for (const [kind, table] of Object.entries(I18N_WORD_TABLES)) {
+    for (const [k, v] of Object.entries(table ?? {})) {
+      add(k, `ui:${kind}`);
+      if (typeof v === 'string') add(v, `ui:${kind}`);
     }
   }
   return { content: out, official };
@@ -210,6 +232,8 @@ await fs.writeFile(path.join(IN_DIR, '_report.json'), `${JSON.stringify({
       contentDone: [...contentStrings.keys()].filter((z) => tables[lg][z]).length,
     }];
   })),
+  // 还差哪些（原文照抄，方便直接搜 / 直接补）
+  missing: Object.fromEntries(LANGS.map((lg) => [lg, [...allZh].filter((zh) => !tables[lg][zh]).slice(0, 80)])),
   orphans: orphansByLang,
   placeholders: placeholderMismatch,
 }, null, 2)}\n`, 'utf8');
