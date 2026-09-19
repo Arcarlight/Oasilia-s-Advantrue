@@ -261,6 +261,11 @@
       ok(h.enemy.cx > vw * 0.5 && h.player.cx < vw * 0.5,
         '水平方向也对角：敌人在右、我方在左',
         `${Math.round(h.player.cx)} / ${Math.round(h.enemy.cx)}（视口宽 ${vw}）`);
+      // 立绘不许被视口切掉：站位是按视口百分比算的，窗口一矮就容易把下边那只顶出去
+      const clipped = hold.filter((s) => [s.enemy, s.player].some((b) => b.top < -2 || b.top + b.h > vh + 2 || b.left < -2 || b.left + b.w > vw + 2));
+      ok(clipped.length === 0,
+        '停留时两只立绘都完整在视口内（没有被边缘切掉）',
+        clipped.length ? `${clipped.length}/${hold.length} 个采样点越界` : `视口 ${vw}×${vh}`);
     }
 
     // ---- ③ 「横线跟随正面图」：划入阶段里横线右端 == 敌人立绘中线 ----
