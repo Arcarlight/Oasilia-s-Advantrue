@@ -26,7 +26,13 @@
     "battle_cliff": { "file": "kazaguruma.mp3", "name": "風車", "page": "RPG battle", "desc": "风蚀峭壁的战斗" },
     "battle_night": { "file": "yamiwouchiharau.mp3", "name": "闇を打ち払う", "page": "RPG battle", "desc": "夜砂墓原的战斗" },
 
-    "elite": { "file": "cross.mp3", "name": "クロス陣形", "page": "RPG battle", "desc": "强敌（各章通用）" },
+    "elite": { "file": "cross.mp3", "name": "クロス陣形", "page": "RPG battle", "desc": "强敌兜底曲" },
+    "elite_desert": { "file": "tachimukaumonotachi.mp3", "name": "立ち向かう者達", "page": "RPG outdoor", "desc": "流沙之海的强敌" },
+    "elite_canyon": { "file": "syakunetu.mp3", "name": "灼熱の奥へ", "page": "RPG outdoor", "desc": "赤岩峡谷的强敌" },
+    "elite_forest": { "file": "mamononokehai.mp3", "name": "魔物の気配", "page": "RPG outdoor", "desc": "藤蔓密林的强敌" },
+    "elite_tide": { "file": "hiryu.mp3", "name": "飛竜の背に乗って", "page": "RPG outdoor", "desc": "潮汐盐海的强敌" },
+    "elite_cliff": { "file": "wind.mp3", "name": "風を追いかけて", "page": "RPG outdoor", "desc": "风蚀峭壁的强敌" },
+    "elite_night": { "file": "shikkounin.mp3", "name": "執行人", "page": "RPG event", "desc": "夜砂墓原的强敌" },
     "boss": { "file": "syuurai.mp3", "name": "襲来", "page": "RPG battle", "desc": "章节首领" },
     "boss_final": { "file": "tataminouenoshitou.mp3", "name": "畳の上の死闘", "page": "RPG battle", "desc": "最终首领（终章）" },
 

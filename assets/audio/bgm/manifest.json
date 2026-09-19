@@ -114,9 +114,51 @@
                                  "file":  "elite.ogg",
                                  "source":  "cross.mp3",
                                  "name":  "クロス陣形",
-                                 "use":  "强敌（各章通用）",
+                                 "use":  "强敌兜底曲",
                                  "ogg":  "midi/data/ogg_file/original/ontama_rpg_kurosujinkei_ogg.zip"
                              },
+                   "elite_desert":  {
+                                        "file":  "elite_desert.ogg",
+                                        "source":  "tachimukaumonotachi.mp3",
+                                        "name":  "立ち向かう者達",
+                                        "use":  "流沙之海的强敌",
+                                        "ogg":  "midi/data/ogg_file/original/ontama_rpg_tachimukaumonotachi_ogg.zip"
+                                    },
+                   "elite_canyon":  {
+                                        "file":  "elite_canyon.ogg",
+                                        "source":  "syakunetu.mp3",
+                                        "name":  "灼熱の奥へ",
+                                        "use":  "赤岩峡谷的强敌",
+                                        "ogg":  "midi/data/ogg_file/original/ontama_rpg_syakunetsunookuhe_ogg.zip"
+                                    },
+                   "elite_forest":  {
+                                        "file":  "elite_forest.ogg",
+                                        "source":  "mamononokehai.mp3",
+                                        "name":  "魔物の気配",
+                                        "use":  "藤蔓密林的强敌",
+                                        "ogg":  "midi/data/ogg_file/original/ontama_rpg_mamononokehai_ogg.zip"
+                                    },
+                   "elite_tide":  {
+                                      "file":  "elite_tide.ogg",
+                                      "source":  "hiryu.mp3",
+                                      "name":  "飛竜の背に乗って",
+                                      "use":  "潮汐盐海的强敌",
+                                      "ogg":  "midi/data/ogg_file/original/ontama_rpg_hiryuunoseninotte_ogg.zip"
+                                  },
+                   "elite_cliff":  {
+                                       "file":  "elite_cliff.ogg",
+                                       "source":  "wind.mp3",
+                                       "name":  "風を追いかけて",
+                                       "use":  "风蚀峭壁的强敌",
+                                       "ogg":  "midi/data/ogg_file/original/ontama_rpg_kazewooikakete_ogg.zip"
+                                   },
+                   "elite_night":  {
+                                       "file":  "elite_night.ogg",
+                                       "source":  "shikkounin.mp3",
+                                       "name":  "執行人",
+                                       "use":  "夜砂墓原的强敌",
+                                       "ogg":  "midi/data/ogg_file/original/shikkounin.ogg"
+                                   },
                    "boss":  {
                                 "file":  "boss.ogg",
                                 "source":  "syuurai.mp3",

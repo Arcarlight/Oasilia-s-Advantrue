@@ -109,7 +109,9 @@ export class UI {
       case 'battle': {
         const kind = g.battleKind ?? 'normal';
         if (kind === 'boss') audio.playBgm(g.data?.stage >= lastStage ? 'boss_final' : 'boss');
-        else if (kind === 'elite') audio.playBgm('elite');
+        // 强敌也按地图换曲（用户反馈：「每个地图强敌都是一个 bgm 太重复了」）。
+        // 找不到专属曲就退回通用的 elite —— bgmKeyFor 的第二参数就是干这个的。
+        else if (kind === 'elite') audio.playBgm(bgmKeyFor('elite', biome, 'elite'));
         else audio.playBgm(bgmKeyFor('battle', biome));
         break;
       }

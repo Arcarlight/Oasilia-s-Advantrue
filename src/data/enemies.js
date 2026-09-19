@@ -1683,6 +1683,195 @@ export const ENEMIES = [
     "biome": "canyon",
     "deck": MOVE_POOLS.kit_ground,
     "lines": [ "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。", "它一头扎进岩缝，再从你脚边冒出来。" ],
+  },
+  {
+    "id": "hippowdon",
+    "slug": "hippowdon",
+    "name": "河马兽",
+    "en": "Hippowdon",
+    "dex": "0450",
+    "types": [
+  "地面"
+],
+    "tier": "elite",
+    "biome": "desert",
+    "deck": MOVE_POOLS.kit_ground_hi,
+    "signature": [ "sig_sand_pit" ],
+    "lines": [ "沙丘自己站了起来。原来那不是沙丘。", "它张开嘴，风里全是沙在磨牙的声音。" ],
+  },
+  {
+    "id": "claydol",
+    "slug": "claydol",
+    "name": "念力土偶",
+    "en": "Claydol",
+    "dex": "0344",
+    "types": [
+  "地面",
+  "超能力"
+],
+    "tier": "elite",
+    "biome": "desert",
+    "deck": MOVE_POOLS.kit_ground_hi,
+    "signature": [ "sig_ancient_beam" ],
+    "lines": [ "半埋在沙里的陶偶睁开了身上的红点。", "它悬在半空，像是很久以前有人把它留在这里看着什么。" ],
+  },
+  {
+    "id": "camerupt",
+    "slug": "camerupt",
+    "name": "喷火驼",
+    "en": "Camerupt",
+    "dex": "0323",
+    "types": [
+  "火",
+  "地面"
+],
+    "tier": "elite",
+    "biome": "canyon",
+    "deck": MOVE_POOLS.kit_fire_hi,
+    "signature": [ "sig_magma_erupt" ],
+    "lines": [ "岩壁上的红纹裂开了，里面是亮的。", "它每喘一口气，脚边的石头就化一点。" ],
+  },
+  {
+    "id": "torkoal",
+    "slug": "torkoal",
+    "name": "煤炭龟",
+    "en": "Torkoal",
+    "dex": "0324",
+    "types": [
+  "火"
+],
+    "tier": "elite",
+    "biome": "canyon",
+    "deck": MOVE_POOLS.kit_fire_hi,
+    "signature": [ "sig_white_smoke" ],
+    "lines": [ "一团白烟沿着谷底滚过来，烟里有壳。", "它不动，但它周围的空气在抖。" ],
+  },
+  {
+    "id": "scizor",
+    "slug": "scizor",
+    "name": "巨钳螳螂",
+    "en": "Scizor",
+    "dex": "0212",
+    "types": [
+  "虫",
+  "钢"
+],
+    "tier": "elite",
+    "biome": "forest",
+    "deck": MOVE_POOLS.kit_bug_hi,
+    "signature": [ "sig_bullet_slash" ],
+    "lines": [ "一片叶子从中间分成两半，切口是直的。", "它抬起钳子，钳口上还挂着露水。" ],
+  },
+  {
+    "id": "scolipede",
+    "slug": "scolipede",
+    "name": "蜈蚣王",
+    "en": "Scolipede",
+    "dex": "0545",
+    "types": [
+  "虫",
+  "毒"
+],
+    "tier": "elite",
+    "biome": "forest",
+    "deck": MOVE_POOLS.kit_bug_hi,
+    "signature": [ "sig_megahorn_charge" ],
+    "lines": [ "地面的落叶像被什么东西从下面顶起来。", "一节一节地，它从腐叶里把自己拔出来。" ],
+  },
+  {
+    "id": "kingdra",
+    "slug": "kingdra",
+    "name": "刺龙王",
+    "en": "Kingdra",
+    "dex": "0230",
+    "types": [
+  "水",
+  "龙"
+],
+    "tier": "elite",
+    "biome": "tide",
+    "deck": MOVE_POOLS.kit_water_hi,
+    "signature": [ "sig_dragon_water" ],
+    "lines": [ "退潮之后，盐壳底下还有一汪水，水里有一个影子在转。", "它抬起头，整片盐海的水都跟着晃了一下。" ],
+  },
+  {
+    "id": "mantine",
+    "slug": "mantine",
+    "name": "巨翅飞鱼",
+    "en": "Mantine",
+    "dex": "0226",
+    "types": [
+  "水",
+  "飞行"
+],
+    "tier": "elite",
+    "biome": "tide",
+    "deck": MOVE_POOLS.kit_water_hi,
+    "signature": [ "sig_tide_ride" ],
+    "lines": [ "一只翅膀贴着水面滑过去，没有溅起水花。", "它绕回来的时候，你才看清那对翅膀有多宽。" ],
+  },
+  {
+    "id": "braviary",
+    "slug": "braviary",
+    "name": "勇士雄鹰",
+    "en": "Braviary",
+    "dex": "0628",
+    "types": [
+  "一般",
+  "飞行"
+],
+    "tier": "elite",
+    "biome": "cliff",
+    "deck": MOVE_POOLS.kit_flying_hi,
+    "signature": [ "sig_brave_bird" ],
+    "lines": [ "风把它托在崖口，它没有扇翅膀。", "它低头看你，像是在判断你值不值得下来一趟。" ],
+  },
+  {
+    "id": "archeops",
+    "slug": "archeops",
+    "name": "始祖大鸟",
+    "en": "Archeops",
+    "dex": "0567",
+    "types": [
+  "岩石",
+  "飞行"
+],
+    "tier": "elite",
+    "biome": "cliff",
+    "deck": MOVE_POOLS.kit_rock_hi,
+    "signature": [ "sig_rock_slide_wing" ],
+    "lines": [ "岩缝里卡着一副骨架，骨架动了一下。", "它飞得歪歪扭扭，但每一下都很快。" ],
+  },
+  {
+    "id": "chandelure",
+    "slug": "chandelure",
+    "name": "水晶灯火灵",
+    "en": "Chandelure",
+    "dex": "0609",
+    "types": [
+  "幽灵",
+  "火"
+],
+    "tier": "elite",
+    "biome": "night",
+    "deck": MOVE_POOLS.kit_ghost_hi,
+    "signature": [ "sig_soul_flame" ],
+    "lines": [ "远处有一盏灯，你以为那是营地。", "走近了才看出，那盏灯在飘，而且它在等你走近。" ],
+  },
+  {
+    "id": "cofagrigus",
+    "slug": "cofagrigus",
+    "name": "死神棺",
+    "en": "Cofagrigus",
+    "dex": "0563",
+    "types": [
+  "幽灵"
+],
+    "tier": "elite",
+    "biome": "night",
+    "deck": MOVE_POOLS.kit_ghost_hi,
+    "signature": [ "sig_curse_mummy" ],
+    "lines": [ "一具石棺立在沙里，棺盖是开着的。", "棺里伸出来的不是手，是别的什么。" ],
   }
 ];
 

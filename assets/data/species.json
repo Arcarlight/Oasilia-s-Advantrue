@@ -806,6 +806,123 @@
       "types": [
         "岩石"
       ]
+    },
+    "hippowdon": {
+      "dex": "0450",
+      "slug": "hippowdon",
+      "name": "河马兽",
+      "en": "Hippowdon",
+      "types": [
+        "地面"
+      ]
+    },
+    "claydol": {
+      "dex": "0344",
+      "slug": "claydol",
+      "name": "念力土偶",
+      "en": "Claydol",
+      "types": [
+        "地面",
+        "超能力"
+      ]
+    },
+    "camerupt": {
+      "dex": "0323",
+      "slug": "camerupt",
+      "name": "喷火驼",
+      "en": "Camerupt",
+      "types": [
+        "火",
+        "地面"
+      ]
+    },
+    "torkoal": {
+      "dex": "0324",
+      "slug": "torkoal",
+      "name": "煤炭龟",
+      "en": "Torkoal",
+      "types": [
+        "火"
+      ]
+    },
+    "scizor": {
+      "dex": "0212",
+      "slug": "scizor",
+      "name": "巨钳螳螂",
+      "en": "Scizor",
+      "types": [
+        "虫",
+        "钢"
+      ]
+    },
+    "scolipede": {
+      "dex": "0545",
+      "slug": "scolipede",
+      "name": "蜈蚣王",
+      "en": "Scolipede",
+      "types": [
+        "虫",
+        "毒"
+      ]
+    },
+    "kingdra": {
+      "dex": "0230",
+      "slug": "kingdra",
+      "name": "刺龙王",
+      "en": "Kingdra",
+      "types": [
+        "水",
+        "龙"
+      ]
+    },
+    "mantine": {
+      "dex": "0226",
+      "slug": "mantine",
+      "name": "巨翅飞鱼",
+      "en": "Mantine",
+      "types": [
+        "水",
+        "飞行"
+      ]
+    },
+    "braviary": {
+      "dex": "0628",
+      "slug": "braviary",
+      "name": "勇士雄鹰",
+      "en": "Braviary",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "archeops": {
+      "dex": "0567",
+      "slug": "archeops",
+      "name": "始祖大鸟",
+      "en": "Archeops",
+      "types": [
+        "岩石",
+        "飞行"
+      ]
+    },
+    "chandelure": {
+      "dex": "0609",
+      "slug": "chandelure",
+      "name": "水晶灯火灵",
+      "en": "Chandelure",
+      "types": [
+        "幽灵",
+        "火"
+      ]
+    },
+    "cofagrigus": {
+      "dex": "0563",
+      "slug": "cofagrigus",
+      "name": "死神棺",
+      "en": "Cofagrigus",
+      "types": [
+        "幽灵"
+      ]
     }
   }
 }

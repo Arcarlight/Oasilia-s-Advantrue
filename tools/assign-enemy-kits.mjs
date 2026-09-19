@@ -173,8 +173,16 @@ for (const e of enemiesData.enemies) {
   const hi = e.tier === 'elite' || e.tier === 'boss';
   const before = e.deck;
   e.deck = `kit_${kit}${hi ? '_hi' : ''}`;
+  /**
+   * 专属招式：**只补自己认识的那几只，别动别人的**。
+   *
+   * 这里原来写的是 `else delete e.signature` —— 于是本脚本一跑，
+   * 任何不在 SIG_OF 里的专属招式都会被删掉（实测：tools/add-elites.mjs 刚给
+   * 12 只新精英写的专属招式，被下一次 assign 全清了，只剩 9 条）。
+   * 这个脚本管的是「招式包」，signature 归敌人数据自己管，越权删除会让
+   * 「先加精英、再重新分配招式包」这种正常顺序悄悄丢内容。
+   */
   if (SIG_OF[e.id] && SIG[SIG_OF[e.id]]) e.signature = [SIG[SIG_OF[e.id]].id];
-  else delete e.signature;
   assign.push(`${e.id.padEnd(18)} ${e.tier.padEnd(7)} ${String(before).padEnd(10)} → ${e.deck}${e.signature ? ' + ' + e.signature.join(',') : ''}`);
 }
 

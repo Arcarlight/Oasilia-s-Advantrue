@@ -1349,6 +1349,174 @@
         "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。",
         "它一头扎进岩缝，再从你脚边冒出来。"
       ]
+    },
+    {
+      "id": "hippowdon",
+      "slug": "hippowdon",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_ground_hi",
+      "lines": [
+        "沙丘自己站了起来。原来那不是沙丘。",
+        "它张开嘴，风里全是沙在磨牙的声音。"
+      ],
+      "signature": [
+        "sig_sand_pit"
+      ]
+    },
+    {
+      "id": "claydol",
+      "slug": "claydol",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_ground_hi",
+      "lines": [
+        "半埋在沙里的陶偶睁开了身上的红点。",
+        "它悬在半空，像是很久以前有人把它留在这里看着什么。"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "camerupt",
+      "slug": "camerupt",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "岩壁上的红纹裂开了，里面是亮的。",
+        "它每喘一口气，脚边的石头就化一点。"
+      ],
+      "signature": [
+        "sig_magma_erupt"
+      ]
+    },
+    {
+      "id": "torkoal",
+      "slug": "torkoal",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "一团白烟沿着谷底滚过来，烟里有壳。",
+        "它不动，但它周围的空气在抖。"
+      ],
+      "signature": [
+        "sig_white_smoke"
+      ]
+    },
+    {
+      "id": "scizor",
+      "slug": "scizor",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "一片叶子从中间分成两半，切口是直的。",
+        "它抬起钳子，钳口上还挂着露水。"
+      ],
+      "signature": [
+        "sig_bullet_slash"
+      ]
+    },
+    {
+      "id": "scolipede",
+      "slug": "scolipede",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "地面的落叶像被什么东西从下面顶起来。",
+        "一节一节地，它从腐叶里把自己拔出来。"
+      ],
+      "signature": [
+        "sig_megahorn_charge"
+      ]
+    },
+    {
+      "id": "kingdra",
+      "slug": "kingdra",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "退潮之后，盐壳底下还有一汪水，水里有一个影子在转。",
+        "它抬起头，整片盐海的水都跟着晃了一下。"
+      ],
+      "signature": [
+        "sig_dragon_water"
+      ]
+    },
+    {
+      "id": "mantine",
+      "slug": "mantine",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "一只翅膀贴着水面滑过去，没有溅起水花。",
+        "它绕回来的时候，你才看清那对翅膀有多宽。"
+      ],
+      "signature": [
+        "sig_tide_ride"
+      ]
+    },
+    {
+      "id": "braviary",
+      "slug": "braviary",
+      "tier": "elite",
+      "biome": "cliff",
+      "deck": "kit_flying_hi",
+      "lines": [
+        "风把它托在崖口，它没有扇翅膀。",
+        "它低头看你，像是在判断你值不值得下来一趟。"
+      ],
+      "signature": [
+        "sig_brave_bird"
+      ]
+    },
+    {
+      "id": "archeops",
+      "slug": "archeops",
+      "tier": "elite",
+      "biome": "cliff",
+      "deck": "kit_rock_hi",
+      "lines": [
+        "岩缝里卡着一副骨架，骨架动了一下。",
+        "它飞得歪歪扭扭，但每一下都很快。"
+      ],
+      "signature": [
+        "sig_rock_slide_wing"
+      ]
+    },
+    {
+      "id": "chandelure",
+      "slug": "chandelure",
+      "tier": "elite",
+      "biome": "night",
+      "deck": "kit_ghost_hi",
+      "lines": [
+        "远处有一盏灯，你以为那是营地。",
+        "走近了才看出，那盏灯在飘，而且它在等你走近。"
+      ],
+      "signature": [
+        "sig_soul_flame"
+      ]
+    },
+    {
+      "id": "cofagrigus",
+      "slug": "cofagrigus",
+      "tier": "elite",
+      "biome": "night",
+      "deck": "kit_ghost_hi",
+      "lines": [
+        "一具石棺立在沙里，棺盖是开着的。",
+        "棺里伸出来的不是手，是别的什么。"
+      ],
+      "signature": [
+        "sig_curse_mummy"
+      ]
     }
   ]
 }

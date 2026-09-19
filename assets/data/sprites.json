@@ -2167,5 +2167,317 @@
  "rolycoly": {
   "dex": "0837",
   "anims": {}
+ },
+ "hippowdon": {
+  "dex": "0450",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "claydol": {
+  "dex": "0344",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 17,
+    "rows": 8,
+    "frames": 136
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "camerupt": {
+  "dex": "0323",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "torkoal": {
+  "dex": "0324",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 18,
+    "rows": 8,
+    "frames": 144
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "scizor": {
+  "dex": "0212",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   }
+  }
+ },
+ "scolipede": {
+  "dex": "0545",
+  "anims": {
+   "Attack": {
+    "fw": 104,
+    "fh": 104,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 104,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "kingdra": {
+  "dex": "0230",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 72,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   }
+  }
+ },
+ "mantine": {
+  "dex": "0226",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120
+   },
+   "Hurt": {
+    "fw": 80,
+    "fh": 96,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "braviary": {
+  "dex": "0628",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "archeops": {
+  "dex": "0567",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "chandelure": {
+  "dex": "0609",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "cofagrigus": {
+  "dex": "0563",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
  }
 }

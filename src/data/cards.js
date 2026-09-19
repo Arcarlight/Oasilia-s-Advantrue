@@ -2936,6 +2936,260 @@ export const CARDS = [
     ],
     "enemyOnly": true,
     "enemySpecies": "gyarados"
+  },
+  {
+    "id": "sig_sand_pit",
+    "name": "流沙陷坑",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并让对手敏捷 -3。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 230
+      },
+      {
+        "kind": "buff",
+        "stat": "agi",
+        "amount": -3,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_ancient_beam",
+    "name": "古代射线",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并让对手防御 -30%。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 220
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "pct": -0.3,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_magma_erupt",
+    "name": "熔岩喷发",
+    "ap": 3,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "连续 2 次造成 {d} 点伤害，并给对手 2 层灼伤。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 140,
+        "hits": 2
+      },
+      {
+        "kind": "status",
+        "status": "burn",
+        "stacks": 2
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_white_smoke",
+    "name": "白烟",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "获得护盾（随防御成长），并给对手 2 层灼伤。",
+    "effects": [
+      {
+        "kind": "shield",
+        "amount": 12,
+        "scaleWithDef": true
+      },
+      {
+        "kind": "status",
+        "status": "burn",
+        "stacks": 2
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_bullet_slash",
+    "name": "子弹斩",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "连续 3 次造成 {d} 点伤害。本场战斗攻击 +3。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 90,
+        "hits": 3
+      },
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "amount": 3
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_megahorn_charge",
+    "name": "巨角突击",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并给对手 2 层中毒和 1 层虚弱。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 230
+      },
+      {
+        "kind": "status",
+        "status": "poison",
+        "stacks": 2
+      },
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 1
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_dragon_water",
+    "name": "龙水炮",
+    "ap": 3,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并给对手 2 层剧毒。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 300
+      },
+      {
+        "kind": "status",
+        "status": "toxic",
+        "stacks": 2
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_tide_ride",
+    "name": "乘浪滑翔",
+    "ap": 1,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "获得护盾（随防御成长），抽 1 张。",
+    "effects": [
+      {
+        "kind": "shield",
+        "amount": 14,
+        "scaleWithDef": true
+      },
+      {
+        "kind": "draw",
+        "n": 1
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_brave_bird",
+    "name": "勇鸟猛攻",
+    "ap": 3,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，自身也受到一部分反冲。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 330,
+        "recoilPct": 0.2
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_rock_slide_wing",
+    "name": "岩翼俯冲",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并让对手防御 -4。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 240
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "amount": -4,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_soul_flame",
+    "name": "魂之火",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并给对手 2 层灼伤和 1 层剧毒。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 240
+      },
+      {
+        "kind": "status",
+        "status": "burn",
+        "stacks": 2
+      },
+      {
+        "kind": "status",
+        "status": "toxic",
+        "stacks": 1
+      }
+    ],
+    "enemyOnly": true
+  },
+  {
+    "id": "sig_curse_mummy",
+    "name": "诅咒棺",
+    "ap": 2,
+    "rarity": "uncommon",
+    "targeting": "enemy",
+    "text": "给对手 3 层中毒，并让对手攻击 -35%。",
+    "effects": [
+      {
+        "kind": "status",
+        "status": "poison",
+        "stacks": 3
+      },
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "pct": -0.35,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true
   }
 ];
 
@@ -3542,6 +3796,54 @@ export const CARD_ART = {
   "sig_rage_wave": {
     "ico": "ico-water",
     "fx": "twirl_1"
+  },
+  "sig_sand_pit": {
+    "ico": "ico-earthquake",
+    "fx": "dirt_2"
+  },
+  "sig_ancient_beam": {
+    "ico": "ico-demon_02",
+    "fx": "magic_2"
+  },
+  "sig_magma_erupt": {
+    "ico": "ico-volcanic_eruption",
+    "fx": "flare_1"
+  },
+  "sig_white_smoke": {
+    "ico": "ico-fog",
+    "fx": "smoke_1"
+  },
+  "sig_bullet_slash": {
+    "ico": "ico-sword",
+    "fx": "slash_1"
+  },
+  "sig_megahorn_charge": {
+    "ico": "ico-spear",
+    "fx": "spark_06"
+  },
+  "sig_dragon_water": {
+    "ico": "ico-water",
+    "fx": "magic_1"
+  },
+  "sig_tide_ride": {
+    "ico": "ico-wind",
+    "fx": "twirl_02"
+  },
+  "sig_brave_bird": {
+    "ico": "ico-bow",
+    "fx": "slash_1"
+  },
+  "sig_rock_slide_wing": {
+    "ico": "ico-stone",
+    "fx": "spark_02"
+  },
+  "sig_soul_flame": {
+    "ico": "ico-flame",
+    "fx": "magic_2"
+  },
+  "sig_curse_mummy": {
+    "ico": "ico-gravestone",
+    "fx": "magic_1"
   }
 };
 
