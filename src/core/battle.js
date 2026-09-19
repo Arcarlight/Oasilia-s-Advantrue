@@ -635,14 +635,16 @@ export class Battle {
       case 'detonate': {
         const stacks = DOT_STATUSES.reduce((s, st) => s + (foe[st] ?? 0), 0);
         if (stacks <= 0) {
-          this.emitLogged({ type: 'detonate', side: foeKey, amount: 0 }, `${foe.name} 身上没有可以引爆的持续伤害。`, 'info');
+          this.emitLogged({ type: 'detonate', side: foeKey, amount: 0, stacks: 0, statuses: [] }, `${foe.name} 身上没有可以引爆的持续伤害。`, 'info');
           break;
         }
         const per = eff.perStack ?? 3;
         const dmg = Math.round(foe.maxHp * (BALANCE.statusPct?.poison ?? 0.008) * stacks * per);
+        // 一起炸掉的是哪几种毒：界面按名单把对手身上的胶囊化掉（同 cleanse）
+        const cleared = DOT_STATUSES.filter((st) => (foe[st] ?? 0) > 0);
         for (const st of DOT_STATUSES) foe[st] = 0;
         this.emitLogged(
-          { type: 'detonate', side: foeKey, amount: dmg, stacks },
+          { type: 'detonate', side: foeKey, amount: dmg, stacks, statuses: cleared },
           `引爆了 ${foe.name} 身上 ${stacks} 层持续伤害！`,
           sourceKey === 'player' ? 'good' : 'bad'
         );
@@ -703,17 +705,30 @@ export class Battle {
        */
       case 'cleanse': {
         const removed = [];
+        /**
+         * 具体被清掉的是哪几个状态。
+         *
+         * 以前这条事件只带一个「清掉了几个」的数字，界面拿不到名单，
+         * 于是引擎里的中毒已经归零、界面上的胶囊还挂着（要到回合结束 resyncDisp 才掉）——
+         * 玩家打完「白雾」看不见任何反馈，只觉得这张牌没生效。
+         * 名单是给界面用的：它按名单把对应的胶囊逐个化掉。
+         */
+        const cleared = [];
         if ((self.atkMod ?? 0) < 0) { removed.push(`攻击 ${self.atkMod}`); self.atkMod = 0; }
         if ((self.defMod ?? 0) < 0) { removed.push(`防御 ${self.defMod}`); self.defMod = 0; }
         if ((self.agiMod ?? 0) < 0) { removed.push(`敏捷 ${self.agiMod}`); self.agiMod = 0; }
         if (eff.statuses) {
           for (const st of ALL_STATUSES) {
-            if ((self[st] ?? 0) > 0) { removed.push(`${STATUS_INFO[st].name} ${self[st]}`); self[st] = 0; }
+            if ((self[st] ?? 0) > 0) { removed.push(`${STATUS_INFO[st].name} ${self[st]}`); cleared.push(st); self[st] = 0; }
           }
         }
         this.recalcDerived();
         this.emitLogged(
-          { type: 'cleanse', side: sourceKey, removed: removed.length },
+          {
+            type: 'cleanse', side: sourceKey, removed: removed.length, statuses: cleared,
+            // 属性下降清完之后剩多少：界面副本按这个对齐（不清的话面板上还挂着「攻 -8」）
+            mods: { atk: self.atkMod ?? 0, def: self.defMod ?? 0, agi: self.agiMod ?? 0 },
+          },
           removed.length ? `${self.name} 清除了身上的削弱（${removed.join('、')}）。` : `${self.name} 身上没有可清除的削弱。`,
           'good'
         );

@@ -992,7 +992,18 @@ button { font-family: inherit; }
   background: linear-gradient(180deg, #cfe8ff, #7bb7e8);
   color: #0d2233;
   box-shadow: var(--shadow-1);
-  animation: popIn .2s ease;
+  /**
+   * 这里**不再**挂 popIn。
+   *
+   * 徽章现在只在数值变化时重建内容（见 battle-view.js 的 refreshSide），
+   * 所以入场动画由「涨的那一下」的 .tick-up 负责；如果这里还留着一条基础 animation，
+   * 那么每次把 .tick-up 摘掉时 animation-name 就变了，浏览器会把 popIn 当成一条新动画重播一遍 ——
+   * 表现就是「护盾数字变一次，徽章弹两下」。
+   *
+   * 护盾徽章和状态胶囊共用一套「涨 / 掉」的弹跳动画（见 chipTickUp / chipTickDown），
+   * 所以也要有 --chip：护盾的蓝。
+   */
+  --chip: #7bb7e8;
   z-index: 3;
 }
 .fighter-enemy .fighter-shield { right: auto; left: -6px; }
@@ -1002,10 +1013,100 @@ button { font-family: inherit; }
   font-size: 10px; font-weight: 700;
   padding: 1px 7px; border-radius: 999px;
   background: rgba(255, 255, 255, .12);
+  /* --chip 由 JS 按 STATUS_INFO 的主题色写上：入场闪、层数变化、退场都用它 */
+  --chip: var(--accent-2);
+  position: relative;
+  transition: box-shadow .18s ease, background-color .18s ease;
 }
 .status-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
 /* 状态胶囊上的图标：mask 染成 STATUS_INFO 的主题色（内联 backgroundColor 覆盖 currentColor） */
 .status-chip .status-ico { width: 11px; height: 11px; }
+.status-val { display: inline-block; }
+
+/**
+ * 「被挂上了毒」：从无到有，必须看得见。
+ *
+ * 这个动画只在**新建**的胶囊上播一次（refreshSide 里的对齐逻辑保证已有的胶囊不会被重建），
+ * 所以它读起来就是「刚刚附加上了」；如果每次刷新都重建节点，这里就会变成满屏乱闪。
+ */
+.status-chip.enter { animation: chipIn .34s cubic-bezier(.22, 1.4, .4, 1); }
+@keyframes chipIn {
+  0%   { transform: scale(.35) translateY(7px); opacity: 0; }
+  45%  { opacity: 1; box-shadow: inset 0 0 0 2px var(--chip), 0 0 12px 2px var(--chip); }
+  70%  { transform: scale(1.16) translateY(0); }
+  100% { transform: scale(1); opacity: 1; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip) 40%, transparent); }
+}
+
+/**
+ * 层数变化：整颗胶囊弹一下（涨＝更亮更用力，掉＝暗一下，方向读得出来），
+ * 数字本身滑进新值，旁边再飘一颗 +N / −N。
+ */
+.status-chip.tick-up, .fighter-shield.tick-up { animation: chipTickUp .34s ease; }
+.status-chip.tick-down, .fighter-shield.tick-down { animation: chipTickDown .34s ease; }
+@keyframes chipTickUp {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.16); box-shadow: inset 0 0 0 2px var(--chip), 0 0 10px 2px var(--chip); }
+  100% { transform: scale(1); }
+}
+@keyframes chipTickDown {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(.88); opacity: .55; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.status-val.val-up { animation: valUp .3s ease; }
+.status-val.val-down { animation: valDown .3s ease; }
+@keyframes valUp   { 0% { transform: translateY(7px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes valDown { 0% { transform: translateY(-7px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+/**
+ * Δ 角标：飘出去的是「这次变了多少」，胶囊上的数字才是当前层数。
+ *
+ * 往上飘会撞到上面那排属性（实测：正好压在「防42」上，两颗叠一起读成一片糊的），
+ * 而状态胶囊是角色卡的最后一行 —— 往下飘是空的，所以让它往下走。
+ */
+.status-delta {
+  position: absolute; right: 2px; bottom: -9px;
+  font-size: 9px; font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95), 0 0 7px currentColor;
+  pointer-events: none;
+  animation: deltaFloat .74s ease forwards;
+}
+@keyframes deltaFloat {
+  0%   { opacity: 0; transform: translateY(-3px) scale(.7); }
+  25%  { opacity: 1; transform: translateY(1px) scale(1.12); }
+  100% { opacity: 0; transform: translateY(11px) scale(1); }
+}
+
+/**
+ * 退场：缩小、上浮、化掉，同时把宽度收掉 ——
+ * 宽度不收的话胶囊虽然看不见了，那一格的空位还留着，整排会「顿」一下。
+ */
+.status-chip.out {
+  animation: chipOut .32s ease forwards;
+  pointer-events: none;
+}
+@keyframes chipOut {
+  0%   { max-width: 220px; transform: scale(1); opacity: 1; }
+  35%  { max-width: 220px; transform: scale(1.12); opacity: 1;
+         box-shadow: inset 0 0 0 2px var(--chip), 0 0 12px 3px var(--chip); }
+  100% { max-width: 0; padding-left: 0; padding-right: 0;
+         transform: scale(.45) translateY(-6px); opacity: 0; }
+}
+/* 被净化掉的那几个：先用白光点一下名，再化掉（JS 在净化事件里先加 .purge，隔一帧才加 .out） */
+.status-chip.purge {
+  background: rgba(255, 255, 255, .55);
+  box-shadow: inset 0 0 0 2px #fff, 0 0 14px 4px rgba(255, 255, 255, .75) !important;
+  color: #2a1c12;
+  transition: background-color .12s ease, box-shadow .12s ease, color .12s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-chip.enter, .status-chip.tick-up, .status-chip.tick-down,
+  .fighter-shield.tick-up, .fighter-shield.tick-down,
+  .status-chip.out, .status-val, .status-delta { animation: none; }
+  .status-chip.out { opacity: 0; max-width: 0; padding-left: 0; padding-right: 0; }
+  .status-delta { display: none; }
+}
 .stat-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; font-size: 11px; }
 .stat-chips span { display: inline-flex; align-items: center; gap: 3px; opacity: .85; }
 .stat-chips b { color: var(--accent-2); }

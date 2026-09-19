@@ -198,6 +198,48 @@ const pick = (evs, type) => evs.filter((e) => e.type === type);
     `敏捷 ${b3.player.agi + b3.player.agiMod}（攻防类下限 ${Math.round(10 * debuffFloor('def'))}，敏捷下限 ${floorAgi}）`);
 }
 
+// ---- 9) 净化 / 引爆要报出「清掉了哪几个状态」 ----
+// 界面靠这份名单把对应的状态胶囊化掉；只给一个数字的话，引擎已经清零、
+// 界面上的胶囊还挂着（要等回合收尾 resyncDisp 才掉），玩家打完「白雾」看不到任何反馈。
+{
+  const b = makeBattle();
+  b.rng = () => 0.999;
+  b.player.poison = 3;
+  b.player.toxic = 2;
+  b.player.burn = 1;
+  b.player.atkMod = -6;
+  b.resolveCard('player', CARD_BY_ID.mist);
+  const cl = pick(b.takeEvents(), 'cleanse')[0];
+  check('净化事件带上了被清掉的状态名单',
+    !!cl && Array.isArray(cl.statuses) && cl.statuses.join(',') === 'poison,toxic,burn',
+    JSON.stringify(cl?.statuses));
+  check('名单和引擎状态对得上（层数真的清零了）',
+    b.player.poison === 0 && b.player.toxic === 0 && b.player.burn === 0,
+    `poison=${b.player.poison} toxic=${b.player.toxic} burn=${b.player.burn}`);
+  check('属性下降清完之后剩多少也一并报出来（界面面板要跟着回正）',
+    !!cl?.mods && cl.mods.atk === 0, JSON.stringify(cl?.mods));
+
+  // 身上干净的时候：名单是空的，别谎报
+  const b2 = makeBattle();
+  b2.rng = () => 0.999;
+  b2.resolveCard('player', CARD_BY_ID.mist);
+  const cl2 = pick(b2.takeEvents(), 'cleanse')[0];
+  check('身上没有可清的东西时名单为空', !!cl2 && cl2.statuses.length === 0 && cl2.removed === 0,
+    JSON.stringify(cl2?.statuses));
+
+  // 引爆同一套：炸掉的毒要报出来
+  const b3 = makeBattle({ enemy: { maxHp: 1000, hp: 1000 } });
+  b3.rng = () => 0.999;
+  b3.enemy.poison = 3;
+  b3.enemy.burn = 2;
+  b3.enemy.weak = 1;                   // 虚弱不在引爆范围内，不能报进去
+  b3.resolveCard('player', CARD_BY_ID.venom_burst);
+  const det = pick(b3.takeEvents(), 'detonate')[0];
+  check('引爆事件带上了被炸掉的状态名单',
+    !!det && det.statuses.join(',') === 'poison,burn', JSON.stringify(det?.statuses));
+  check('引爆不碰虚弱（名单里没有它）', b3.enemy.weak === 1, 'weak=' + b3.enemy.weak);
+}
+
 console.log('');
 console.log(`状态与护盾的回归测试：通过 ${pass}，失败 ${fail}`);
 if (fail) process.exitCode = 1;

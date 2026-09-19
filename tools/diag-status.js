@@ -97,7 +97,8 @@
     window.__oasisUI?.battleScreen?.refreshSide?.('player');
     await wait(400);
 
-    const chips = [...document.querySelectorAll('.status-chip')].map((n) => n.textContent.trim());
+    // 只数在场上的：正在退场的胶囊（.out）还挂在 DOM 里播化掉的动画，不算数
+    const chips = [...document.querySelectorAll('.status-chip:not(.out)')].map((n) => n.textContent.trim());
     ok(chips.some((c) => c.includes('剧毒')), '对手身上出现「剧毒」状态胶囊', chips.join(' / ') || '（一个都没有）');
     ok(chips.some((c) => c.includes('中毒')), '自己身上出现「中毒」状态胶囊', chips.join(' / '));
 

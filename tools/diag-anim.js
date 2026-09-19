@@ -132,7 +132,8 @@
       bs.disp.player.weak = 0;
       bs.disp.player.poison = 0;
       bs.refreshSide('player');
-      const pills = () => [...document.querySelectorAll('.status-chip')].map((n) => n.textContent.trim());
+      // 只数在场上的：正在退场的胶囊（.out）还挂在 DOM 里播化掉的动画，不算数
+      const pills = () => [...document.querySelectorAll('.status-chip:not(.out)')].map((n) => n.textContent.trim());
       log(`引擎 weak=3/poison=2，副本 0 → 胶囊应 0 个，实际 ${pills().length} 个 ${pills().join(',') || '(空)'}`);
       bs.disp.player.weak = 3;
       bs.disp.player.poison = 2;

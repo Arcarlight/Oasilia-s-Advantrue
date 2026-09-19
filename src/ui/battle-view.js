@@ -8,7 +8,7 @@ import { createAnim, createStill, animInfo, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion, emotionForEvent } from '../core/portraits.js';
 import { turnArt as turnArtOf, fitArt, ART_FROM_SCALE } from '../core/gen9.js';
 import { audio } from '../core/audio.js';
-import { STATUS_INFO, computeHit, effectiveAtk, effectiveDef } from '../core/battle.js';
+import { STATUS_INFO, ALL_STATUSES, computeHit, effectiveAtk, effectiveDef } from '../core/battle.js';
 import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
 import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
@@ -30,6 +30,36 @@ const STATUS_ICO = {
 
 /** 战斗面板属性行的图标：和顶部 HUD 的 chip 用同一套语义（剑/盾/鞋/三叶草） */
 const STAT_ICO = { 攻: 'ico-sword', 防: 'ico-shield', 速: 'ico-shoe', 运: 'ico-clover' };
+
+/**
+ * 状态胶囊的固定顺序（直接沿用引擎那份状态表，不另抄一份）。
+ * 顺序固定是为了「先挂毒、后挂灼伤」和反过来的情况看起来一样 ——
+ * 以前每次刷新都是整排重建，顺序跟着引擎字段走，玩家看到的排布会跳。
+ */
+const CHIP_ORDER = ALL_STATUSES;
+
+/**
+ * 胶囊退场动画的时长（毫秒），必须和 style.css 里的 chipOut 一致。
+ * 这里只是「动画放完把它真的摘掉」的定时器，去掉动画不影响功能 ——
+ * 所以 CSS 那边如果改了时长，这里跟着改，别让节点在消失之后还占着位置。
+ */
+const CHIP_OUT_MS = 320;
+/** Δ 角标的存活时间（比动画长一点，飘完再摘） */
+const CHIP_DELTA_MS = 760;
+
+/**
+ * 重播一个 CSS 动画。
+ *
+ * 动画挂在类名上，同名的类再 add 一次浏览器不会当回事（状态没变），
+ * 所以要先摘掉、强制重排、再挂回去 —— 连续两次「中毒 +1」才都能弹。
+ * cls 传空串就是「只摘不挂」（护盾涨的那一下用 CSS 自带的入场动画）。
+ */
+function restartAnim(node, cls) {
+  if (!node) return;
+  node.classList.remove('enter', 'tick-up', 'tick-down', 'val-up', 'val-down');
+  void node.offsetWidth;
+  if (cls) node.classList.add(cls);
+}
 
 /**
  * 战斗演出的节奏表（毫秒）。想整体调快调慢就乘以用户的倍率，
@@ -68,6 +98,10 @@ const PACE = {
   shield: 320,
   heal: 320,
   status: 300,
+  /** 净化 / 引爆：先让要消失的状态胶囊亮一下白光，再让它们化掉（PACE.purge 是那一下白光） */
+  purge: 150,
+  cleanse: 240,
+  detonate: 260,
   buff: 300,
   dodge: 400,
   resist: 260,
@@ -248,6 +282,20 @@ export class BattleScreen {
         break;
       case 'status':
         if (ev.status) d[ev.status] = ev.value;
+        break;
+      /**
+       * 净化 / 引爆会一次性把好几个状态清成 0。
+       *
+       * 这两条事件以前**根本没有进这个副本**（switch 里没有对应的 case），
+       * 于是引擎已经把毒清干净了，界面副本还留着层数 ——
+       * 胶囊会一直挂到回合收尾的 resyncDisp 才掉，中间整段演出都在说假话。
+       */
+      case 'cleanse':
+        for (const st of ev.statuses ?? []) d[st] = 0;
+        if (ev.mods) { d.atkMod = ev.mods.atk; d.defMod = ev.mods.def; d.agiMod = ev.mods.agi; }
+        break;
+      case 'detonate':
+        for (const st of ev.statuses ?? []) d[st] = 0;
         break;
       default:
         break;
@@ -727,32 +775,37 @@ export class BattleScreen {
       shieldEl.classList.remove('hidden');
       // 护盾值用盾牌（圆角款）：和「防御属性」的基础盾区分开
       shieldEl.dataset.tip = `护盾 ${shieldVal}：先替你吃伤害，吃光之后剩下的才掉血。\n持有者自己的回合开始时清空，所以它是「撑过这一轮」的资源。`;
-      clear(shieldEl).append(el('span', { class: 'ico-shield_02', style: { width: '13px', height: '13px' } }), el('span', { text: String(shieldVal) }));
+      /**
+       * 只在数字真的变了时才重建内容。
+       *
+       * 以前这里每次刷新都 clear() + 重新 append，而 .fighter-shield 挂着 popIn 入场动画 ——
+       * 于是护盾徽章在每一次刷新（每一段伤害、每一次抽牌…）都会重播一遍「弹出来」，
+       * 多段攻击时看着像在抖。现在只有涨的那一下才算「入场」。
+       */
+      if (shieldEl.dataset.val !== String(shieldVal)) {
+        const prev = Number(shieldEl.dataset.val) || 0;
+        shieldEl.dataset.val = String(shieldVal);
+        clear(shieldEl).append(
+          el('span', { class: 'ico-shield_02', style: { width: '13px', height: '13px' } }),
+          el('span', { text: String(shieldVal) })
+        );
+        // 涨 = 刚加上（弹一下 + 蓝光），掉 = 被打掉了（缩一下）
+        restartAnim(shieldEl, shieldVal > prev ? 'tick-up' : 'tick-down');
+      }
     } else {
       shieldEl.classList.add('hidden');
+      shieldEl.classList.remove('tick-up', 'tick-down');
       delete shieldEl.dataset.tip;
+      // 归零：下一次再加护盾才算「涨」，否则会漏掉刷新后的那一下入场动画
+      shieldEl.dataset.val = '0';
+      clear(shieldEl);
     }
 
     // 状态胶囊必须读**演出副本**：引擎在 endTurn() 里就把整个敌方回合算完了，
     // 直接读 s[st] 会让「虚弱/中毒」在对手的招还没演到身上时就先冒出来。
     // （血量/护盾早就走 disp 了，状态这块当初漏了 —— 和当年那个「血条不动」是同一类 bug。）
     const dd = this.disp[key] ?? {};
-    clear(statusEl);
-    for (const st of ['poison', 'toxic', 'burn', 'weak', 'bleed']) {
-      const val = dd[st] ?? 0;
-      if (val > 0) {
-        const info = STATUS_INFO[st];
-        statusEl.append(el('span', {
-          class: 'status-chip',
-          // 悬停说明：说清它做什么、还剩几层、怎么解（自定义浮层，不用原生 title）
-          dataset: { tip: `${info.name} ${val} 层\n${info.desc}\n解法：「白雾」「焕然一新」这类解状态牌可以直接清掉。` },
-          style: { boxShadow: `inset 0 0 0 1px ${info.color}66` },
-        }, [
-          el('span', { class: `status-ico ${STATUS_ICO[st] ?? 'ico-warn'}`, style: { backgroundColor: info.color } }),
-          el('span', { text: `${info.name} ${val}` }),
-        ]));
-      }
-    }
+    this.syncStatusChips(statusEl, dd);
 
     clear(statsEl);
     const rows = isPlayer
@@ -795,6 +848,124 @@ export class BattleScreen {
     // 顶部 HUD 也跟着一起刷：只在整个回合演完时刷的话，
     // 演出途中「角色卡上的血条已经掉了、顶部的还满着」，看着像没掉血。
     if (isPlayer) this.syncHud();
+  }
+
+  /**
+   * 状态胶囊的增删改 —— 按状态名**对齐**，而不是每次重建一遍。
+   *
+   * 以前这里（在 refreshSide 里）是 clear() + 重新 append：胶囊每次刷新都是新节点，
+   * 于是「被挂上毒」只能是凭空出现、「毒解掉了」直接凭空消失，想加动画也没地方加 ——
+   * 入场动画挂在新建的节点上，每刷一次都会重播，多段攻击时会闪成一片。
+   * 现在节点留着：新来的播入场、层数变了的弹一下、走掉的带着退场动画化掉。
+   *
+   * 判断依据永远是**演出副本 dd**（不是引擎实时值），和血量/护盾同一套规矩：
+   * 引擎在 endTurn() 里已经把整个敌方回合算完了，读实时值会让状态提前冒出来。
+   */
+  syncStatusChips(statusEl, dd) {
+    const want = CHIP_ORDER.filter((st) => (dd?.[st] ?? 0) > 0);
+    /** 已经在场上的胶囊（正在退场的也算：同一回合里又被挂上就把它救回来） */
+    const have = new Map();
+    for (const node of [...statusEl.children]) {
+      if (node.dataset.st) have.set(node.dataset.st, node);
+    }
+
+    for (const st of want) {
+      const val = dd[st];
+      const info = STATUS_INFO[st];
+      const tip = `${info.name} ${val} 层\n${info.desc}\n解法：「白雾」「焕然一新」这类解状态牌可以直接清掉。`;
+      let node = have.get(st);
+      if (!node) {
+        node = el('span', {
+          class: 'status-chip enter',
+          dataset: { st, val: String(val), tip },
+          // 主题色同时给 CSS：入场闪一下、退场化掉都按这个颜色走
+          style: { '--chip': info.color, boxShadow: `inset 0 0 0 1px ${info.color}66` },
+        }, [
+          el('span', { class: `status-ico ${STATUS_ICO[st] ?? 'ico-warn'}`, style: { backgroundColor: info.color } }),
+          el('span', { class: 'status-val', text: `${info.name} ${val}` }),
+        ]);
+        statusEl.append(node);
+        have.set(st, node);
+        continue;
+      }
+      this.reviveChip(node);
+      node.classList.remove('purge');
+      // 层数变了：数字滑一下 + 弹一颗 Δ（不然「毒从 3 层掉到 2 层」在这么小的胶囊上根本看不出来）
+      if (node.dataset.val !== String(val)) {
+        const prev = Number(node.dataset.val) || 0;
+        const delta = val - prev;
+        node.dataset.val = String(val);
+        node.dataset.tip = tip;
+        const valEl = node.querySelector('.status-val');
+        if (valEl) {
+          valEl.textContent = `${info.name} ${val}`;
+          restartAnim(valEl, delta > 0 ? 'val-up' : 'val-down');
+        }
+        this.popDelta(node, delta, info.color);
+        restartAnim(node, delta > 0 ? 'tick-up' : 'tick-down');
+      }
+    }
+
+    // 不在 want 里的：退场（正在退的不要重复起动画，否则会被反复打断）
+    for (const [st, node] of have) {
+      if (want.includes(st)) continue;
+      this.retireChip(node);
+    }
+
+    // 归位：状态顺序固定，别因为「先挂毒后挂灼伤」就每次换位置
+    let cursor = statusEl.firstChild;
+    for (const st of want) {
+      const node = have.get(st);
+      if (!node || node === cursor) { if (node) cursor = node.nextSibling; continue; }
+      statusEl.insertBefore(node, cursor);
+    }
+  }
+
+  /** 让胶囊退场：先化掉，动画放完再真的摘掉 */
+  retireChip(node) {
+    if (node.dataset.leaving) return;
+    node.dataset.leaving = '1';
+    node.classList.remove('enter', 'tick-up', 'tick-down');
+    node.classList.add('out');
+    clearTimeout(node._leaveTimer);
+    node._leaveTimer = setTimeout(() => node.remove(), CHIP_OUT_MS);
+  }
+
+  /** 退场途中又挂上了同一种状态：把动画叫停，让它接着用同一颗胶囊 */
+  reviveChip(node) {
+    if (!node.dataset.leaving) return;
+    clearTimeout(node._leaveTimer);
+    delete node.dataset.leaving;
+    node.classList.remove('out');
+    restartAnim(node, 'enter');
+  }
+
+  /** 被净化的前一下：先亮白光，玩家才看得见「消失的是这几个」 */
+  markPurge(key) {
+    const statusEl = key === 'player' ? this.playerStatuses : this.enemyStatuses;
+    const dd = this.disp[key] ?? {};
+    if (!statusEl) return 0;
+    let n = 0;
+    for (const node of [...statusEl.children]) {
+      if ((dd[node.dataset.st] ?? 0) > 0) continue;
+      node.classList.add('purge');
+      n += 1;
+    }
+    return n;
+  }
+
+  /** 层数变化时弹一颗 +N / −N，飘完自己消失 */
+  popDelta(node, delta, color) {
+    if (!delta) return;
+    node.querySelector('.status-delta')?.remove();
+    const badge = el('span', {
+      class: `status-delta ${delta > 0 ? 'up' : 'down'}`,
+      // 只表示「这次变了多少」，当前层数仍然读胶囊上的数字
+      text: `${delta > 0 ? '+' : '−'}${Math.abs(delta)}`,
+      style: { color },
+    });
+    node.append(badge);
+    setTimeout(() => badge.remove(), CHIP_DELTA_MS);
   }
 
   /**
@@ -1390,9 +1561,53 @@ export class BattleScreen {
         this.burstFx(body, STATUS_FX[ev.status] ?? 'magic_1', {
           size: 124, ms: 520, klass: `fx-status fx-status-${ev.status}`,
         });
+        // 胶囊自己的入场 / 层数变化动画由 refreshSide 里的对齐逻辑负责（见 syncStatusChips）
         this.refreshSide(ev.side);
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.status);
+        break;
+      }
+      /**
+       * 净化：把身上被清掉的状态**当着玩家的面**化掉。
+       *
+       * 这条事件以前在界面这边完全没有分支 —— 引擎已经把毒清成 0 了，
+       * 界面既不刷胶囊也不打日志（「X 清除了身上的削弱（中毒 3）」这行字从来没出现过），
+       * 玩家打完「白雾」只看到一张牌摊开又收起，胶囊还挂在原位，然后下回合它自己没了。
+       * 现在：白光一闪 → 要消失的胶囊亮起 → 一起化掉 → 日志落行。
+       */
+      case 'cleanse': {
+        const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
+        this.pushLogLine(this.logOf(ev));
+        if ((ev.removed ?? 0) > 0) {
+          audio.heal();
+          this.flash(body);
+          this.burstFx(body, 'light_1', { size: 150, ms: 480 });
+          this.burstFx(body, 'spark_1', { size: 120, ms: 520, klass: 'fx-heal' });
+          if (this.markPurge(ev.side)) {
+            floatAt(body, '净化', 'float-heal');
+            // 先让那几个胶囊亮一下白光：不然「哪几个被清掉了」根本看不见
+            await this.wait(PACE.purge);
+          }
+          this.refreshSide(ev.side);
+        }
+        await this.wait(PACE.cleanse);
+        break;
+      }
+      /**
+       * 引爆（剧毒爆发）：把对手身上的中毒 / 剧毒一次性炸掉。
+       * 和净化同理 —— 以前也是「引擎清了、界面还挂着胶囊」，而且日志行同样被打丢了。
+       */
+      case 'detonate': {
+        this.pushLogLine(this.logOf(ev));
+        const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
+        if ((ev.stacks ?? 0) > 0) {
+          audio.poison();
+          this.burstFx(body, 'magic_1', { size: 150, ms: 560, klass: 'fx-status fx-status-toxic' });
+          floatAt(body, `引爆 ×${ev.stacks}`, 'float-dmg');
+          if (this.markPurge(ev.side)) await this.wait(PACE.purge);
+          this.refreshSide(ev.side);
+        }
+        await this.wait(PACE.detonate);
         break;
       }
       case 'buff': {
@@ -1447,6 +1662,9 @@ export class BattleScreen {
         break;
       }
       case 'gainAp':
+        // 「回 AP 的牌」这条事件没有日志（效果面上已经写着 +AP），
+        // 但「下回合额外获得 N 点行动点」那种是带日志的 —— 不推的话那行字一样看不见
+        this.pushLogLine(this.logOf(ev));
         this.refreshTurn();
         await this.wait(PACE.gainAp);
         break;
@@ -1454,6 +1672,14 @@ export class BattleScreen {
         await this.onBattleEnd(ev);
         break;
       default:
+        /**
+         * 引擎挂了日志、但界面这边没写专属演出的事件（力量加成、额外出牌次数…）。
+         *
+         * 日志文本是**跟着事件走**的（见 battle.js 的 emitLogged），而这里以前是空的
+         * `break` —— 于是「剑舞」加的威力、「轻装」多出的出牌次数，战斗日志里一行都没有：
+         * 效果真的生效了，玩家却找不到任何痕迹。没写演出的至少也要把话留下。
+         */
+        this.pushLogLine(this.logOf(ev));
         break;
     }
   }

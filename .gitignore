@@ -12,6 +12,9 @@ kenney_*/
 SGHr-Regular.ttf
 WenYuanSerifSC-Bold.ttf
 851LakeusNightWriting-Regular.ttf
+# 同一类：工作区里躺着的原始字体、没有任何代码引用它（4 MB）。
+# 上一次 git add -A 把它卷进了提交，已从索引里撤掉 —— 见 README 那条「-A 的坑」。
+YShiWrittenSC-Regular.ttf
 
 # Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，
 # 而且是从 %TEMP% 解包后由 tools/import-gen9.mjs 挑图，运行时完全不读它。

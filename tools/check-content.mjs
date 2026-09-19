@@ -425,6 +425,22 @@ if (BGM_FILES) {
   if (bad.length) note(`这些脚本里有非 ASCII 字节（PowerShell 5.1 会按本地代码页解析，可能乱码）：${bad.join('、')}`);
 }
 
+// ---------- 7. 状态胶囊：JS 的倒计时必须和 CSS 的动画时长一致 ----------
+// 胶囊退场时是「先播 CSS 动画，再由 JS 的定时器把节点摘掉」。两边的时长一旦不一致：
+//   · JS 更短 → 动画还没放完节点就没了（看着像卡掉一帧）
+//   · JS 更长 → 胶囊看不见了但还占着那一格，整排会「顿」一下
+// 这两个数字以前只能靠人对眼，现在钉在体检里。
+{
+  const css = await fs.readFile(path.join(ROOT, 'src/ui/style.css'), 'utf8');
+  const js = await fs.readFile(path.join(ROOT, 'src/ui/battle-view.js'), 'utf8');
+  const cssMs = Number((css.match(/animation:\s*chipOut\s+([\d.]+)s/) ?? [])[1]) * 1000;
+  const jsMs = Number((js.match(/const CHIP_OUT_MS\s*=\s*(\d+)/) ?? [])[1]);
+  if (!cssMs) problems.push('style.css 里找不到 .status-chip 的 chipOut 动画（状态胶囊的退场动画）');
+  else if (!jsMs) problems.push('battle-view.js 里找不到 CHIP_OUT_MS（胶囊退场后摘节点的延时）');
+  else if (cssMs !== jsMs) problems.push(`胶囊退场：CSS 动画 ${cssMs}ms ≠ JS 摘节点 ${jsMs}ms（两边必须一致，见 style.css 的 chipOut 与 battle-view.js 的 CHIP_OUT_MS）`);
+  else note(`状态胶囊退场：CSS 与 JS 都是 ${jsMs}ms（入场 / 层数变化 / 退场三套动画见 style.css）`);
+}
+
 // ---------- 汇总 ----------
 console.log('内容体检：');
 console.log(`  卡牌 ${CARDS.length} · 敌人 ${ENEMIES.length}（${Object.keys(TIERS).map((t) => t + ' ' + ENEMIES.filter((e) => e.tier === t).length).join(' / ')}）`);

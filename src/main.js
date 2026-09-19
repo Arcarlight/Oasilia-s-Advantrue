@@ -221,6 +221,11 @@ async function boot() {
     // 卡死诊断：主动制造各种「打不出卡」的情形，验证看门狗与提示
     import('../tools/diag-stuck.js').catch((e) => console.error('卡死诊断加载失败', e));
   }
+  if (params.has('dgchips')) {
+    // 状态胶囊诊断：附加 / 层数变化 / 消除三个方向是不是真有动画
+    // （?dgchips=1 自检；?dgchips=shot 把动画定格在中途方便截图）
+    import('../tools/diag-chips.js').catch((e) => console.error('状态胶囊诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {
