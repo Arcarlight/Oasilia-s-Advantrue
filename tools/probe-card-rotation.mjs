@@ -2,8 +2,8 @@
 //
 // 它做两件事：
 //   ① 把一场战斗里「羽栖」每次出现时的 **uid** 打出来 —— 一张牌整场战斗只有一个 uid，
-//      所以如果两次抽到的 uid 相同，那就是同一张牌在自己轮换（打出去洗回牌堆底端、
-//      又被抽回来），**不是被复制成了两张**；
+//      所以如果两次抽到的 uid 相同，那就是同一张牌在自己轮换（打出→弃牌区→牌堆抽空时
+//      洗回来→又被抽到手），**不是被复制成了两张**；
 //   ② 顺手验证奖励保底 withSustainPity：既缺回血牌又缺解状态牌时，两条保底会不会互相覆盖。
 //
 // 用法：node tools/probe-card-rotation.mjs
@@ -54,7 +54,7 @@ console.log('\n=== ① 卡组里只有 1 张「羽栖」，它在同一场战斗
       const isRoost = pick.id === 'roost';
       b.playCard(pick.uid);
       b.takeEvents();
-      if (isRoost) trace.push(`第${b.turn}回合 打出 羽栖(uid ${pick.uid}) → 洗回牌堆最底端（牌堆 ${b.decks.player.draw.length} 张）`);
+      if (isRoost) trace.push(`第${b.turn}回合 打出 羽栖(uid ${pick.uid}) → 进弃牌区（牌堆 ${b.decks.player.draw.length} / 弃牌 ${b.decks.player.discard.length}）`);
     }
     if (b.over) break;
     b.endTurn();

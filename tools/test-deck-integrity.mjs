@@ -5,7 +5,7 @@
 //   draw（牌堆）/ hand（手牌）/ discard（弃牌堆）/ exhaust（销毁堆）/ 「正在打出、还没归位」
 // 一旦某个 uid 同时出现在两处、或者四堆总数对不上开局卡组，玩家就会看到「凭空多了一张」。
 //
-// 关于「在途」：`playCard()` 会先把牌从手牌拿走、跑完效果、最后才推回牌堆底部。
+// 关于「在途」：`playCard()` 会先把牌从手牌拿走、跑完效果、最后才推进弃牌堆。
 // 如果这张牌自己有「抽 N 张」的效果，那它在抽牌的那一刻确实是**哪一堆都不在**的 ——
 // 这是正常的，所以不变量写的是 `四堆总数 + 在途张数 = 开局卡组张数`。
 // （第一版测试忘了这一条，于是把正常行为误报成了 bug。）
@@ -221,7 +221,60 @@ console.log('\n⑤ 存档往返：写盘 → 读回 → 卡组张数与每种卡
   ok(cur.length === before.length, '连续存档 / 读档 20 次之后卡组张数依然不变', `${before.length} → ${cur.length}`);
 }
 
-console.log('\n⑥ 哨兵自检：故意把同一张牌塞进两堆，checkPileIntegrity 必须报出来');
+console.log('\n⑥ 牌的流向：打出去进**弃牌区**；牌堆抽空才洗回来；手牌满了不丢牌');
+{
+  // 用户点名的规则：「卡打出去以后会进入弃牌区而不是再放入卡组，
+  // 直到卡组抽光以后才会让弃牌区回到卡组」。
+  // 这条以前是「打出去塞回牌堆最底端」，而且手牌满时**静默把抽到的牌丢进弃牌堆** ——
+  // 玩家看到的就是「我什么都没干，牌怎么莫名其妙进了弃牌区」。这三条都钉在这里。
+  const deck = ['tackle', 'tackle', 'tackle', 'bite', 'harden', 'roost'];
+  const b = startBattleWith(deck, 2024);
+
+  // ① 打一张普通牌 → 进弃牌区，牌堆张数不变
+  const drawBefore = b.decks.player.draw.length;
+  const discardBefore = b.decks.player.discard.length;
+  const first = b.hand('player').find((c) => b.canPlay(c.uid));
+  const firstId = first.id;
+  b.playCard(first.uid);
+  b.takeEvents();
+  ok(b.decks.player.discard.some((e) => e.uid === first.uid),
+    '打出去的牌进了**弃牌区**', `打出「${firstId}」uid=${first.uid}，弃牌 ${discardBefore} → ${b.decks.player.discard.length}`);
+  ok(!b.decks.player.draw.some((e) => e.uid === first.uid),
+    '打出去的牌**没有**被塞回牌堆（旧规则是塞回最底端）');
+  ok(b.decks.player.draw.length === drawBefore,
+    '牌堆张数不受出牌影响', `${drawBefore} → ${b.decks.player.draw.length}`);
+
+  // ② 把手牌打空 + 牌堆抽空，再抽牌 → 弃牌区必须洗回牌堆
+  const b2 = startBattleWith(deck, 2024);
+  // 直接把牌堆清空（模拟「抽光了」），弃牌区留着几张
+  b2.decks.player.draw = [];
+  b2.decks.player.hand = [];
+  const seedCards = deck.map((id, i) => ({ uid: `seed-${i}`, id, card: CARD_BY_ID[id] }));
+  b2.decks.player.discard = seedCards;
+  b2.takeEvents();               // 丢掉开局那批事件，只看这次抽牌发了什么
+  b2.drawCards('player', 3);
+  const evs = b2.takeEvents();
+  ok(b2.decks.player.hand.length === 3 && b2.decks.player.draw.length === 3 && b2.decks.player.discard.length === 0,
+    '牌堆抽空后再抽 → 弃牌区洗回牌堆，接着抽得到',
+    `手牌 ${b2.decks.player.hand.length} / 牌堆 ${b2.decks.player.draw.length} / 弃牌 ${b2.decks.player.discard.length}（弃牌区原本 6 张）`);
+  ok(evs.some((e) => e.type === 'reshuffle'), '发了一个「洗牌」事件（界面会提示）', evs.map((e) => e.type).join(','));
+
+  // ③ 手牌满时抽牌：**不许**把牌丢进弃牌区，也不许白洗一次牌
+  const b3 = startBattleWith(deck, 2024);
+  const max = b3.player.handMax;
+  b3.decks.player.hand = deck.map((id, i) => ({ uid: `h-${i}`, id, card: CARD_BY_ID[id] }));
+  b3.decks.player.draw = [{ uid: 'd-0', id: deck[0], card: CARD_BY_ID[deck[0]] }];
+  b3.decks.player.discard = [];
+  const totalBefore = b3.decks.player.hand.length + b3.decks.player.draw.length + b3.decks.player.discard.length;
+  b3.drawCards('player', 3);
+  const totalAfter = b3.decks.player.hand.length + b3.decks.player.draw.length + b3.decks.player.discard.length;
+  ok(b3.decks.player.hand.length === max && b3.decks.player.discard.length === 0,
+    `手牌已经到上限（${max}）时抽牌不会把牌丢进弃牌区`,
+    `手牌 ${b3.decks.player.hand.length} / 牌堆 ${b3.decks.player.draw.length} / 弃牌 ${b3.decks.player.discard.length}`);
+  ok(totalAfter === totalBefore, '牌一张都没少（三堆总数不变）', `${totalBefore} → ${totalAfter}`);
+}
+
+console.log('\n⑦ 哨兵自检：故意把同一张牌塞进两堆，checkPileIntegrity 必须报出来');
 {
   const deck = ['roost', 'tackle', 'harden'];
   const b = startBattleWith(deck, 42);

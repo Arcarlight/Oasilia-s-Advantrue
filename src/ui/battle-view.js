@@ -1056,10 +1056,10 @@ export class BattleScreen {
     clear(this.pileInfo);
     const mk = (tip, children) => el('span', { dataset: { tip } }, children);
     this.pileInfo.append(
-      mk('牌堆：还没抽到的牌。抽完会把弃牌堆洗回来。', [el('span', { class: 'ico-cards', style: { width: '13px', height: '13px' } }), ' 卡组 ', el('b', { text: String(d.draw.length) })]),
-      mk('弃牌：这回合用掉、或回合结束没打出的牌。牌堆抽空时会重新洗进牌堆。', ['弃牌 ', el('b', { text: String(d.discard.length) })]),
+      mk('牌堆：还没抽到的牌。抽完会把弃牌洗回来。', [el('span', { class: 'ico-cards', style: { width: '13px', height: '13px' } }), ' 卡组 ', el('b', { text: String(d.draw.length) })]),
+      mk('弃牌：打出去的牌会进这里（不进牌堆）。牌堆抽空、还要再抽的时候，这里才洗回牌堆。', ['弃牌 ', el('b', { text: String(d.discard.length) })]),
       mk('销毁：带「使用后销毁」的牌打完就进这里，本场战斗不会再出现。', ['销毁 ', el('b', { text: String(d.exhaust.length) })]),
-      mk('手牌：当前能打出的牌。上限由敏捷决定，超出的会直接进弃牌。', ['手牌 ', el('b', { text: `${d.hand.length}/${this.battle.player.handMax}` })]),
+      mk('手牌：当前能打出的牌。上限由敏捷决定，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。', ['手牌 ', el('b', { text: `${d.hand.length}/${this.battle.player.handMax}` })]),
     );
   }
 
@@ -1417,7 +1417,7 @@ export class BattleScreen {
         await this.wait(PACE.resist);
         break;
       case 'discard':
-      case 'toBottom':
+        // 打出去的牌进弃牌区（旧版是「塞回牌堆最底端」，那条事件叫 toBottom，已经不存在了）
         this.refreshPiles();
         await this.wait(PACE.discard);
         break;

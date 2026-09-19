@@ -4,7 +4,8 @@
 // 核心规则（用户需求）：
 //   · AP 每回合回复到「由敏捷决定」的固定值
 //   · 攻击方 ATK + 卡牌威力，减去防守方 DF 的减伤后造成伤害
-//   · 每回合双方抽卡；卡牌使用后要么销毁（exhaust），要么回到卡组最底端
+//   · 每回合双方抽卡；卡牌使用后进**弃牌堆**（标着销毁的进销毁堆）
+//   · 牌堆抽空、还要再抽时，才把弃牌堆洗回牌堆（每回合抽牌/手牌上限都由敏捷决定）
 //   · 敏捷越高，每回合抽卡越多、手牌上限越大
 //   · 战斗结束后玩家 HP 保留（由外部 state 处理）
 
@@ -263,9 +264,14 @@ export class Battle {
   // ====================== 抽卡 / 牌堆 ======================
 
   /**
-   * 从卡组顶抽 n 张；牌堆空时把弃牌堆洗回卡组。
-   * 抽牌数故意设计成大于手牌上限——超出部分会自动丢进弃牌堆，
-   * 这样每回合的「新牌供应」是稳定的，玩家不主动出牌就会被卡住。
+   * 从牌堆顶抽 n 张；牌堆空了就先把**弃牌堆**洗回牌堆再继续抽。
+   *
+   * 手牌满了就**抽不动了**（直接停手，不把那张牌丢掉）。
+   * 旧写法是「抽到但塞不进手牌 → 静默丢进弃牌堆」，玩家的感受就是
+   * 「我什么都没干，牌怎么莫名其妙进了弃牌区」（用户反馈）——
+   * 一回合结束手里剩 5 张、下回合又抽 5 张，只有 1 张放得下，另外 4 张就无声无息地没了。
+   * 现在：抽不进来就留在牌堆顶，等腾出手牌位再抽得到。少抽几张不会让谁变弱 ——
+   * 手牌上限本来就是玩家自己的预算（敏捷决定）。
    *
    * 关于「一张牌能不能在同一回合里被反复抽回来」：
    * 曾经加过一条「打出去的牌当回合抽不回来」的规则，用来堵「子弹拳 + 电光一闪」两张
@@ -273,7 +279,8 @@ export class Battle {
    * 掉到 2 张），而真正的病根其实是「出战卡组可以随便挑成 2 张」——
    * 那个开关已经取消（出战卡组 = 全部所持卡牌，精简要花钱删卡），所以这条规则**已回退**。
    *
-   * 现在小卡组轮换是**花钱买来的构筑**（商店删卡），而且有出牌上限兜底：
+   * 现在打出去的牌进弃牌堆，要等牌堆抽空才洗回来，所以同一回合里能不能再抽到同一张牌
+   * 取决于牌堆还剩多少 —— 这是**可控**的轮换，而且有出牌上限兜底：
    * 不管怎么轮换，一回合最多也就打 `playMax`（3 + 敏捷÷2，上限 9）张牌 —— 不会死循环。
    */
   drawCards(key, n) {
@@ -281,21 +288,16 @@ export class Battle {
     const max = this[key].handMax;
     const drawn = [];
     for (let i = 0; i < n; i++) {
+      // 手牌满了就停手：先判这一条，免得白白把弃牌堆洗一遍、还发一个假的「洗牌」事件
+      if (d.hand.length >= max) break;
       if (d.draw.length === 0) {
         if (d.discard.length === 0) break;
         d.draw = this.rng.shuffle(d.discard);
         d.discard = [];
         this.emit({ type: 'reshuffle', side: key });
       }
-      const card = d.draw.shift();
-      if (d.hand.length >= max) {
-        // 手牌满了：新抽到的牌直接进弃牌堆
-        d.discard.push(card);
-        this.emit({ type: 'discard', side: key, cards: [card.id], overdraw: true });
-        continue;
-      }
-      d.hand.push(card);
-      drawn.push(card);
+      d.hand.push(d.draw.shift());
+      drawn.push(d.hand[d.hand.length - 1]);
     }
     if (drawn.length) this.emit({ type: 'draw', side: key, cards: drawn.map((c) => c.id) });
     if (key === 'player') this.checkPileIntegrity('抽牌后');
@@ -316,7 +318,7 @@ export class Battle {
    * 起因：玩家反馈「我只有一张羽栖，战斗里却抽出了两张」。
    * 把 86 种卡各塞进小卡组打一遍、再跑 150 局全流程逐操作对账（见
    * tools/test-deck-integrity.mjs 与 tools/test-deck-growth.mjs）都**没有复现**——
-   * 那份反馈实际是「打出去洗回牌堆底端、又被抽回来」的正常轮换（同一张牌，
+   * 那份反馈实际是「同一张牌轮换着又被抽回来」的正常现象（同一张牌，
    * 整场战斗里 uid 始终不变）。但「凭空多一张」这种事只要真发生过一次就该留下痕迹，
    * 所以这里常驻一个哨兵：一旦真的发生，控制台会直接说清是哪张牌、出现在哪几堆。
    *
@@ -447,15 +449,17 @@ export class Battle {
     this.emitLogged({ type: 'playCard', side: 'player', id: card.id, name: card.name, cost }, `${this.player.name} 使用了「${card.name}」。`);
     this.resolveCard('player', card, opts);
 
-    // 使用后的去向：销毁区 or 卡组最底端
-    // （牌堆空时再抽就会把弃牌堆洗回来；小卡组靠「打完回底端」在同一回合内反复抽到，
-    //  这是允许的构筑玩法 —— 一回合最多打 playMax 张，不会失控，详见 drawCards 的说明）
+    // 使用后的去向：销毁区 or **弃牌堆**
+    // （牌堆抽空、还要再抽的时候，弃牌堆才会洗回牌堆 —— 这是用户点名要的规则：
+    //  「卡打出去以后会进入弃牌区而不是再放入卡组，直到卡组抽光以后才会让弃牌区回到卡组」。
+    //  以前是「打出去塞回牌堆最底端」，玩家很难预判下一张抽到什么，而且弃牌堆只在
+    //  手牌溢出的情况下涨 —— 那张牌是怎么进去的完全看不出来。）
     if (card.exhaust) {
       d.exhaust.push(entry);
       this.emit({ type: 'exhaust', side: 'player', id: card.id });
     } else {
-      d.draw.push(entry);
-      this.emit({ type: 'toBottom', side: 'player', id: card.id });
+      d.discard.push(entry);
+      this.emit({ type: 'discard', side: 'player', cards: [card.id] });
     }
     this.checkPileIntegrity('出牌后');
     return { ok: true, card: card.id, cost };
@@ -883,9 +887,9 @@ export class Battle {
         this.decks.enemy.exhaust.push(pick.c);
         this.emit({ type: 'exhaust', side: 'enemy', id: pick.c.card.id });
       } else {
-        // 和玩家同一条规则：打出去的牌回牌堆底部，同一回合可能再被抽到
-        this.decks.enemy.draw.push(pick.c);
-        this.emit({ type: 'toBottom', side: 'enemy', id: pick.c.card.id });
+        // 和玩家同一条规则：打出去的牌进弃牌堆，牌堆抽空时才洗回来
+        this.decks.enemy.discard.push(pick.c);
+        this.emit({ type: 'discard', side: 'enemy', cards: [pick.c.card.id] });
       }
     }
     this.emit({ type: 'turnEnd', side: 'enemy' });
