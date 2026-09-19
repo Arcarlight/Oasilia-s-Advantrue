@@ -22,5 +22,10 @@
     "name": "史诗",
     "color": "#d08cff",
     "weight": 9
+  },
+  "rewardWeights": {
+    "normal": { "common": 100, "uncommon": 55, "rare": 26, "epic": 9 },
+    "elite": { "common": 70, "uncommon": 55, "rare": 40, "epic": 18 },
+    "boss": { "common": 40, "uncommon": 50, "rare": 55, "epic": 38 }
   }
 }

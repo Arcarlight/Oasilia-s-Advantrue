@@ -3952,27 +3952,43 @@ function weightedPick(pool) {
   return pool[pool.length - 1][1];
 }
 
-/** 按稀有度权重抽一张卡（排除 exclude 里的 id）；敌人专用牌不会进玩家的奖励池 */
-export function rollCard(rarityBoost = 0, exclude = []) {
+/**
+ * 按稀有度权重抽一张卡（排除 exclude 里的 id）；敌人专用牌不会进玩家的奖励池。
+ *
+ * @param {number} rarityBoost 稀有度加成系数（事件 / 商店用）
+ * @param {string[]} exclude    不要抽到的卡 id
+ * @param {object|null} weights 显式稀有度权重（战斗奖励按敌人档位给的那张表）；
+ *                              给了它就完全按它抽，不再叠 rarityBoost
+ */
+export function rollCard(rarityBoost = 0, exclude = [], weights = null) {
   const pool = [];
   for (const card of CARDS) {
     if (exclude.includes(card.id)) continue;
     // 敌人专用弱招（content/cards.json 里 enemyOnly: true）只给敌人用，别发给玩家
     if (card.enemyOnly) continue;
-    const base = RARITY[card.rarity].weight;
-    // rarityBoost 提高稀有卡出现概率
-    const mult = card.rarity === 'common' ? 1 : 1 + rarityBoost * (card.rarity === 'epic' ? 0.5 : card.rarity === 'rare' ? 0.7 : 1);
+    const base = weights ? (weights[card.rarity] ?? 0) : RARITY[card.rarity].weight;
+    if (!base) continue;
+    /**
+     * rarityBoost 提高稀有卡出现概率 —— **越稀有，加成越大**。
+     *
+     * 这里以前是反着写的（史诗 ×0.5、稀有 ×0.7、精良 ×1、普通 ×1），
+     * 等于「越稀有越不涨」，加成几乎全被精良吃掉了。实测后果：打完首领给的史诗占比
+     * 3.5%，和路边杂兵**一模一样**（玩家直接看出来了：「boss 和精英给的卡并没有更好」）。
+     * 现在史诗 ×2、稀有 ×1.5、精良 ×0.8、普通 ×0，系数才真的有档位感。
+     */
+    const mult = weights ? 1
+      : 1 + rarityBoost * (card.rarity === 'epic' ? 2 : card.rarity === 'rare' ? 1.5 : card.rarity === 'uncommon' ? 0.8 : 0);
     pool.push([base * mult, card]);
   }
   return weightedPick(pool);
 }
 
 /** 随机抽 n 张不重复的卡 */
-export function rollCards(n, rarityBoost = 0, exclude = []) {
+export function rollCards(n, rarityBoost = 0, exclude = [], weights = null) {
   const out = [];
   const used = [...exclude];
   for (let i = 0; i < n; i++) {
-    const c = rollCard(rarityBoost, used);
+    const c = rollCard(rarityBoost, used, weights);
     out.push(c);
     used.push(c.id);
   }

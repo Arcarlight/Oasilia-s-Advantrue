@@ -430,6 +430,28 @@ export const RARITY = {
     "weight": 9
   }
 };
+
+/** 战斗奖励的稀有度权重，按敌人档位分（普通怪 / 精英 / 首领）—— 见 content/rarity.json */
+export const REWARD_WEIGHTS = {
+  "normal": {
+    "common": 100,
+    "uncommon": 55,
+    "rare": 26,
+    "epic": 9
+  },
+  "elite": {
+    "common": 70,
+    "uncommon": 55,
+    "rare": 40,
+    "epic": 18
+  },
+  "boss": {
+    "common": 40,
+    "uncommon": 50,
+    "rare": 55,
+    "epic": 38
+  }
+};
 // #endregion GENERATED-BIOMES
 
 // ============================================================

@@ -27,7 +27,7 @@ const exists = async (p) => !!(await fs.stat(p).catch(() => null));
 const { CARDS, CARD_ART, ITEMS, STARTER_DECK } = await import('../src/data/cards.js');
 const { ENEMIES, MOVE_POOLS, TIERS } = await import('../src/data/enemies.js');
 const { EVENTS } = await import('../src/data/events.js');
-const { BIOMES, STAGE_BIOME, BALANCE, RARITY } = await import('../src/data/balance.js');
+const { BIOMES, STAGE_BIOME, BALANCE, RARITY, REWARD_WEIGHTS } = await import('../src/data/balance.js');
 const { NODE_TYPES } = await import('../src/data/mapgen.js');
 const { BGM_FILES } = await import('../src/core/bgm.js').catch(() => ({ BGM_FILES: null }));
 const { STATUS_INFO } = await import('../src/core/battle.js');
@@ -708,6 +708,57 @@ if (BGM_FILES) {
     }
   }
   if (!zhHits.length) note('内容里没有现实动物（台词点名的都是宝可梦：秃鹫娜 / 巨翅飞鱼 / 波波…）');
+}
+
+// ---------- 11. 战斗奖励：档位越高，卡牌奖励越好 ----------
+/**
+ * 用户报过一条：「boss 和精英怪打完给的卡牌奖励并没有比普通小怪好？」
+ *
+ * 量出来**确实如此**：史诗占比 普通怪 3.5% / 精英 3.6% / 首领 3.4% —— 一条直线。
+ * 原因是当时只有一个 `rarityBoost` 系数（0.1 / 0.45 / 0.8），而它的加成是
+ * 「越稀有越小」（史诗 ×0.5、稀有 ×0.7、精良 ×1），加成几乎全被精良吃掉。
+ *
+ * 现在稀有度按**档位**给（`content/rarity.json` 的 rewardWeights），这里把
+ * 「越往上越好」当门禁卡住 —— 顺便把概率打出来，改数值时一眼能看到后果。
+ */
+{
+  const w = REWARD_WEIGHTS ?? {};
+  const rarities = Object.keys(RARITY);
+  const counts = {};
+  for (const c of CARDS) if (!c.enemyOnly) counts[c.rarity] = (counts[c.rarity] ?? 0) + 1;
+
+  const missing = [];
+  for (const tier of ['normal', 'elite', 'boss']) {
+    if (!w[tier]) { missing.push(tier); continue; }
+    for (const r of rarities) if (!(w[tier][r] > 0)) missing.push(`${tier}.${r}`);
+  }
+  if (missing.length) {
+    err(`战斗奖励的档位权重不全（content/rarity.json 的 rewardWeights 缺 ${missing.join('、')}）：`
+      + '缺了就退回基础权重，精英和首领的奖励又和普通怪一样了');
+  } else {
+    // 单卡出现某稀有度的概率（按权重 × 该档卡数），再算「一次奖励里至少一张」
+    const pOf = (tier, r) => {
+      let total = 0; let hit = 0;
+      for (const rr of rarities) { const v = w[tier][rr] * (counts[rr] ?? 0); total += v; if (rr === r) hit = v; }
+      return hit / total;
+    };
+    const slotsOf = { normal: 3, elite: 4, boss: 4 };
+    const odds = {};
+    for (const tier of ['normal', 'elite', 'boss']) {
+      odds[tier] = 1 - (1 - pOf(tier, 'epic')) ** slotsOf[tier];
+    }
+    note(`战斗奖励的稀有度：单卡史诗占比 普通 ${(pOf('normal', 'epic') * 100).toFixed(1)}%`
+      + ` / 精英 ${(pOf('elite', 'epic') * 100).toFixed(1)}% / 首领 ${(pOf('boss', 'epic') * 100).toFixed(1)}%；`
+      + `一次奖励里至少一张史诗：普通 ${(odds.normal * 100).toFixed(0)}% / 精英 ${(odds.elite * 100).toFixed(0)}% / 首领 ${(odds.boss * 100).toFixed(0)}%`);
+    if (!(odds.elite > odds.normal * 2)) {
+      err(`精英的卡牌奖励不够好：至少一张史诗的概率 ${(odds.elite * 100).toFixed(1)}%，`
+        + `只有普通怪（${(odds.normal * 100).toFixed(1)}%）的 ${(odds.elite / odds.normal).toFixed(2)} 倍（要求 ≥2 倍）`);
+    }
+    if (!(odds.boss > odds.elite * 1.5)) {
+      err(`首领的卡牌奖励不够好：至少一张史诗的概率 ${(odds.boss * 100).toFixed(1)}%，`
+        + `只有精英（${(odds.elite * 100).toFixed(1)}%）的 ${(odds.boss / odds.elite).toFixed(2)} 倍（要求 ≥1.5 倍）`);
+    }
+  }
 }
 
 // ---------- 汇总 ----------

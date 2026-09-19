@@ -533,12 +533,19 @@ function emitEnemies(tiers, movePools, enemies, species) {
 }
 
 function emitBiomes(stageOrder, biomes, rarity) {
+  // `rewardWeights`（打完怪按档位给什么稀有度）单独导出一个常量 ——
+  // 混在 RARITY 里会让「遍历稀有度」的代码把它当成一档稀有度
+  // （check-content.mjs 就是 `Object.keys(RARITY)` 那样遍历的）。
+  const { rewardWeights, ...rarityOnly } = rarity;
   return [
     'export const STAGE_BIOME = ' + J(stageOrder) + ';',
     '',
     'export const BIOMES = ' + J(biomes) + ';',
     '',
-    'export const RARITY = ' + J(rarity) + ';',
+    'export const RARITY = ' + J(rarityOnly) + ';',
+    '',
+    '/** 战斗奖励的稀有度权重，按敌人档位分（普通怪 / 精英 / 首领）—— 见 content/rarity.json */',
+    'export const REWARD_WEIGHTS = ' + J(rewardWeights ?? {}) + ';',
   ].join('\n');
 }
 

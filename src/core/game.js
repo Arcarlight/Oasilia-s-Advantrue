@@ -1,7 +1,7 @@
 // 游戏状态机：地图 → 战斗 / 事件 / 宝箱 / 商店 / 营地 → 下一章 → 结局。
 // 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
 
-import { BALANCE, BIOMES, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
+import { BALANCE, BIOMES, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
 import { CARD_BY_ID, ITEMS, STARTER_DECK, STARTER_ITEMS, rollCard, rollCards, CARDS } from '../data/cards.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
@@ -638,11 +638,17 @@ export class Game {
     const growth = this.rollGrowth(ctx.kind);
     const growthText = this.applyGrowth(growth);
 
-    // 抽奖励卡
-    const boost = ctx.kind === 'boss' ? 0.8 : ctx.kind === 'elite' ? 0.45 : 0.1;
+    // 抽奖励卡。
+    //
+    // 稀有度按**敌人档位**给（content/rarity.json 的 rewardWeights）——
+    // 以前只有一个 `boost` 系数（普通 0.1 / 精英 0.45 / 首领 0.8），而它的加成是
+    // 「越稀有越小」，于是打完首领和打完路边小怪抽到的史诗占比都是 3.5%，
+    // 玩家一眼就看出来了（「boss 和精英给的卡并没有更好」）。现在档位表说了算。
+    const tierKey = ctx.kind === 'boss' ? 'boss' : ctx.kind === 'elite' ? 'elite' : 'normal';
+    const weights = REWARD_WEIGHTS[tierKey] ?? null;
     const getCard = ctx.kind === 'boss' || this.rng.chance(BALANCE.cardRewardChance);
-    const slots = ctx.kind === 'boss' ? 4 : 3;
-    const choices = getCard ? this.withSustainPity(rollCards(slots, boost, [])) : [];
+    const slots = ctx.kind === 'boss' || ctx.kind === 'elite' ? 4 : 3;
+    const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights)) : [];
     const getPotion = this.rng.chance(BALANCE.potionDropChance);
 
     this.reward = {
@@ -699,17 +705,23 @@ export class Game {
     return out;
   }
 
-  /** 调试用：造一份和真实战斗奖励同结构的假数据（UI 预览 / 截图用） */
-  mockReward() {
+  /**
+   * 调试用：造一份和真实战斗奖励同结构的假数据（UI 预览 / 截图用）。
+   * @param {'normal'|'elite'|'boss'} kind 档位 —— 稀有度与槽位数都按真实奖励那套走，
+   *   这样截图看到的和玩家打完那一档看到的是一致的（`?scene=reward&kind=boss`）。
+   */
+  mockReward(kind = 'normal') {
     const growth = [{ stat: 'atk', amount: 1 }, { stat: 'maxHp', amount: 12 }];
+    const isBoss = kind === 'boss';
     return {
       win: true,
-      gold: 42,
+      gold: isBoss ? 260 : kind === 'elite' ? 88 : 42,
       healed: 18,
-      cardChoices: rollCards(3, 0.4, []),
+      cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null),
       getPotion: true,
       potion: 'potion_small',
-      isBoss: false,
+      isBoss,
+      relic: isBoss ? 'charm_atk' : undefined,
       enemyName: t('穿山鼠'),
       growth,
       growthText: growth.map((g) => `${t(STAT_NAMES[g.stat])} +${g.amount}`).join('，'),

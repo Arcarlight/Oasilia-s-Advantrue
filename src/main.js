@@ -75,8 +75,9 @@ async function boot() {
       case 'shop': game.startShop(); return 'shop';
       case 'rest': game.startRest(); return 'rest';
       case 'reward': {
-        // 直接构造一份奖励数据，避免真的打完一场战斗（也方便截图检查界面）
-        const m = game.mockReward();
+        // 直接构造一份奖励数据，避免真的打完一场战斗（也方便截图检查界面）。
+        // `&kind=elite|boss` 能看精英 / 首领那一档的奖励长什么样。
+        const m = game.mockReward(params.get('kind') ?? 'normal');
         game.reward = m;
         game.phase = 'reward';
         ui.forceRerender();
