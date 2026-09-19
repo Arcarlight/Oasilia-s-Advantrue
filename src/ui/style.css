@@ -75,9 +75,9 @@
   --gold: #ffd76e;
 
   --rarity-common: #c8bda6;
-  --rarity-uncommon: #6fd3a0;
+  --rarity-uncommon: #4fc45e;
   --rarity-rare: #7fb8ff;
-  --rarity-epic: #d08cff;
+  --rarity-epic: #ff5a44;
 
   /* ---- 尺寸 ---- */
   --r-sm: 6px;
@@ -1486,16 +1486,18 @@ button { font-family: inherit; }
   --rarity-frame: rgba(90, 60, 30, .5);
   --rarity-ink: #2b1a0a;
 }
+/* 精良（uncommon）：原来是淡绿，压在米黄卡面上几乎看不出和普通卡的区别 —— 加浓一档，
+   纸面明显偏绿、美术横幅用更深的草绿，四档里一眼分得出「这张不是普通卡」。 */
 .card-uncommon {
-  --card-paper-1: #e4eeda;
-  --card-paper-2: #d0e4c5;
-  --card-paper-3: #a6c69a;
-  --card-art-1: #bdd4a9;
-  --card-art-2: #83a672;
-  --card-body-ink: #2f4a2c;
-  --rarity-frame: rgba(38, 122, 82, .72);
-  --rarity-ink: #14563a;
-  --rarity-glow: 0 0 14px rgba(111, 211, 160, .22);
+  --card-paper-1: #dcebc4;
+  --card-paper-2: #c2dda1;
+  --card-paper-3: #90bc67;
+  --card-art-1: #a6cd7c;
+  --card-art-2: #5c8d38;
+  --card-body-ink: #22401c;
+  --rarity-frame: rgba(56, 118, 36, .82);
+  --rarity-ink: #2b6a17;
+  --rarity-glow: 0 0 14px rgba(109, 190, 74, .34);
 }
 .card-rare {
   --card-paper-1: #dde8fc;
@@ -1508,16 +1510,18 @@ button { font-family: inherit; }
   --rarity-ink: #17457e;
   --rarity-glow: 0 0 18px rgba(127, 184, 255, .40);
 }
+/* 史诗（epic）：原来是浅紫，和稀有（浅蓝）放在一起几乎分不出来 —— 改成**红**，
+   四档的色相彻底拉开：普通=米黄 / 精良=绿 / 稀有=蓝 / 史诗=红。 */
 .card-epic {
-  --card-paper-1: #eaddfc;
-  --card-paper-2: #d9c7f7;
-  --card-paper-3: #b295dd;
-  --card-art-1: #c9b3ec;
-  --card-art-2: #8f73c4;
-  --card-body-ink: #3a2a55;
-  --rarity-frame: rgba(136, 58, 200, .9);
-  --rarity-ink: #5c1f8f;
-  --rarity-glow: 0 0 22px rgba(208, 140, 255, .5);
+  --card-paper-1: #f8ded8;
+  --card-paper-2: #efc3ba;
+  --card-paper-3: #d08d82;
+  --card-art-1: #e5a79c;
+  --card-art-2: #a8453a;
+  --card-body-ink: #4a201a;
+  --rarity-frame: rgba(186, 46, 34, .9);
+  --rarity-ink: #8c1c11;
+  --rarity-glow: 0 0 22px rgba(255, 106, 86, .48);
 }
 /* 悬停 / 选中时把稀有度的外发光接着带上，别被统一的 box-shadow 顶掉 */
 .card-rare:hover, .card-epic:hover { box-shadow: inset 0 0 0 2px var(--rarity-frame), 0 12px 22px rgba(0, 0, 0, .55), var(--rarity-glow); }

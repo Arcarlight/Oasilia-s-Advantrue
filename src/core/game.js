@@ -811,21 +811,21 @@ export class Game {
     if (roll < 0.36) {
       const gold = this.rng.int(45, 95) + d.stage * 20;
       d.gold += gold;
-      chest = { kind: 'gold', gold, text: `一整袋金币，还有几颗碎宝石。\n金币 +${gold}。` };
+      chest = { kind: 'gold', gold, text: `一整袋金币，还有几颗碎宝石。\n「沉是沉了点，不过我不嫌弃。」\n金币 +${gold}。` };
     } else if (roll < 0.74) {
       const card = rollCard(0.5, []);
       this.addCard(card.id);
       const gold = this.rng.int(15, 35);
       d.gold += gold;
-      chest = { kind: 'card', cardId: card.id, gold, text: `箱底压着一张卡，还有一点零钱。\n获得「${card.name}」，金币 +${gold}。` };
+      chest = { kind: 'card', cardId: card.id, gold, text: `箱底压着一张卡，还有一点零钱。\n「压在最底下的多半是好东西。」\n获得「${card.name}」，金币 +${gold}。` };
     } else if (roll < 0.9) {
       const big = this.rng.chance(0.5);
       this.giveItem(big ? 'potion_big' : 'potion_small', big ? 1 : 2);
       const healed = this.heal(Math.round(d.maxHp * 0.12));
-      chest = { kind: 'item', text: `一堆补给。你顺手给自己处理了伤口。\n获得${big ? '厉害伤药 ×1' : '好伤药 ×2'}，HP +${healed}。` };
+      chest = { kind: 'item', text: `一堆补给。你顺手给自己处理了伤口。\n「正好用得上。」\n获得${big ? '厉害伤药 ×1' : '好伤药 ×2'}，HP +${healed}。` };
     } else {
       // 宝箱怪！
-      chest = { kind: 'mimic', text: '箱子说话了。而且它很饿。' };
+      chest = { kind: 'mimic', text: '箱子说话了。而且它很饿。\n「……那我不开了。」' };
     }
     this.chest = chest;
     this.phase = Phase.CHEST;
