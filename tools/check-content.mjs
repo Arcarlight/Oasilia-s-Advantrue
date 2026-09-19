@@ -258,6 +258,45 @@ if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   warn('没有任何「清除属性下降」的卡牌 —— 削弱是永久叠加的，玩家会缺少解法');
 }
 
+// ---------- 4b. 敌人数值表的档位顺序 ----------
+/**
+ * **攻击力必须逐档递增**（每一章都满足 杂兵 < 较强 < 精英 < 首领）。
+ *
+ * 玩家反馈原话：「较强的怪甚至比 boss 都强，攻击力比 boss 强 5 倍不止，绝对有问题」。
+ * 那次是推导工具的锅（给每档各自解攻击力，而攻击力是从「每点攻击造成多少伤害」反推的，
+ * 卡组越强的档位反而解出越小的攻击力），但**光修工具不够** ——
+ * 这个顺序是玩家一眼能看出来的东西，必须有一道门禁守住，谁改表都得过。
+ */
+{
+  const ORDER = ['mob', 'normal', 'elite', 'boss'];
+  const bad = [];
+  for (let s = 0; s < BALANCE.enemyAtk[ORDER[0]].length; s++) {
+    for (let i = 1; i < ORDER.length; i++) {
+      const a = BALANCE.enemyAtk[ORDER[i - 1]][s];
+      const b = BALANCE.enemyAtk[ORDER[i]][s];
+      if (!(a < b)) bad.push(`第${s + 1}章 ${ORDER[i - 1]}(${a}) ≥ ${ORDER[i]}(${b})`);
+    }
+  }
+  if (bad.length) err(`敌人攻击力没有逐档递增：${bad.join('、')}（玩家一眼就能看出「较强比首领还猛」）`);
+  // 血量与攻击力逐章递增（章节越深越强）
+  const notRising = [];
+  for (const tier of ORDER) {
+    for (let s = 1; s < BALANCE.enemyHp[tier].length; s++) {
+      if (BALANCE.enemyHp[tier][s] < BALANCE.enemyHp[tier][s - 1]) notRising.push(`${tier} HP 第${s + 1}章`);
+      if (BALANCE.enemyAtk[tier][s] < BALANCE.enemyAtk[tier][s - 1]) notRising.push(`${tier} ATK 第${s + 1}章`);
+    }
+  }
+  if (notRising.length) err(`敌人数值没有逐章递增：${notRising.join('、')}`);
+  // 首领的攻击力应当和玩家的攻击力在同一个档次
+  // （拿「玩家攻击力上限」当参照，因为 BALANCE.player.atk 只是开局值 16，
+  //   而第 6 章玩家的攻击力早就长到 57 上下了）
+  const last = BALANCE.enemyAtk.boss.length - 1;
+  const ratio = BALANCE.enemyAtk.boss[last] / BALANCE.cap.atk;
+  if (ratio > 1.6) warn(`首领攻击力 ${BALANCE.enemyAtk.boss[last]} 是玩家攻击力上限（${BALANCE.cap.atk}）的 ${ratio.toFixed(1)} 倍，确认是不是又推歪了`);
+  const rows = ORDER.map((t) => `${t} ${BALANCE.enemyAtk[t].join('/')}`);
+  note(`敌人攻击力（逐档递增）：${rows.join(' ｜ ')}`);
+}
+
 // ---------- 5. BGM ----------
 if (BGM_FILES) {
   const bgmDir = path.join(ROOT, 'assets', 'audio', 'bgm');

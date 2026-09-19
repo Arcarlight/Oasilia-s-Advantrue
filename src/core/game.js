@@ -440,10 +440,21 @@ export class Game {
     const SIZE = { normal: 14, elite: 18, boss: 22 }[kind] ?? 14;
     // 伤害牌下限：保证「后期还有牌可打」，不会被销毁牌掏空
     const MIN_DAMAGE = { normal: 9, elite: 12, boss: 15 }[kind] ?? 9;
-    // 平均威力上限：威力是**攻击力百分比**（见 battle.js 的 computeHit），
-    // 所以这里的单位也是百分比。乱塞高威力牌 = 一回合三张地震把玩家秒掉。
-    const MAX_AVG = { normal: 110, elite: 170, boss: 210 }[kind] ?? 110;
-    const MAX_SINGLE = { normal: 240, elite: 380, boss: 500 }[kind] ?? 240;
+    /**
+     * 平均威力上限与单张上限：**三档统一**。
+     *
+     * 以前是 110/170/210 与 240/380/500，再加上「普通档从弱到强挑、精英首领从强到弱挑」，
+     * 结果两边的**每点攻击的杀伤力**差出 2.7 倍。这个差距不会消失，只会转移到别处：
+     * 推导工具要给精英凑出同样的每回合压力，就只能把它的攻击力压到比「较强」还低 ——
+     * 于是出现了玩家看到的那一幕：**较强 攻 128 / 首领 攻 25**，
+     * 「较强的怪甚至比 boss 都强，攻击力比 boss 强 5 倍不止」。
+     *
+     * 现在三档用同一套规则铺牌，档位之间的强弱改由这几件事承担：
+     * 招式包（kit_xxx vs kit_xxx_hi，后者多出大招与强化牌）、血量、攻击力、专属招式。
+     * 这样攻击力可以老老实实逐档递增，玩家一眼就能看懂。
+     */
+    const MAX_AVG = 120;
+    const MAX_SINGLE = 300;
     const MAX_DEBUFF = { normal: 1, elite: 2, boss: 2 }[kind] ?? 1;
     /** 同一张非伤害牌最多几份（白雾 ×4 这种事不能再出现） */
     const COPY_UTILITY = 1;
@@ -473,16 +484,14 @@ export class Game {
 
     const uniq = [...new Set(pool)].filter((id) => CARD_BY_ID[id] && powerOf(id) <= MAX_SINGLE);
     /**
-     * 强招优先还是弱招优先。
+     * 铺牌顺序：**三档统一从强到弱**。
      *
-     * 旧版是「低威力优先」，本意是压住平均威力，结果第 6 章首领的 22 张牌里塞了 **6 张撞击**
-     * （威力 25%），一副牌的平均威力只有 105% —— 首领打起来像小怪（tools/diag-enemydeck 实测）。
-     * 现在精英 / 首领**从强到弱**挑（它们的卖点就是那几张大招），
-     * 杂兵 / 较强仍然从弱到强（短平快，不靠单张牌打人）。
+     * 旧版是「普通档从弱到强、精英首领从强到弱」，本意是「杂兵不靠单张牌打人」，
+     * 结果是普通档的牌组被 25% 威力的「撞击 / 抓挠」灌满，平均威力只有精英的一半 ——
+     * 推导工具为了给「较强」凑出同样的每回合压力，只能把它的攻击力顶到 128
+     * （见上面 MAX_AVG 的注释）。档位差异不该靠「谁手里全是烂牌」来体现。
      */
-    const strongFirst = kind !== 'normal';
-    const dmgPool = uniq.filter(isDamage)
-      .sort((a, b) => (strongFirst ? powerOf(b) - powerOf(a) : powerOf(a) - powerOf(b)));
+    const dmgPool = uniq.filter(isDamage).sort((a, b) => powerOf(b) - powerOf(a));
     const utilPool = uniq.filter((id) => !isDamage(id));
     // 同一张伤害牌最多几份：按「把牌组填满还需要重复几轮」来定，
     // 免得池子小而重复上限又低时，剩下的位置全被最弱的普攻（撞击）灌满

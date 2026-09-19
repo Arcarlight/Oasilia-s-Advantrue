@@ -45,6 +45,14 @@
     await wait(300);
     if (!bs) throw new Error('没有战斗界面');
 
+    // 这条诊断测的是「表情和事件的对应关系」，不是数值平衡 ——
+    // 所以先把敌人血量顶到打不死、攻击力抬到一定能打疼你。
+    // 必须放在**第一回合之前**：第 1 章的小怪只有 42 点血，玩家一回合就能打死它，
+    // 战斗一结束后面的回合根本不会跑，采样窗口里一次伤害事件都不会有（实测这么假警报过）。
+    bs.battle.enemy.maxHp = 9999;
+    bs.battle.enemy.hp = 9999;
+    bs.battle.enemy.atk = Math.max(bs.battle.enemy.atk, 30);
+
     const SKIN = { player: 'flygon', enemy: bs.battle.enemy.slug };
     const readFace = (side) => base((side === 'player' ? bs.playerFace : bs.enemyFace)?.querySelector('img')?.src);
     log(`  物种：我方 ${SKIN.player} / 敌方 ${SKIN.enemy}`);
