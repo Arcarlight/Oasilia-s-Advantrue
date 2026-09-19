@@ -533,6 +533,12 @@ if (BGM_FILES) {
           + ' —— 要么把译文改成新原文，要么删掉它');
       }
     }
+    // 占位符对不上 = 界面上会少一个数字（「造成 点伤害。」），比缺翻译还难看，所以也是硬错误
+    const holes = report.placeholders ?? [];
+    if (holes.length) {
+      err(`多语言有 ${holes.length} 条译文的占位符对不上（{d} / {K} 这类必须原样保留，少一个界面上就少一个数字）：`
+        + `${holes.slice(0, 3).join(' ｜ ')}${holes.length > 3 ? ' …' : ''}`);
+    }
   }
 }
 

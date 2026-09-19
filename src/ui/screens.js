@@ -149,7 +149,7 @@ async function renderTitle(game) {
 
   inner.append(el('div', {
     class: 'title-foot',
-    html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>这是一个非商业的同人练习作品。'),
+    html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>字体：<b>小杉圆体</b>（Apache-2.0）、<b>はなぞめフォント</b>、<b>YOzFont</b>（OFL）等。<br>这是一个非商业的同人练习作品。'),
   }));
 
   /**

@@ -5,22 +5,23 @@
   "contentStrings": 984,
   "perLang": {
     "ja": {
-      "done": 112,
+      "done": 385,
       "total": 1047,
-      "percent": 10.7,
+      "percent": 36.8,
       "codeDone": 63,
-      "contentDone": 49
+      "contentDone": 322
     },
     "en": {
-      "done": 206,
+      "done": 479,
       "total": 1047,
-      "percent": 19.7,
+      "percent": 45.7,
       "codeDone": 63,
-      "contentDone": 143
+      "contentDone": 416
     }
   },
   "orphans": {
     "ja": [],
     "en": []
-  }
+  },
+  "placeholders": []
 }

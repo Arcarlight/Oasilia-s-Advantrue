@@ -161,6 +161,24 @@ for (const lg of LANGS) {
     + `｜内容 ${[...contentStrings.keys()].filter((z) => sorted[z]).length}/${contentStrings.size}`);
 }
 
+/**
+ * 占位符必须**一一对应**（`{d}` / `{d2}` / `{K}` / `{n}`）。
+ *
+ * 这是译文里最容易出、也最难看出来的错：少一个占位符，界面上就少一个数字 ——
+ * 玩家看到的是「造成 点伤害。」或者「Deal  damage.」。批量翻译（尤其是让多个 agent 分头翻）时
+ * 一定要卡这道关，所以它跟孤儿译文一样进体检。
+ */
+const placeholderMismatch = [];
+const holes = (s) => (String(s).match(/\{(\w+)\}/g) ?? []).sort().join(',');
+for (const lg of LANGS) {
+  for (const [zh, tr] of Object.entries(tables[lg])) {
+    if (holes(zh) !== holes(tr)) placeholderMismatch.push(`${lg} ${JSON.stringify(zh)} → ${JSON.stringify(tr)}（占位符 ${holes(zh) || '无'} ≠ ${holes(tr) || '无'}）`);
+  }
+}
+if (placeholderMismatch.length) {
+  report.push(`  ⚠ 有 ${placeholderMismatch.length} 条译文的**占位符对不上**：${placeholderMismatch.slice(0, 3).join(' ｜ ')}`);
+}
+
 // 孤儿：表里有、但现在代码/内容里找不到的中文（源文案改了或删了）
 const orphansByLang = {};
 for (const lg of LANGS) {
@@ -193,6 +211,7 @@ await fs.writeFile(path.join(IN_DIR, '_report.json'), `${JSON.stringify({
     }];
   })),
   orphans: orphansByLang,
+  placeholders: placeholderMismatch,
 }, null, 2)}\n`, 'utf8');
 
 const body = LANGS.map((lg) => `  ${lg}: ${JSON.stringify(tables[lg], null, 2).split('\n').join('\n  ')},`).join('\n');

@@ -542,6 +542,25 @@ node tools/subset-fonts.mjs                # 生成 assets/fonts/*-subset.woff2 
 **如果不想要这么大的单文件**，把 `tools/bundle.mjs` 里「字体内联」那一段删掉，
 重新打包就回到 ~12 MB（离线版会用系统字体）。
 
+#### 字体授权
+
+随仓库 / 线上发布的只有**裁过的子集**（`assets/fonts/*.woff2`，全部加起来 1.6 MB）；
+**原始字体文件一律不进仓库**（`.gitignore` —— 只用来生成，运行时读的是子集）。
+
+| 字体 | 用在哪 | 授权 | 出处 |
+| --- | --- | --- | --- |
+| SGHr 宋骨黑圆体 | 中文正文 | 用户提供的免费商用字体 | — |
+| 文渊宋体（WenYuanSerifSC-Bold） | 中文粗体 | SIL OFL 1.1（字体 name13 里写着） | — |
+| 写意体 SC（YShiWrittenSC） | 中文手写 | SIL OFL 1.1（字体 name13 里写着） | — |
+| 851 远星夜行手写体 | 手写补丁层（几十个字） | 作者自订协议（可免费商用，不可单独售卖） | 见字体 name13 |
+| **小杉圆体**（Kosugi Maru，源自 Motoya L Maru） | 日语正文 | **Apache License 2.0**（Google Fonts 发布），免费商用 | [Google Fonts 授权页](https://fonts.google.com/specimen/Kosugi+Maru/license) · [猫啃网收录页](https://www.maoken.com/freefonts/2941.html) |
+| **はなぞめフォント** | 日语粗体（卡名 / 商店名 / 标题） | 作者明确允许：商用、**随游戏等分发数据同梱**、**用作 web 字体**、加工与轮廓修正；禁止改字体数据本身 / 自称作者 / 拿去做「以文字为主体的制作物」 | [作者页 asterism-m](https://www.asterism-m.com/font/) |
+| **YOzFont**（YOzBS_） | 日语手写（旁白 / 对白） | SIL OFL 1.1（Debian 打包 `fonts-yozvox-yozfont` 里带 OFL.txt） | [Debian copyright](https://metadata.ftp-master.debian.org/changelogs//main/f/fonts-yozvox-yozfont/fonts-yozvox-yozfont_14.04-2_copyright) |
+| LXGW Neo XiHei Plus | 全语言兜底 | SIL OFL 1.1 | 见字体说明 |
+
+⚠️ 授权以**作者页面上的最新条款**为准（免费字体偶尔会改条款）；商用前建议再确认一次。
+
+
 ### 精灵图的朝向行序（踩过的坑）
 
 PMD 精灵图**不是**「一行 = 一个动画」，而是官方文档说的：
