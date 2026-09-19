@@ -62,6 +62,30 @@
     ui.forceRerender();
     await wait(320);
 
+    // 截图模式：把卡组页打开、图鉴展开、按稀有度排序，
+    // 让四种稀有度 + 保护/代价标记同屏出现，方便人眼核对配色
+    if (new URLSearchParams(location.search).get('dgcards') === 'shot') {
+      const { showDeck } = await import('../src/ui/overlays.js');
+      game.data.deck = CARDS.slice(0, 40).map((c) => c.id);   // 让网格里有各种稀有度
+      showDeck(game);
+      await wait(400);
+      const wantSort = new URLSearchParams(location.search).get('sort') ?? '稀有度';
+      const tab = [...document.querySelectorAll('.modal-backdrop .sort-tab')].find((n) => n.textContent.trim() === wantSort);
+      tab?.click();
+      await wait(200);
+      const details = document.querySelector('.modal-body details');
+      if (details) { details.open = true; details.dispatchEvent(new Event('toggle')); }
+      await wait(500);
+      // &zoom=2 → 把整页放大两倍再截，方便人眼核对面板上的小字（截图工具本身不下采样）
+      const z = Number(new URLSearchParams(location.search).get('zoom') ?? 0);
+      if (z > 0) { document.documentElement.style.zoom = String(z); await wait(300); }
+      const sc = Number(new URLSearchParams(location.search).get('scroll') ?? 0);
+      if (sc > 0) { document.querySelector('.modal-body')?.scrollTo?.(0, sc); await wait(300); }
+      log('卡面已就位（截图模式）');
+      log('CARD_DONE');
+      return;
+    }
+
     // ---------- ① 三档尺寸下的截断检查 ----------
     // 离屏摆一列卡片来量：真实的卡组页一次只显示十来张，量不全 86 张
     function measureAll(opts, label) {
@@ -173,7 +197,7 @@
     // 角标现在是「威力 N%」（攻击力百分比，与玩家当前属性无关），
     // 所以排序后的比较基准也换成 cardPowerTotal —— 用实际伤害比会在不同攻击力下误报
     const dmgOrder = qa('.card', grid).map((n) => {
-      const badge = qa('.card-foot span', n).find((s) => s.textContent.startsWith('威力 '));
+      const badge = qa('.card-foot .card-badge', n).find((s) => s.textContent.startsWith('威力 '));
       return { name: q('.card-name', n).textContent, dmg: badge ? Number(badge.textContent.replace('威力 ', '').replace('%', '')) : 0 };
     });
     const sortedOk = dmgOrder.every((v, i, a) => i === 0 || a[i - 1].dmg >= v.dmg);
@@ -184,7 +208,7 @@
     }));
 
     await clickSort('特殊效果');
-    // 卡组里只有十来张牌，跨不到所有分组 —— 展开图鉴（86 种）再数分组标题才准
+    // 卡组里只有十来张牌，跨不到所有分组 —— 展开图鉴（150 种）再数分组标题才准
     const codex = q('.modal-body details');
     if (codex) {
       codex.open = true;
@@ -246,6 +270,113 @@
     const RANK = { 'card-common': 0, 'card-uncommon': 1, 'card-rare': 2, 'card-epic': 3 };
     check('按稀有度排序 = 稀有度降序', rarOrder.every((v, i, a) => i === 0 || RANK[a[i - 1]] >= RANK[v]), rarOrder.join(','));
     await clickSort('默认');
+
+    // ---------- ④b 稀有度：四件套必须真的不一样 ----------
+    // 用户反馈「稀有卡略微看不出来」。以前只有顶上那条 4px 色带 + 一圈很淡的内描边。
+    {
+      const probe = (rarity) => {
+        const host = document.createElement('div');
+        host.style.cssText = 'position:fixed;left:-9999px;top:0;';
+        document.body.append(host);
+        host.append(cardEl(CARDS.find((c) => c.rarity === rarity), { size: 'sm' }));
+        const n = q('.card', host);
+        const cs = getComputedStyle(n);
+        const out = {
+          bg: cs.backgroundImage,
+          frame: cs.boxShadow,
+          ink: getComputedStyle(q('.card-name', n)).color,
+          gem: getComputedStyle(q('.rarity-gem', n)).backgroundColor,
+        };
+        host.remove();
+        return out;
+      };
+      const r = { common: probe('common'), uncommon: probe('uncommon'), rare: probe('rare'), epic: probe('epic') };
+      // 卡面底纹必须**真的不同**（不是只有色带）
+      check('卡面底纹按稀有度不同',
+        new Set([r.common.bg, r.uncommon.bg, r.rare.bg, r.epic.bg]).size === 4,
+        `普通/精良/稀有/史诗 四种底纹互不相同`);
+      check('描边颜色按稀有度不同',
+        new Set([r.common.frame, r.rare.frame, r.epic.frame]).size === 3,
+        `普通 ${r.common.frame.slice(0, 24)}… / 稀有 ${r.rare.frame.slice(0, 24)}…`);
+      check('卡名颜色按稀有度不同（普通最深、史诗偏紫）',
+        new Set([r.common.ink, r.uncommon.ink, r.rare.ink, r.epic.ink]).size === 4,
+        `普通 ${r.common.ink} / 精良 ${r.uncommon.ink} / 稀有 ${r.rare.ink} / 史诗 ${r.epic.ink}`);
+      check('底栏有稀有度宝石，且颜色跟着稀有度走',
+        r.rare.gem !== r.common.gem && r.epic.gem !== r.rare.gem,
+        `${r.common.gem} → ${r.rare.gem} → ${r.epic.gem}`);
+      const gemTip = (() => {
+        const host = document.createElement('div');
+        host.style.cssText = 'position:fixed;left:-9999px;top:0;';
+        document.body.append(host);
+        host.append(cardEl(CARDS.find((c) => c.rarity === 'epic'), { size: 'sm' }));
+        const t = q('.rarity-gem', host)?.dataset.tip ?? '';
+        host.remove();
+        return t;
+      })();
+      check('宝石的悬停说明写明了稀有度', /稀有度：史诗/.test(gemTip), gemTip.split('\n')[0]);
+    }
+
+    // ---------- ④c 角色标记：保护 / 代价 ----------
+    // 用户需求：「给予保护的、负面特性的卡牌都可以添加额外的标识」。
+    // 这里**从 effects 反推期望值**，再和界面上挂出来的标记对账 ——
+    // 光看有没有标记没用，标错了更糟（玩家会按错的印象出牌）。
+    {
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      document.body.append(host);
+      const rows = CARDS.filter((c) => !c.enemyOnly).map((c) => {
+        host.append(cardEl(c, { size: 'sm' }));
+        const n = host.lastElementChild;
+        const got = [...n.querySelectorAll('.card-role')].map((x) => x.textContent.trim());
+        host.removeChild(n);
+        const fx = c.effects ?? [];
+        const isSelf = (e) => e.target !== 'enemy';
+        const wantProtect = fx.some((e) => e.kind === 'shield' || e.kind === 'heal' || e.kind === 'cleanse'
+          || (e.kind === 'damage' && (e.drainPct ?? 0) > 0)
+          || (e.kind === 'buff' && isSelf(e) && e.stat === 'def' && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0)));
+        const wantCost = fx.some((e) => e.kind === 'selfDmg'
+          || (e.kind === 'damage' && (e.recoilPct ?? 0) > 0)
+          || (e.kind === 'buff' && isSelf(e) && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0)));
+        return { id: c.id, name: c.name, got, wantProtect, wantCost };
+      });
+      host.remove();
+      const missProtect = rows.filter((r) => r.wantProtect && !r.got.includes('保护'));
+      const falseProtect = rows.filter((r) => !r.wantProtect && r.got.includes('保护'));
+      const missCost = rows.filter((r) => r.wantCost && !r.got.includes('代价'));
+      const falseCost = rows.filter((r) => !r.wantCost && r.got.includes('代价'));
+      check('给护盾 / 回血 / 加防 / 解负面的牌都挂了「保护」', missProtect.length === 0,
+        missProtect.length ? missProtect.map((r) => r.name).join('、') : `${rows.filter((r) => r.wantProtect).length} 张`);
+      check('没有保护效果的牌不会误挂「保护」', falseProtect.length === 0,
+        falseProtect.length ? falseProtect.map((r) => r.name).join('、') : '无误标');
+      check('自伤 / 反伤 / 削弱自己的牌都挂了「代价」', missCost.length === 0,
+        missCost.length ? missCost.map((r) => r.name).join('、') : `${rows.filter((r) => r.wantCost).length} 张`);
+      check('没有代价的牌不会误挂「代价」', falseCost.length === 0,
+        falseCost.length ? falseCost.map((r) => r.name).join('、') : '无误标');
+      const roleTip = rows.find((r) => r.got.includes('保护'))?.name ?? '';
+      check('「保护 / 代价」标记都在真实卡池里出现过', roleTip !== '' && rows.some((r) => r.got.includes('代价')),
+        `例：${roleTip} 有「保护」`);
+    }
+
+    // ---------- ④d 底栏不许溢出（多挂了两个标记之后要重新量） ----------
+    {
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      document.body.append(host);
+      const overflow = [];
+      for (const size of ['sm', undefined, 'lg']) {
+        for (const c of CARDS) {
+          host.append(cardEl(c, { size, badges: ['×3', '未获得'] }));
+          const footL = q('.foot-left', host.lastElementChild);
+          if (footL && footL.scrollWidth > footL.clientWidth + 1) {
+            overflow.push(`${size ?? 'md'}/${c.name}(${footL.scrollWidth}>${footL.clientWidth})`);
+          }
+          host.removeChild(host.lastElementChild);
+        }
+      }
+      host.remove();
+      check('底栏（宝石 + 类型 + 保护/代价 + 角标）三档尺寸都不溢出', overflow.length === 0,
+        overflow.length ? `${overflow.length} 张：${overflow.slice(0, 5).join('、')}` : `150 张 × 3 档都放得下`);
+    }
 
     // ---------- ⑤ 悬停说明（在卡面上） ----------
     const kwSpan = q('.card-text .kw-status[data-tip], .card-text .kw[data-tip]', grid);

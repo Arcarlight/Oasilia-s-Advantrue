@@ -131,7 +131,7 @@
     const wtTab = [...document.querySelectorAll('.modal-backdrop .sort-tab')].find((n) => n.textContent.trim() === '威力');
     wtTab?.click();
     await wait(250);
-    const badges = [...document.querySelectorAll('.modal-backdrop .card-grid .card-foot span')].map((n) => n.textContent.trim()).filter((t) => t.startsWith('威力 '));
+    const badges = [...document.querySelectorAll('.modal-backdrop .card-grid .card-foot .card-badge')].map((n) => n.textContent.trim()).filter((t) => t.startsWith('威力 '));
     ok(badges.length > 0, '卡面角标读作「威力 N%」', badges.slice(0, 4).join(' / '));
     const nums = badges.map((b) => Number(b.replace('威力 ', '').replace('%', '')));
     ok(nums.every((v, i) => i === 0 || nums[i - 1] >= v), '「威力」排序确实是降序', nums.slice(0, 8).join(' > '));

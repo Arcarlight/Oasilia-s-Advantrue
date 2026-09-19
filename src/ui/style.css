@@ -1245,7 +1245,15 @@ button { font-family: inherit; }
 
 /* ============================================================
    卡牌
-   ============================================================ */
+   ============================================================
+   稀有度不再是「顶上那条 4px 色带」一件事了（玩家反馈「略微看不出来」）。
+   现在一套四件套，全部由下面这四个变量驱动，加稀有度只要改变量：
+     --rarity-wash   卡面整体色调（直接铺在纸色上，一眼看出「这张是蓝的」）
+     --rarity-frame  描边颜色（原来是统一的褐色描边）
+     --rarity-ink    卡名颜色（原来是统一的墨色）
+     --rarity-glow   外发光（只有稀有 / 史诗有）
+   —— 之所以做成变量而不是四套重复规则：以前箱阴影那几行就是复制粘贴出来的，
+   改一处忘一处，结果「战斗里的稀有卡同时带 card-common 和 card-rare」时谁也说不清哪条赢。 */
 .card {
   position: relative;
   width: var(--card-w);
@@ -1255,12 +1263,18 @@ button { font-family: inherit; }
   padding: 8px 9px 9px;
   cursor: pointer;
   color: var(--ink);
+  --rarity-wash: transparent;
+  --rarity-frame: rgba(90, 60, 30, .5);
+  --rarity-ink: #2b1a0a;
+  --rarity-glow: 0 0 0 rgba(0, 0, 0, 0);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 30%),
+    radial-gradient(130% 85% at 50% 0%, var(--rarity-wash), transparent 72%),
     linear-gradient(168deg, var(--paper) 0%, var(--paper-2) 62%, #c9a974 100%);
   box-shadow:
-    inset 0 0 0 2px rgba(90, 60, 30, .5),
+    inset 0 0 0 2px var(--rarity-frame),
     inset 0 0 0 4px rgba(255, 240, 210, .35),
+    var(--rarity-glow),
     var(--shadow-card);
   transition: transform .16s cubic-bezier(.2, .8, .3, 1), box-shadow .16s, filter .16s;
   user-select: none;
@@ -1297,7 +1311,7 @@ button { font-family: inherit; }
      二是给下面的描述多留一行空间（卡名最长 4 个字，实测三档都放得下，诊断脚本会卡这一点） */
   line-height: 1.15;
   letter-spacing: .01em;
-  color: #2b1a0a;
+  color: var(--rarity-ink);
   text-shadow: 0 1px 0 rgba(255, 255, 255, .55);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -1365,15 +1379,82 @@ button { font-family: inherit; }
   text-transform: uppercase;
   border-top: 1px dashed rgba(120, 80, 40, .3);
 }
+/* 底栏左右两组：左边是「稀有度宝石 + 类型 + 角色标记」，右边是 ×N / 未获得 这类角标。
+   以前是「一个 span 一个 badge 平铺 + space-between」，加两个角色标记就会和角标抢位置。 */
+.card-foot .foot-left,
+.card-foot .foot-right {
+  display: flex; align-items: center; gap: 4px;
+  min-width: 0; overflow: hidden; white-space: nowrap;
+}
+.card-foot .foot-right { flex: 0 0 auto; gap: 3px; }
+/* 稀有度宝石：颜色就是描边色，悬停会说出稀有度叫什么 */
+.rarity-gem {
+  flex: 0 0 auto;
+  width: 8px; height: 8px;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  background: var(--rarity-frame);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6), 0 0 4px rgba(0, 0, 0, .25);
+  margin-right: 2px;
+}
+.card-tag { flex: 0 0 auto; }
+/* 角色标记：保护 / 代价。文字 + 图标一起给，比只放一个图标好认（第一次玩的人不认识图标） */
+.card-role {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 0 3px;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 13px;
+}
+.card-role > [class^="ico-"], .card-role > [class*=" ico-"] { width: 9px; height: 9px; }
+.card-role.role-protect {
+  color: #0d5540;
+  background: rgba(111, 211, 160, .38);
+  box-shadow: inset 0 0 0 1px rgba(31, 111, 70, .5);
+}
+.card-role.role-cost {
+  color: #7d1d12;
+  background: rgba(255, 140, 120, .34);
+  box-shadow: inset 0 0 0 1px rgba(150, 50, 30, .5);
+}
 .card-band {
-  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  position: absolute; top: 0; left: 0; right: 0; height: 5px;
 }
 .card-common .card-band { background: var(--rarity-common); }
 .card-uncommon .card-band { background: var(--rarity-uncommon); }
 .card-rare .card-band { background: var(--rarity-rare); }
 .card-epic .card-band { background: var(--rarity-epic); }
-.card-rare { box-shadow: inset 0 0 0 2px rgba(60, 110, 190, .55), inset 0 0 0 4px rgba(255, 240, 210, .3), 0 0 18px rgba(127, 184, 255, .28), var(--shadow-card); }
-.card-epic { box-shadow: inset 0 0 0 2px rgba(150, 80, 220, .6), inset 0 0 0 4px rgba(255, 240, 210, .3), 0 0 22px rgba(208, 140, 255, .35), var(--shadow-card); }
+
+/* 稀有度四件套：色调 / 描边 / 卡名颜色 / 外发光。
+   色相保持和 --rarity-* 一致，玩家看到蓝边就知道是稀有，不用去背图例。 */
+.card-common {
+  --rarity-wash: transparent;
+  --rarity-frame: rgba(90, 60, 30, .5);
+  --rarity-ink: #2b1a0a;
+}
+.card-uncommon {
+  --rarity-wash: rgba(111, 211, 160, .22);
+  --rarity-frame: rgba(38, 122, 82, .72);
+  --rarity-ink: #14563a;
+  --rarity-glow: 0 0 14px rgba(111, 211, 160, .22);
+}
+.card-rare {
+  --rarity-wash: rgba(127, 184, 255, .30);
+  --rarity-frame: rgba(46, 104, 186, .85);
+  --rarity-ink: #17457e;
+  --rarity-glow: 0 0 18px rgba(127, 184, 255, .40);
+}
+.card-epic {
+  --rarity-wash: rgba(208, 140, 255, .34);
+  --rarity-frame: rgba(136, 58, 200, .9);
+  --rarity-ink: #5c1f8f;
+  --rarity-glow: 0 0 22px rgba(208, 140, 255, .5);
+}
+/* 悬停 / 选中时把稀有度的外发光接着带上，别被统一的 box-shadow 顶掉 */
+.card-rare:hover, .card-epic:hover { box-shadow: inset 0 0 0 2px var(--rarity-frame), 0 12px 22px rgba(0, 0, 0, .55), var(--rarity-glow); }
+.card-rare.selected, .card-epic.selected { box-shadow: 0 0 0 3px var(--accent-2), 0 12px 24px rgba(0, 0, 0, .55), var(--rarity-glow); }
 .card-exhaust::before {
   content: "销毁";
   position: absolute; top: 8px; right: 34px; z-index: 3;
@@ -1932,6 +2013,7 @@ body[data-biome="night"]  { --accent-2: #c9b6ff; --accent: #7f5ce0; --accent-dee
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .35));
 }
 .card-act.ico-trash { background-color: #ff9d8a; }   /* 销毁用红一点，一眼区分 */
+.card-act.ico-temperature_down { background-color: #c9a8ff; }   /* 削弱对手：紫，和「抽牌 / 销毁」拉开 */
 [data-tip] { cursor: help; }
 
 /* ============================================================

@@ -61,8 +61,10 @@
     let steps = 0;
 
     const sweep = async () => {
-      for (let turn = 0; turn < 8 && !bs.battle.over; turn++) {
-        for (let g = 0; g < 12; g++) {
+      // 4 回合 × 8 张就够覆盖牌组轮换了：敌人血量被顶到打不死，
+      // 跑满 8 回合 × 12 张会让演出时间超过诊断运行器的 90 秒上限（那时一行都抓不到）
+      for (let turn = 0; turn < 4 && !bs.battle.over; turn++) {
+        for (let g = 0; g < 8; g++) {
           const p = probe(`第${turn + 1}回合-出牌前`);
           if (!mismatch && (p.domCount !== p.engCount || p.domRoost !== p.engRoost)) mismatch = p;
           roostPeakDom = Math.max(roostPeakDom, p.domRoost);
@@ -112,11 +114,11 @@
     const cards = [...(grid?.querySelectorAll('.card') ?? [])];
     const names = cards.map((c) => c.querySelector('.card-name')?.textContent?.trim() ?? '');
     const roostCards = cards.filter((c) => c.querySelector('.card-name')?.textContent?.trim() === '羽栖');
-    // 角标是 cardEl 塞进 `.card-foot` 的普通 <span>（没有专门的 class），
-    // 所以按「卡脚里除类型标签外的那些 span」来找。
-    // 第一版按 .card-badge 找，当然一个也找不到 —— 差点把「其实画了」误报成 bug。
-    const footOf = (c) => [...c.querySelectorAll('.card-foot > span')].map((s) => s.textContent.trim());
-    const badgesOf = (c) => footOf(c).slice(1);
+    // 角标现在统一带 .card-badge；底栏改成了「左边（宝石+类型+角色标记）／右边（角标）」
+    // 两个分组，所以**不能**再按「.card-foot 里的第 2 个 span 起」来数角标 ——
+    // 那样数到的是分组容器本身，读出来的文字是拼在一起的（差点把「其实画了」误报成 bug）。
+    const footOf = (c) => [...c.querySelectorAll('.card-foot .card-badge')].map((s) => s.textContent.trim());
+    const badgesOf = (c) => footOf(c);
     const badgeTexts = roostCards.flatMap(badgesOf);
     log(`卡组页卡片 = [${names.join(', ')}]；羽栖的卡脚 = [${roostCards[0] ? footOf(roostCards[0]).join(' | ') : '—'}]`);
     ok(roostCards.length === 1, '同名卡在网格里只画一张（靠 ×N 表示份数）', `羽栖 出现 ${roostCards.length} 次`);
@@ -124,7 +126,7 @@
 
     // 角标必须真的画在卡面里、有面积（被裁掉 / 0 尺寸 = 玩家看不见）
     const badge = roostCards[0]
-      ? [...roostCards[0].querySelectorAll('.card-foot > span')].find((s) => /×\s*2/.test(s.textContent))
+      ? [...roostCards[0].querySelectorAll('.card-foot .card-badge')].find((s) => /×\s*2/.test(s.textContent))
       : null;
     if (badge && roostCards[0]) {
       const br = badge.getBoundingClientRect();
@@ -144,7 +146,7 @@
     showDeck(game);
     await wait(250);
     const g2 = document.querySelector('.modal.panel .card-grid');
-    const b2 = [...(g2?.querySelectorAll('.card') ?? [])].flatMap((c) => [...c.querySelectorAll('.card-foot > span')].slice(1).map((s) => s.textContent.trim()));
+    const b2 = [...(g2?.querySelectorAll('.card') ?? [])].flatMap((c) => [...c.querySelectorAll('.card-foot .card-badge')].map((s) => s.textContent.trim()));
     ok(!b2.some((t) => /×\s*1\b/.test(t)), '只有 1 张时不会画 ×1 角标', b2.join(' | ') || '（没有角标，正确）');
     document.querySelector('.modal-backdrop')?.remove();
 

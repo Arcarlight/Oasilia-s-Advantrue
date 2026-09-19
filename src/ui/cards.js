@@ -11,7 +11,9 @@ import { CARD_ART } from '../data/cards.js';
 
 export { CARD_ART };
 
-/** 卡牌的类型标签（攻击 / 攻守 / 回复 / 变化 …），详情页也用它 */
+/**
+ * 卡牌的类型标签（攻击 / 攻守 / 回复 / 变化 …），详情页也用它
+ */
 export function cardTag(card) {
   const kinds = new Set(card.effects.map((e) => e.kind));
   if (kinds.has('damage') && (kinds.has('shield') || kinds.has('heal'))) return '攻守';
@@ -21,6 +23,60 @@ export function cardTag(card) {
   if (kinds.has('buff') || kinds.has('status')) return '变化';
   if (kinds.has('draw') || kinds.has('ap')) return '辅助';
   return '技能';
+}
+
+/**
+ * 卡牌的「角色」标记：这张牌除了打伤害，还担什么职责。
+ *
+ * 起因（用户需求）：手牌里一眼分不出「哪张是保命的」「哪张用了要付代价」，
+ * 只能一张张读描述 —— 尤其是新卡池变厚之后，扫牌的成本明显上来了。
+ *
+ * 判断全部**从 effects 推**，不手写一张清单：
+ *   保护 = 给护盾 / 回血（含吸血）/ 加防御 / 解负面
+ *   代价 = 自伤 / 反伤 / 本场削弱自己
+ * 这样以后加新卡只要 effect 写对，标记就自动对了。
+ */
+export function cardRoles(card) {
+  const fx = card?.effects ?? [];
+  const self = (e) => e.target !== 'enemy';
+  const gainsShield = fx.some((e) => e.kind === 'shield');
+  const heals = fx.some((e) => e.kind === 'heal' || (e.kind === 'damage' && (e.drainPct ?? 0) > 0));
+  const raisesDef = fx.some((e) => e.kind === 'buff' && self(e) && e.stat === 'def' && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0));
+  const cleanses = fx.some((e) => e.kind === 'cleanse');
+  const selfHurt = fx.some((e) => e.kind === 'selfDmg' || (e.kind === 'damage' && (e.recoilPct ?? 0) > 0));
+  const selfWeak = fx.some((e) => e.kind === 'buff' && self(e) && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0));
+  /** 削弱对手也算一种「负面特性」，放在美术角标里（和抽牌 / 销毁同一排） */
+  const weakensFoe = fx.some((e) => (e.kind === 'buff' && e.target === 'enemy' && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0))
+    || (e.kind === 'status' && e.target !== 'self'));
+
+  const roles = [];
+  const detail = (bits) => bits.filter(Boolean).join('\n');
+  if (selfHurt || selfWeak) {
+    roles.push({
+      key: 'cost',
+      ico: 'ico-heart_break_02',
+      label: '代价',
+      tip: `代价：这张牌会让你自己付出点什么。\n${detail([
+        selfHurt ? '· 自身受伤（反伤 / 自伤）' : null,
+        selfWeak ? '· 本场战斗削弱自己' : null,
+      ])}\n打之前先算一下值不值。`,
+    });
+  }
+  if (gainsShield || heals || raisesDef || cleanses) {
+    roles.push({
+      key: 'protect',
+      ico: 'ico-protect',
+      label: '保护',
+      tip: `保护：保命的那一类。\n${detail([
+        gainsShield ? '· 获得护盾' : null,
+        heals ? '· 回复生命（含吸血）' : null,
+        raisesDef ? '· 提升自己的防御' : null,
+        cleanses ? '· 清除自身负面' : null,
+      ])}`,
+    });
+  }
+  // 最多挂两个：卡面底栏就那么宽，三个标记会挤掉类型标签
+  return { roles: roles.slice(0, 2), weakensFoe };
 }
 
 /**
@@ -43,8 +99,10 @@ export function cardEl(card, opts = {}) {
 
   const node = el('div', {
     class: [
-      'card', `card-${size === 'md' ? 'common' : card.rarity}`, `card-${card.rarity}`,
-      size === 'sm' ? 'card-sm' : size === 'lg' ? 'card-lg' : '',
+      // 注意：这里以前在 md（战斗手牌）尺寸下会额外挂一个 `card-common`，
+      // 于是战斗里的稀有牌同时带着 card-common 和 card-rare 两个类 ——
+      // 谁的样式赢全靠 CSS 里的书写顺序。稀有度配色改成「按类改变量」之后这层歧义必须去掉。
+      'card', size === 'sm' ? 'card-sm' : size === 'lg' ? 'card-lg' : '', `card-${card.rarity}`,
       disabled ? 'disabled' : '', selected ? 'selected' : '',
       check && checked ? 'in-deck' : '',
       // 左上角有勾选圈时把卡名让开：以前圆圈直接压在名字的第一个字上
@@ -79,12 +137,15 @@ export function cardEl(card, opts = {}) {
       },
     }));
   }
-  // 特殊动作角标（素材来自 Kenney 的棋盘图标包）：一眼看出这张牌除了数值还干什么。
-  // 「抽牌 / 销毁 / 弃牌」这些以前只写在描述文字里，扫一眼牌面根本看不出来。
+  const roles = cardRoles(card);
+
+  // 特殊动作角标（素材来自 Kenney 的棋盘图标包 + Game-Icon-Pack）：一眼看出这张牌除了数值还干什么。
+  // 「抽牌 / 销毁 / 弃牌 / 削弱对手」这些以前只写在描述文字里，扫一眼牌面根本看不出来。
   // 角标贴在美术横幅的左下角（以前它自己占一整行，卡面本来就不高，白吃掉一行文字的空间）。
   const acts = [];
   const act = (has, cls, tip) => { if (has) acts.push(el('span', { class: `card-act ${cls}`, dataset: { tip } })); };
   act(card.effects.some((e) => e.kind === 'draw'), 'ico-cards', '抽牌：从牌堆再抽一张。');
+  act(roles.weakensFoe, 'ico-temperature_down', '削弱对手：降它的属性 / 挂负面状态 —— 你后面每一张牌都更疼。');
   act(card.exhaust, 'ico-trash', '销毁：打出后进入销毁区，本场战斗不会再出现。');
   act(card.effects.some((e) => e.kind === 'exhaustHand'), 'ico-trash', '销毁手牌：把手里剩下的牌全部销毁。');
   act(card.effects.some((e) => e.kind === 'discard'), 'ico-shuffle', '弃牌：把牌弃进弃牌堆（牌堆抽空时会洗回来）。');
@@ -97,9 +158,27 @@ export function cardEl(card, opts = {}) {
     cardTextEl(card),
   ]));
 
-  const foot = [el('span', { text: cardTag(card) })];
-  for (const b of badges) foot.push(el('span', { text: b }));
-  node.append(el('div', { class: 'card-foot' }, foot));
+  /**
+   * 底栏：左边「稀有度宝石 + 类型 + 角色标记」，右边是调用方给的角标（×N / 未获得 …）。
+   *
+   * 稀有度以前只有顶上那条 4px 的色带，玩家反馈「略微看不出来」——
+   * 现在色带之外还有：整张卡面的色调（见 style.css 的 --rarity-wash）、
+   * 描边颜色、卡名颜色，再加这颗宝石（悬停会说出稀有度叫什么）。
+   */
+  const footLeft = el('span', { class: 'foot-left' }, [
+    el('span', { class: 'rarity-gem', dataset: { tip: `稀有度：${rarityLabel(card) || card.rarity}\n卡面配色、描边、卡名颜色都跟着稀有度走。` } }),
+    el('span', { class: 'card-tag', text: cardTag(card) }),
+  ]);
+  for (const r of roles.roles) {
+    footLeft.append(el('span', { class: `card-role role-${r.key}`, dataset: { tip: r.tip } }, [
+      el('span', { class: r.ico }), r.label,
+    ]));
+  }
+  const footRight = el('span', { class: 'foot-right' });
+  // 角标统一带 .card-badge：诊断脚本按这个类精确取（底栏现在有左右两个分组，
+  // 只按「.card-foot 里的 span」找会先命中分组容器，读数就是错的）
+  for (const b of badges) footRight.append(el('span', { class: 'card-badge', text: b }));
+  node.append(el('div', { class: 'card-foot' }, [footLeft, footRight]));
 
   if (check) {
     // 左上角那个「已入选」圆圈本身也是按钮：卡面整体改成了「点开详情」，
