@@ -13,12 +13,16 @@ const profile = mkdtempSync(join(tmpdir(), 'edge-d2-'));
 // 音频时钟走的是真实时间，量出来的 loop / 音源数全是过时的。budget 传 "rt" 即真实时间，
 // 由页面打印的 DONE 标记来收尾。
 const realtime = String(budget).toLowerCase() === 'rt';
+// 这台机器直连 github.io 不通（要走本地代理），想对**线上**跑诊断就设 D2_PROXY，
+// 例如：$env:D2_PROXY="127.0.0.1:7897"; node tools/diag2.mjs "https://.../?dgenc=cold" rt
+const PROXY = process.env.D2_PROXY ? process.env.D2_PROXY.replace(/^https?:\/\//, '') : '';
 
 const child = spawn(EDGE, [
   '--headless=new',
   '--disable-gpu',
   `--window-size=${size}`,
   ...(realtime ? [] : [`--virtual-time-budget=${budget}`]),
+  ...(PROXY ? [`--proxy-server=http://${PROXY}`] : []),
   '--enable-logging=stderr',
   '--v=0',
   '--no-first-run',
