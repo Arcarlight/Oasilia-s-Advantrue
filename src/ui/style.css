@@ -57,6 +57,36 @@
   font-display: swap;
 }
 
+/* ---- 日语那三套（用户提供，按「日语用字」裁的子集：假名全表 + content/i18n/ja.json 里的字）----
+   只在日语模式下生效 —— html[lang="ja"] 会改写字体栈（见下面）。
+   为什么按语言换栈、而不是把六套并进同一个栈：
+   中文字体缺假名（SGHr 一个假名都没有），日文字体多半缺简体字（亚 / 龙 / 话…），
+   混在一个栈里会让「译文」和「还没翻译、显示中文」的部分各自掉到不同的兜底字体上，
+   同一屏里三种字形打架，比现在还乱。分语言换栈之后：
+     · 日语模式：日语字体 → 中文字体 → LXGW（没翻译的部分照样是中文的样子）
+     · 中文模式：中文字体 → LXGW（日语字体根本不参与） */
+@font-face {
+  font-family: 'Oasis Body JP';
+  src: url(../../assets/fonts/XiaoshanCircle-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oasis Bold JP';
+  src: url(../../assets/fonts/HanaZome-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oasis Hand JP';
+  src: url(../../assets/fonts/YOzFont-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   /* ---- 色板：沙漠黄昏 ---- */
   --sand-0: #1a120c;
@@ -109,12 +139,32 @@
   --font-game: var(--font-body);
   --font-ui: var(--font-body);
   --font-title: var(--font-bold);
+  /* 语言 / 换行：中文按字断行，日文也是；西文那几段靠 word-break 正常断词 */
+  --font-lang: normal;
 
   /* 战斗手牌卡面（宽 × 高）。卡面从 168×148 放大到 186×190：
      原来的卡面又小又扁，长一点的文案会被 -webkit-line-clamp 直接截掉。
      改完记得同步 battle-view.js 里的 CARD_ASPECT（出牌展示区按它算尺寸）。 */
   --card-w: 186px;
   --card-h: 190px;
+}
+
+/**
+ * 日语模式换字体栈。
+ *
+ * ui.js 在启动 / 切换语言时写 `document.documentElement.lang`，这里按它整体换栈 ——
+ * 三套日语字体（用户提供的 はなぞめ / XiaoshanCircle / YOzBS_）分别顶替
+ * 粗体 / 正文 / 手写三个角色，后面仍然接着中文字体与 LXGW 兜底：
+ * 没翻译的部分（现在还有一多半）显示中文，会自然落到中文字体上，不会变成方块。
+ *
+ * 选择器是 `html[lang="ja"]` 而不是 `:root`：特异性(0,1,1) 高过 `:root`(0,1,0)，
+ * 不用 !important 就能赢，而且 --font-game / --font-title 这些别名是 var() 引用，
+ * 会在**使用处**解析，所以它们自动跟着换，不用重复三行。
+ */
+html[lang="ja"] {
+  --font-body: 'Oasis Body JP', 'Oasis Body', 'LXGW Neo XiHei Plus', "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Microsoft YaHei", sans-serif;
+  --font-bold: 'Oasis Bold JP', 'Oasis Bold', 'LXGW Neo XiHei Plus', "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  --font-hand: 'Oasis Hand JP', 'Oasis Hand', 'Oasis Hand Patch', 'LXGW Neo XiHei Plus', "Hiragino Sans", "Yu Gothic", cursive, sans-serif;
 }
 
 * { box-sizing: border-box; }

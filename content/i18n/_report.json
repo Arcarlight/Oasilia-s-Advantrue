@@ -5,18 +5,18 @@
   "contentStrings": 984,
   "perLang": {
     "ja": {
-      "done": 108,
+      "done": 112,
       "total": 1047,
-      "percent": 10.3,
+      "percent": 10.7,
       "codeDone": 63,
-      "contentDone": 45
+      "contentDone": 49
     },
     "en": {
-      "done": 202,
+      "done": 206,
       "total": 1047,
-      "percent": 19.3,
+      "percent": 19.7,
       "codeDone": 63,
-      "contentDone": 139
+      "contentDone": 143
     }
   },
   "orphans": {

@@ -16,6 +16,12 @@ WenYuanSerifSC-Bold.ttf
 # 只有 tools/subset-fonts.mjs 会把它们裁成 assets/fonts/ 里的子集，运行时读的是子集。
 YShiWrittenSC-Regular.ttf
 
+# 日语的那三套（用户提供：粗体 / 正文 / 手写），同样是构建输入：
+# 只用来裁出 assets/fonts/ 里的日语子集（约 512KB），运行时读的是子集。
+はなぞめフォント.otf
+XiaoshanCircle.ttf
+YOzBS_.otf
+
 # Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，
 # 而且是从 %TEMP% 解包后由 tools/import-gen9.mjs 挑图，运行时完全不读它。
 # 顺手加一条 *.rar 兜住别的素材包，免得再被 git add -A 卷进仓库。

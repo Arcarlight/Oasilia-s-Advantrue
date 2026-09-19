@@ -51,7 +51,29 @@ const PATCH = {
   label: '手写体补丁（补写意体缺的字）',
 };
 
-/** 每份子集覆盖了哪些字 / 缺哪些字，写进这个清单；check-content.mjs 按它守住「别过期」 */
+/**
+ * 日语专用的三套字体（用户提供）。
+ *
+ * **按「日语用到的字」裁，不按中文那一大套**：日语字体里往往没有简体字
+ * （亚 / 龙 / 发 / 话…），照中文那套裁只是白占体积 ——
+ * 日语模式下没翻到的那部分内容会显示中文，而那些字由中文字体栈兜住
+ * （见 style.css 里 `html[lang="ja"]` 的字体栈顺序）。
+ */
+const JP_FONTS = [
+  { src: 'はなぞめフォント.otf', out: 'HanaZome-subset.woff2', label: '日语粗体（卡名 / 商店名 / 标题）' },
+  { src: 'XiaoshanCircle.ttf', out: 'XiaoshanCircle-subset.woff2', label: '日语正文' },
+  { src: 'YOzBS_.otf', out: 'YOzFont-subset.woff2', label: '日语手写（旁白 / 对白）' },
+];
+
+/** 假名全表（平假名 + 片假名 + 常见的浊音/半浊音/拗音）—— 不留「以后新写的词缺字」这个坑 */
+const KANA = 'ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔ'
+  + 'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶ'
+  + '「」『』、。・ー〜～！？（）…‥“”‘’';
+
+/**
+ * 每份子集覆盖了哪些字 / 缺哪些字，写进这个清单；check-content.mjs 按它守住「别过期」
+ * （中文一套、日语一套，两个指纹都对得上才算数）
+ */
 const MANIFEST = path.join(OUT_DIR, 'subset-manifest.json');
 
 /** 收集文本时要扫的范围 */
@@ -112,6 +134,23 @@ const text = [...chars].join('');
 await fs.writeFile(textFile, text, 'utf8');
 console.log(`收集到 ${chars.size} 个不同字符（来自 ${files.length} 个文件）-> ${textFile}`);
 
+// ---- 日语那一套：假名全表 + 日语译文里用到的字 ----
+const jaChars = new Set(`${ALWAYS.join('')}${KANA}`);
+let jaDict = {};
+try {
+  jaDict = JSON.parse(await fs.readFile(path.join(ROOT, 'content', 'i18n', 'ja.json'), 'utf8'));
+} catch { /* 还没有日语表就当只有假名 */ }
+const jaSrc = Object.values(jaDict).join('');
+for (const ch of jaSrc) {
+  const cp = ch.codePointAt(0);
+  if (cp < 0x20 || (cp >= 0xe000 && cp <= 0xf8ff)) continue;
+  jaChars.add(ch);
+}
+const jaText = [...jaChars].join('');
+const jaTextFile = path.join(os.tmpdir(), 'oasis-font-subset-ja.txt');
+await fs.writeFile(jaTextFile, jaText, 'utf8');
+console.log(`日语用字 ${jaChars.size} 个（假名全表 + content/i18n/ja.json 里的 ${new Set(jaSrc).size} 个字）`);
+
 await fs.mkdir(OUT_DIR, { recursive: true });
 
 /** 跑一次 pyftsubset */
@@ -129,10 +168,12 @@ function subset(srcFile, outFile, textFilePath) {
 }
 
 /**
- * 问 fontTools：这些字体各自缺哪些字（按上面那份字符全集算）。
+ * 问 fontTools：这些字体各自缺哪些字。
+ * @param {string[]} fontFiles
+ * @param {string} charTextFile 拿哪份字符集去比（中文一套 / 日语一套）
  * 返回 { 文件名: { missing: '缺的字', codepoints: n } }
  */
-function coverage(fontFiles) {
+function coverage(fontFiles, charTextFile = textFile) {
   const py = `
 import sys, json
 sys.stdout.reconfigure(encoding='utf-8')
@@ -153,7 +194,7 @@ print(json.dumps(out, ensure_ascii=False))
   const scriptFile = path.join(os.tmpdir(), 'oasis-subset-coverage.py');
   // 脚本本身每次写一遍：内容和这里保持一步之遥，省得两份文件不一致
   return fs.writeFile(scriptFile, py, 'utf8').then(() => {
-    const r = spawnSync('python', [scriptFile, textFile, ...fontFiles], { encoding: 'utf8' });
+    const r = spawnSync('python', [scriptFile, charTextFile, ...fontFiles], { encoding: 'utf8' });
     if (r.status !== 0) throw new Error(`覆盖检查失败：${(r.stderr || '').split('\n').slice(-4).join(' ')}`);
     return JSON.parse(r.stdout);
   });
@@ -163,7 +204,8 @@ let before = 0;
 let after = 0;
 const produced = [];
 
-for (const font of FONTS) {
+/** 裁一套字体（中文那套与日语那套共用），返回产出信息或 null */
+async function cut(font, charTextFilePath) {
   const src = path.join(ROOT, font.src);
   const out = path.join(OUT_DIR, font.out);
   let size = 0;
@@ -171,20 +213,31 @@ for (const font of FONTS) {
     size = (await fs.stat(src)).size;
   } catch {
     console.log(`  ✗ 找不到源字体 ${font.src}（${font.label}）—— 跳过`);
-    continue;
+    return null;
   }
-  const r = subset(src, out, textFile);
-
+  const r = subset(src, out, charTextFilePath);
   if (r.status !== 0) {
     console.log(`  ✗ ${font.src} 裁剪失败：\n${(r.stderr || r.stdout || '').split('\n').slice(-6).join('\n')}`);
     process.exitCode = 1;
-    continue;
+    return null;
   }
   const outSize = (await fs.stat(out)).size;
   before += size;
   after += outSize;
-  produced.push({ ...font, srcBytes: size, outBytes: outSize });
-  console.log(`  ✓ ${font.label.padEnd(18)} ${font.src.padEnd(34)} ${(size / 1048576).toFixed(1)}MB -> ${font.out} ${(outSize / 1024).toFixed(0)}KB`);
+  console.log(`  ✓ ${font.label.padEnd(20)} ${font.src.padEnd(30)} ${(size / 1048576).toFixed(1)}MB -> ${font.out} ${(outSize / 1024).toFixed(0)}KB`);
+  return { ...font, srcBytes: size, outBytes: outSize };
+}
+
+for (const font of FONTS) {
+  const info = await cut(font, textFile);
+  if (info) produced.push(info);
+}
+
+// ---- 日语那三套（按日语用字裁）----
+const jaProduced = [];
+for (const font of JP_FONTS) {
+  const info = await cut(font, jaTextFile);
+  if (info) jaProduced.push(info);
 }
 
 // ---- 补丁子集：把「新字体缺、旧字体有」的那几个字单独裁出来 ----
@@ -226,8 +279,9 @@ if (mainOuts.length) {
 
   // ---- 清单：给 check-content.mjs 守住「内容改了要重跑」 ----
   const { createHash } = await import('node:crypto');
+  const jaCov = jaProduced.length ? await coverage(jaProduced.map((f) => path.join(OUT_DIR, f.out)), jaTextFile) : {};
   const manifest = {
-    note: '由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了',
+    note: '由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了',
     textSha256: createHash('sha256').update(text, 'utf8').digest('hex'),
     chars: chars.size,
     fonts: produced.map((f) => ({
@@ -238,9 +292,25 @@ if (mainOuts.length) {
       missing: cov[f.out]?.missing ?? '',
     })),
     patch: patchInfo,
+    /** 日语那三套：按**日语用字**裁（假名全表 + content/i18n/ja.json 里的字） */
+    ja: {
+      textSha256: createHash('sha256').update(jaText, 'utf8').digest('hex'),
+      chars: jaChars.size,
+      fonts: jaProduced.map((f) => ({
+        out: f.out, src: f.src, label: f.label,
+        srcBytes: f.srcBytes, outBytes: f.outBytes,
+        codepoints: jaCov[f.out]?.codepoints ?? 0,
+        missingCount: (jaCov[f.out]?.missing ?? '').length,
+        missing: jaCov[f.out]?.missing ?? '',
+      })),
+    },
   };
   await fs.writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-  console.log(`  · 清单写入 assets/fonts/subset-manifest.json（内容指纹 ${manifest.textSha256.slice(0, 12)}）`);
+  console.log(`  · 清单写入 assets/fonts/subset-manifest.json（中文指纹 ${manifest.textSha256.slice(0, 12)}`
+    + ` · 日语指纹 ${manifest.ja.textSha256.slice(0, 12)}）`);
+  for (const f of manifest.ja.fonts) {
+    if (f.missingCount) console.log(`    ⚠ 日语字体 ${f.out} 缺 ${f.missingCount} 个字：${f.missing.slice(0, 40)}`);
+  }
 }
 
 console.log(`合计 ${(before / 1048576).toFixed(1)}MB -> ${(after / 1024).toFixed(0)}KB（省掉 ${(100 - (after / before) * 100).toFixed(1)}%）`);

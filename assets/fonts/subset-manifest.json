@@ -1,7 +1,7 @@
 {
-  "note": "由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了",
-  "textSha256": "e274380b9164091641f458af233b09c2646c3a217c176961d265a461c61480f5",
-  "chars": 2120,
+  "note": "由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了",
+  "textSha256": "26d20bff8db2c46f14a0e44d5cc608280d5535e8897a983ccc783c962e3aa8db",
+  "chars": 2122,
   "fonts": [
     {
       "out": "SGHr-Regular-subset.woff2",
@@ -10,16 +10,16 @@
       "srcBytes": 4120572,
       "outBytes": 329552,
       "codepoints": 1913,
-      "missingCount": 207,
-      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩あいうえおかがきくぐけげこさしじすずせぜそただちっつてでとどなにのはびふへべほまみむめもやゆよらりるれわをんァアイウェエオカキクケゲコゴシジスズセタダチッツデトドノヒピフブプポマムメモャラリルレロンー乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️０１２３４５６７８９"
+      "missingCount": 209,
+      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩あいうえおかがきくぐけげこさしじすずせぜそただちっつてでとどなにのはびふへべほまみむめもやゆよらりるれわをんァアイウェエオカキクケゲコゴシジスズセタダチッツデトドノヒピフブプボポマムメモャラリルレロンー乗傘効動勝収啰営執場塩増層強復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️０１２３４５６７８９"
     },
     {
       "out": "WenYuanSerifSC-Bold-subset.woff2",
       "src": "WenYuanSerifSC-Bold.ttf",
       "label": "粗体（卡名 / 商店名…）",
       "srcBytes": 15238244,
-      "outBytes": 461644,
-      "codepoints": 2116,
+      "outBytes": 462420,
+      "codepoints": 2118,
       "missingCount": 4,
       "missing": "⚠⟨⟩️"
     },
@@ -28,18 +28,54 @@
       "src": "YShiWrittenSC-Regular.ttf",
       "label": "手写体（写意体 SC）",
       "srcBytes": 3994192,
-      "outBytes": 327240,
-      "codepoints": 2039,
-      "missingCount": 81,
-      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️－～"
+      "outBytes": 327068,
+      "codepoints": 2040,
+      "missingCount": 82,
+      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘効動勝収啰営執場塩増層強復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️－～"
     }
   ],
   "patch": {
     "base": "YShiWrittenSC-Regular.ttf",
-    "wants": 81,
+    "wants": 82,
     "out": "851LakeusNightWriting-patch.woff2",
     "srcBytes": 28880528,
-    "outBytes": 32820,
+    "outBytes": 33128,
     "stillMissing": "⟨⟩️"
+  },
+  "ja": {
+    "textSha256": "4ee1be5b429147a787593404b5dfb18a0869a49d77ff1098d37ab6fadcb05e4d",
+    "chars": 525,
+    "fonts": [
+      {
+        "out": "HanaZome-subset.woff2",
+        "src": "はなぞめフォント.otf",
+        "label": "日语粗体（卡名 / 商店名 / 标题）",
+        "srcBytes": 2133800,
+        "outBytes": 118892,
+        "codepoints": 525,
+        "missingCount": 0,
+        "missing": ""
+      },
+      {
+        "out": "XiaoshanCircle-subset.woff2",
+        "src": "XiaoshanCircle.ttf",
+        "label": "日语正文",
+        "srcBytes": 2558160,
+        "outBytes": 51588,
+        "codepoints": 520,
+        "missingCount": 5,
+        "missing": "¥·–—ゔ"
+      },
+      {
+        "out": "YOzFont-subset.woff2",
+        "src": "YOzBS_.otf",
+        "label": "日语手写（旁白 / 对白）",
+        "srcBytes": 11638200,
+        "outBytes": 356964,
+        "codepoints": 525,
+        "missingCount": 0,
+        "missing": ""
+      }
+    ]
   }
 }
