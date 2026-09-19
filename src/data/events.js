@@ -82,7 +82,7 @@ export const EVENTS = [
       eventOption({
         "label": "拿走一颗蛋（获得活力药 ×1，-18 HP）",
         "tone": "neutral",
-        "text": "母鸟回来了。你叼着蛋往下跳，落地的时候蛋碎了，蛋液在瓶里凝成了一颗药。\n「对不起呀母鸟！……不过这个药真能用。」\nHP -{hp}，获得{item} ×1。",
+        "text": "窝的主人回来了。你叼着蛋往下跳，落地的时候蛋碎了，蛋液在瓶里凝成了一颗药。\n「对不起呀！……不过这个药真能用。」\nHP -{hp}，获得{item} ×1。",
         "effects": [
           {
             "item": "elixir"
@@ -96,7 +96,7 @@ export const EVENTS = [
       eventOption({
         "label": "在原地等它回来（幸运 +3，回复 20 HP）",
         "tone": "good",
-        "text": "秃鹫回来看了你一眼，没管你。你们在同一个岩架上晒了一个下午的太阳。\n「晒太阳最舒服啦。」\nHP +{heal}，幸运 +3。",
+        "text": "秃鹫娜回来看了你一眼，没管你。你们在同一个岩架上晒了一个下午的太阳。\n「晒太阳最舒服啦。」\nHP +{heal}，幸运 +3。",
         "effects": [
           {
             "stat": {
@@ -756,7 +756,7 @@ export const EVENTS = [
               {
                 "weight": 50,
                 "tone": "bad",
-                "text": "里面是一窝被激怒的蜂。你跑得比这辈子任何时候都快。\n「对不起对不起对不起呀 ——！」\nHP -{hp}。",
+                "text": "里面是一窝被激怒的大针蜂。你跑得比这辈子任何时候都快。\n「对不起对不起对不起呀 ——！」\nHP -{hp}。",
                 "effects": [
                   {
                     "hp": -18
@@ -1359,7 +1359,7 @@ export const EVENTS = [
               {
                 "weight": 50,
                 "tone": "good",
-                "text": "你把箱子掀开，一只沙鼠窜了出去。它窝里堆着一瓶高级伤药。\n「打扰了，这个我拿走。」\n获得{item} ×1。",
+                "text": "你把箱子掀开，一只螺钉地鼠窜了出去。它窝里堆着一瓶高级伤药。\n「打扰了，这个我拿走。」\n获得{item} ×1。",
                 "effects": [
                   {
                     "item": "potion_big"

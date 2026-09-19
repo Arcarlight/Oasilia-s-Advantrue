@@ -223,21 +223,31 @@ export function renderText(text, vars) {
 
 /**
  * 把一个 JSON 选项编译成 game 需要的 {label, hint, run(game)}。
+ *
+ * ⚠️ 结果文案（`spec.text` 与各分支里的 `text`）是**关在 run() 闭包里**的：
+ * 运行时对象上根本没有 `text` 字段（`options[i].text === undefined`）。
+ * 后果是 i18n 两边都摸不到它 —— 切到日语，选项结果还是中文（用户截图报的就是这个），
+ * 待翻清单里也从来没有这 160 多条。所以这里把原始 spec 挂在 `_spec` 上（不可枚举，
+ * 不参与序列化 / 深拷贝），让 src/core/i18n.js 的 optionTextNodes() 能顺着它找到那些文案。
+ *
  * @param {{label:string, hint?:string, tone?:string, text?:string, effects?:any[]}} spec
  */
 export function eventOption(spec) {
-  return {
+  const opt = {
     label: spec.label,
     hint: spec.hint,
     run(game) {
       const vars = {};
       const res = runBlock(spec.effects ?? [], game, vars);
       return {
+        // 文案在 runBlock / spec 里已被原地翻译（见 applyEventOptions），这里只填数值
         text: renderText(res.text ?? spec.text ?? '', vars),
         tone: res.tone ?? spec.tone ?? 'neutral',
       };
     },
   };
+  Object.defineProperty(opt, '_spec', { value: spec, enumerable: false, writable: true, configurable: true });
+  return opt;
 }
 
 /** 静态分析用：列出这段 effects 可能产出的变量名 */

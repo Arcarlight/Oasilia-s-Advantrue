@@ -10,6 +10,7 @@ import { toast } from './ui/dom.js';
 import { showDeck } from './ui/overlays.js';
 import { initTips } from './ui/tips.js';
 import { setEncounterMode } from './ui/encounter.js';
+import { EVENTS } from './data/events.js';
 
 async function boot() {
   const splash = document.createElement('div');
@@ -70,7 +71,25 @@ async function boot() {
       case 'battle': game.startBattle('normal', 0); return 'battle';
       case 'elite': game.startBattle('elite', 0); return 'elite';
       case 'boss': game.startBattle('boss', 0); return 'boss';
-      case 'event': game.startEvent(); return 'event';
+      case 'event': {
+        // `&event=<id>` 指定事件、`&pick=<n>` 顺手点掉第 n 个选项 —— 让「选项结果」那一屏
+        // 也能被截图/复看（结果文案是随机事件里最容易漏翻、也最难复现给玩家看的一屏）。
+        const wantId = params.get('event');
+        const pick = params.get('pick');
+        if (wantId) {
+          const ev = EVENTS.find((e) => e.id === wantId);
+          if (!ev) throw new Error(`没有这个事件：${wantId}`);
+          if (!game.data) game.newRun(Number(params.get('seed') ?? 20240607));
+          game.event = ev;
+          game.eventResult = null;
+          game.phase = 'event';
+          if (pick != null) game.chooseEventOption(Number(pick));
+          ui.forceRerender();
+          return 'event';
+        }
+        game.startEvent();
+        return 'event';
+      }
       case 'chest': game.startChest(); return 'chest';
       case 'shop': game.startShop(); return 'shop';
       case 'rest': game.startRest(); return 'rest';

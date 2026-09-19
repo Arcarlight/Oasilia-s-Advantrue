@@ -110,7 +110,7 @@ async function collectContentStrings() {
     if (v && typeof v === 'object') for (const s of Object.values(v)) addDeep(s, where);
   };
   const { I18N_TABLES, I18N_WORD_TABLES = {} } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
-  const { CONTENT_FIELDS, entriesOf } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
+  const { CONTENT_FIELDS, entriesOf, optionTextNodes } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
 
   for (const [kind, list] of Object.entries(I18N_TABLES)) {
     const fields = CONTENT_FIELDS[kind];
@@ -120,12 +120,15 @@ async function collectContentStrings() {
       const where = `${kind}:${obj.id ?? obj.slug ?? obj.key ?? '?'}`;
       for (const f of fields) addDeep(obj[f], where);
       if (typeof obj.name === 'string' && typeof obj.en === 'string') official.set(obj.name, obj.en);
-      // 事件的选项（label / hint / text）是数组下标，不在字段表里，单独收
+      // 事件的选项（label / hint）是数组下标，不在字段表里，单独收
       for (const opt of obj.options ?? []) {
         if (!opt || typeof opt !== 'object') continue;
         add(opt.label, where);
         add(opt.hint, where);
         add(opt.text, where);
+        // 结果文案与随机分支各自的文案：藏在 eventOption() 的闭包里（对象上没有 text），
+        // 顺着 `_spec` 找出来 —— 之前漏了它们整整 166 条，界面上一直是中文。
+        for (const node of optionTextNodes(opt)) add(node.text, where);
       }
     }
   }

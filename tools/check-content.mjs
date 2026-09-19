@@ -31,6 +31,7 @@ const { BIOMES, STAGE_BIOME, BALANCE, RARITY, REWARD_WEIGHTS } = await import('.
 const { NODE_TYPES } = await import('../src/data/mapgen.js');
 const { BGM_FILES } = await import('../src/core/bgm.js').catch(() => ({ BGM_FILES: null }));
 const { STATUS_INFO } = await import('../src/core/battle.js');
+const { optionTextNodes } = await import('../src/core/i18n.js');
 
 const stageCount = STAGE_BIOME.length;
 
@@ -658,7 +659,12 @@ if (BGM_FILES) {
   };
   for (const e of EVENTS) {
     scanZh(e.name, `event:${e.id}.name`); scanZh(e.text, `event:${e.id}.text`);
-    (e.options ?? []).forEach((o, i) => scanZh([o.label, o.hint, o.text], `event:${e.id}.opt${i}`));
+    // 选项的结果文案 / 随机分支文案也要扫 —— 它们藏在 eventOption() 的闭包里
+    // （对象上没有 text），第一版漏了，于是「母鸟回来了…」这种漏网一直躺着
+    (e.options ?? []).forEach((o, i) => {
+      scanZh([o.label, o.hint, o.text], `event:${e.id}.opt${i}`);
+      scanZh(optionTextNodes(o).map((nd) => nd.text), `event:${e.id}.opt${i}.result`);
+    });
   }
   for (const e of ENEMIES) scanZh([e.lines, e.bossTitle], `enemy:${e.id}`);
   for (const c of CARDS) scanZh(c.text, `card:${c.id}.text`);
@@ -679,6 +685,8 @@ if (BGM_FILES) {
   const EN_RE = /\b(bird|birds|fish|fishes|crab|crabs|lizard|lizards|snake|snakes|vulture|vultures|rabbit|mouse|mice|rat|rats|cat|cats|dog|dogs|wolf|wolves|fox|foxes|spider|spiders|ant|ants|bee|bees|butterfly|moth|owl|eagle|hawk|crow|shark|whale|dolphin|octopus|jellyfish|turtle|frog|toad|bat|bats|horse|cow|pig|sheep|monkey|deer|bear|tiger|lion|elephant|camel|penguin|otter|hedgehog|squirrel|snail)\b/i;
   // 英文里 fish 也是动词（fish around / fish out），这几个短语是正经写法
   const OK_EN = ['fish around', 'fish out'];
+  // 日文里的**惯用语**不算动物：「一石二鳥」是「一举两得」，不是真的鸟
+  const OK_JA = ['一石二鳥'];
   for (const lg of ['ja', 'en']) {
     const dict = JSON.parse(await fs.readFile(path.join(ROOT, `content/i18n/${lg}.json`), 'utf8').catch(() => '{}'));
     // 先把「这一语言里的」宝可梦 / 卡牌 / 道具 / 商人名字抠掉：Brave Bird（勇鸟猛攻）、
@@ -695,8 +703,10 @@ if (BGM_FILES) {
       let s = String(v);
       for (const m of masks) s = s.split(m).join('◯'.repeat(m.length));
       let found = [];
-      if (lg === 'ja') found = JA_ANIMALS.filter((a) => s.includes(a));
-      else {
+      if (lg === 'ja') {
+        for (const ok of OK_JA) s = s.split(ok).join('◯'.repeat(ok.length));
+        found = JA_ANIMALS.filter((a) => s.includes(a));
+      } else {
         for (const ok of OK_EN) s = s.split(new RegExp(ok, 'gi')).join('◯'.repeat(ok.length));
         const m = s.match(EN_RE);
         found = m ? [m[0]] : [];
@@ -758,6 +768,51 @@ if (BGM_FILES) {
       err(`首领的卡牌奖励不够好：至少一张史诗的概率 ${(odds.boss * 100).toFixed(1)}%，`
         + `只有精英（${(odds.elite * 100).toFixed(1)}%）的 ${(odds.boss / odds.elite).toFixed(2)} 倍（要求 ≥1.5 倍）`);
     }
+  }
+}
+
+// ---------- 12. 译文里的物种名要和原文对得上 ----------
+/**
+ * 起因：事件结果文案「那大概是别的**沙漠蜻蜓**」被翻成了「よその**サンド** / some other **Sandshrew**」——
+ * 原文说的是主角那个物种，译文换成了另一个物种。这种错别的检查全都抓不到
+ * （不是漏翻、不是占位符、不是残留中文），只有把「原文提到的物种」和「译文提到的物种」对一遍。
+ *
+ * 判据必须**先把长的物种名从中文里抠掉**再找短的：否则「天蝎王」里会找出「天蝎」、
+ * 「波士可多拉」里会找出「可多拉」、「派拉斯特」里会找出「派拉斯」——
+ * 第一版就是这样，报 7 条里有 5 条是误报。
+ */
+{
+  const jaDict = JSON.parse(await fs.readFile(path.join(ROOT, 'content/i18n/ja.json'), 'utf8').catch(() => '{}'));
+  const enDict = JSON.parse(await fs.readFile(path.join(ROOT, 'content/i18n/en.json'), 'utf8').catch(() => '{}'));
+  // 会出现在台词里的物种：敌人表 + 主角物种 + 少数只在文案里点名的（秃鹫娜）
+  const names = new Set(ENEMIES.map((e) => e.name).filter(Boolean));
+  names.add(BALANCE.player.speciesName);
+  names.add('秃鹫娜');
+  const pair = new Map();
+  for (const n of names) if (jaDict[n] && enDict[n] && n !== jaDict[n]) pair.set(n, [jaDict[n], enDict[n]]);
+  const byLen = [...pair.keys()].sort((a, b) => b.length - a.length);
+
+  const bad = [];
+  let checked = 0;
+  for (const [zh, v] of Object.entries(jaDict)) {
+    // 长名字先抠掉：抠完之后「天蝎王」里的「天蝎」就找不到了 —— 那正是我们要的
+    let masked = zh;
+    const mentioned = [];
+    for (const n of byLen) {
+      if (masked.includes(n)) { mentioned.push(n); masked = masked.split(n).join('◯'.repeat(n.length)); }
+    }
+    if (!mentioned.length) continue;
+    checked += 1;
+    for (const n of mentioned) {
+      const [jaName, enName] = pair.get(n);
+      if (!String(v).includes(jaName)) bad.push(`ja「${zh.slice(0, 24)}」提到了 ${n}，译文里却没有 ${jaName}`);
+      if (!String(enDict[zh] ?? '').includes(enName)) bad.push(`en「${zh.slice(0, 24)}」提到了 ${n}，译文里却没有 ${enName}`);
+    }
+  }
+  if (bad.length) {
+    err(`译文里的物种名对不上原文（${bad.length} 处）：${bad.slice(0, 4).join(' ｜ ')}${bad.length > 4 ? ' …' : ''}`);
+  } else {
+    note(`译文物种名对账：${checked} 条提到物种的译文全部对得上`);
   }
 }
 

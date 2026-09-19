@@ -193,25 +193,64 @@ function applyTable(kind, list) {
 /**
  * 事件的选项（label / hint / text）是数组下标，塞不进上面的字段表，单独走一遍。
  */
+/**
+ * 事件选项里「所有会给玩家看的文案」都藏在哪。
+ *
+ * 事件选项在运行时是 `{ label, hint, run }` —— 结果文案（以及随机分支各自的文案）
+ * 关在 `run()` 的闭包里，**对象上根本没有 `text` 字段**。这件事坑了两次：
+ *   · `applyEventOptions` 逐字段改写时看不见它 → 切到日语，选项结果那一大段还是中文；
+ *   · `build-i18n` 扫待翻清单时也看不见它 → 那 160 多条从来就没进过清单，也就永远没人翻。
+ * `eventOption()` 现在把原始 spec 挂在 `_spec` 上（不可枚举），这里顺着它把文案所在的
+ * **对象**都找出来 —— 运行时改写（原地改 `text`）与清单收集共用这一个函数，
+ * 免得「翻译看不见的文案」这种事再发生一次。
+ *
+ * 结构对应 eventfx.js 的 runBlock：块可以是数组、可以是 `{effects, text, tone, special}`，
+ * 效果里还有 `branch` / `if..then..else` 两种嵌套。
+ */
+export function optionTextNodes(opt, out = []) {
+  const walkBlock = (block) => {
+    if (Array.isArray(block)) { for (const b of block) walkBlock(b); return; }
+    if (!block || typeof block !== 'object') return;
+    if (typeof block.text === 'string') out.push(block);
+    if (block.effects) walkBlock(block.effects);
+    if (block.branch) for (const b of block.branch) walkBlock(b);
+    if (block.if) { walkBlock(block.then); walkBlock(block.else); }
+  };
+  const spec = opt?._spec ?? opt;
+  if (!spec || typeof spec !== 'object') return out;
+  if (typeof spec.text === 'string') out.push(spec);
+  if (spec.effects) walkBlock(spec.effects);
+  return out;
+}
+
+/** 翻译对象上的一个字符串字段；中文原文留在不可枚举的 _zh 里，切回来逐字恢复 */
+function translateField(obj, field) {
+  if (!obj || typeof obj !== 'object') return { hit: 0, total: 0 };
+  if (!obj._zh) {
+    Object.defineProperty(obj, '_zh', { value: {}, enumerable: false, writable: true, configurable: true });
+  }
+  if (obj._zh[field] === undefined) obj._zh[field] = obj[field];
+  const zhText = obj._zh[field];
+  if (typeof zhText !== 'string') return { hit: 0, total: 0 };
+  const next = lang === DEFAULT_LANG ? zhText : t(zhText);
+  obj[field] = next;
+  return { hit: next !== zhText ? 1 : 0, total: 1 };
+}
+
 function applyEventOptions(events) {
   let hit = 0;
   let total = 0;
   for (const ev of events ?? []) {
     for (const opt of ev?.options ?? []) {
       if (!opt || typeof opt !== 'object') continue;
-      if (!opt._zh) {
-        Object.defineProperty(opt, '_zh', {
-          value: { label: opt.label, hint: opt.hint, text: opt.text },
-          enumerable: false, writable: true, configurable: true,
-        });
-      }
       for (const f of ['label', 'hint', 'text']) {
-        const zhText = opt._zh[f];
-        if (zhText == null) continue;
-        total += 1;
-        const next = lang === DEFAULT_LANG ? zhText : t(zhText);
-        opt[f] = next;
-        if (next !== zhText) hit += 1;
+        const r = translateField(opt, f);
+        hit += r.hit; total += r.total;
+      }
+      // 结果文案与各分支文案（在 _spec 里的那些）
+      for (const node of optionTextNodes(opt)) {
+        const r = translateField(node, 'text');
+        hit += r.hit; total += r.total;
       }
     }
   }

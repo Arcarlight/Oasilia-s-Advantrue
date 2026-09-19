@@ -151,6 +151,34 @@
       ok(totalFields > 800, '确实扫到了足够多的字段（判据不是空跑）', `${totalFields} 个字段，其中没翻的 ${lazy} 个`);
     }
 
+    /**
+     * ⑧ 事件选项的**结果文案**（含随机分支）—— 它们藏在 eventOption() 的 run() 闭包里，
+     * 运行时对象上根本没有 `text` 字段。这件事坑过两次：applyEventOptions 改不到它（切到日语，
+     * 选项结果那一大段还是中文，用户截图报的就是这个），build-i18n 也扫不到它
+     * （那 160 多条从来没进过待翻清单）。这条断言就是盯着这一类「看不见的文案」。
+     */
+    log('⑧ 事件选项的结果文案（藏在 run() 闭包里的那些）');
+    {
+      const { optionTextNodes } = await import('../src/core/i18n.js');
+      const { EVENTS } = await import('../src/data/events.js');
+      changeLanguage('ja');
+      await wait(200);
+      let total = 0; let lazy = 0; let sample = '';
+      for (const ev of EVENTS) {
+        for (const o of ev.options ?? []) {
+          for (const nd of optionTextNodes(o)) {
+            if (typeof nd.text !== 'string') continue;
+            total += 1;
+            if (ja[nd.text] !== undefined && ja[nd.text] !== nd.text) { lazy += 1; if (!sample) sample = nd.text.slice(0, 18); }
+          }
+        }
+      }
+      ok(total > 150, '确实扫到了结果文案（判据不是空跑）', `${total} 条`);
+      ok(lazy === 0, `结果文案 ${total - lazy}/${total} 条已跟着语言走`, lazy ? `还是中文：${sample}` : '（含随机分支各自的文案）');
+      changeLanguage('zh');
+      await wait(150);
+    }
+
     if (fails.length) log(`I18N_ERRORS=[${fails.join(' | ')}]`);
     else log('多语言自检：通过 ✓');
     log('I18N_DONE');
