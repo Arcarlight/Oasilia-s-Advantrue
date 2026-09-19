@@ -38,9 +38,11 @@ export function nodeName(type, biome) {
  * 生成一张章节地图。
  * @param {number} stage 0-based 章节序号
  * @param {Function} rng
+ * @param {string} [biomeKey] 这一章用哪张地图 —— 开局时抽好的序列（`game.data.biomes`）说了算。
+ *   不传就退回默认顺序 STAGE_BIOME（诊断脚本、老存档都还能跑）。
  */
-export function generateMap(stage, rng) {
-  const biome = BIOMES[STAGE_BIOME[stage] ?? 'night'];
+export function generateMap(stage, rng, biomeKey = null) {
+  const biome = BIOMES[biomeKey] ?? BIOMES[STAGE_BIOME[stage] ?? 'night'];
   // 每张地图的性格（行数 / 节点权重 / 保底数量）写在 content/biomes.json 的 shape 里：
   // 密林事件多、盐海商店多、峭壁精英多、终章又长又狠。缺配置就用全局默认。
   const shape = biome.shape ?? {};

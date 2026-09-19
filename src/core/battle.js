@@ -664,6 +664,35 @@ export class Battle {
         this.dealTrueDamage(foeKey, dmg, t('引爆'));
         break;
       }
+      /**
+       * 层数翻倍：把一侧身上的**持续伤害层数**直接 ×2（中毒 / 剧毒 / 灼伤 / 出血）。
+       *
+       * 毒流与出血流的放大器：先铺层数、再翻倍、最后引爆 —— 比「再挂一层」划算得多，
+       * 也让「先铺后爆」这条线多了个决策点（铺到几层翻倍最赚）。
+       * 没有可翻的层数时不空放：照实说一句，免得玩家以为卡坏了。
+       */
+      case 'statusDouble': {
+        const targetKey = eff.target === 'self' ? sourceKey : foeKey;
+        const actor = this[targetKey];   // 同上：别叫 t，会和 i18n 的 t() 撞名
+        const hit = DOT_STATUSES.filter((st) => (actor[st] ?? 0) > 0);
+        if (!hit.length) {
+          this.emitLogged(
+            { type: 'statusDouble', side: targetKey, values: {}, gained: 0 },
+            t('{name} 身上没有可以翻倍的层数。', { name: actor.name }),
+            'info'
+          );
+          break;
+        }
+        let gained = 0;
+        const values = {};
+        for (const st of hit) { gained += actor[st]; actor[st] *= 2; values[st] = actor[st]; }
+        this.emitLogged(
+          { type: 'statusDouble', side: targetKey, values, gained, statuses: hit },
+          t('{name} 身上的持续伤害层数翻倍了（+{n} 层）！', { name: actor.name, n: gained }),
+          targetKey === 'player' ? 'bad' : 'good'
+        );
+        break;
+      }
       case 'status': {
         const targetKey = eff.target === 'self' ? sourceKey : foeKey;
         const actor = this[targetKey];   // 同上：别叫 t，会和 i18n 的 t() 撞名
@@ -980,6 +1009,12 @@ export class Battle {
         case 'detonate': {
           const stacks = DOT_STATUSES.reduce((n, st) => n + (foe[st] ?? 0), 0);
           score += stacks > 0 ? Math.min(30, stacks * 3) : -5;
+          break;
+        }
+        case 'statusDouble': {
+          // 翻倍本身不产生伤害，价值全看对手身上已经铺了多少层（没层数就是废牌）
+          const stacks = DOT_STATUSES.reduce((n, st) => n + (foe[st] ?? 0), 0);
+          score += stacks >= 3 ? Math.min(26, stacks * 2.6) : -6;
           break;
         }
         case 'plays':

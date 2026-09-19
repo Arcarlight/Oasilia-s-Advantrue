@@ -794,6 +794,29 @@ if (BGM_FILES) {
 
   const bad = [];
   let checked = 0;
+  /**
+   * ② 引用卡名 / 道具名的地方：文案里用「」点名的东西，译文里必须还是那个名字。
+   *
+   * 这条是踩出来的：雷台事件写「获得「迟缓」×1」，日文译成了「じゃくたい」——
+   * 那是**虚弱状态**的名字，不是那张卡（迟缓 = ランガー）。玩家会以为拿到的是状态。
+   * 只认「」里的名字（正文里偶然出现同一个词不算），所以几乎没有误报。
+   */
+  const named = new Map();
+  for (const c of CARDS) if (c.name && !c.enemyOnly && jaDict[c.name] && enDict[c.name] && jaDict[c.name] !== c.name) named.set(c.name, [jaDict[c.name], enDict[c.name]]);
+  for (const it of Object.values(ITEMS)) if (it.name && jaDict[it.name] && enDict[it.name] && jaDict[it.name] !== it.name) named.set(it.name, [jaDict[it.name], enDict[it.name]]);
+  const namedByLen = [...named.keys()].sort((a, b) => b.length - a.length);
+  let namedChecked = 0;
+  for (const [zh, v] of Object.entries(jaDict)) {
+    for (const n of namedByLen) {
+      const quoted = `「${n}」`;
+      if (!zh.includes(quoted)) continue;
+      namedChecked += 1;
+      const [jaName, enName] = named.get(n);
+      if (!String(v).includes(jaName)) bad.push(`ja「${zh.slice(0, 26)}」点名了「${n}」，译文里却不是 ${jaName}`);
+      if (!String(enDict[zh] ?? '').includes(enName)) bad.push(`en「${zh.slice(0, 26)}」点名了「${n}」，译文里却不是 ${enName}`);
+    }
+  }
+
   for (const [zh, v] of Object.entries(jaDict)) {
     // 长名字先抠掉：抠完之后「天蝎王」里的「天蝎」就找不到了 —— 那正是我们要的
     let masked = zh;
@@ -810,9 +833,9 @@ if (BGM_FILES) {
     }
   }
   if (bad.length) {
-    err(`译文里的物种名对不上原文（${bad.length} 处）：${bad.slice(0, 4).join(' ｜ ')}${bad.length > 4 ? ' …' : ''}`);
+    err(`译文里的物种名 / 点名的卡牌道具名对不上原文（${bad.length} 处）：${bad.slice(0, 4).join(' ｜ ')}${bad.length > 4 ? ' …' : ''}`);
   } else {
-    note(`译文物种名对账：${checked} 条提到物种的译文全部对得上`);
+    note(`译文物种名对账：${checked} 条提到物种、${namedChecked} 处用「」点名卡牌/道具的译文全部对得上`);
   }
 }
 

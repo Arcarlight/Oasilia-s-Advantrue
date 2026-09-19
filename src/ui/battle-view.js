@@ -286,6 +286,14 @@ export class BattleScreen {
         if (ev.status) d[ev.status] = ev.value;
         break;
       /**
+       * 层数翻倍：一次把好几种状态的层数改掉，所以事件带的是 `values`（状态 → 新层数）。
+       * 和上面那两条同一个坑：视图里没有这一支的话，引擎已经翻倍、界面还挂着旧层数，
+       * 胶囊上的数字会当场说谎，直到回合收尾才补上。
+       */
+      case 'statusDouble':
+        for (const [st, v] of Object.entries(ev.values ?? {})) d[st] = v;
+        break;
+      /**
        * 净化 / 引爆会一次性把好几个状态清成 0。
        *
        * 这两条事件以前**根本没有进这个副本**（switch 里没有对应的 case），
@@ -1580,6 +1588,25 @@ export class BattleScreen {
        * 玩家打完「白雾」只看到一张牌摊开又收起，胶囊还挂在原位，然后下回合它自己没了。
        * 现在：白光一闪 → 要消失的胶囊亮起 → 一起化掉 → 日志落行。
        */
+      /**
+       * 层数翻倍：把对手身上已有的持续伤害层数 ×2。
+       * 演出刻意和「再挂一层」拉开：不是冒一滴毒，而是**数字整排翻过去**，
+       * 否则玩家看不出这张牌做了什么（层数变了、特效却和上毒一样，等于没反馈）。
+       */
+      case 'statusDouble': {
+        this.pushLogLine(this.logOf(ev));
+        const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
+        if ((ev.gained ?? 0) > 0) {
+          audio.poison();
+          this.burstFx(body, 'magic_1', { size: 160, ms: 560, klass: 'fx-status fx-status-toxic' });
+          this.burstFx(body, 'spark_1', { size: 130, ms: 520, klass: 'fx-status' });
+          floatAt(body, t('层数 ×2'), 'float-dmg');
+          await this.wait(PACE.purge);
+          this.refreshSide(ev.side);
+        }
+        await this.wait(PACE.detonate);
+        break;
+      }
       case 'cleanse': {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
         this.pushLogLine(this.logOf(ev));

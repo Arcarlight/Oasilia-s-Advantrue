@@ -59,10 +59,16 @@ async function boot() {
     const { scene = 'title', seed = 20240607, floor = 0, stage = 0 } = opts;
     if (scene === 'title') { game.phase = 'title'; ui.forceRerender(); return 'title'; }
     if (!game.data) game.newRun(seed);
+    /**
+     * `&biome=<key>` 把这一章换成指定地图（配合 `&stage=N`）——
+     * 现在中间 4 章是**随机**地图（`d.biomes` 序列），想看某张图就得能指定它。
+     * 战斗 / 精英 / 首领的敌人池也跟着这张图走，所以截图、试牌组都用得上。
+     */
+    const wantBiome = params.get('biome');
     // ?stage=N 可以直达第 N 章（0-based），方便截图看后面的地图/BGM
-    if (stage > 0) {
-      game.data.stage = stage;
-      game.data.map = generateMap(stage, game.rng);
+    if (stage > 0 || wantBiome) {
+      if (stage > 0) game.data.stage = stage;
+      game.data.map = generateMap(game.data.stage, game.rng, wantBiome || game.data.biomes?.[game.data.stage]);
       game.data.nodeId = null;
     }
     game.data.floor = floor;
@@ -190,6 +196,10 @@ async function boot() {
   if (params.get('dgturnart')) {
     // 回合立绘诊断：素材来源 / 落点 / 由大变小 / 不挤动布局 / 跟着演出速度
     import('../tools/diag-turnart.js').catch((e) => console.error('回合立绘诊断加载失败', e));
+  }
+  if (params.get('dgmap')) {
+    // 章节地图诊断：随机场景（中间 4 章换图）之后，章数标签 / 每张图的敌人档位 / 候选池
+    import('../tools/diag-map.js').catch((e) => console.error('章节地图诊断加载失败', e));
   }
   if (params.get('dgdeck')) {
     // 牌堆诊断：手牌 DOM 与引擎是否一一对应 + 卡组页的 ×N 角标看不看得见

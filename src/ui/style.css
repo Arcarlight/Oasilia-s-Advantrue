@@ -1911,6 +1911,11 @@ html[lang="en"] .played-card .card-foot { font-size: calc(8.5px * var(--u, 1)); 
 .scene-bg-tide   { background: linear-gradient(180deg, #0a1830, #1d4a68 60%, #4f9ec0); }
 .scene-bg-cliff  { background: linear-gradient(180deg, #14141e, #3c3a4e 60%, #7e7ea0); }
 .scene-bg-night  { background: linear-gradient(180deg, #0d1030, #241a4a 60%, #4a3a7a); }
+/* 替补场景（随机替换中间 4 章）：配色跟着 content/biomes.json 的 sky/ground 走 */
+.scene-bg-ruins   { background: linear-gradient(180deg, #15120d, #3a3128 60%, #8a7a52); }
+.scene-bg-fungal  { background: linear-gradient(180deg, #10160c, #2e3a1e 60%, #6a7a42); }
+.scene-bg-storm   { background: linear-gradient(180deg, #080c18, #232a52 60%, #5a6fc0); }
+.scene-bg-crystal { background: linear-gradient(180deg, #080e18, #243a5e 60%, #62b8cc); }
 
 .scene-panel {
   width: min(760px, 94vw);
@@ -2332,6 +2337,10 @@ body[data-biome="forest"] { --accent-2: #b6f095; --accent: #6cbb45; --accent-dee
 body[data-biome="tide"]   { --accent-2: #a8f0ff; --accent: #3fb8e0; --accent-deep: #14607f; }
 body[data-biome="cliff"]  { --accent-2: #e4e9ff; --accent: #8f9fe0; --accent-deep: #3f4b8f; }
 body[data-biome="night"]  { --accent-2: #c9b6ff; --accent: #7f5ce0; --accent-deep: #3f2a8f; }
+body[data-biome="ruins"]   { --accent-2: #f0e4b8; --accent: #c0a45c; --accent-deep: #6f5a24; }
+body[data-biome="fungal"]  { --accent-2: #d8ff9a; --accent: #7fae43; --accent-deep: #3f5c1c; }
+body[data-biome="storm"]   { --accent-2: #ffe98a; --accent: #6f86e0; --accent-deep: #33409f; }
+body[data-biome="crystal"] { --accent-2: #b8f4ff; --accent: #4fb8d8; --accent-deep: #1a5e7a; }
 /* 卡牌上的特殊动作角标：抽牌 / 销毁 / 弃牌（以前只写在描述里，扫一眼看不出来）。
    贴在美术横幅左下角，不再单独占一行 —— 卡面每一点高度都要留给文字。 */
 .card-acts {

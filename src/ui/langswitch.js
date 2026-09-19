@@ -31,6 +31,10 @@ export function changeLanguage(id) {
   const game = ui?.game;
   if (!ui || !game) return true;
 
+  // 本局的玩家名 / 物种名是开局时从 BALANCE.player 抄下来的副本，切语言时要重取一次，
+  // 否则「中文开局、中途切日语」之后结算页会冒出一个中文名字。
+  try { game.syncPlayerLang?.(); } catch { /* 名字刷新失败不该挡住切语言 */ }
+
   if (game.phase === 'battle' && ui.battleScreen) {
     try { ui.battleScreen.refreshAll(); } catch { /* 刷新失败不该影响战斗 */ }
     return true;

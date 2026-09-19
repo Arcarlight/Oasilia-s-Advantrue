@@ -12,6 +12,8 @@ const { STARTER_DECK, rollCard } = await imp('src/data/cards.js');
 const { STAGE_BIOME } = await imp('src/data/balance.js');
 
 const RUNS = Number(process.argv[2] ?? 300);
+/** `--biome=<key>`：只量某一张地图（新加的替补场景用它单独量） */
+const BIOME_ARG = (process.argv.slice(2).find((a) => a.startsWith('--biome=')) ?? '').split('=')[1] || null;
 // 各章开始时的「玩家画像」：按每章 +9 攻击 / +6 防御 / +45 生命 / +2.5 敏捷 的成长速度外推
 const GROWTH = [
   { atk: 12, def: 12, maxHp: 200, agi: 10, luck: 5, deck: 10 },
@@ -49,7 +51,7 @@ function autoPlay(b) {
   }
 }
 
-function measure(stage, kind, runs) {
+function measure(stage, kind, runs, biomeOverride = null) {
   let wins = 0, turns = 0, hpPct = 0;
   const byName = new Map();
   for (let i = 0; i < runs; i++) {
@@ -60,7 +62,8 @@ function measure(stage, kind, runs) {
     game.data.deck = buildDeck(g.deck);
     // 地图是 newRun() 按第 1 章生成的：直接改 stage 不会换地图，
     // 于是「第 6 章」一直在打沙漠的怪。这里把 biome 一起改掉。
-    game.data.map.biome = STAGE_BIOME[Math.min(STAGE_BIOME.length - 1, stage)];
+    // `--biome=<key>` 可以强制某张地图 —— 新加的替补场景（水晶洞窟等）用它单独量。
+    game.data.map.biome = biomeOverride ?? STAGE_BIOME[Math.min(STAGE_BIOME.length - 1, stage)];
     game.data.battleDeck = null;
     game.startBattle(kind, 0);
     const b = game.battle;
@@ -82,13 +85,13 @@ function measure(stage, kind, runs) {
 }
 
 const pad = (s, n) => String(s).padEnd(n);
-console.log(`当前 balance.js 数值下的实测（${RUNS} 场/档）：`);
+console.log(`当前 balance.js 数值下的实测（${RUNS} 场/档）${BIOME_ARG ? ` · 只量地图 ${BIOME_ARG}` : ''}：`);
 console.log(pad('章节', 6) + pad('档位', 8) + pad('胜率', 9) + pad('回合', 7) + pad('剩余HP', 8) + '敌人HP / 敌攻');
 const STAGES = BALANCE.enemyHp.mob.length;
 for (let stage = 0; stage < STAGES; stage++) {
   for (const tier of ['mob', 'normal', 'elite', 'boss']) {
     const kind = tier === 'mob' || tier === 'normal' ? 'normal' : tier;
-    const r = measure(stage, kind, RUNS);
+    const r = measure(stage, kind, RUNS, BIOME_ARG);
     console.log(
       pad('第' + (stage + 1) + '章', 6) + pad(tier, 8) + pad((r.winRate * 100).toFixed(1) + '%', 9) +
       pad(r.turns.toFixed(1), 7) + pad((r.hpPct * 100).toFixed(0) + '%', 8) +

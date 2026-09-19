@@ -231,7 +231,9 @@ export const BIOMES = {
   "desert": {
     "key": "desert",
     "name": "流沙之海",
-    "sub": "第一章",
+    "slots": [
+      0
+    ],
     "desc": "热风卷着石英砂，地平线像被烤化了一样摇晃。",
     "sky": [
       "#2a1c14",
@@ -260,7 +262,9 @@ export const BIOMES = {
   "canyon": {
     "key": "canyon",
     "name": "赤岩峡谷",
-    "sub": "第二章",
+    "slots": [
+      1
+    ],
     "desc": "层层叠叠的红色岩壁，风在里面吹口哨。",
     "sky": [
       "#1d1420",
@@ -270,7 +274,7 @@ export const BIOMES = {
     "ground": "#6d3123",
     "accent": "#ff8a5c",
     "shape": {
-      "desc": "第二章：精英偏多，硬碰硬的图",
+      "desc": "精英偏多，硬碰硬的图",
       "rows": 9,
       "nodeWeights": {
         "battle": 46,
@@ -289,7 +293,9 @@ export const BIOMES = {
   "forest": {
     "key": "forest",
     "name": "藤蔓密林",
-    "sub": "第三章",
+    "slots": [
+      2
+    ],
     "desc": "沙的尽头是一堵树墙。阳光被叶子切成碎片，落在地上还在动。",
     "sky": [
       "#0f1c14",
@@ -299,7 +305,7 @@ export const BIOMES = {
     "ground": "#2f4a2a",
     "accent": "#8ddc6a",
     "shape": {
-      "desc": "第三章：怪事多，事件与宝箱偏多",
+      "desc": "怪事多，事件与宝箱偏多",
       "rows": 10,
       "nodeWeights": {
         "battle": 40,
@@ -318,7 +324,9 @@ export const BIOMES = {
   "tide": {
     "key": "tide",
     "name": "潮汐盐海",
-    "sub": "第四章",
+    "slots": [
+      3
+    ],
     "desc": "沙下面全是水。退潮时露出一片白得刺眼的盐壳，涨潮时整片地都在呼吸。",
     "sky": [
       "#0d1c33",
@@ -328,7 +336,7 @@ export const BIOMES = {
     "ground": "#245363",
     "accent": "#7fe6ff",
     "shape": {
-      "desc": "第四章：补给多（商店 / 宝箱），适合调整卡组",
+      "desc": "补给多（商店 / 宝箱），适合调整卡组",
       "rows": 10,
       "nodeWeights": {
         "battle": 44,
@@ -347,7 +355,9 @@ export const BIOMES = {
   "cliff": {
     "key": "cliff",
     "name": "风蚀峭壁",
-    "sub": "第五章",
+    "slots": [
+      4
+    ],
     "desc": "风在这里被切成一把把刀。岩壁上全是它刻出来的沟，深得能塞进一个人。",
     "sky": [
       "#181822",
@@ -357,7 +367,7 @@ export const BIOMES = {
     "ground": "#4a4658",
     "accent": "#cfd6ff",
     "shape": {
-      "desc": "第五章：战斗与精英最多，一路打上去",
+      "desc": "战斗与精英最多，一路打上去",
       "rows": 10,
       "nodeWeights": {
         "battle": 54,
@@ -376,7 +386,9 @@ export const BIOMES = {
   "night": {
     "key": "night",
     "name": "夜砂墓原",
-    "sub": "第六章",
+    "slots": [
+      5
+    ],
     "desc": "星尘落进沙里，埋在下面的东西开始翻身。",
     "sky": [
       "#0d1030",
@@ -386,7 +398,7 @@ export const BIOMES = {
     "ground": "#2c2447",
     "accent": "#a98cff",
     "shape": {
-      "desc": "第六章（终章）：长、难、几乎没有商店",
+      "desc": "终章：长、难、几乎没有商店",
       "rows": 11,
       "nodeWeights": {
         "battle": 50,
@@ -401,7 +413,189 @@ export const BIOMES = {
         "rest": 1
       }
     }
+  },
+  "ruins": {
+    "key": "ruins",
+    "name": "沉沙遗迹",
+    "slots": [
+      1,
+      2
+    ],
+    "desc": "半截石柱从沙里支出来，上面刻着谁也不认识的图。风穿过柱廊的时候，声音像有人在数数。",
+    "sky": [
+      "#15120d",
+      "#3a3128",
+      "#9c8a5e"
+    ],
+    "ground": "#55483a",
+    "accent": "#e8d9a0",
+    "bgm": "canyon",
+    "shape": {
+      "desc": "遗迹：事件多、精英中量，柱子后面常有东西",
+      "rows": 9,
+      "nodeWeights": {
+        "battle": 46,
+        "elite": 14,
+        "event": 20,
+        "chest": 14,
+        "shop": 6
+      },
+      "guarantee": {
+        "chest": 2,
+        "shop": 1,
+        "rest": 1
+      }
+    }
+  },
+  "fungal": {
+    "key": "fungal",
+    "name": "菌菇湿地",
+    "slots": [
+      2,
+      3
+    ],
+    "desc": "树干下半截全被菌盖住了。脚一踩，孢子像雪一样扬起来，落回肩上还在发光。",
+    "sky": [
+      "#141a10",
+      "#2e3a1e",
+      "#7a8a4a"
+    ],
+    "ground": "#3a4426",
+    "accent": "#c8ff8a",
+    "bgm": "forest",
+    "shape": {
+      "desc": "菌林：事件与宝箱最多，路上怪事不断",
+      "rows": 10,
+      "nodeWeights": {
+        "battle": 40,
+        "elite": 8,
+        "event": 30,
+        "chest": 16,
+        "shop": 6
+      },
+      "guarantee": {
+        "chest": 2,
+        "shop": 1,
+        "rest": 1
+      }
+    }
+  },
+  "storm": {
+    "key": "storm",
+    "name": "雷暴台地",
+    "slots": [
+      3,
+      4
+    ],
+    "desc": "云压得比岩壁还低。每走几步，头顶就亮一下，然后是很久的雷声。",
+    "sky": [
+      "#0a0e1c",
+      "#232a52",
+      "#6a7fd0"
+    ],
+    "ground": "#2e3a5e",
+    "accent": "#ffe066",
+    "bgm": "cliff",
+    "shape": {
+      "desc": "雷台：战斗与精英最多，一路打上去",
+      "rows": 10,
+      "nodeWeights": {
+        "battle": 52,
+        "elite": 18,
+        "event": 13,
+        "chest": 12,
+        "shop": 5
+      },
+      "guarantee": {
+        "chest": 1,
+        "shop": 1,
+        "rest": 1
+      }
+    }
+  },
+  "crystal": {
+    "key": "crystal",
+    "name": "水晶洞窟",
+    "slots": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "desc": "洞顶垂下来的全是水晶，亮得不用点火把。你走一步，整片洞壁就跟着亮一下 —— 像它在看你。",
+    "sky": [
+      "#0b1018",
+      "#243a5e",
+      "#7fd8e8"
+    ],
+    "ground": "#2a4a5e",
+    "accent": "#a8f0ff",
+    "bgm": "night",
+    "shape": {
+      "desc": "洞窟：宝箱最多（水晶里常嵌着东西），战斗也不少",
+      "rows": 10,
+      "nodeWeights": {
+        "battle": 50,
+        "elite": 12,
+        "event": 14,
+        "chest": 18,
+        "shop": 6
+      },
+      "guarantee": {
+        "chest": 3,
+        "shop": 1,
+        "rest": 1
+      }
+    }
   }
+};
+
+/** 每张地图能出现在第几章（0-based）。中间几章从这里随机抽，首章 / 终章固定 —— 见 game.newRun() */
+export const BIOME_SLOTS = {
+  "desert": [
+    0
+  ],
+  "canyon": [
+    1
+  ],
+  "forest": [
+    2
+  ],
+  "tide": [
+    3
+  ],
+  "cliff": [
+    4
+  ],
+  "night": [
+    5
+  ],
+  "ruins": [
+    1,
+    2
+  ],
+  "fungal": [
+    2,
+    3
+  ],
+  "storm": [
+    3,
+    4
+  ],
+  "crystal": [
+    1,
+    2,
+    3,
+    4
+  ]
+};
+
+/** 新地图借用的 BGM（没写就用通用曲） */
+export const BIOME_BGM = {
+  "ruins": "canyon",
+  "fungal": "forest",
+  "storm": "cliff",
+  "crystal": "night"
 };
 
 export const RARITY = {

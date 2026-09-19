@@ -1,4 +1,134 @@
 {
+ "weedle": {
+  "dex": "0013",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "beedrill": {
+  "dex": "0015",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 18,
+    "rows": 8,
+    "frames": 144
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "pidgey": {
+  "dex": "0016",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "fearow": {
+  "dex": "0022",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   }
+  }
+ },
+ "arbok": {
+  "dex": "0024",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 88,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
  "sandshrew": {
   "dex": "0027",
   "anims": {
@@ -22,84 +152,6 @@
     "cols": 4,
     "rows": 8,
     "frames": 32
-   }
-  }
- },
- "cacnea": {
-  "dex": "0331",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "gible": {
-  "dex": "0443",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "swablu": {
-  "dex": "0333",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 9,
-    "rows": 8,
-    "frames": 72
    }
   }
  },
@@ -129,41 +181,41 @@
    }
   }
  },
- "maractus": {
-  "dex": "0556",
+ "oddish": {
+  "dex": "0043",
   "anims": {
    "Attack": {
-    "fw": 64,
+    "fw": 72,
     "fh": 80,
     "cols": 15,
     "rows": 8,
     "frames": 120
    },
    "Hurt": {
-    "fw": 48,
-    "fh": 56,
+    "fw": 56,
+    "fh": 48,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
     "fw": 24,
-    "fh": 32,
+    "fh": 40,
     "cols": 5,
     "rows": 8,
     "frames": 40
    }
   }
  },
- "cacturne": {
-  "dex": "0332",
+ "gloom": {
+  "dex": "0044",
   "anims": {
    "Attack": {
     "fw": 72,
     "fh": 80,
-    "cols": 10,
+    "cols": 15,
     "rows": 8,
-    "frames": 80
+    "frames": 120
    },
    "Hurt": {
     "fw": 48,
@@ -174,10 +226,400 @@
    },
    "Idle": {
     "fw": 32,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "paras": {
+  "dex": "0046",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "parasect": {
+  "dex": "0047",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 19,
+    "rows": 8,
+    "frames": 152
+   },
+   "Hurt": {
+    "fw": 56,
     "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "arcanine": {
+  "dex": "0059",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 1,
+    "rows": 8,
+    "frames": 8
+   }
+  }
+ },
+ "machop": {
+  "dex": "0066",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "machoke": {
+  "dex": "0067",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "machamp": {
+  "dex": "0068",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   }
+  }
+ },
+ "bellsprout": {
+  "dex": "0069",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "tentacool": {
+  "dex": "0072",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 48,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "tentacruel": {
+  "dex": "0073",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "geodude": {
+  "dex": "0074",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "graveler": {
+  "dex": "0075",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   }
+  }
+ },
+ "magnemite": {
+  "dex": "0081",
+  "anims": {
+   "Attack": {
+    "fw": 114,
+    "fh": 72,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "shellder": {
+  "dex": "0090",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "cloyster": {
+  "dex": "0091",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
     "cols": 6,
     "rows": 8,
     "frames": 48
+   }
+  }
+ },
+ "kingler": {
+  "dex": "0099",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 16,
+    "rows": 8,
+    "frames": 128
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
    }
   }
  },
@@ -204,6 +646,162 @@
     "cols": 3,
     "rows": 8,
     "frames": 24
+   }
+  }
+ },
+ "rhydon": {
+  "dex": "0112",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "pinsir": {
+  "dex": "0127",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "gyarados": {
+  "dex": "0130",
+  "anims": {
+   "Attack": {
+    "fw": 104,
+    "fh": 136,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 72,
+    "fh": 120,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 72,
+    "fh": 128,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "aerodactyl": {
+  "dex": "0142",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "mareep": {
+  "dex": "0179",
+  "anims": {
+   "Attack": {
+    "fw": 160,
+    "fh": 80,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 40,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "ampharos": {
+  "dex": "0181",
+  "anims": {
+   "Attack": {
+    "fw": 128,
+    "fh": 88,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 112,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
    }
   }
  },
@@ -259,627 +857,29 @@
    }
   }
  },
- "tyranitar": {
-  "dex": "0248",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "magcargo": {
-  "dex": "0219",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "machop": {
-  "dex": "0066",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "carnivine": {
-  "dex": "0455",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "arbok": {
-  "dex": "0024",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 88,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "machoke": {
-  "dex": "0067",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "arcanine": {
-  "dex": "0059",
+ "scizor": {
+  "dex": "0212",
   "anims": {
    "Attack": {
     "fw": 72,
     "fh": 88,
-    "cols": 13,
+    "cols": 10,
     "rows": 8,
-    "frames": 104
+    "frames": 80
    },
    "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 1,
-    "rows": 8,
-    "frames": 8
-   }
-  }
- },
- "aerodactyl": {
-  "dex": "0142",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 40,
+    "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
-    "fw": 40,
+    "fw": 32,
     "fh": 64,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "garchomp": {
-  "dex": "0445",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 48,
-    "fh": 56,
     "cols": 6,
     "rows": 8,
     "frames": 48
-   }
-  }
- },
- "larvitar": {
-  "dex": "0246",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 48,
-    "cols": 12,
-    "rows": 8,
-    "frames": 96
-   }
-  }
- },
- "gabite": {
-  "dex": "0444",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 6,
-    "rows": 8,
-    "frames": 48
-   }
-  }
- },
- "rhydon": {
-  "dex": "0112",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "salamence": {
-  "dex": "0373",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 56,
-    "fh": 56,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   }
-  }
- },
- "machamp": {
-  "dex": "0068",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 88,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   }
-  }
- },
- "metagross": {
-  "dex": "0376",
-  "anims": {
-   "Attack": {
-    "fw": 96,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 64,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "zygarde": {
-  "dex": "0718",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 112,
-    "cols": 16,
-    "rows": 8,
-    "frames": 128
-   },
-   "Hurt": {
-    "fw": 64,
-    "fh": 88,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 56,
-    "fh": 80,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "paras": {
-  "dex": "0046",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 24,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "oddish": {
-  "dex": "0043",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 15,
-    "rows": 8,
-    "frames": 120
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "weedle": {
-  "dex": "0013",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "bellsprout": {
-  "dex": "0069",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "parasect": {
-  "dex": "0047",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 19,
-    "rows": 8,
-    "frames": 152
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 3,
-    "rows": 8,
-    "frames": 24
-   }
-  }
- },
- "gloom": {
-  "dex": "0044",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 15,
-    "rows": 8,
-    "frames": 120
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "beedrill": {
-  "dex": "0015",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 18,
-    "rows": 8,
-    "frames": 144
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "pinsir": {
-  "dex": "0127",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
    }
   }
  },
@@ -909,96 +909,18 @@
    }
   }
  },
- "sceptile": {
-  "dex": "0254",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "tentacool": {
-  "dex": "0072",
+ "magcargo": {
+  "dex": "0219",
   "anims": {
    "Attack": {
     "fw": 64,
     "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 48,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "shellder": {
-  "dex": "0090",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
     "cols": 10,
     "rows": 8,
     "frames": 80
    },
    "Hurt": {
     "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "corphish": {
-  "dex": "0341",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
@@ -1006,7 +928,7 @@
    },
    "Idle": {
     "fw": 32,
-    "fh": 32,
+    "fh": 40,
     "cols": 2,
     "rows": 8,
     "frames": 16
@@ -1039,341 +961,29 @@
    }
   }
  },
- "tentacruel": {
-  "dex": "0073",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "cloyster": {
-  "dex": "0091",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 6,
-    "rows": 8,
-    "frames": 48
-   }
-  }
- },
- "crawdaunt": {
-  "dex": "0342",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "kingler": {
-  "dex": "0099",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 16,
-    "rows": 8,
-    "frames": 128
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
- "gyarados": {
-  "dex": "0130",
-  "anims": {
-   "Attack": {
-    "fw": 104,
-    "fh": 136,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 72,
-    "fh": 120,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 72,
-    "fh": 128,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "kyogre": {
-  "dex": "0382",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 64,
-    "fh": 88,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   }
-  }
- },
- "geodude": {
-  "dex": "0074",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 24,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "pidgey": {
-  "dex": "0016",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "aron": {
-  "dex": "0304",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "taillow": {
-  "dex": "0276",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "graveler": {
-  "dex": "0075",
+ "mantine": {
+  "dex": "0226",
   "anims": {
    "Attack": {
     "fw": 80,
     "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   }
-  }
- },
- "fearow": {
-  "dex": "0022",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
     "cols": 15,
     "rows": 8,
     "frames": 120
    },
    "Hurt": {
-    "fw": 48,
-    "fh": 72,
+    "fw": 80,
+    "fh": 96,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
-    "fw": 40,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   }
-  }
- },
- "lairon": {
-  "dex": "0305",
-  "anims": {
-   "Attack": {
     "fw": 64,
     "fh": 72,
-    "cols": 10,
+    "cols": 8,
     "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
+    "frames": 64
    }
   }
  },
@@ -1403,26 +1013,286 @@
    }
   }
  },
- "gliscor": {
-  "dex": "0472",
+ "kingdra": {
+  "dex": "0230",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 72,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   }
+  }
+ },
+ "larvitar": {
+  "dex": "0246",
   "anims": {
    "Attack": {
     "fw": 72,
     "fh": 80,
-    "cols": 14,
+    "cols": 10,
     "rows": 8,
-    "frames": 112
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 48,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   }
+  }
+ },
+ "pupitar": {
+  "dex": "0247",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
    },
    "Hurt": {
     "fw": 56,
-    "fh": 88,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "tyranitar": {
+  "dex": "0248",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "treecko": {
+  "dex": "0252",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
     "fw": 32,
+    "fh": 40,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "sceptile": {
+  "dex": "0254",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
     "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "taillow": {
+  "dex": "0276",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "breloom": {
+  "dex": "0286",
+  "anims": {
+   "Attack": {
+    "fw": 160,
+    "fh": 80,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "sableye": {
+  "dex": "0302",
+  "anims": {
+   "Attack": {
+    "fw": 128,
+    "fh": 72,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "aron": {
+  "dex": "0304",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "lairon": {
+  "dex": "0305",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
     "cols": 4,
     "rows": 8,
     "frames": 32
@@ -1455,195 +1325,6 @@
    }
   }
  },
- "pupitar": {
-  "dex": "0247",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 56,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "flygon": {
-  "dex": "0330",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "FlapAround": {
-    "fw": 32,
-    "fh": 64,
-    "cols": 19,
-    "rows": 8,
-    "frames": 152
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 72,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "trapinch": {
-  "dex": "0328",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "hippopotas": {
-  "dex": "0449",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 6,
-    "rows": 8,
-    "frames": 48
-   }
-  }
- },
- "sandile": {
-  "dex": "0551",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "mudbray": {
-  "dex": "0749",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   }
-  }
- },
- "sandygast": {
-  "dex": "0769",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 9,
-    "rows": 8,
-    "frames": 72
-   },
-   "Hurt": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 24,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   }
-  }
- },
  "numel": {
   "dex": "0322",
   "anims": {
@@ -1667,556 +1348,6 @@
     "cols": 4,
     "rows": 8,
     "frames": 32
-   }
-  }
- },
- "roggenrola": {
-  "dex": "0524",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 15,
-    "rows": 8,
-    "frames": 120
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "rockruff": {
-  "dex": "0744",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 15,
-    "rows": 8,
-    "frames": 120
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "treecko": {
-  "dex": "0252",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 3,
-    "rows": 8,
-    "frames": 24
-   }
-  }
- },
- "snivy": {
-  "dex": "0495",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "ferroseed": {
-  "dex": "0597",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 9,
-    "rows": 8,
-    "frames": 72
-   }
-  }
- },
- "grubbin": {
-  "dex": "0736",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 64,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 24,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "fomantis": {
-  "dex": "0753",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 88,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 24,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "shellos": {
-  "dex": "0422",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 64,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 24,
-    "cols": 3,
-    "rows": 8,
-    "frames": 24
-   }
-  }
- },
- "wishiwashi": {
-  "dex": "0746",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "mareanie": {
-  "dex": "0747",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 13,
-    "rows": 8,
-    "frames": 104
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 24,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "pyukumuku": {
-  "dex": "0771",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 80,
-    "cols": 12,
-    "rows": 8,
-    "frames": 96
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 24,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "fletchling": {
-  "dex": "0661",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 64,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 32,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "woobat": {
-  "dex": "0527",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 48,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "minior": {
-  "dex": "0774",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 19,
-    "rows": 8,
-    "frames": 152
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 12,
-    "rows": 8,
-    "frames": 96
-   }
-  }
- },
- "buneary": {
-  "dex": "0427",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 56,
-    "cols": 7,
-    "rows": 8,
-    "frames": 56
-   }
-  }
- },
- "litwick": {
-  "dex": "0607",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 10,
-    "rows": 8,
-    "frames": 80
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 48,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 32,
-    "cols": 4,
-    "rows": 8,
-    "frames": 32
-   }
-  }
- },
- "yamask": {
-  "dex": "0562",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 48,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 56,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "honedge": {
-  "dex": "0679",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 96,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 64,
-    "fh": 80,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 56,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "drilbur": {
-  "dex": "0529",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 11,
-    "rows": 8,
-    "frames": 88
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 32,
-    "fh": 40,
-    "cols": 3,
-    "rows": 8,
-    "frames": 24
-   }
-  }
- },
- "rolycoly": {
-  "dex": "0837",
-  "anims": {}
- },
- "hippowdon": {
-  "dex": "0450",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 56,
-    "fh": 56,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 40,
-    "fh": 48,
-    "cols": 5,
-    "rows": 8,
-    "frames": 40
-   }
-  }
- },
- "claydol": {
-  "dex": "0344",
-  "anims": {
-   "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 17,
-    "rows": 8,
-    "frames": 136
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 64,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 24,
-    "fh": 40,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
    }
   }
  },
@@ -2272,12 +1403,97 @@
    }
   }
  },
- "scizor": {
-  "dex": "0212",
+ "trapinch": {
+  "dex": "0328",
   "anims": {
    "Attack": {
     "fw": 72,
-    "fh": 88,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "flygon": {
+  "dex": "0330",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "FlapAround": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 19,
+    "rows": 8,
+    "frames": 152
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 72,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "cacnea": {
+  "dex": "0331",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "cacturne": {
+  "dex": "0332",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
     "cols": 10,
     "rows": 8,
     "frames": 80
@@ -2295,6 +1511,578 @@
     "cols": 6,
     "rows": 8,
     "frames": 48
+   }
+  }
+ },
+ "swablu": {
+  "dex": "0333",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72
+   }
+  }
+ },
+ "lunatone": {
+  "dex": "0337",
+  "anims": {
+   "Attack": {
+    "fw": 144,
+    "fh": 72,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "solrock": {
+  "dex": "0338",
+  "anims": {
+   "Attack": {
+    "fw": 144,
+    "fh": 72,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "corphish": {
+  "dex": "0341",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "crawdaunt": {
+  "dex": "0342",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "claydol": {
+  "dex": "0344",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 17,
+    "rows": 8,
+    "frames": 136
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "salamence": {
+  "dex": "0373",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   }
+  }
+ },
+ "metagross": {
+  "dex": "0376",
+  "anims": {
+   "Attack": {
+    "fw": 96,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "kyogre": {
+  "dex": "0382",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 88,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   }
+  }
+ },
+ "shellos": {
+  "dex": "0422",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 64,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "buneary": {
+  "dex": "0427",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "gible": {
+  "dex": "0443",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "gabite": {
+  "dex": "0444",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   }
+  }
+ },
+ "garchomp": {
+  "dex": "0445",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   }
+  }
+ },
+ "hippopotas": {
+  "dex": "0449",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   }
+  }
+ },
+ "hippowdon": {
+  "dex": "0450",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "carnivine": {
+  "dex": "0455",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "gliscor": {
+  "dex": "0472",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 88,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "snivy": {
+  "dex": "0495",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "roggenrola": {
+  "dex": "0524",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "woobat": {
+  "dex": "0527",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "drilbur": {
+  "dex": "0529",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
    }
   }
  },
@@ -2324,77 +2112,103 @@
    }
   }
  },
- "kingdra": {
-  "dex": "0230",
+ "sandile": {
+  "dex": "0551",
   "anims": {
    "Attack": {
     "fw": 64,
-    "fh": 80,
+    "fh": 72,
     "cols": 10,
     "rows": 8,
     "frames": 80
    },
    "Hurt": {
-    "fw": 56,
-    "fh": 72,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
     "fw": 40,
-    "fh": 72,
-    "cols": 12,
-    "rows": 8,
-    "frames": 96
-   }
-  }
- },
- "mantine": {
-  "dex": "0226",
-  "anims": {
-   "Attack": {
-    "fw": 80,
-    "fh": 80,
-    "cols": 15,
-    "rows": 8,
-    "frames": 120
-   },
-   "Hurt": {
-    "fw": 80,
-    "fh": 96,
-    "cols": 2,
-    "rows": 8,
-    "frames": 16
-   },
-   "Idle": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 8,
-    "rows": 8,
-    "frames": 64
-   }
-  }
- },
- "braviary": {
-  "dex": "0628",
-  "anims": {
-   "Attack": {
-    "fw": 64,
-    "fh": 72,
-    "cols": 14,
-    "rows": 8,
-    "frames": 112
-   },
-   "Hurt": {
-    "fw": 40,
-    "fh": 56,
+    "fh": 48,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
     "fw": 32,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "maractus": {
+  "dex": "0556",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "yamask": {
+  "dex": "0562",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "cofagrigus": {
+  "dex": "0563",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
     "fh": 48,
     "cols": 4,
     "rows": 8,
@@ -2428,6 +2242,110 @@
    }
   }
  },
+ "emolga": {
+  "dex": "0587",
+  "anims": {
+   "Attack": {
+    "fw": 144,
+    "fh": 72,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "foongus": {
+  "dex": "0590",
+  "anims": {
+   "Attack": {
+    "fw": 128,
+    "fh": 72,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 24,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "ferroseed": {
+  "dex": "0597",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72
+   }
+  }
+ },
+ "litwick": {
+  "dex": "0607",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
  "chandelure": {
   "dex": "0609",
   "anims": {
@@ -2454,30 +2372,528 @@
    }
   }
  },
- "cofagrigus": {
-  "dex": "0563",
+ "druddigon": {
+  "dex": "0621",
   "anims": {
    "Attack": {
-    "fw": 72,
-    "fh": 80,
-    "cols": 11,
+    "fw": 156,
+    "fh": 88,
+    "cols": 6,
     "rows": 8,
-    "frames": 88
+    "frames": 48
    },
    "Hurt": {
-    "fw": 32,
-    "fh": 64,
+    "fw": 56,
+    "fh": 72,
     "cols": 2,
     "rows": 8,
     "frames": 16
    },
    "Idle": {
+    "fw": 96,
+    "fh": 64,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24
+   }
+  }
+ },
+ "braviary": {
+  "dex": "0628",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
     "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
     "fh": 48,
     "cols": 4,
     "rows": 8,
     "frames": 32
    }
   }
+ },
+ "fletchling": {
+  "dex": "0661",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "honedge": {
+  "dex": "0679",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 96,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "tyrantrum": {
+  "dex": "0697",
+  "anims": {
+   "Attack": {
+    "fw": 176,
+    "fh": 96,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 112,
+    "fh": 72,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "dedenne": {
+  "dex": "0702",
+  "anims": {
+   "Attack": {
+    "fw": 120,
+    "fh": 64,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "carbink": {
+  "dex": "0703",
+  "anims": {
+   "Attack": {
+    "fw": 128,
+    "fh": 72,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 72,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "trevenant": {
+  "dex": "0709",
+  "anims": {
+   "Attack": {
+    "fw": 156,
+    "fh": 88,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 100,
+    "fh": 56,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "zygarde": {
+  "dex": "0718",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 112,
+    "cols": 16,
+    "rows": 8,
+    "frames": 128
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 88,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 56,
+    "fh": 80,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "grubbin": {
+  "dex": "0736",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 64,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "rockruff": {
+  "dex": "0744",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "wishiwashi": {
+  "dex": "0746",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   }
+  }
+ },
+ "mareanie": {
+  "dex": "0747",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
+   }
+  }
+ },
+ "mudbray": {
+  "dex": "0749",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112
+   }
+  }
+ },
+ "fomantis": {
+  "dex": "0753",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 88,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88
+   },
+   "Hurt": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40
+   }
+  }
+ },
+ "morelull": {
+  "dex": "0755",
+  "anims": {
+   "Attack": {
+    "fw": 132,
+    "fh": 80,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "sandygast": {
+  "dex": "0769",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72
+   },
+   "Hurt": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "pyukumuku": {
+  "dex": "0771",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56
+   }
+  }
+ },
+ "minior": {
+  "dex": "0774",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 19,
+    "rows": 8,
+    "frames": 152
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96
+   }
+  }
+ },
+ "togedemaru": {
+  "dex": "0777",
+  "anims": {
+   "Attack": {
+    "fw": 108,
+    "fh": 64,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16
+   }
+  }
+ },
+ "rolycoly": {
+  "dex": "0837",
+  "anims": {}
  }
 }

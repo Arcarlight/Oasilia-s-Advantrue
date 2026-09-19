@@ -1,7 +1,7 @@
 // 游戏状态机：地图 → 战斗 / 事件 / 宝箱 / 商店 / 营地 → 下一章 → 结局。
 // 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
 
-import { BALANCE, BIOMES, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
+import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
 import { CARD_BY_ID, ITEMS, STARTER_DECK, STARTER_ITEMS, rollCard, rollCards, CARDS } from '../data/cards.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
@@ -120,12 +120,46 @@ export class Game {
       healing: 0,
       startedAt: Date.now(),
     };
-    this.data.map = generateMap(0, this.rng);
+    /**
+     * 本局要走哪几张地图。
+     *
+     * 首章与终章固定（开场和收尾要有固定的调子），**中间 4 章每章从候选里抽一张** ——
+     * 候选来自 content/biomes.json 的 slots（例如水晶洞窟声明 [1,2,3,4]，哪儿都可能钻进去）。
+     * 尽量不重复：同一局里同一张地图只出现一次（候选不够时才允许重复），
+     * 这样「这一局走了哪条路」才有记忆点。序列存进 run 数据，读档 / 重开都按它走。
+     */
+    const biomes = [];
+    const used = new Set();
+    for (let s = 0; s < stageCount(); s += 1) {
+      const pool = Object.keys(BIOME_SLOTS).filter((k) => (BIOME_SLOTS[k] ?? []).includes(s));
+      const fresh = pool.filter((k) => !used.has(k));
+      const pick = this.rng.pick(fresh.length ? fresh : pool) ?? STAGE_BIOME[s];
+      biomes.push(pick);
+      used.add(pick);
+    }
+    this.data.biomes = biomes;
+    this.data.map = generateMap(0, this.rng, biomes[0]);
     this.phase = Phase.MAP;
     this.pendingMap = null;
     this.save();
     this.changed();
     return this.data;
+  }
+
+  /**
+   * 本局的玩家名与物种名**跟着语言走**。
+   *
+   * 这两个字段在开新一局时是从 BALANCE.player 上**抄下来**的副本（存档里要留着），
+   * 于是「开着中文开了一局、中途切成日语」之后，副本还停在中文 ——
+   * 结算页那句「{name} 展开翅膀」就会在满屏日语里冒出一个中文名字（用户截图报过）。
+   * 切语言时调一次这里，从 `_zh`（中文原文）重新取一次当前语言的写法。
+   */
+  syncPlayerLang() {
+    const p = BALANCE.player;
+    if (!this.data) return;
+    const zhOf = (f) => (p._zh?.[f] ?? p[f]);
+    if (this.data.name != null) this.data.name = t(zhOf('name'));
+    if (this.data.speciesName != null) this.data.speciesName = t(zhOf('speciesName'));
   }
 
   changed() {
@@ -331,7 +365,8 @@ export class Game {
       const healed = this.heal(d.maxHp);
       if (healed > 0) healLines.push(t('HP 完全恢复（+{n}）', { n: healed }));
     }
-    d.map = generateMap(d.stage, this.rng);
+    // 这一章走哪张地图：开局时抽好的序列说了算（`d.biomes`，见 newRun）
+    d.map = generateMap(d.stage, this.rng, d.biomes?.[d.stage]);
     d.nodeId = null;
     d.floor = 0;
     this.phase = Phase.MAP;

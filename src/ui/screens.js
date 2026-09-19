@@ -59,6 +59,8 @@ function nodeIco(type, biome) {
 const BIOME_ICO = {
   desert: 'ico-drought', canyon: 'ico-mountain', forest: 'ico-forest',
   tide: 'ico-sea', cliff: 'ico-wind', night: 'ico-gravestone',
+  // 替补场景（随机替换中间 4 章）
+  ruins: 'ico-key', fungal: 'ico-leaves', storm: 'ico-lightning', crystal: 'ico-diamond',
 };
 
 // ============================================================
@@ -195,7 +197,9 @@ function renderMap(game) {
 
   const biomeIco = BIOME_ICO[biome.key] ?? 'ico-drought';
   screen.append(el('div', { class: 'map-header' }, [
-    el('div', { class: 'map-chapter', text: t(biome.sub) }),
+    // 章数由**当前章节序号**算，不读地图自己的标签 —— 中间 4 章现在是随机地图
+    // （水晶洞窟可能出现在第 2 章也可能在第 5 章），写死在数据里就会显示成错的章数。
+    el('div', { class: 'map-chapter', text: t('第 {n} 章', { n: (game.data?.stage ?? 0) + 1 }) }),
     el('h2', { class: 'map-name' }, [
       el('span', { class: `map-name-ico ${biomeIco}` }),
       el('span', { text: biome.name }),

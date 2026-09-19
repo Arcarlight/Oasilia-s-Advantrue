@@ -12,7 +12,7 @@ import { audio } from '../core/audio.js';
 import { bgmKeyFor } from '../core/bgm.js';
 import { initLang, currentLang } from '../core/i18n.js';
 import { refreshI18nTables } from '../core/i18n-tables.js';
-import { BALANCE, BIOMES } from '../data/balance.js';
+import { BALANCE, BIOMES, BIOME_BGM } from '../data/balance.js';
 import { enemyDefFor } from '../data/enemies.js';
 import { effectiveDef } from '../core/battle.js';
 import { setCardTextContext } from './cardtext.js';
@@ -114,6 +114,8 @@ export class UI {
 
     // 场景 BGM：地图与战斗都按**当前地图**换曲（每章不同），找不到专属曲就退回通用曲
     const biome = g.data?.map?.biome ?? 'desert';
+    // 新地图不额外抓音频：content/biomes.json 里写 `bgm: "canyon"`，借一张已有曲子的氛围
+    const tune = BIOME_BGM[biome] ?? biome;
     // 鼠标指针也跟着当前地图的主题色描边（纯白指针在浅色沙漠/亮色盐海上不好找）
     applyCursorTheme((BIOMES[biome] ?? BIOMES.desert)?.accent ?? '#f0b95c');
     // 整页 UI 主题色也按地图走：style.css 里 body[data-biome=...] 覆盖了 accent 三个变量，
@@ -122,14 +124,14 @@ export class UI {
     const lastStage = stageCount() - 1;
     switch (phase) {
       case 'title': audio.playBgm('title'); break;
-      case 'map': audio.playBgm(bgmKeyFor('map', biome)); break;
+      case 'map': audio.playBgm(bgmKeyFor('map', tune)); break;
       case 'battle': {
         const kind = g.battleKind ?? 'normal';
         if (kind === 'boss') audio.playBgm(g.data?.stage >= lastStage ? 'boss_final' : 'boss');
         // 强敌也按地图换曲（用户反馈：「每个地图强敌都是一个 bgm 太重复了」）。
         // 找不到专属曲就退回通用的 elite —— bgmKeyFor 的第二参数就是干这个的。
-        else if (kind === 'elite') audio.playBgm(bgmKeyFor('elite', biome, 'elite'));
-        else audio.playBgm(bgmKeyFor('battle', biome));
+        else if (kind === 'elite') audio.playBgm(bgmKeyFor('elite', tune, 'elite'));
+        else audio.playBgm(bgmKeyFor('battle', tune));
         break;
       }
       case 'event': audio.playBgm('event'); break;

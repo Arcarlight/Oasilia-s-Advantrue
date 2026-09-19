@@ -97,6 +97,8 @@ const TIP = {
   // 基数 9 的卡是「+防御×0.75」，基数 13 的卡是「+防御×1.08」。
   // 这里以前写成固定的「×0.75」，基数不是 9 的卡悬停看到的公式就是错的。
   shieldScale: () => t('护盾量随**防御**成长：实际护盾 = 卡面基数 × (1 + 防御 ÷ {div})。\n所以基数越大的护盾牌，吃到的防御加成也越多。', { div: DEF_PER_SHIELD }),
+  // 层数翻倍（新机制）：说清「怎么用才对」——它本身不产生伤害，全靠已经铺好的层数
+  statusDouble: () => t('层数翻倍：把目标身上已有的**中毒 / 剧毒 / 灼伤 / 出血层数直接 ×2**。\n对手身上还没有层数时它不生效 —— 先铺层数再翻倍，收益是翻着涨的，配「引爆」收尾最狠。'),
   exhaust: () => t('销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。'),
   exhaustHand: () => t('销毁手牌：把手里剩下的牌全部销毁。'),
   discard: () => t('弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。'),
@@ -116,7 +118,11 @@ function statusTip(word) {
   const key = statusKeyOf(word);
   const info = STATUS_INFO[key];
   if (!info) return '';
-  return t('{name}：{desc}\n解法：「白雾」「焕然一新」这类解状态牌能直接清掉；层数就是强度。', { name: info.name, desc: info.desc });
+  // 解状态牌的**真名字**从译文表里取（以前这里写死「白雾」「焕然一新」的译名，
+  // 结果日文写成「白い霧」「一新」、英文写成 White Mist / Fresh Start —— 都不是那两张卡的名字）。
+  return t('{name}：{desc}\n解法：「{a}」「{b}」这类解状态牌能直接清掉；层数就是强度。', {
+    name: info.name, desc: info.desc, a: t('白雾'), b: t('焕然一新'),
+  });
 }
 
 // ============================================================
@@ -155,6 +161,8 @@ const ZH_RULES = [
   // 「无视对手 50% 防御」这种卡面本来只亮到「防御」两个字（规则里只有 全部 / 一半）——
   // ja / en 两条是按真实译文写的、认得出百分比，所以中文这条也补上，三种语言口径一致。
   { src: '无视对手(?:全部|一半|\\d+\\s*%)防御', cls: 'kw-pierce', tip: TIP.pierce },
+  // 层数翻倍（新机制）：毒流 / 出血流的放大器。整句一起染色，悬停说明它「先铺后翻」的用法
+  { src: '(?:持续伤害)?层数翻倍|层数\\s*×\\s*2|翻倍', cls: 'kw-status', tip: TIP.statusDouble },
   { src: '清除[^，。；]*?负面状态', cls: 'kw-cleanse', tip: TIP.cleanse },
   { src: '随防御成长', cls: 'kw-shield', tip: TIP.shieldScale },
   { src: '护盾', cls: 'kw-shield', tip: TIP.shield },
@@ -237,6 +245,8 @@ function rulesJa() {
     { src: `(${status})(?:(?:を)?\\s*\\d+\\s*層?)?`, cls: (m) => `kw-status kw-${statusKeyOf(m[1])}`, tip: (m) => statusTip(m[1]) },
     // 「相手の防御をすべて無視」「相手の防御を半分無視」「相手の防御を 50% 無視」
     { src: '相手の防御を(?:すべて|半分|\\d+\\s*%)?\\s*無視', cls: 'kw-pierce', tip: TIP.pierce },
+    // 層数翻倍（新機制）：「層数が倍になる」「層数が 2 倍」「倍増」
+    { src: '層数[^。]{0,6}倍|倍増', cls: 'kw-status', tip: TIP.statusDouble },
     // 「自分の能力ダウンと状態異常をすべて消し」「自身のマイナス効果をすべて消す」「自身のじゃくたいを浄化」
     { src: '(?:能力ダウン|状態異常|マイナス効果)[^、。]{0,12}?消|浄化', cls: 'kw-cleanse', tip: TIP.cleanse },
     // 「防御に応じて増加 / 成長」「防御に応じたシールドを獲得」
@@ -268,6 +278,8 @@ function rulesEn() {
     { src: `(?:\\d+\\s+(?:stacks? of\\s+)?)?(${status})`, cls: (m) => `kw-status kw-${statusKeyOf(m[1])}`, tip: (m) => statusTip(m[1]) },
     // 「ignoring all enemy Defense」「ignoring half Defense」「ignoring 50% of the foe's Defense」
     { src: 'ignoring (?:all|half|\\d+\\s*%)(?:[^.;]{0,24}?)Defense', cls: 'kw-pierce', tip: TIP.pierce },
+    // Doubles the stacks（新机制）：卡面写的是「doubles the Poison / Toxic / Burn / Bleed stacks」
+    { src: '[Dd]oubl(?:e|es|ing)[^.;]{0,20}?stack', cls: 'kw-status', tip: TIP.statusDouble },
     // 「Cleanse stat drops and negative statuses」「cleanse all negative status on yourself」
     { src: ci(t('净化')), cls: 'kw-cleanse', tip: TIP.cleanse },
     // 「Gain shield (scales with Defense…)」——卡面里「随防御成长」的译法都是这一句
@@ -482,6 +494,7 @@ const KIND_ICO = {
   strength: 'ico-sword',
   plays: 'ico-action_points',
   detonate: 'ico-poison',
+  statusDouble: 'ico-temperature_down',
   apBonus: 'ico-action_points',
 };
 const STATUS_ICO = {
@@ -569,6 +582,19 @@ export function effectLines(card) {
           label: t('引爆持续伤害'),
           value: t('立刻结算'),
           note: t('把对手身上的中毒 / 剧毒 / 灼伤层数立刻爆成伤害（每层约 {per} 倍中毒伤害）并清空。', { per: e.perStack ?? 3 }),
+        });
+        break;
+      /**
+       * 层数翻倍（本次新增的机制）：毒流 / 出血流的放大器。
+       * 详情页要说清两件事：翻的是哪几种、以及「先铺后翻才划算」——
+       * 不然玩家会当成一张空牌（对手身上没层数时它什么都不做）。
+       */
+      case 'statusDouble':
+        rows.push({
+          ico: KIND_ICO.statusDouble ?? 'ico-temperature_down',
+          label: t(e.target === 'self' ? '自身 · 持续伤害层数' : '对手 · 持续伤害层数'),
+          value: t('×2'),
+          note: t('把目标身上已有的中毒 / 剧毒 / 灼伤 / 出血层数**直接翻倍**。\n对手身上没有层数时不会生效 —— 先铺层数再用它，收益是翻着涨的。'),
         });
         break;
       case 'shield':

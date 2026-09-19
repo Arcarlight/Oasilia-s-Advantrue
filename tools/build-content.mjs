@@ -18,7 +18,7 @@ const ROOT = path.resolve(here, '..');
 const CONTENT = path.join(ROOT, 'content');
 
 // 战斗引擎能解释的效果种类（改 battle.js 的 resolveEffect 时要同步这里）
-const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
+const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'statusDouble', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
 const STATUS_KINDS = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 const BUFF_STATS = ['atk', 'def', 'agi', 'luck'];
 const RARITIES = ['common', 'uncommon', 'rare', 'epic'];
@@ -256,15 +256,35 @@ function validateEnemies(data, cardIds, biomeKeys) {
   return ids;
 }
 
-function validateBiomes(data, enemyList) {  const { stageOrder, biomes } = data;
+function validateBiomes(data, enemyList) {
+  const { stageOrder, biomes } = data;
   const keys = Object.keys(biomes ?? {});
   if (!Array.isArray(stageOrder) || !stageOrder.length) err('biomes.json 缺 stageOrder');
   for (const k of stageOrder ?? []) if (!keys.includes(k)) err(`stageOrder 里的 ${k} 没有对应地图定义`);
-  if ((stageOrder ?? []).length !== keys.length) err(`stageOrder 有 ${stageOrder.length} 章，但定义了 ${keys.length} 张地图（每张地图都要在 stageOrder 里出现一次）`);
+
+  /**
+   * 场景槽位（`slots`，0-based 章节序号）。
+   *
+   * 起因（用户需求）：想多几张地图，并且**随机替换 6 章中间的 4 章**。
+   * 所以 stageOrder 只是「默认顺序」，每张地图再用 slots 声明它**能出现在第几章**：
+   *   · 第 0 章与最后一章是固定的（开场与终章要有固定的调子），只由 desert / night 占；
+   *   · 中间那几章，每章从「slots 里包含这一章」的地图里随机抽一张；
+   *   · 所以每张地图都必须声明 slots，且中间每一章的候选池不能少于 1 张。
+   */
+  const slotsOf = (b) => (Array.isArray(b.slots) ? b.slots : []);
   for (const [key, b] of Object.entries(biomes ?? {})) {
     if (b.key !== key) err(`地图 ${key} 的 key 字段（${b.key}）和键名不一致`);
-    for (const k of ['name', 'sub', 'desc', 'sky', 'ground', 'accent']) if (b[k] == null) err(`地图 ${key} 缺字段 ${k}`);
+    for (const k of ['name', 'desc', 'sky', 'ground', 'accent']) if (b[k] == null) err(`地图 ${key} 缺字段 ${k}`);
     if (!Array.isArray(b.sky) || b.sky.length !== 3) err(`地图 ${key} 的 sky 必须是 3 个颜色`);
+    const slots = slotsOf(b);
+    if (!slots.length) err(`地图 ${key} 没有 slots（它要在第几章出现？比如 [1,2]）`);
+    for (const s of slots) {
+      if (!Number.isInteger(s) || s < 0 || s >= stageOrder.length) err(`地图 ${key} 的 slots 里有非法章节号 ${s}（应在 0~${stageOrder.length - 1}）`);
+    }
+    for (const s of [0, stageOrder.length - 1]) {
+      if (slots.includes(s) && slots.length > 1) err(`地图 ${key} 想占第 ${s + 1} 章，但首章 / 终章必须固定（只留它的 canonical 地图）`);
+    }
+    if (b.bgm && !keys.includes(b.bgm)) err(`地图 ${key} 的 bgm=${b.bgm} 不是已知地图（想借哪张图的曲子？）`);
     if (b.shape) {
       const s = b.shape;
       if (s.rows != null && (s.rows < 6 || s.rows > 14)) err(`地图 ${key} 的 shape.rows 建议在 6~14 之间（现在 ${s.rows}）`);
@@ -280,7 +300,12 @@ function validateBiomes(data, enemyList) {  const { stageOrder, biomes } = data;
       warn(`地图 ${key} 没有 shape 配置（会用地形默认的行数与权重）`);
     }
   }
-  // 每张地图都要有完整的敌人档位，否则那一章会出现「没有精英」这种情况
+  // 每一章都要有地图可用（中间几章至少一张候选）
+  for (let s = 0; s < stageOrder.length; s += 1) {
+    const pool = keys.filter((k) => slotsOf(biomes[k]).includes(s));
+    if (!pool.length) err(`第 ${s + 1} 章没有任何地图可用（检查各地图的 slots）`);
+  }
+  // 每张地图（含只做替补的那些）都要有完整敌人档位，否则那一章会出现「没有精英」
   for (const key of keys) {
     for (const tier of TIERS) {
       const n = enemyList.filter((e) => e.biome === key && e.tier === tier).length;
@@ -537,10 +562,24 @@ function emitBiomes(stageOrder, biomes, rarity) {
   // 混在 RARITY 里会让「遍历稀有度」的代码把它当成一档稀有度
   // （check-content.mjs 就是 `Object.keys(RARITY)` 那样遍历的）。
   const { rewardWeights, ...rarityOnly } = rarity;
+  // 每张地图能出现在第几章（0-based）：中间那 4 章随机抽，首尾固定。
+  const slots = {};
+  // 借曲子：新地图不额外抓音频，直接借一张已有的（bgmKeyFor 会去找 bgm_<key>）
+  const bgm = {};
+  for (const [key, b] of Object.entries(biomes ?? {})) {
+    slots[key] = b.slots ?? [];
+    if (b.bgm) bgm[key] = b.bgm;
+  }
   return [
     'export const STAGE_BIOME = ' + J(stageOrder) + ';',
     '',
     'export const BIOMES = ' + J(biomes) + ';',
+    '',
+    '/** 每张地图能出现在第几章（0-based）。中间几章从这里随机抽，首章 / 终章固定 —— 见 game.newRun() */',
+    'export const BIOME_SLOTS = ' + J(slots) + ';',
+    '',
+    '/** 新地图借用的 BGM（没写就用通用曲） */',
+    'export const BIOME_BGM = ' + J(bgm) + ';',
     '',
     'export const RARITY = ' + J(rarityOnly) + ';',
     '',

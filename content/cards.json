@@ -3577,6 +3577,563 @@
         }
       ],
       "enemyOnly": true
+    },
+    {
+      "id": "sig_sky_dive",
+      "name": "天空俯冲",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-wind",
+      "fx": "dirt_1",
+      "text": "造成 {d} 点伤害；无视对手一半防御。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 230,
+          "ignoreDefPct": 0.5
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "aerodactyl_alpha"
+    },
+    {
+      "id": "sig_horn_drill",
+      "name": "岩钉钻",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-stone",
+      "fx": "dirt_2",
+      "text": "造成 {d} 点伤害，并让对手防御 -3。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 225
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "rhydon_warden"
+    },
+    {
+      "id": "sig_double_claw",
+      "name": "双钳斩",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-double",
+      "fx": "slash_1",
+      "text": "连续 2 次造成 {d} 点伤害，并给对手 2 层出血。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 130,
+          "hits": 2
+        },
+        {
+          "kind": "status",
+          "status": "bleed",
+          "stacks": 2
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "scizor_warden"
+    },
+    {
+      "id": "sig_tidal_rage",
+      "name": "怒潮",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-water",
+      "fx": "twirl_1",
+      "text": "造成 {d} 点伤害，并让对手敏捷 -4。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 240
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -4,
+          "target": "enemy"
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "gyarados_warden"
+    },
+    {
+      "id": "sig_war_banner",
+      "name": "战旗突击",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-mace",
+      "fx": "dirt_1",
+      "text": "造成 {d} 点伤害，本场战斗攻击 +6。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 215
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 6
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "braviary_warden"
+    },
+    {
+      "id": "sig_soul_lantern",
+      "name": "魂灯",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-lantern",
+      "fx": "flare_1",
+      "text": "造成 {d} 点伤害，并给对手 3 层灼伤。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 205
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "stacks": 3
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "chandelure_warden"
+    },
+    {
+      "id": "sig_pharaoh_curse",
+      "name": "遗迹的诅咒",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-gravestone",
+      "fx": "magic_1",
+      "text": "给对手 3 层虚弱，并让对手攻击 -4。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -4,
+          "target": "enemy"
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "tyranitar_ruins"
+    },
+    {
+      "id": "sig_root_bind",
+      "name": "根须缠绕",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-leaves",
+      "fx": "dirt_2",
+      "text": "造成 {d} 点伤害，让对手敏捷 -3，并给对手 2 层中毒。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 200
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 2
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "trevenant_fungal"
+    },
+    {
+      "id": "sig_lighthouse",
+      "name": "灯塔之光",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-lightning",
+      "fx": "light_1",
+      "text": "造成 {d} 点伤害，给对手 2 层虚弱，本场战斗防御 +4。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 220
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 4
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "ampharos_storm"
+    },
+    {
+      "id": "sig_crystal_jaw",
+      "name": "晶颚碎击",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "ico": "ico-demon_02",
+      "fx": "spark_02",
+      "text": "造成 {d} 点伤害，并让对手防御 -7。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 300
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -7,
+          "target": "enemy"
+        }
+      ],
+      "enemyOnly": true,
+      "enemySpecies": "tyrantrum_crystal"
+    },
+    {
+      "id": "rend",
+      "name": "撕裂",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "ico": "ico-heart_break_02",
+      "fx": "slash_1",
+      "text": "给对手 3 层出血。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "bleed",
+          "stacks": 3
+        }
+      ]
+    },
+    {
+      "id": "bloodletting",
+      "name": "放血",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-heart_break_02",
+      "fx": "slash_1",
+      "text": "造成 {d} 点伤害，并给对手 2 层出血。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 220
+        },
+        {
+          "kind": "status",
+          "status": "bleed",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "crimson_pact",
+      "name": "血之契约",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-heart_break_02",
+      "fx": "magic_2",
+      "text": "自身失去最大生命 8% 的 HP，给对手 3 层出血。使用后销毁。",
+      "effects": [
+        {
+          "kind": "selfDmg",
+          "pct": 0.08,
+          "reason": "血之契约"
+        },
+        {
+          "kind": "status",
+          "status": "bleed",
+          "stacks": 3
+        }
+      ],
+      "exhaust": true
+    },
+    {
+      "id": "intimidate",
+      "name": "威吓",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "ico": "ico-temperature_down",
+      "fx": "trace_1",
+      "text": "给对手 2 层虚弱。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "browbeat",
+      "name": "压制",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "ico": "ico-fist",
+      "fx": "dirt_1",
+      "text": "给对手 1 层虚弱，并让对手攻击 -2。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -2,
+          "target": "enemy"
+        }
+      ]
+    },
+    {
+      "id": "exploit_weak",
+      "name": "趁虚而入",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-target",
+      "fx": "slash_1",
+      "text": "造成 {d} 点伤害；对手每有 1 层虚弱，这一下额外 +45% 威力（最多 +180%）。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 200,
+          "bonusPerStack": {
+            "status": "weak",
+            "per": 45,
+            "max": 180
+          }
+        }
+      ]
+    },
+    {
+      "id": "venom_dart",
+      "name": "毒针连刺",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "ico": "ico-poison",
+      "fx": "spark_03",
+      "text": "造成 {d} 点伤害，并给对手 2 层中毒。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "toxic_cloud",
+      "name": "毒雾",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-fog",
+      "fx": "smoke_1",
+      "text": "给对手 2 层剧毒和 2 层中毒。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "toxic",
+          "stacks": 2
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "corrosive_touch",
+      "name": "腐蚀之触",
+      "ap": 1,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-poison",
+      "fx": "magic_1",
+      "text": "让对手防御 -3，并给对手 2 层中毒。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        },
+        {
+          "kind": "status",
+          "status": "poison",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "blood_toxins",
+      "name": "毒血交融",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "enemy",
+      "ico": "ico-flask",
+      "fx": "magic_2",
+      "text": "给对手 2 层出血和 2 层剧毒。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "bleed",
+          "stacks": 2
+        },
+        {
+          "kind": "status",
+          "status": "toxic",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "sunder",
+      "name": "碎甲",
+      "ap": 1,
+      "rarity": "uncommon",
+      "targeting": "enemy",
+      "ico": "ico-shield_03",
+      "fx": "dirt_2",
+      "text": "让对手防御 -5。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -5,
+          "target": "enemy"
+        }
+      ]
+    },
+    {
+      "id": "languor",
+      "name": "迟缓",
+      "ap": 1,
+      "rarity": "common",
+      "targeting": "enemy",
+      "ico": "ico-shoe",
+      "fx": "trace_1",
+      "text": "让对手敏捷 -3。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ]
+    },
+    {
+      "id": "total_suppression",
+      "name": "全面压制",
+      "ap": 3,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "ico": "ico-battery_negative",
+      "fx": "magic_2",
+      "text": "让对手攻击 -3、防御 -3、敏捷 -3。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -3,
+          "target": "enemy"
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ]
+    },
+    {
+      "id": "worsen",
+      "name": "恶化",
+      "ap": 1,
+      "rarity": "epic",
+      "targeting": "enemy",
+      "ico": "ico-skull",
+      "fx": "magic_2",
+      "text": "把对手身上已有的中毒 / 剧毒 / 灼伤 / 出血层数全部翻倍。层数得先铺起来，空着翻不出东西。使用后销毁。",
+      "effects": [
+        {
+          "kind": "statusDouble"
+        }
+      ],
+      "exhaust": true
+    },
+    {
+      "id": "crystal_wall",
+      "name": "水晶壁",
+      "ap": 2,
+      "rarity": "rare",
+      "targeting": "self",
+      "ico": "ico-diamond",
+      "fx": "star_02",
+      "text": "本场战斗防御 +3，获得护盾（随防御成长，约 12 + 防御×1.00）。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": 3
+        },
+        {
+          "kind": "shield",
+          "amount": 12,
+          "scaleWithDef": true
+        }
+      ]
     }
   ]
 }
