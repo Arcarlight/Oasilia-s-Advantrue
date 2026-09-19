@@ -55,6 +55,23 @@
     const { cardEl } = await import('../src/ui/cards.js');
     const { showDeck } = await import('../src/ui/overlays.js');
     const { cardPowerTotal } = await import('../src/ui/cardtext.js');
+    const { t } = await import('../src/core/i18n.js');
+
+    // 这份诊断要能在中文 / 日文 / 英文下都跑（卡面和界面文案都跟着语言走），
+    // 所以下面凡是「按文案找元素 / 按文案断言」的地方一律过 t()，
+    // 别再拿中文字面量去匹配 —— 否则一换语言就先崩在「找不到元素」上，
+    // 后面的高亮 / 关键词检查根本轮不到跑。
+    const reEsc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    /** 带 {占位符} 的界面文案 → 正则（占位符位置当数字） */
+    const tplRe = (zh, names) => new RegExp(
+      t(zh).split(new RegExp(names.map((n) => `\\{${n}\\}`).join('|'))).map(reEsc).join('\\d+'),
+    );
+    /** 卡面里带状态词的牌：状态词按当前语言取（どく / Poison / …） */
+    const STATUS_TEXT_RE = new RegExp(['中毒', '剧毒', '灼伤', '虚弱', '出血', '流血'].map((w) => t(w)).join('|'));
+    /** 第一张「会给对手挂状态」的牌：配色检查和详情页都要一张能出状态关键词的牌 */
+    const firstStatusCard = () => CARDS.find((c) => (c.effects ?? []).some((e) => e.kind === 'status')) ?? CARDS[0];
+    /** 「威力 {n}%」角标的前缀（中文「威力 」/ 英文「power 」），数字取占位符之后那一段 */
+    const POWER_PREFIX = t('威力 {n}%').split('{n}')[0];
 
     game.newRun(20240607);
     game.phase = 'map';
@@ -94,7 +111,7 @@
       game.data.deck = CARDS.slice(0, 40).map((c) => c.id);   // 让网格里有各种稀有度
       showDeck(game);
       await wait(400);
-      const wantSort = new URLSearchParams(location.search).get('sort') ?? '稀有度';
+      const wantSort = new URLSearchParams(location.search).get('sort') ?? t('稀有度');
       const tab = [...document.querySelectorAll('.modal-backdrop .sort-tab')].find((n) => n.textContent.trim() === wantSort);
       tab?.click();
       await wait(200);
@@ -177,7 +194,7 @@
       const box = document.createElement('div');
       box.style.cssText = 'position:fixed;left:-9999px;top:0;';
       document.body.append(box);
-      const sample = cardEl(CARDS.find((c) => /层虚弱/.test(c.text)), { size: 'sm' });
+      const sample = cardEl(firstStatusCard(), { size: 'sm' });
       box.append(sample);
       const num = lum(getComputedStyle(q('.card-num', sample)).color);
       const stat = lum(getComputedStyle(q('.kw-status', sample)).color);
@@ -187,7 +204,7 @@
         `数字亮度 ${num.toFixed(2)} / 状态亮度 ${stat.toFixed(2)} / 正文 ${bodyInk.toFixed(2)}`);
     }
     const statusCards = measureAll({ size: 'sm' }, 'sm（状态词复查）');
-    const withStatus = CARDS.filter((c) => /中毒|灼伤|虚弱|流血/.test(c.text));
+    const withStatus = CARDS.filter((c) => STATUS_TEXT_RE.test(c.text));
     const badTip = withStatus.filter((c) => {
       const row = statusCards.find((r) => r.id === c.id);
       return !row || row.tips === 0;
@@ -206,7 +223,8 @@
       qa('.card-check', q('.modal-body')).length === 0 && !qa('.modal-foot .btn').some((b) => b.textContent.includes('保存')),
       `勾选圈 ${qa('.card-check', q('.modal-body')).length} 个`);
     check('卡组页说明了「怎么改卡组」（商店删卡 / 营地换卡）',
-      /卡牌移除服务/.test(q('.modal-body').textContent) && /冥想/.test(q('.modal-body').textContent),
+      q('.modal-body').textContent.includes(t('想精简：去商店买「卡牌移除服务」删掉不要的牌，同一家店里越删越贵。'))
+      && q('.modal-body').textContent.includes(t('想换牌：营地的「冥想」可以把一张牌换成随机的高稀有度牌。')),
       (q('.help-card:nth-of-type(2)')?.textContent ?? '').slice(0, 60).replace(/\s+/g, ' '));
 
     // ---------- ③ 排序 ----------
@@ -218,12 +236,12 @@
       await wait(60);
       return tab;
     };
-    await clickSort('威力');
+    await clickSort(t('威力'));
     // 角标现在是「威力 N%」（攻击力百分比，与玩家当前属性无关），
     // 所以排序后的比较基准也换成 cardPowerTotal —— 用实际伤害比会在不同攻击力下误报
     const dmgOrder = qa('.card', grid).map((n) => {
-      const badge = qa('.card-foot .card-badge', n).find((s) => s.textContent.startsWith('威力 '));
-      return { name: q('.card-name', n).textContent, dmg: badge ? Number(badge.textContent.replace('威力 ', '').replace('%', '')) : 0 };
+      const badge = qa('.card-foot .card-badge', n).find((s) => s.textContent.startsWith(POWER_PREFIX));
+      return { name: q('.card-name', n).textContent, dmg: badge ? Number(badge.textContent.slice(POWER_PREFIX.length).replace('%', '')) : 0 };
     });
     const sortedOk = dmgOrder.every((v, i, a) => i === 0 || a[i - 1].dmg >= v.dmg);
     check('按威力排序 = 威力降序', sortedOk, dmgOrder.slice(0, 8).map((d) => `${d.name}${d.dmg}`).join(' > '));
@@ -232,7 +250,7 @@
       return !card || cardPowerTotal(card) === d.dmg;
     }));
 
-    await clickSort('特殊效果');
+    await clickSort(t('特殊效果'));
     // 卡组里只有十来张牌，跨不到所有分组 —— 展开图鉴（150 种）再数分组标题才准
     const codex = q('.modal-body details');
     if (codex) {
@@ -253,12 +271,13 @@
       const deckNames = new Set(game.data.deck.map((id) => CARDS.find((c) => c.id === id)?.name));
       const ownedLit = cards.filter((n) => !n.classList.contains('card-unowned') && deckNames.has(q('.card-name', n).textContent));
       check('图鉴里「没拿过」的卡被压暗并标出「未获得」',
-        unowned.length > 0 && unowned.every((n) => /未获得/.test(n.textContent)),
+        unowned.length > 0 && unowned.every((n) => n.textContent.includes(t('未获得'))),
         `${cards.length} 张里 ${unowned.length} 张未获得，第一张＝「${q('.card-name', unowned[0] ?? cards[0])?.textContent}」`);
       check('图鉴里这一局正带着的卡一张都没被压暗', ownedLit.length === deckNames.size,
         `卡组 ${deckNames.size} 种，其中亮的 ${ownedLit.length} 种`);
       const summary = q('.modal-body details summary')?.textContent ?? '';
-      check('图鉴标题写着「已收集 X / N 种」', /已收集 \d+ \/ \d+ 种/.test(summary), summary);
+      check('图鉴标题写着「已收集 X / N 种」',
+        tplRe('（已收集 {got} / {total} 种，点开可以逐个看详情）', ['got', 'total']).test(summary), summary);
 
       // 「以前拿过但这一局没带」的卡：应该是亮的 + 标「曾拿过」
       const seenId = CARDS.find((c) => !game.data.deck.includes(c.id))?.id;
@@ -269,7 +288,7 @@
       await wait(100);
       const seenNode = qa('.card', codexGrid).find((n) => q('.card-name', n).textContent === CARDS.find((c) => c.id === seenId).name);
       check('以前拿过的卡是亮的，并标着「曾拿过」',
-        !!seenNode && !seenNode.classList.contains('card-unowned') && /曾拿过/.test(seenNode.textContent),
+        !!seenNode && !seenNode.classList.contains('card-unowned') && seenNode.textContent.includes(t('曾拿过')),
         `「${CARDS.find((c) => c.id === seenId).name}」→ ${seenNode?.classList.contains('card-unowned') ? '被压暗了' : '亮的'}｜${qa('.card-foot span', seenNode ?? cards[0]).map((s) => s.textContent).join(',')}`);
 
       // 拿到新卡时要写进跨局记录（图鉴靠它认「以前拿过」）
@@ -283,18 +302,18 @@
     log(`特殊效果排序前 10：${effOrder.slice(0, 10).join('、')}`);
     if (codex) { codex.open = false; }
 
-    await clickSort('费用');
+    await clickSort(t('费用'));
     const apOrder = qa('.card', grid).map((n) => Number(q('.card-ap', n).textContent));
     check('按费用排序 = 费用升序', apOrder.every((v, i, a) => i === 0 || a[i - 1] <= v), apOrder.join(','));
 
-    await clickSort('稀有度');
+    await clickSort(t('稀有度'));
     const rarOrder = qa('.card', grid).map((n) => {
       const cls = [...n.classList].find((c) => c.startsWith('card-') && !['card-sm', 'card-common'].includes(c) && ['card-common', 'card-uncommon', 'card-rare', 'card-epic'].includes(c));
       return cls ?? 'card-common';
     });
     const RANK = { 'card-common': 0, 'card-uncommon': 1, 'card-rare': 2, 'card-epic': 3 };
     check('按稀有度排序 = 稀有度降序', rarOrder.every((v, i, a) => i === 0 || RANK[a[i - 1]] >= RANK[v]), rarOrder.join(','));
-    await clickSort('默认');
+    await clickSort(t('默认'));
 
     // ---------- ④b 稀有度：四件套必须真的不一样 ----------
     // 用户反馈「稀有卡略微看不出来」。以前只有顶上那条 4px 色带 + 一圈很淡的内描边。
@@ -354,7 +373,9 @@
         host.remove();
         return t;
       })();
-      check('宝石的悬停说明写明了稀有度', /稀有度：史诗/.test(gemTip), gemTip.split('\n')[0]);
+      check('宝石的悬停说明写明了稀有度',
+        gemTip.includes(t('稀有度：{rarity}\n卡面配色、描边、卡名颜色都跟着稀有度走。', { rarity: t('史诗') })),
+        gemTip.split('\n')[0]);
     }
 
     // ---------- ④c 角色标记：保护 / 代价 ----------
@@ -381,10 +402,12 @@
         return { id: c.id, name: c.name, got, wantProtect, wantCost };
       });
       host.remove();
-      const missProtect = rows.filter((r) => r.wantProtect && !r.got.includes('保护'));
-      const falseProtect = rows.filter((r) => !r.wantProtect && r.got.includes('保护'));
-      const missCost = rows.filter((r) => r.wantCost && !r.got.includes('代价'));
-      const falseCost = rows.filter((r) => !r.wantCost && r.got.includes('代价'));
+      const roleProtect = t('保护');
+      const roleCost = t('代价');
+      const missProtect = rows.filter((r) => r.wantProtect && !r.got.includes(roleProtect));
+      const falseProtect = rows.filter((r) => !r.wantProtect && r.got.includes(roleProtect));
+      const missCost = rows.filter((r) => r.wantCost && !r.got.includes(roleCost));
+      const falseCost = rows.filter((r) => !r.wantCost && r.got.includes(roleCost));
       check('给护盾 / 回血 / 加防 / 解负面的牌都挂了「保护」', missProtect.length === 0,
         missProtect.length ? missProtect.map((r) => r.name).join('、') : `${rows.filter((r) => r.wantProtect).length} 张`);
       check('没有保护效果的牌不会误挂「保护」', falseProtect.length === 0,
@@ -393,8 +416,8 @@
         missCost.length ? missCost.map((r) => r.name).join('、') : `${rows.filter((r) => r.wantCost).length} 张`);
       check('没有代价的牌不会误挂「代价」', falseCost.length === 0,
         falseCost.length ? falseCost.map((r) => r.name).join('、') : '无误标');
-      const roleTip = rows.find((r) => r.got.includes('保护'))?.name ?? '';
-      check('「保护 / 代价」标记都在真实卡池里出现过', roleTip !== '' && rows.some((r) => r.got.includes('代价')),
+      const roleTip = rows.find((r) => r.got.includes(roleProtect))?.name ?? '';
+      check('「保护 / 代价」标记都在真实卡池里出现过', roleTip !== '' && rows.some((r) => r.got.includes(roleCost)),
         `例：${roleTip} 有「保护」`);
     }
 
@@ -434,7 +457,7 @@
 
     // ---------- ④ 详情页 ----------
     // 挑一张带状态词的牌，保证效果明细和关键词两栏都有东西
-    const targetName = CARDS.find((c) => /层中毒|层灼伤|层虚弱/.test(c.text)).name;
+    const targetName = firstStatusCard().name;
     const targetNode = qa('.card', grid).find((n) => q('.card-name', n).textContent === targetName) ?? q('.card', grid);
     targetNode.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await wait(120);
@@ -470,7 +493,7 @@
         const actions = qa('.detail-actions .btn');
         const st = q('.detail-deckstate')?.textContent ?? '';
         check('只读的详情页没有加入 / 拿掉按钮，只说明这张牌带了几份',
-          actions.length === 0 && /卡组里有这张：\d+ 张/.test(st), `按钮 ${actions.length} 个｜说明「${st}」`);
+          actions.length === 0 && tplRe('你的卡组里有这张：{owned} 张', ['owned']).test(st), `按钮 ${actions.length} 个｜说明「${st}」`);
       }
 
       if (mode === 'detail') {
@@ -533,7 +556,7 @@
       // 上面那串检查已经把弹出关了，重新开一份干净的卡组页用来截图
       showDeck(game);
       await wait(150);
-      qa('.sort-tab').find((t) => t.textContent === '特殊效果')?.click();
+      qa('.sort-tab').find((t2) => t2.textContent === t('特殊效果'))?.click();
       await wait(80);
       log('（截图模式：停在卡组页）');
       log('CARD_DONE');

@@ -144,9 +144,14 @@
 
   /* 战斗手牌卡面（宽 × 高）。卡面从 168×148 放大到 186×190：
      原来的卡面又小又扁，长一点的文案会被 -webkit-line-clamp 直接截掉。
-     改完记得同步 battle-view.js 里的 CARD_ASPECT（出牌展示区按它算尺寸）。 */
+     改完记得同步 battle-view.js 里的 CARD_ASPECT（出牌展示区按它算尺寸）。
+
+     `--card-h-l10n` 是**语言补偿**的增量：日文 / 英文的卡名比中文长得多（见下面那一节），
+     名字要折两行、底栏也可能换行，所以这两种语言在 `--card-h` 之外再加一点高度。
+     做成「增量」而不是直接改 `--card-h`，是为了让响应式那两条 media query 仍然生效。 */
   --card-w: 186px;
   --card-h: 190px;
+  --card-h-l10n: 0px;
 }
 
 /**
@@ -1439,7 +1444,7 @@ button { font-family: inherit; }
   justify-content: center;
   align-items: flex-end;
   gap: 0;
-  min-height: calc(var(--card-h) + 4px);
+  min-height: calc(var(--card-h) + var(--card-h-l10n, 0px) + 4px);
   padding-bottom: 2px;
 }
 /* 叠放量由 battle-view.js 的 fitHand() 按手牌张数和可用宽度算好写进 --hand-overlap，
@@ -1464,7 +1469,7 @@ button { font-family: inherit; }
 .card {
   position: relative;
   width: var(--card-w);
-  height: var(--card-h);
+  height: calc(var(--card-h) + var(--card-h-l10n, 0px));
   flex: 0 0 auto;
   border-radius: 14px;
   padding: 8px 9px 9px;
@@ -1739,6 +1744,65 @@ button { font-family: inherit; }
   --card-ico: 54px;
   --card-clamp: 7;
 }
+
+/**
+ * 日文 / 英文的卡面：卡名更长，得单独放宽。
+ *
+ * 起因（用户截图）：中文卡名最长 4 个字，日文最长 11 个假名（アイアンテールウォール），
+ * 英文最长 19 个字母（Dragon Water Cannon）—— 一行放不下就被 `text-overflow` 切成
+ * 「ドラゴン…」「Venom Dr…」；底栏的英文角色标记（PROTECTION）也会被切掉尾巴。
+ *
+ * 这几条只对 ja / en 生效，中文那套逐字不变：
+ *   ① 卡名允许折成**两行**（中文仍然单行，四字名不会突然变两行）；
+ *   ② 名字字号降一档（md 18 → 15.5），但**仍比同档描述大 3px 且 800 粗** ——
+ *      `?dgcards=1` 有一条断言卡这个（差 ≥3px），所以别降过头；
+ *   ③ 底栏允许换行 + 字号收一档 + 字距收紧（英文大写字母本来就宽）；
+ *   ④ 卡面加高（`--card-h-l10n`），把多出来的那行吃掉，描述的行数不变。
+ *
+ * 出牌展示区（.played-card）例外：那里的尺寸和字号都由 JS 按 `--u` 算，不能叠加这两条。
+ */
+html[lang="ja"], html[lang="en"] { --card-h-l10n: 20px; }
+html[lang="ja"] .card-name,
+html[lang="en"] .card-name {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.12;
+}
+html[lang="ja"] .card, html[lang="en"] .card { --card-name-fs: 15.5px; }
+html[lang="ja"] .card-sm, html[lang="en"] .card-sm { --card-name-fs: 15px; --card-h-l10n: 24px; }
+html[lang="ja"] .card-lg, html[lang="en"] .card-lg { --card-name-fs: 19px; --card-h-l10n: 24px; }
+html[lang="ja"] .card-foot,
+html[lang="en"] .card-foot {
+  flex-wrap: wrap;
+  row-gap: 2px;
+  font-size: 8.5px;
+  letter-spacing: .04em;
+}
+/* 底栏内部两组也要能换行：英文的「DEFENSE + PROTECTION」并排就是 168px 宽，
+   而窄卡（sm 档）里只有 130px —— 只让外层换行不够，里面这一排得自己折下去。 */
+html[lang="ja"] .card-foot .foot-left,
+html[lang="en"] .card-foot .foot-left,
+html[lang="ja"] .card-foot .foot-right,
+html[lang="en"] .card-foot .foot-right { flex-wrap: wrap; row-gap: 2px; }
+html[lang="ja"] .card-role,
+html[lang="en"] .card-role { padding: 0 2px; }
+/* 卡组页那种「左边让开勾选圈」的窄卡（.card-with-check，卡名可用宽度只剩 ~69px）：
+   19 个字母的英文名即使折两行也放不下，"Acrobatics" 这种单个长词更是没法换行 ——
+   这一档允许在词中间断开，总比被省略号切掉强。（正常界面不会走到这一档：
+   勾选圈只有卡面诊断当检具用。） */
+html[lang="ja"] .card-with-check .card-name,
+html[lang="en"] .card-with-check .card-name { overflow-wrap: anywhere; }
+/* 出牌展示区：尺寸由 JS 按 --u 缩放，这里把语言补偿撤掉、字号跟着 --u 走 */
+html[lang="ja"] .played-card .card,
+html[lang="en"] .played-card .card {
+  --card-h-l10n: 0px;
+  --card-name-fs: calc(15.5px * var(--u, 1));
+}
+html[lang="ja"] .played-card .card-foot,
+html[lang="en"] .played-card .card-foot { font-size: calc(8.5px * var(--u, 1)); }
 
 .card-check {
   position: absolute; top: 7px; left: 7px; z-index: 4;

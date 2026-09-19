@@ -9,12 +9,15 @@
 //   effectLines() 把 effects 数据翻成人类能读的明细行（卡牌详情页用）；
 //   cardSort()    按威力 / 特殊效果 / 费用 / 稀有度排序（卡组页用）。
 //
+// 高亮规则**按语言构建**（见下面「高亮规则」一节）：卡面文案现在会跟着语言原地改写，
+// 只认中文的正则切不了日 / 英的卡面，切到日语时整张卡就一个高亮都没有了。
+//
 // 唯一的真相仍然是 content/cards.json：文案和高亮都只是「读」它，不改写。
 
 import { el } from './dom.js';
 import { STATUS_INFO, computeHit } from '../core/battle.js';
 import { BALANCE } from '../data/balance.js';
-import { t } from '../core/i18n.js';
+import { t, currentLang } from '../core/i18n.js';
 
 /** 文案里出现的状态词 → 引擎里的状态 key（「流血」和引擎的「出血」是同一个东西） */
 const STATUS_WORD = { 中毒: 'poison', 剧毒: 'toxic', 灼伤: 'burn', 虚弱: 'weak', 出血: 'bleed', 流血: 'bleed' };
@@ -110,24 +113,48 @@ const TIP = {
 };
 
 function statusTip(word) {
-  const key = STATUS_WORD[word];
+  const key = statusKeyOf(word);
   const info = STATUS_INFO[key];
   if (!info) return '';
   return t('{name}：{desc}\n解法：「白雾」「焕然一新」这类解状态牌能直接清掉；层数就是强度。', { name: info.name, desc: info.desc });
 }
 
+// ============================================================
+// 高亮规则：跟着语言构建
+// ============================================================
+// 规则表以前是**一份写死的中文正则**。卡面文案改成跟着语言原地改写（applyContentLang）之后，
+// 切到日语 / 英语就一条都匹配不上 —— 没有高亮、没有悬停说明，整张卡看着像「忘了做」。
+// 现在按语言构建，在**取用时**比对 currentLang()，语言一变就重建：
+//   · t() 不能在模块顶层调用（那时语言还没初始化，会把中文冻进表里）；
+//   · 但也不能只在加载时建一次（语言是运行时可切的）。
+//   → 所以是「按语言缓存的惰性构建」。
+//
+// 词从哪儿来（三条路各管一段）：
+//   ① 单词类关键词（护盾 / 销毁 / 最大生命 / 回复 / 抽牌 / 威力 / 攻击…）：这些**本身就是译文表的键**，
+//      直接从 t('护盾') 取。译文哪天把「シールド」改成「盾」，规则跟着改，不会走散。
+//   ② 搭配类关键词（状态层数 / 破防 / 净化 / 护盾随防御成长）：中日英的**语序和词形完全不一样**
+//      （中文「3 层中毒」数字在前，日文「どく 3 層」数字在后，英文「3 stacks of Poison」又是另一套），
+//      从单词拼不出句子，只能照着 content/i18n/*.json 里**真实的卡面文案**写正则。
+//      每条都注了它对应的真实文案。
+//   ③ 译文表里没有独立词条的（暴击 / 闪避 / 反伤 / 力量 / 流血）：它们在表里只出现在长句里，
+//      查不到单词，只能写死 —— 而卡池里目前没有卡面用到它们，属于「以后加了也不会瞎」的兜底。
+//
+// 中文那条路（下面的 ZH_RULES）**一个字都没动**，构建出来的正则和以前逐字一致。
+
 /**
- * 高亮规则表。用**粘性正则**（/y）从当前位置匹配，多个规则同时命中时取最长的一段 ——
+ * 中文规则表。用**粘性正则**（/y）从当前位置匹配，多个规则同时命中时取最长的一段 ——
  * 「无视对手一半防御」比「防御」长，所以整句会被当成一个破防关键词，而不是拦腰截一半。
  */
-const RULES = [
+const ZH_RULES = [
   // 状态（连层数一起染色：读作「3 层中毒」比拆成红色 3 + 紫色中毒更好认）
   {
     src: '(?:\\d+\\s*层\\s*)?(中毒|剧毒|灼伤|虚弱|出血|流血)',
     cls: (m) => `kw-status kw-${STATUS_WORD[m[1]]}`,
     tip: (m) => statusTip(m[1]),
   },
-  { src: '无视对手(?:全部|一半)防御', cls: 'kw-pierce', tip: TIP.pierce },
+  // 「无视对手 50% 防御」这种卡面本来只亮到「防御」两个字（规则里只有 全部 / 一半）——
+  // ja / en 两条是按真实译文写的、认得出百分比，所以中文这条也补上，三种语言口径一致。
+  { src: '无视对手(?:全部|一半|\\d+\\s*%)防御', cls: 'kw-pierce', tip: TIP.pierce },
   { src: '清除[^，。；]*?负面状态', cls: 'kw-cleanse', tip: TIP.cleanse },
   { src: '随防御成长', cls: 'kw-shield', tip: TIP.shieldScale },
   { src: '护盾', cls: 'kw-shield', tip: TIP.shield },
@@ -142,12 +169,146 @@ const RULES = [
   { src: '力量', cls: 'kw-stat', tip: TIP.strength },
   { src: '(攻击|防御|敏捷|幸运)', cls: 'kw-stat', tip: (m) => STAT_DESC[m[1]]?.() },
   { src: '[+\\-]?\\d+(?:\\.\\d+)?%?', cls: 'card-num', tip: null },
-].map((r) => ({ ...r, re: new RegExp(r.src, 'y') }));
+];
+
+/** 数字（伤害 / 层数 / 百分比）：三种语言通用，不放语言表里 */
+const NUM_RULE = { src: '[+\\-]?\\d+(?:\\.\\d+)?%?', cls: 'card-num', tip: null };
+
+/** 状态的中文原文（同时也是译文表的键）→ 引擎状态 key */
+const STATUS_ZH_WORD = { poison: '中毒', toxic: '剧毒', burn: '灼伤', weak: '虚弱', bleed: '出血' };
+
+/** 四项属性的中文原文（STAT_DESC 的键） */
+const STAT_ZH_WORD = ['攻击', '防御', '敏捷', '幸运'];
+
+/**
+ * 文案里出现的状态词 → 引擎状态 key。
+ * 中文那一套先查（STATUS_WORD 里还有「流血」这个别名，中文卡面在用它），
+ * 日 / 英按译文表反推 —— 日语是平假名（どく / もうどく / …），英语是 Poison / Toxic / …。
+ */
+function statusKeyOf(word) {
+  if (STATUS_WORD[word]) return STATUS_WORD[word];
+  for (const [key, zh] of Object.entries(STATUS_ZH_WORD)) {
+    const w = t(zh);
+    // 英文会被句子的大小写改掉首字母（句首 Poison / 句中 poison）；中日文没有这回事
+    if (w === word || (/^[A-Za-z]/.test(w) && w.toLowerCase() === String(word).toLowerCase())) return key;
+  }
+  return null;
+}
+
+/** 转义正则元字符（英文译文里 max HP、+、( 都可能出现） */
+function escRe(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+/** 词条 → 正则片段：空白放宽成 \s*（译文里加不加空格不统一：「最大HP」/「最大 HP」） */
+function lit(s) {
+  return escRe(s).replace(/\s+/g, '\\s*');
+}
+/** 首字母大小写都认（英文卡面句首大写、句中全小写：Gain shield / scales with Defense） */
+function ci(s) {
+  return lit(s).replace(/^([A-Za-z])/, (c) => `[${c.toLowerCase()}${c.toUpperCase()}]`);
+}
+
+/** 当前语言下五个状态名的正则片段（长词在前，免得「もうどく」被「どく」拦腰截一半） */
+function statusWords(wrap) {
+  return Object.values(STATUS_ZH_WORD)
+    .map((zh) => t(zh))
+    .sort((a, b) => b.length - a.length)
+    .map(wrap)
+    .join('|');
+}
+
+/** 当前语言下四项属性名的正则片段 + 「本地化词 → STAT_DESC 的键」 */
+function statWords(wrap) {
+  const pairs = STAT_ZH_WORD.map((zh) => [t(zh), zh]);
+  return {
+    src: pairs.map(([w]) => wrap(w)).sort((a, b) => b.length - a.length).join('|'),
+    zhOf: Object.fromEntries(pairs),
+  };
+}
+
+/** 日文规则：单词取自译文表，搭配按 content/i18n/ja.json 里真实的卡面文案写 */
+function rulesJa() {
+  const status = statusWords(lit);   // どく|もうどく|やけど|じゃくたい|しゅっけつ
+  const stat = statWords(lit);       // 攻撃|防御|敏捷|幸運
+  return [
+    // 「相手にじゃくたいを 1 付与する」「どく 3 層」「やけどを 2 付与する」「しゅっけつ2層」
+    // —— 中文是「3 层中毒」（数字在前），日文是「どく 3 層」（数字在后），空格也时有时无；
+    //    「を」只在后面真跟着数字时才吃进来，免得把「じゃくたいを浄化」的助词也染上色
+    { src: `(${status})(?:(?:を)?\\s*\\d+\\s*層?)?`, cls: (m) => `kw-status kw-${statusKeyOf(m[1])}`, tip: (m) => statusTip(m[1]) },
+    // 「相手の防御をすべて無視」「相手の防御を半分無視」「相手の防御を 50% 無視」
+    { src: '相手の防御を(?:すべて|半分|\\d+\\s*%)?\\s*無視', cls: 'kw-pierce', tip: TIP.pierce },
+    // 「自分の能力ダウンと状態異常をすべて消し」「自身のマイナス効果をすべて消す」「自身のじゃくたいを浄化」
+    { src: '(?:能力ダウン|状態異常|マイナス効果)[^、。]{0,12}?消|浄化', cls: 'kw-cleanse', tip: TIP.cleanse },
+    // 「防御に応じて増加 / 成長」「防御に応じたシールドを獲得」
+    // —— 只吃「防御に応じて / 応じた」这一小段，后面的シールド 交给下面那条护盾规则，
+    //    和中文那边「随防御成长」+「护盾」两条分开认是同一个口径
+    { src: '防御に応じ(?:て|た)', cls: 'kw-shield', tip: TIP.shieldScale },
+    { src: lit(t('护盾')), cls: 'kw-shield', tip: TIP.shield },       // シールド
+    { src: lit(t('销毁')), cls: 'kw-exhaust', tip: TIP.exhaust },     // 消滅
+    // t('最大生命') = 「最大HP」，可卡面里另有「最大 HP」这种加了空格的写法
+    { src: '最大\\s*HP', cls: 'kw-heal', tip: TIP.maxHp },
+    { src: lit(t('回复')), cls: 'kw-heal', tip: TIP.heal },           // 回復
+    { src: lit(t('抽牌')), cls: 'kw-draw', tip: TIP.draw },           // ドロー
+    { src: 'AP', cls: 'kw-ap', tip: TIP.ap },
+    { src: '会心|回避', cls: 'kw-luck', tip: TIP.luck },              // 暴击 / 闪避（表里没有独立词条）
+    { src: '反動', cls: 'kw-recoil', tip: TIP.recoil },               // 反伤
+    { src: lit(t('威力')), cls: 'kw-ap', tip: TIP.cost },             // 威力
+    { src: 'ちから', cls: 'kw-stat', tip: TIP.strength },             // 力量
+    { src: `(${stat.src})`, cls: 'kw-stat', tip: (m) => STAT_DESC[stat.zhOf[m[1]]]?.() },
+    NUM_RULE,
+  ];
+}
+
+/** 英文规则：单词取自译文表（首字母大小写都认），搭配按 content/i18n/en.json 里真实的卡面文案写 */
+function rulesEn() {
+  const status = statusWords(ci);    // Poison|Toxic|Burn|Weakened|Bleed
+  const stat = statWords(ci);        // Attack|Defense|Agility|Luck
+  return [
+    // 「1 Poison」「3 stacks of Poison」「2 stacks of Bleed」「如果你身上有 Poison or Toxic」
+    { src: `(?:\\d+\\s+(?:stacks? of\\s+)?)?(${status})`, cls: (m) => `kw-status kw-${statusKeyOf(m[1])}`, tip: (m) => statusTip(m[1]) },
+    // 「ignoring all enemy Defense」「ignoring half Defense」「ignoring 50% of the foe's Defense」
+    { src: 'ignoring (?:all|half|\\d+\\s*%)(?:[^.;]{0,24}?)Defense', cls: 'kw-pierce', tip: TIP.pierce },
+    // 「Cleanse stat drops and negative statuses」「cleanse all negative status on yourself」
+    { src: ci(t('净化')), cls: 'kw-cleanse', tip: TIP.cleanse },
+    // 「Gain shield (scales with Defense…)」——卡面里「随防御成长」的译法都是这一句
+    { src: '(?:scales|scaling) with Defense', cls: 'kw-shield', tip: TIP.shieldScale },
+    { src: ci(t('护盾')), cls: 'kw-shield', tip: TIP.shield },        // Shield
+    { src: ci(t('销毁')), cls: 'kw-exhaust', tip: TIP.exhaust },      // Exhaust
+    { src: ci(t('最大生命')), cls: 'kw-heal', tip: TIP.maxHp },       // max HP
+    // t('回复') = 「Heal」，可卡面里回复 HP 还写作「Restore」，回复 AP 又写作「refund」
+    // （中文那边一律是「回复」两个字，所以这几个都得收进来才是同一个口径）
+    { src: `${ci(t('回复'))}|${ci('Restore')}|refund`, cls: 'kw-heal', tip: TIP.heal },
+    { src: ci(t('抽牌')), cls: 'kw-draw', tip: TIP.draw },            // Draw / draw
+    { src: `AP|${ci(t('行动点'))}`, cls: 'kw-ap', tip: TIP.ap },      // AP / Action points
+    { src: '[Cc]rit|[Dd]odge', cls: 'kw-luck', tip: TIP.luck },       // 暴击 / 闪避（表里没有独立词条）
+    { src: ci('Recoil'), cls: 'kw-recoil', tip: TIP.recoil },         // 反伤
+    { src: ci(t('威力')), cls: 'kw-ap', tip: TIP.cost },              // Power
+    { src: ci('Strength'), cls: 'kw-stat', tip: TIP.strength },       // 力量
+    // 属性：Defense 在护盾公式里被缩写成了「DEF×0.75」「Def×0.75」（harden / feather_dance），
+    // 中文那边写的是「防御×0.75」照样认得出，所以缩写也得认 —— 悬停说明还是「防御」那一份
+    { src: `(${stat.src}|DEF|Def)`, cls: 'kw-stat', tip: (m) => STAT_DESC[stat.zhOf[m[1]] ?? '防御']?.() },
+    NUM_RULE,
+  ];
+}
+
+/** 语言 → 规则构建器（没有专门表的语言退回中文那套，总比一条都不亮好） */
+const RULE_BUILDERS = { zh: () => ZH_RULES, ja: rulesJa, en: rulesEn };
+
+/** 按语言缓存的规则表：语言是可切的，所以每次取用都比一次 */
+let ruleCache = { lang: null, rules: null };
+
+function rulesFor(lang = currentLang()) {
+  if (ruleCache.lang !== lang) {
+    const build = RULE_BUILDERS[lang] ?? RULE_BUILDERS.zh;
+    ruleCache = { lang, rules: build().map((r) => ({ ...r, re: new RegExp(r.src, 'y') })) };
+  }
+  return ruleCache.rules;
+}
 
 /** 从位置 i 起，找出最长的一条高亮规则 */
 function matchAt(text, i) {
   let best = null;
-  for (const r of RULES) {
+  for (const r of rulesFor()) {
     r.re.lastIndex = i;
     const m = r.re.exec(text);
     if (m && m[0].length && (!best || m[0].length > best.m[0].length)) best = { r, m };
