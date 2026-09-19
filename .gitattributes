@@ -1,0 +1,23 @@
+# 这一行是为了修一个反复咬人的环境问题：
+# 这台机器上 git 的 core.autocrlf=true，而所有工具（编辑器、本仓库的 file 工具）写的都是 LF。
+# 于是只要发生一次 `git checkout -- <file>` / `git stash pop`，那个文件在工作区里就变成 CRLF，
+# 而索引里存的还是 LF —— 内容没变，但 tools/compare-deployed.mjs 是**逐字节**比 sha256 的，
+# 会报一条假的「和线上不一致」（2026-09-19 误报过一次，白查了一轮 CDN 缓存）。
+#
+# eol=lf 的意思是：**仓库里和检出到工作区的行尾一律 LF**，不再做任何 CRLF 转换，
+# 工作区与线上（GitHub Pages 直接发索引里的字节）就始终是同一份。
+# 已经变成 CRLF 的文件用 tools/fix-eol.mjs 修一下即可。
+* text=auto eol=lf
+
+# 二进制素材别被当文本碰（png / 字体 / 音频 / 压缩包）
+*.png binary
+*.jpg binary
+*.gif binary
+*.ttf binary
+*.otf binary
+*.woff2 binary
+*.ogg binary
+*.wav binary
+*.mp3 binary
+*.zip binary
+*.rar binary
