@@ -3,9 +3,16 @@
 // 效果（用户点名要的）：
 //   黑幕**一上来就把整个屏幕盖住**（地图不再露出任何一角）；
 //   我方**背影**从右边非线性划到左下，敌人的**正面图**从左滑到右上 —— 两只**错开**站位；
-//   一条黑底 + 主题色的横线跟着敌人的正面图铺过来（右端始终贴着它的中线）；
-//   双双停留一小会（这段时间用来预载战斗资源），然后一起滑出屏幕、进战斗。
-//   敌人的立绘旁边写着大号的名字和档位标注（野生 / 较强 / 精英 / 首领）。
+//   一组黑底 + 主题色的光带跟着敌人的正面图铺过来（右端始终贴着它的中线）：
+//   划入阶段它是一条**定长的带子**整条从屏幕左边扫进来，敌人站定后再由补满阶段展开到整幅宽度；
+//   名牌（大号名字 + 档位霓虹灯）**从屏幕右边外面划进来**，名字比霓虹灯晚一点到位；
+//   双双停留一小会（这段时间用来预载战斗资源），然后**名牌跟着黑幕一起滑出屏幕**、进战斗。
+//
+// 三个方向都各有各的「看得见」的标准（诊断逐条量，见 tools/diag-encounter.js）：
+//   · 立绘 —— 非线性（前半段时间走完 >60% 路程）；
+//   · 光带 —— 两个端点都在动（尾巴也进屏幕、并且一路往右）；
+//   · 名牌 —— 起点在屏幕右边外面、一路往左、停在自己的位置上；
+//   · 退场 —— 名牌和黑幕**逐帧同一个位移**（跟着幕布一起走）。
 //
 // 用的是**回合立绘**（Generation 9 Pack 的正/背面图，src/core/gen9.js），
 // 不是战斗场地上的 PMD 行走图 —— 用户特意澄清过：「我表示的立绘是放在表示回合数旁边的那个立绘」。
@@ -43,10 +50,10 @@ import { TIERS } from '../data/enemies.js';
  * 想整体调快调慢改这里，别去各个阶段里手改数字。
  */
 const PACE = {
-  /** 两只立绘横向划入 */
+  /** 两只立绘横向划入（名牌也在这段时间里从右边划进来） */
   slideIn: 560,
   /** 横线跟着敌人铺完之后，把没铺到的部分补满 */
-  bandFill: 300,
+  bandFill: 360,
   /** 双双停留：预载和战斗界面挂载都在这一小会里做完 */
   hold: 620,
   /** 一起滑出屏幕 */
@@ -87,6 +94,25 @@ const LINES = [
   { o: 60, t: 1, a: 0.22, w: 0.5 },
 ];
 
+/**
+ * 划入阶段里那条光带的**长度**（占视口宽的比例）。
+ *
+ * 为什么不是「从屏幕左边缘开始铺」：那样只有右端在动，左端一直钉在屏幕边上，
+ * 眼睛看到的就是「刷一下就满了」，用户的原话是「线好像没有任何进场动画」。
+ * 现在它是一条**定长的光带**，右端贴着敌人的中线、整条跟着敌人从屏幕左边外面划进来 ——
+ * 两头都在动，才看得出是在「划入」（用户：「敌人旁边的线可以向右划入」）。
+ * 敌人站定之后再由补满阶段把两端一起展开到整幅宽度。
+ */
+const BAND_TAIL_VW = 0.34;
+
+/**
+ * 名牌（名字 + 霓虹灯）的进场参数：
+ *   START —— 在整段划入的第几成进度时起步（前面一点时间先让敌人和光带动起来）
+ *   LAG   —— 名字比霓虹灯晚多少起步（灯管先到、名字再落上去）
+ *   NAME  —— 名字额外多留的这一段距离（占整段位移的比例）
+ */
+const PLATE = { START: 0.12, LAG: 0.22, NAME: 0.4 };
+
 // ---------------------------------------------------------------------------
 // 开关：什么时候才演这一段
 // ---------------------------------------------------------------------------
@@ -109,7 +135,7 @@ export function wantsEncounter(entry) {
 }
 
 /** 诊断用：把演出钉在某个阶段不动（截图脚本用），正常游戏里永远是 null */
-export const encounterDebug = { freeze: null, _release: null };
+export const encounterDebug = { freeze: null, freezeP: null, _release: null };
 
 export function releaseEncounterDebug() {
   encounterDebug.freeze = null;
@@ -135,13 +161,14 @@ function debugHold(phase) {
  * 用 setInterval 而不是 requestAnimationFrame：标签页不可见时 rAF 会被节流到几乎不动，
  * 那样演出会卡在半路、战斗永远进不去（行走图那边也是因为这个才用 setInterval）。
  */
-function tween(ms, onTick) {
+function tween(ms, onTick, until = 1) {
   return new Promise((resolve) => {
     const t0 = performance.now();
     const tick = () => {
       const p = ms <= 0 ? 1 : Math.min(1, (performance.now() - t0) / ms);
-      onTick(p);
-      if (p >= 1) { clearInterval(timer); resolve(); }
+      const q = Math.min(p, until);
+      onTick(q);
+      if (q >= until) { clearInterval(timer); resolve(); }
     };
     const timer = setInterval(tick, 16);
     onTick(0);
@@ -153,6 +180,8 @@ const easeOut = (p) => 1 - Math.pow(1 - p, 3.2);
 /** 退场用 ease-in：慢慢起步、越走越快，像被甩出画面 */
 const easeIn = (p) => Math.pow(p, 2.2);
 const lerp = (a, b, p) => a + (b - a) * p;
+/** 夹到 0~1：名牌的进场进度会算出负数（那一段它就该待在屏幕外） */
+const clamp01 = (p) => (p < 0 ? 0 : p > 1 ? 1 : p);
 
 /**
  * 造一张立绘 <img>。
@@ -306,27 +335,64 @@ export async function playEncounter(opts = {}) {
     enemyWrap.style.transform = `translateY(-50%) translateX(${-off}px)`;
 
     /**
-     * 划入：两只横向对穿，横线的右端 = 敌人立绘**此刻**的中线。
+     * 线组的左右两端（屏幕坐标）。
+     * 组成一条线的是「两个端点」，所以这里也只记端点：位移 = 左端，宽度 = 右端 - 左端。
+     * 用端点表达之后，「右端贴着敌人中线」和「整条从左边划进来」是同一套参数，不会互相打架。
+     */
+    const applyBand = (L, R) => {
+      lineBox.style.transform = `translateX(${Math.round(L)}px)`;
+      lineBox.style.width = `${Math.max(0, Math.round(R - L))}px`;
+    };
+
+    /**
+     * 名牌：**从屏幕右边外面划进来**。
+     *
+     * 以前这一步是一段 28px 的位移 + 淡入（CSS transition）。霓虹灯的字号动辄 300px，
+     * 28px 连一个字宽都不到，用户看到的就是「它本来就长在那儿」——
+     * 原话：「名字和霓虹灯好像没有任何进场动画，名字和霓虹灯都可以从右划入」。
+     * 现在整块从屏幕右侧外滑到自己的位置：
+     *   · 起点距离 = 名牌自己的宽度 + 它到屏幕右边的空隙（现量，字体换上来之后也不会偏）；
+     *   · 名字比霓虹灯晚一点起步，读起来是「灯管先到、名字再落上去」。
+     */
+    const nameEl = plate.querySelector('.enc-name');
+    const plateGap = Math.max(0, Math.round(vw - plate.getBoundingClientRect().right));
+    const plateTick = (pp) => {
+      const away = Math.round(plate.offsetWidth + plateGap + 16);
+      const e = easeOut(clamp01(pp));
+      plate.style.transform = `translateX(${Math.round(away * (1 - e))}px)`;
+      if (!nameEl) return;
+      const np = clamp01((pp - PLATE.LAG) / (1 - PLATE.LAG));
+      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME * (1 - easeOut(np)))}px)`;
+    };
+    plateTick(0);
+
+    /**
+     * 划入：两只横向对穿；光带右端 = 敌人立绘**此刻**的中线，整条跟着它从左边外面扫进来。
      *
      * 位置每一帧都**现量**（不用开演前算好的常数）：名牌的字是 CJK 字体渲染的，
      * 而字体是异步加载的 —— 字体一落定，名牌宽度就变、整组立绘跟着挪，
      * 事先算好的常数会立刻偏掉（诊断量到过 1.9px 的漂移，就是字体在这一瞬间换上了）。
      * 现量现贴，布局怎么变都跟得上。
      */
+    let bandL = 0;
+    let bandR = 0;
     const slideTick = (p) => {
       const e = easeOut(p);
       const dx = Math.round(off * (1 - e));
       playerWrap.style.transform = `translateY(-50%) translateX(${dx}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${-dx}px)`;
       const r = (enemyArt ? enemyBody : enemyWrap).getBoundingClientRect();
-      // 那一组线的右端 = 敌人立绘的中线，纵向整组以它的中腰为基准 ——
-      // 两只错开站位之后，线跟着上边那只走（这是「跟随正面图」的字面意思），
-      // 而不是钉在屏幕正中。
-      lineBox.style.width = `${Math.max(0, Math.round(r.left + r.width / 2))}px`;
+      // 光带：右端就是敌人的中线（**不 clamp** —— 敌人还在屏幕外时整条也该在屏幕外），
+      // 左端 = 右端 - 定长。纵向整组以它的中腰为基准。
+      bandR = Math.round(r.left + r.width / 2);
+      bandL = bandR - Math.round(vw * BAND_TAIL_VW);
+      applyBand(bandL, bandR);
       lineBox.style.top = `${Math.round(r.top + r.height / 2)}px`;
+      // 名牌：整段划入的后 88% 时间里从右边划进来
+      plateTick((p - PLATE.START) / (1 - PLATE.START));
     };
 
-    // ---- ① 划入 + 横线跟着敌人铺过来 ----
+    // ---- ① 划入：两只对穿 + 光带跟着敌人从左边扫进来 + 名牌从右边划进来 ----
     /**
      * 预载在这一刻就**起步**，而不是等到停留阶段才开始。
      *
@@ -337,26 +403,23 @@ export async function playEncounter(opts = {}) {
     const warm = warmBattleAssets(game, battle);
     audio.play('magic_wind', { volume: 0.36, rate: 1.15 });
     if (encounterDebug.freeze === 'in-mid') {
-      // 诊断：把「划到一半」这一帧钉住（截图脚本要拍横线到底有没有跟着立绘）
-      slideTick(0.55);
-      root.classList.add('plate-in');
+      // 诊断：把「划到一半」这一帧钉住（截图脚本要拍光带跟不跟得上立绘、名牌划到哪儿了）
+      slideTick(clamp01(encounterDebug.freezeP ?? 0.55));
       await debugHold('in-mid');
     } else {
-      await tween(t(PACE.slideIn), (p) => {
-        slideTick(p);
-        // 划到一半时把名字「写」上去（此时幕布已经铺到那块地方，黑底上白字才读得清）
-        if (p > 0.5) root.classList.add('plate-in');
-      });
+      await tween(t(PACE.slideIn), slideTick);
     }
     if (abort()) return false;
 
-    // ---- ② 那一组线铺满整幅宽度 ----
+    // ---- ② 光带两端一起展开，铺满整幅宽度 ----
     setPhase('fill');
-    // 起点就取此刻的实际值（而不是再算一遍），接着往右铺到屏幕另一头。
-    // 黑幕本身早就是满屏的了，这一步只是把线拉通（"把屏幕盖住"的是黑幕）。
-    const w0 = parseFloat(lineBox.style.width) || 0;
+    // 起点取此刻的实际端点（而不是再算一遍）：左端 → 屏幕左边，右端 → 屏幕右边。
+    // 黑幕本身早就是满屏的了，这一步是把光带拉通（「把屏幕盖住」的是黑幕）。
+    const l0 = bandL;
+    const r0 = bandR;
     await tween(t(PACE.bandFill), (p) => {
-      lineBox.style.width = `${Math.round(lerp(w0, vw, p))}px`;
+      const e = easeOut(p);
+      applyBand(lerp(l0, 0, e), lerp(r0, vw, e));
     });
     audio.play('maximize', { volume: 0.5 });
     root.classList.add('is-full');
@@ -380,13 +443,25 @@ export async function playEncounter(opts = {}) {
 
     // ---- ④ 一起滑出屏幕 ----
     setPhase('out');
+    // 诊断可以把退场也钉在中途（截图脚本要拍「名牌跟着黑幕走」那一下）
+    const outStop = encounterDebug.freeze === 'out-mid' ? clamp01(encounterDebug.freezeP ?? 0.5) : 1;
     await tween(t(PACE.slideOut), (p) => {
       const e = easeIn(p);
       playerWrap.style.transform = `translateY(-50%) translateX(${Math.round(-off * e)}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${Math.round(off * e)}px)`;
-      // 整块黑幕（连同上面那条线）跟着敌人一起退场：从左边开始把战斗画面让出来
-      curtain.style.transform = `translateX(${Math.round(vw * e)}px)`;
-    });
+      // 整块黑幕（连同上面那组光带）从左边开始把战斗画面让出来
+      const dx = Math.round(vw * e);
+      curtain.style.transform = `translateX(${dx}px)`;
+      /**
+       * 名牌**跟着黑幕一起出**（用户：「出场就跟随着黑幕出就可以」）。
+       *
+       * 它本来就叠在黑幕之上（z-index 4 > 1），所以给两者同一个位移，
+       * 看到的就是「名字和霓虹灯被幕布一起带走了」—— 不用再单独设计一套退场动画。
+       * 光带在里面（它是黑幕的子节点），自动跟着走。
+       */
+      plate.style.transform = `translateX(${dx}px)`;
+    }, outStop);
+    if (outStop < 1) { await debugHold('out-mid'); }
     return true;
   } catch (err) {
     console.error('[oasis] 遭遇演出出错，直接进战斗：', err);

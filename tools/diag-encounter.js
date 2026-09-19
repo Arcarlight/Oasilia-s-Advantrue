@@ -76,7 +76,10 @@
     const at = params.get('at');
     if (params.get('dgenc') === 'shot') {
       encounterDebug.freeze = at || 'hold';
-      log(`截图模式：把演出钉在 ${encounterDebug.freeze} 这一帧`);
+      // ?p=0.25 可以把「划入」那一帧钉在任意进度上（默认 0.55）
+      const p = Number(params.get('p'));
+      if (at === 'in-mid' && Number.isFinite(p)) encounterDebug.freezeP = Math.min(1, Math.max(0, p));
+      log(`截图模式：把演出钉在 ${encounterDebug.freeze} 这一帧${encounterDebug.freezeP != null ? `（进度 ${encounterDebug.freezeP}）` : ''}`);
       // 顺手守一下「舞台上只能有一屏」：标题是异步取精灵的，
       // 曾经因为「先 clear 再 await 再 append」把后渲染的地图压在底下过（同屏出现两屏）
       const stage = [...document.getElementById('stage').children].map((c) => c.className);
@@ -172,7 +175,7 @@
               phase: root.dataset.phase ?? '',
               curtainLeft: c.left, curtainW: c.w, curtainH: c.h,
               curtainOpacity: parseFloat(getComputedStyle(curtain).opacity),
-              lineW: l.w, lineTop: l.top + l.h / 2, lineCount,
+              lineW: l.w, lineLeft: l.left, lineRight: l.right, lineTop: l.top + l.h / 2, lineCount,
               enemy: e, player: p,
               plate: pl, name: nm, neonBox,
               neonBottom: neon.length ? Math.max(...neon.map((n) => n.top + n.h)) : null,
@@ -347,27 +350,54 @@
         hold.length ? `名牌 ${Math.round(Math.min(...hold.map((s) => s.plate?.top ?? 0)))}~${Math.round(Math.max(...hold.map((s) => s.plate?.bottom ?? 0)))}px · 最左 ${Math.round(Math.min(...hold.map((s) => Math.min(s.neonLeft ?? 0, s.name?.left ?? 0))))}px · 最右 ${Math.round(Math.max(...hold.map((s) => s.name?.right ?? 0)))}px / 视口 ${vw}×${vh}` : '（没采到）');
     }
 
-    // ---- ③ 「横线跟随正面图」：划入阶段里横线右端 == 敌人立绘中线 ----
+    // ---- ③ 「光带跟随正面图」：划入阶段里光带右端 == 敌人立绘中线 ----
     // 两个前提：
-    //   · 补满阶段线本来就要跑在敌人前面把它拉到屏幕另一头，那一段不算「跟随」；
-    //   · 敌人还在屏幕外时它中线是负的，而线的宽度只能是 0（浏览器不接受负宽度），
-    //     这一段也没法「贴」——从它踏进屏幕那一刻开始比才有意义。
+    //   · 补满阶段光带本来就要跑在敌人前面把它拉到屏幕另一头，那一段不算「跟随」；
+    //   · 敌人还在屏幕外时它中线是负的，光带也在屏幕外，那一段没有可比性 ——
+    //     从它踏进屏幕那一刻开始比才有意义。
+    // 比的是**右端**（lineRight）而不是宽度：光带现在是一条从左边外面扫进来的定长带子，
+    // 宽度 = 右端 - 左端，拿宽度当判据等于假设左端钉在屏幕边上（那正是被改掉的老行为）。
     const onScreen = slide.filter((s) => s.enemy.cx > 2);
-    const gaps = onScreen.map((s) => Math.abs(s.lineW - s.enemy.cx));
+    const gaps = onScreen.map((s) => Math.abs(s.lineRight - s.enemy.cx));
     const worst = gaps.length ? Math.max(...gaps) : 999;
     ok(gaps.length > 3 && worst <= 3,
-      '横线的右端始终贴着敌人立绘的中线（「跟随正面图」）',
+      '光带的右端始终贴着敌人立绘的中线（「跟随正面图」）',
       `进屏后 ${gaps.length} 个采样点，最大偏差 ${worst.toFixed(1)}px（取整误差，>3px 就是没跟着）`);
     // 线的高度也要跟着上边那只，而不是钉在屏幕正中
     const lineOffsets = hold.map((s) => Math.abs(s.lineTop - s.enemy.cy));
     const worstY = lineOffsets.length ? Math.max(...lineOffsets) : 999;
-    ok(worstY <= 3, '横线的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
+    ok(worstY <= 3, '光带的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
       `最大偏差 ${worstY.toFixed(1)}px；敌人中线 ${Math.round(hold[0]?.enemy?.cy ?? 0)} vs 屏幕正中 ${Math.round(vh / 2)}`);
-    ok(hold.some((s) => s.lineW >= vw - 3), '横线最后铺满整幅宽度', `最宽 ${Math.round(Math.max(...samples.map((s) => s.lineW)))}px`);
+    ok(hold.some((s) => s.lineW >= vw - 3), '光带最后铺满整幅宽度', `最宽 ${Math.round(Math.max(...samples.map((s) => s.lineW)))}px`);
     // 背景不是「光秃秃一条」：围着主线还有几条更细更暗的（用户提的）
     {
       const n = samples[0]?.lineCount ?? 0;
       ok(n >= 4, '背景那一组横线不止一条（围着主线还有几条更细更暗的）', `${n} 条`);
+    }
+
+    // ---- ③b 光带的进场：是一条**两头都在动**的带子从左边划进来 ----
+    /**
+     * 用户反馈：「线好像没有任何进场动画，敌人旁边的线可以向右划入」。
+     * 老写法是「左端钉在屏幕最左边、宽度从 0 涨到敌人中线」—— 只有右端在动，
+     * 而缓动是强 ease-out，看着就是刷一下铺满。现在是一条定长的光带整条往右扫：
+     * 左端（尾巴）和右端（前沿）都在动，两端进入屏幕的时间也一前一后。
+     */
+    if (slide.length >= 4) {
+      const sw = slide.filter((s) => s.lineRight > 2 && s.lineLeft > -2);
+      const tailSeen = slide.filter((s) => s.lineLeft > 2);
+      ok(tailSeen.length >= 2,
+        '光带是**整条**从左边扫进来的：尾巴（左端）也进到屏幕里了（不是左端钉在屏幕边上）',
+        `采到 ${tailSeen.length} 个「左端已在屏幕内」的点，最后左端 ${Math.round(slide.at(-1).lineLeft)}px`);
+      const a = slide.find((s) => s.lineLeft > 2);
+      const z = slide.at(-1);
+      ok(a && z && z.lineLeft - a.lineLeft > vw * 0.08,
+        '光带左端在划入阶段确实**往右走了**（看得到它在移动，而不是一瞬间出现）',
+        a ? `左端 ${Math.round(a.lineLeft)} → ${Math.round(z.lineLeft)}px（${a.t}ms → ${z.t}ms）` : '（没采到）');
+      // 划入阶段它该是「一条带子」，不该已经铺满
+      ok(slide.every((s) => s.lineW <= vw * 0.45),
+        '划入阶段光带还是一条带子（铺满是后面补满阶段的事）',
+        `最宽 ${Math.round(Math.max(...slide.map((s) => s.lineW)))}px / 视口 ${vw}`);
+      ok(sw.length >= 3, '光带的端点都量到了', `${sw.length} 个采样点`);
     }
 
     // ---- ④ 「非线性」：前半段时间里走完的路程要明显超过一半 ----
@@ -384,6 +414,38 @@
       ok(dist > 40, '我方背影确实横穿了屏幕（不是原地不动）', `位移 ${dist.toFixed(0)}px`);
     }
 
+    // ---- ④b 名牌（名字 + 霓虹灯）的进场：从屏幕右边外面划进来 ----
+    /**
+     * 用户反馈：「名字和霓虹灯好像没有任何进场动画，都可以从右划入」。
+     * 老写法是 28px 位移 + 淡入 —— 霓虹灯一个字就 300px 宽，28px 根本看不见。
+     * 现在整块从屏幕右侧外滑到位，这里按「起点在屏幕外 + 一路往左走 + 最后落在原位」三段验。
+     */
+    {
+      const ps = slide.filter((s) => s.plate);
+      const firstPlate = ps[0];
+      const lastPlate = ps.at(-1);
+      ok(!!firstPlate && firstPlate.plate.left >= vw - 2,
+        '名牌一开始在**屏幕右边外面**（不是已经在自己的位置上淡进来）',
+        firstPlate ? `第一个采样点：名牌左边缘 ${Math.round(firstPlate.plate.left)}px / 视口 ${vw}px` : '（没采到）');
+      ok(ps.some((s) => s.plate.left > vw * 0.5 && s.plate.left < vw - 2),
+        '中途能看到它压在屏幕右半边上（真的在「划」而不是瞬移）',
+        ps.length ? `采到 ${ps.filter((s) => s.plate.left > vw * 0.5 && s.plate.left < vw - 2).length} 个「半路上」的点` : '（没采到）');
+      // 一路往左：不能来回抖
+      let back = 0;
+      for (let i = 1; i < ps.length; i++) if (ps[i].plate.left > ps[i - 1].plate.left + 1.5) back += 1;
+      ok(back === 0, '名牌在进场里**一路往左**（单调，没有来回抖）', `回退采样点 ${back} 个 / 共 ${ps.length} 个`);
+      // 收尾：划完之后要正好落在自己的位置（右边距回到 CSS 的 4%，这里只要求贴到屏幕内）
+      const hp = hold.find((s) => s.plate);
+      ok(hp && hp.plate.right <= vw + 2 && hp.plate.right > vw * 0.85,
+        '划完之后名牌停在自己的位置上（右对齐在屏幕右侧）',
+        hp ? `停稳时名牌 ${Math.round(hp.plate.left)}~${Math.round(hp.plate.right)}px（视口 ${vw}）` : '（没采到）');
+      // 名字比霓虹灯晚一点起步：两个都是从右边进来的，所以「还没到位」的那一个
+      // 会**更靠右**（离起点更近）—— 中途应当采到「名字的右边缘在霓虹灯右边」的点。
+      const lagged = ps.filter((s) => s.name && s.neonBox && s.name.right > s.neonBox.right + 4);
+      ok(lagged.length >= 1, '名字比霓虹灯**晚一点**到位（灯管先到、名字再落上去）',
+        `采到 ${lagged.length} 个「名字还在后面追」的点，最大差 ${lagged.length ? Math.round(Math.max(...lagged.map((s) => s.name.right - s.neonBox.right))) : 0}px`);
+    }
+
     // ---- ⑤ 「双双停留一小会」：停留期间两只都不许动 ----
     if (hold.length >= 3) {
       const drift = (get) => {
@@ -393,7 +455,27 @@
       ok(drift((s) => s.player.left) <= 1 && drift((s) => s.enemy.left) <= 1,
         '停留期间两只立绘一动不动（真的在「停」）',
         `我方漂移 ${drift((s) => s.player.left).toFixed(1)}px，敌方 ${drift((s) => s.enemy.left).toFixed(1)}px，停留 ${hold.at(-1).t - hold[0].t}ms`);
+      ok(drift((s) => s.plate?.left) <= 1, '停留期间名牌也不动', `名牌漂移 ${drift((s) => s.plate?.left).toFixed(1)}px`);
     }
+
+    // ---- ⑤b 退场：名牌跟着黑幕一起出 ----
+    /**
+     * 用户：「出场就跟随着黑幕出就可以」。名牌叠在黑幕之上，所以判据是
+     * **两者的位移逐帧一致** —— 一致就是「被幕布一起带走」，不一致就会看到它自己飘出去。
+     */
+    if (exit.length >= 2) {
+      const d = exit.map((s) => ({ t: s.t, plate: s.plate.left - (hold.at(-1)?.plate?.left ?? 0), curtain: s.curtainLeft }));
+      const drift = Math.max(...d.map((s) => Math.abs(s.plate - s.curtain)));
+      ok(drift <= 3,
+        '退场时名牌和黑幕**同一个位移**（跟着幕布一起走，不是各走各的）',
+        `最大差 ${drift.toFixed(1)}px（名牌走了 ${Math.round(d.at(-1).plate)}px，黑幕 ${Math.round(d.at(-1).curtain)}px）`);
+      const moved = d.at(-1).plate;
+      ok(moved > 40, '退场确实把名牌带走了（位移够大）', `位移 ${Math.round(moved)}px`);
+      // 光带在黑幕里（子节点），所以它跟着黑幕走是构造上成立的；这里顺手量一下
+      ok(exit.every((s) => Math.abs((s.lineRight - s.curtainLeft) - (hold.at(-1)?.lineRight ?? 0)) <= 3),
+        '那组光带也在黑幕里，跟着一起退场', `退出时右端 ${Math.round(exit.at(-1).lineRight)}px`);
+    }
+
 
     // ---- ⑥ 预载：这是「音效慢半拍」那条反馈的正题 ----
     const warmAtHoldEnd = hold.at(-1)?.warm ?? -1;

@@ -2420,11 +2420,13 @@ input, textarea { cursor: text !important; }
   grid-template-columns: auto;
   text-align: center;
   pointer-events: none;
-  opacity: 0;
-  transform: translateX(-28px);
-  transition: opacity .24s ease, transform .34s cubic-bezier(.14, .68, .16, 1);
+  /* 进场 / 退场都由 encounter.js 每帧写 transform：
+       进场 —— 整块从屏幕右边外面划进来（距离按它自己的宽度现算）；
+       退场 —— 跟黑幕同一个位移，被幕布一起带走。
+     所以这里**不能**再放 transition：JS 每帧写一个新的 transform，
+     有 transition 的话名牌会一直追不上、看起来像被拖在后面。 */
+  will-change: transform;
 }
-.encounter.plate-in .enc-plate { opacity: 1; transform: none; }
 .enc-name {
   /* 粗体字体：卡名 / 商店名 / 这里的怪名都属于「要一眼认出来」的字 */
   font-family: var(--font-bold);
