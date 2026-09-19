@@ -3,8 +3,37 @@
    调性：黄昏沙海的暖色 + 卡牌桌游的木/羊皮纸质感
    ============================================================ */
 
-/* ---- 字体：LXGW Neo XiHei Plus（霞鹜新晰黑 Plus）----
-   字体文件放在 assets/fonts/，8.5MB 所以不内联进单文件构建。
+/* ---- 字体 ----
+   三套字体各管一块，都是**按游戏实际用到的字裁出来的子集**（见 tools/subset-fonts.mjs）：
+     · Oasis Body —— 正文/描述（SGHr-Regular）
+     · Oasis Bold —— 卡名、商店名、标题这类需要粗体的地方（WenYuanSerifSC-Bold）
+     · Oasis Hand —— 事件旁白、商人对白这类轻松搞笑的地方（851LakeusNightWriting）
+   子集里没有的字（例如玩家自己导入的存档里出现的生僻字）会落到 LXGW 那一层 ——
+   宁可用另一套字体渲染，也不要出现方块。LXGW 是完整字体，所以这一层兜得住。 */
+@font-face {
+  font-family: 'Oasis Body';
+  src: url(../../assets/fonts/SGHr-Regular-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oasis Bold';
+  src: url(../../assets/fonts/WenYuanSerifSC-Bold-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oasis Hand';
+  src: url(../../assets/fonts/851LakeusNightWriting-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* 兜底字体：完整覆盖，子集里缺的字由它接住。
+   字体文件放在 assets/fonts/，8.5MB 所以不内联进单文件构建之外的地方；
    用 file:// 双击打开时浏览器会拦掉 CSS 里的字体请求，此时自动退回系统字体；
    标题额外保留一套衬线兜底，保证离线版也不难看。 */
 @font-face {
@@ -58,9 +87,15 @@
   --shadow-2: 0 6px 0 rgba(0, 0, 0, .35), 0 10px 24px rgba(0, 0, 0, .45);
   --shadow-card: 0 4px 0 rgba(0, 0, 0, .4), 0 8px 18px rgba(0, 0, 0, .4);
 
-  --font-game: 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
-  --font-ui: var(--font-game);
-  --font-title: 'LXGW Neo XiHei Plus', "Georgia", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  /* 三套字体各管一块（定义见文件开头的 @font-face）；
+     末尾永远是完整的 LXGW + 系统字体，子集里缺字时由它们接住，不会出方块。 */
+  --font-body: 'Oasis Body', 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
+  --font-bold: 'Oasis Bold', 'LXGW Neo XiHei Plus', "Georgia", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-hand: 'Oasis Hand', 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", cursive, sans-serif;
+  /* 老名字保留成别名，改字体只要动上面三行，不用去满文件替换 */
+  --font-game: var(--font-body);
+  --font-ui: var(--font-body);
+  --font-title: var(--font-bold);
 
   /* 战斗手牌卡面（宽 × 高）。卡面从 168×148 放大到 186×190：
      原来的卡面又小又扁，长一点的文案会被 -webkit-line-clamp 直接截掉。
@@ -324,8 +359,11 @@ button { font-family: inherit; }
   font-weight: 700;
   letter-spacing: .06em;
   margin: 0 0 8px;
-  color: var(--accent-2);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, .4);
+  /* 这几个标题（事件名 / 商人名 / 宝箱…）全在**浅色羊皮纸**面板上，
+     而 --accent-2 是为深色背景调的亮金 —— 亮金压米黄几乎读不出来。
+     换成同色系但更深的 --accent-deep，仍然跟着地图主题走，对比度却够了。 */
+  color: var(--accent-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .45);
 }
 .panel-sub { font-size: 13px; opacity: .8; margin: -4px 0 12px; }
 
@@ -553,9 +591,12 @@ button { font-family: inherit; }
   text-shadow: 0 2px 0 rgba(0, 0, 0, .55);
 }
 .title-quote {
+  /* 标题页 / 结算页那段旁白是「讲故事」的地方，用手写体。
+     字号比正文大一档：手写体的字面比正文那套小一圈，同字号会显得偏小。 */
+  font-family: var(--font-hand);
   max-width: 560px;
   margin: 10px auto 18px;
-  font-size: 14px;
+  font-size: 17px;
   line-height: 1.9;
   color: #ffe9c8;
   text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
@@ -1688,8 +1729,12 @@ button { font-family: inherit; }
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .22), 0 8px 16px rgba(0, 0, 0, .35);
 }
 .scene-text {
-  font-size: 14.5px;
-  line-height: 2;
+  /* 事件旁白 / 商人的招呼语这一段是「讲故事」的地方，用手写体，
+     和旁边规规矩矩的数值区拉开（用户点名：手写体给轻松搞笑的地方用）。
+     字号比正文大一档：手写体的字面比正文那套小一圈，同字号会显得偏小。 */
+  font-family: var(--font-hand);
+  font-size: 17px;
+  line-height: 1.95;
   white-space: pre-wrap;
   margin: 10px 0 16px;
   color: var(--ink);
@@ -1721,10 +1766,12 @@ button { font-family: inherit; }
 .option-good { background: linear-gradient(180deg, rgba(200, 255, 215, .6), rgba(150, 220, 175, .55)); }
 
 .result-box {
+  /* 事件的结算文案（「你把果子让给了它……」「宝箱是活的！」）—— 同样是讲故事的地方 */
+  font-family: var(--font-hand);
   margin-top: 14px;
   padding: 12px 16px;
   border-radius: var(--r-md);
-  font-size: 14.5px;
+  font-size: 17px;
   line-height: 1.95;
   white-space: pre-wrap;
   background: linear-gradient(180deg, rgba(255, 255, 255, .55), rgba(226, 199, 149, .5));
@@ -2157,8 +2204,8 @@ input, textarea { cursor: text !important; }
 
 /* ============================================================
    遭遇演出：地图 → 战斗之间的过场
-   几何（谁的宽、谁的位置）全部由 src/ui/encounter.js 每帧写死，
-   这里只管长相与层级；所以别在这里写死 width/height/top。
+   几何（谁的宽、谁在哪）全部由 src/ui/encounter.js 每帧写死，
+   这里只管长相与层级；所以别在这里写死 width/height/top（错开站位那两行除外）。
    ============================================================ */
 .encounter {
   position: fixed;
@@ -2171,20 +2218,55 @@ input, textarea { cursor: text !important; }
   /* 主题色不写在这里 —— body[data-biome] 已经把 --accent / --accent-2 换成当前地图的了 */
 }
 
-/* 两只精灵。朝向在 JS 里定死：我方 DIR.UP（背对镜头 = 背影），敌人 DIR.DOWN（正对镜头 = 正面图） */
+/* 黑幕：**整屏、一上来就不透明** —— 用户要求「黑幕能遮挡住整个屏幕」，
+   所以它不是被横线慢慢张开的，而是开演第一帧就把地图全盖住。
+   退场时整块往右滑走（横线是它的子节点，跟着一起走）。 */
+.enc-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 46%, rgba(255, 255, 255, .07), transparent 62%),
+    linear-gradient(180deg, #100b14 0%, #05040a 52%, #100b14 100%);
+  will-change: transform;
+}
+/* 那条「黑色 + 主题色」的横线：宽度与纵向位置由 JS 按敌人立绘现算
+   （右端 = 立绘中线，纵向 = 立绘中腰），所以它看起来是跟着正面图铺过来的。 */
+.enc-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 0;
+  height: 8px;
+  background: #08060a;
+  border-right: 3px solid var(--accent-2, #ffc96b);
+  box-shadow: 0 0 18px 2px color-mix(in srgb, var(--accent, #f0a93c) 70%, transparent);
+  will-change: width, top;
+}
+
+/* 两只立绘。站位**错开**：敌人正面图在右上、我方背影在左下（和战斗场地的对角站位一致），
+   所以它们不在同一条水平线上，横线只跟着上边那只走。 */
 .enc-fighter {
   position: absolute;
-  top: 50%;
   display: flex;
   align-items: center;
-  gap: clamp(10px, 2.2vw, 40px);
+  gap: clamp(10px, 2vw, 38px);
   transform: translateY(-50%);
   will-change: transform;
 }
-.enc-player { left: 3%; z-index: 3; }   /* 背影离镜头更近，从正面图上压过去 */
-.enc-enemy { right: 3%; z-index: 2; }
+.enc-player { left: 4%; top: 72%; z-index: 3; }   /* 背影离镜头更近，从正面图上压过去 */
+.enc-enemy { right: 4%; top: 32%; z-index: 2; }
 .enc-body { position: relative; }
-.enc-body canvas { display: block; filter: drop-shadow(0 14px 10px rgba(0, 0, 0, .5)); }
+/* 立绘是 Generation 9 的正面/背面图（回合数旁边那种），已经按可见内容裁过，
+   所以图框就是怪兽本人 —— 不需要再做任何裁切或留白补偿。 */
+.enc-art {
+  display: block;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 16px 12px rgba(0, 0, 0, .55));
+}
 
 /* 名字 + 档位标注：写在立绘旁边（靠右对齐，贴着立绘） */
 .enc-plate {
@@ -2199,13 +2281,14 @@ input, textarea { cursor: text !important; }
 }
 .encounter.plate-in .enc-plate { opacity: 1; transform: none; }
 .enc-name {
-  font-family: var(--font-title);
+  /* 粗体字体：卡名 / 商店名 / 这里的怪名都属于「要一眼认出来」的字 */
+  font-family: var(--font-bold);
   font-size: clamp(26px, 4.6vw, 62px);
   font-weight: 700;
   line-height: 1.06;
   letter-spacing: .02em;
   color: #fff;
-  /* 描边 + 主题色外发光：字要压在黑幕布上，也要压在还没被盖住的地图上 */
+  /* 描边 + 主题色外发光：字要压在黑幕上 */
   text-shadow:
     0 3px 0 rgba(0, 0, 0, .6),
     0 0 3px rgba(0, 0, 0, .85),
@@ -2225,38 +2308,8 @@ input, textarea { cursor: text !important; }
 .encounter[data-tier="elite"]  .enc-tier { background: rgba(255, 116, 116, .34); box-shadow: inset 0 0 0 2px rgba(255, 190, 190, .5); color: #ffe6e6; }
 .encounter[data-tier="boss"]   .enc-tier { background: rgba(255, 108, 182, .38); box-shadow: inset 0 0 0 2px rgba(255, 196, 230, .55); color: #ffe4f4; }
 
-/* 那条横线：黑底 + 主题色的芯。宽度 / 高度 / 纵向位置都由 JS 控制 */
-.enc-band {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 8px;
-  z-index: 1;
-  overflow: hidden;
-  background: linear-gradient(180deg, #100b14 0%, #05040a 50%, #100b14 100%);
-  will-change: width, height, top, transform;
-}
-.enc-band-core {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 3px;
-  margin-top: -1.5px;
-  background: linear-gradient(90deg, transparent, var(--accent-2, #ffc96b) 26%, var(--accent, #f0a93c) 78%, var(--accent-2, #ffc96b));
-  box-shadow: 0 0 16px 2px var(--accent, #f0a93c);
-}
-/* 幕布铺满之后压一层极淡的主题色辉光，免得整屏死黑 */
-.encounter.is-full .enc-band::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 90% at 50% 50%, rgba(255, 255, 255, .07), transparent 62%);
-}
-
 @media (max-width: 900px) {
-  .enc-fighter { gap: 10px; }
+  .enc-fighter { gap: 8px; }
   .enc-player { left: 2%; }
   .enc-enemy { right: 2%; }
   .enc-name { font-size: clamp(20px, 5.4vw, 36px); }

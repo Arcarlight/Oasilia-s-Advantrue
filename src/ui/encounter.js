@@ -1,13 +1,16 @@
 // 遭遇演出：从地图踏进战斗之间的过场。
 //
 // 效果（用户点名要的）：
-//   我方**背影**从右边非线性划到左边，敌人的**正面图**从左滑到右边；
-//   同时一条黑底 + 主题色的横线跟着敌人的正面图，把屏幕整个盖住；
-//   双双停留一小会，然后一起滑出屏幕、进战斗。
+//   黑幕**一上来就把整个屏幕盖住**（地图不再露出任何一角）；
+//   我方**背影**从右边非线性划到左下，敌人的**正面图**从左滑到右上 —— 两只**错开**站位；
+//   一条黑底 + 主题色的横线跟着敌人的正面图铺过来（右端始终贴着它的中线）；
+//   双双停留一小会（这段时间用来预载战斗资源），然后一起滑出屏幕、进战斗。
 //   敌人的立绘旁边写着大号的名字和档位标注（野生 / 较强 / 精英 / 首领）。
 //
-// 朝向：SpriteCollab 的精灵图竖直方向是朝向，UP 那一行是「背对镜头」——
-//   所以「我方背影」= DIR.UP，「敌人正面图」= DIR.DOWN，不是随便挑的。
+// 用的是**回合立绘**（Generation 9 Pack 的正/背面图，src/core/gen9.js），
+// 不是战斗场地上的 PMD 行走图 —— 用户特意澄清过：「我表示的立绘是放在表示回合数旁边的那个立绘」。
+// 立绘在导入时已经按可见内容裁到包围盒，所以**图框就是怪兽本人**：
+// 不用再补透明留白，横线贴它的中线就一定是贴着画面，名牌也能直接顶上去。
 //
 // ── 关于「停留时预载能不能治好音效慢半拍」────────────────────────────
 // 能，但**光有动画没有用**：浏览器不会因为画面上有东西在动就去预载任何文件。
@@ -15,8 +18,9 @@
 //
 //   audio.play(name) 的链路是 fetch → decodeAudioData → src.start()，
 //   所以每个音效**第一次响**都要先等一次网络往返 + 解码。冷启动时最明显：
-//   点下第一张攻击卡，「挥剑声」会比动画慢半拍 —— 因为那一瞬间才刚开始下载文件。
-//   warm() 在停留阶段就把这批文件变成 AudioBuffer 存进 audio.js 的缓存，
+//   点下第一张攻击卡，「挥剑声」会比动画慢半拍 —— 因为那一瞬间才刚开始下载文件
+//   （战斗那 26 个音效一共约 2.9 MB，单个最大 296 KB；线上实测冷启动约 2.9 秒）。
+//   warm() 在演出里就把这批文件变成 AudioBuffer 存进 audio.js 的缓存，
 //   之后 play() 拿到的就是现成的 buffer，`src.start()` 是立刻响的。
 //
 //   同理，music.play() 要先 fetch 整首 ogg 再解码（一首 3 分钟），
@@ -26,7 +30,8 @@
 // 缓存命中时 warm() 立刻兑现，停留就只剩「让玩家看清对面是谁」的时间。
 
 import { el, sleep } from './dom.js';
-import { createAnim, animInfo, preloadAnim, frameCoverage, DIR } from '../core/sprites.js';
+import { preloadAnim } from '../core/sprites.js';
+import { turnArt, fitArt } from '../core/gen9.js';
 import { audio, BATTLE_SFX, ENCOUNTER_SFX } from '../core/audio.js';
 import { music } from '../core/bgm.js';
 import { createPortrait } from '../core/portraits.js';
@@ -38,9 +43,9 @@ import { TIERS } from '../data/enemies.js';
  * 想整体调快调慢改这里，别去各个阶段里手改数字。
  */
 const PACE = {
-  /** 两只精灵横向划入 */
+  /** 两只立绘横向划入 */
   slideIn: 560,
-  /** 横线跟到敌人身上之后，再张开把屏幕盖满 */
+  /** 横线跟着敌人铺完之后，把没铺到的部分补满 */
   bandFill: 300,
   /** 双双停留：预载和战斗界面挂载都在这一小会里做完 */
   hold: 620,
@@ -52,8 +57,21 @@ const PACE = {
 const WARM_CAP = 1200;
 /** 停留本身不能短于这个值（倍率调到最快时也得让人看清对面是谁） */
 const HOLD_MIN = 300;
-/** 横线（还没张开时）的粗细 */
+/** 横线的粗细 */
 const LINE_H = 8;
+
+/**
+ * 两只立绘的站位（错开）与大小。
+ *   · 敌人正面图在**右上**、我方背影在**左下** —— 和战斗场地里的对角站位一致，
+ *     也让两只不会挤在同一条水平线上。
+ *   · vh 是「立绘位高度 ÷ 视口高」，真正画出来多大还要乘一个跟着物种走的大小系数
+ *     （fitArt 里的 art.scale：大岩蛇比刺尾虫占地方）。
+ *   · maxAspect 卡住横向：大岩蛇那种特别宽的别横着铺出去压到名字 / 屏幕外。
+ */
+const SLOT = {
+  enemy: { vh: 0.36, vw: 0.30, maxAspect: 1.7, top: '32%', side: 'right' },
+  player: { vh: 0.44, vw: 0.34, maxAspect: 1.9, top: '72%', side: 'left' },
+};
 
 // ---------------------------------------------------------------------------
 // 开关：什么时候才演这一段
@@ -120,41 +138,31 @@ function tween(ms, onTick) {
 const easeOut = (p) => 1 - Math.pow(1 - p, 3.2);
 /** 退场用 ease-in：慢慢起步、越走越快，像被甩出画面 */
 const easeIn = (p) => Math.pow(p, 2.2);
-const easeInOut = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
 const lerp = (a, b, p) => a + (b - a) * p;
 
 /**
- * 立绘缩放：按视口算 —— 敌人正面图占屏高 34%、我方背影离镜头更近占 40%。
+ * 造一张立绘 <img>。
  *
- * 缩放必须**由帧高推出来**（各物种帧高不同，写死 3、4 就会有的巨大有的迷你），
- * 而且要先拿 cov（frameCoverage 的留白测量）把帧里的透明部分补回来：
- * 精灵图的帧尺寸含留白，沙漠蜻蜓 32×72 的帧里真正画着龙的只有约 30×28 ——
- * 只按帧高算，「占 40% 高」实际只有 13%，怪兽小得像只虫子。
- * 宽度也夹一道，免得宽扁的精灵在窄窗口里横着溢出去压到名字。
+ * fitArt 是回合立绘那套已经在用的规则：瘦高的按立绘位高度撑满，扁宽的被最大宽度卡住；
+ * 再乘一个跟着物种走的大小系数（art.scale），所以大岩蛇看起来就是比刺尾虫占地方。
+ * 这里给的立绘位高度同时受 vh / vw 两个上限压着，窄窗口下立绘会自己变小。
  */
-function scaleFor(slug, anim, vhFrac, vwFrac, fallback, cov) {
-  const info = animInfo(slug, anim);
-  if (!info) return fallback;
-  // 留白极端到内容只有一成时，当作量不到，免得缩放炸掉
-  const sh = cov && cov.sh > 0.12 ? cov.sh : 1;
-  const sw = cov && cov.sw > 0.12 ? cov.sw : 1;
-  const byH = (window.innerHeight * vhFrac) / (info.fh * sh);
-  const byW = (window.innerWidth * vwFrac) / (info.fw * sw);
-  return Math.max(0.5, Math.min(byH, byW));
-}
-
-/**
- * 把立绘在帧里的位置对齐到**有画面的那块**。
- *
- * 帧的下缘往往留着一截透明（影子位、动作幅度），直接用画布中线摆的话，
- * 怪兽会整体偏上、跟横线错开半个身位。这里按测得的内容中心把画布挪回去，
- * 挪完「画布中线」就等于「画面中线」，横线照着画布中线贴就一定对得准。
- */
-function alignCanvas(canvas, info, scale, cov) {
-  if (!canvas || !info || !cov) return;
-  const h = info.fh * scale;
-  const dy = Math.round((0.5 - cov.cy) * h);
-  if (dy) canvas.style.transform = `translateY(${dy}px)`;
+function makeArt(slug, kind, slot) {
+  const art = turnArt(slug, kind);
+  // 素材缺失（新物种还没 import-gen9）就返回 null：宁可少画一只，也不要留个破图
+  if (!art) return null;
+  const byH = window.innerHeight * slot.vh;
+  const byW = (window.innerWidth * slot.vw) / Math.max(0.2, art.ar);
+  const { w, h } = fitArt(art, Math.min(byH, byW), slot.maxAspect);
+  const img = el('img', {
+    class: 'enc-art',
+    alt: '',
+    dataset: { slug, kind },
+    style: { width: `${w}px`, height: `${h}px` },
+  });
+  img.src = art.url;
+  img.draggable = false;
+  return img;
 }
 
 /**
@@ -162,6 +170,9 @@ function alignCanvas(canvas, info, scale, cov) {
  *   1. 战斗音效 —— 第一次响不用再等网络 + 解码（「音效慢半拍」的根因）
  *   2. 这一场的 BGM —— 预解码，幕布掀开时音乐已经在响
  *   3. 打起来才会换的行走图（攻击 / 受伤）与角色卡头像
+ *
+ * 注意第 3 项预热的仍然是**行走图**（PMD 精灵图）—— 战斗场地上用的是它，
+ * 而这场演出用的是立绘，两套东西不通用。
  */
 function warmBattleAssets(game, battle) {
   const jobs = [
@@ -202,8 +213,6 @@ export async function playEncounter(opts = {}) {
   if (!enemy || !game?.data || abort()) { cover(); return false; }
 
   let root = null;
-  let enemyAnim = null;
-  let playerAnim = null;
 
   try {
     const mul = speedMulOf(loadBattleSpeed());
@@ -219,53 +228,40 @@ export async function playEncounter(opts = {}) {
     const vh = window.innerHeight;
 
     // ---- 建 DOM ----
-    // 先量两张图的「帧里有多少是真画面」（frameCoverage 顺带把图取回来，
-    // 后面 createAnim 会命中同一份缓存，不会多下一次请求），再据此定缩放。
-    const [enemyCov, playerCov] = await Promise.all([
-      frameCoverage(enemy.slug, 'Idle', DIR.DOWN).catch(() => null),
-      frameCoverage(game.data.slug, 'Idle', DIR.UP).catch(() => null),
-    ]);
-    const enemyScale = scaleFor(enemy.slug, 'Idle', 0.34, 0.30, 3, enemyCov);
-    const playerScale = scaleFor(game.data.slug, 'Idle', 0.4, 0.32, 3.4, playerCov);
+    const enemyArt = makeArt(enemy.slug, 'front', SLOT.enemy);
+    const playerArt = makeArt(game.data.slug, 'back', SLOT.player);
+    // 两只都拿不到立绘就别演了，直接进战斗（宁可没演出，也不能卡住）
+    if (!enemyArt && !playerArt) { cover(); return false; }
 
-    // 两张图并行建（串行会白等一倍）；取不到就 null，下面会降级
-    [enemyAnim, playerAnim] = await Promise.all([
-      createAnim(enemy.slug, { anim: 'Idle', fps: 7, dir: DIR.DOWN, scale: enemyScale }).catch(() => null),
-      createAnim(game.data.slug, { anim: 'Idle', fps: 8, dir: DIR.UP, scale: playerScale }).catch(() => null),
-    ]);
-    // 两只都拿不到图就别演了，直接进战斗（宁可没演出，也不能卡住）
-    if (!enemyAnim && !playerAnim) { cover(); return false; }
-
-    const enemyInfo = animInfo(enemy.slug, 'Idle');
-    const playerInfo = animInfo(game.data.slug, 'Idle');
-    alignCanvas(enemyAnim, enemyInfo, enemyScale, enemyCov);
-    alignCanvas(playerAnim, playerInfo, playerScale, playerCov);
-
-    const enemyBody = el('div', { class: 'enc-body' }, [enemyAnim]);
-    const playerBody = el('div', { class: 'enc-body' }, [playerAnim]);
+    const enemyBody = el('div', { class: 'enc-body' }, [enemyArt]);
+    const playerBody = el('div', { class: 'enc-body' }, [playerArt]);
     // 名字用大号写在立绘旁边，档位（野生 / 较强 / 精英 / 首领）用数据里的名字，别抄一份
     const plate = el('div', { class: 'enc-plate' }, [
       el('div', { class: 'enc-name', text: enemy.name ?? '' }),
       el('div', { class: 'enc-tier', text: TIERS[enemy.tier]?.name ?? '' }),
     ]);
-    // 画布左边常常也有一截透明，名牌会跟怪兽隔出一条空档。
-    // 按测得的留白把名牌往里拉，拉到「贴着画出东西的那条边」为止（最多拉到画布的 1/3，别压上去）。
-    let enemyCx = 0.5;
-    if (enemyCov && enemyInfo) {
-      const boxW = enemyInfo.fw * enemyScale;
-      const leftPad = Math.max(0, enemyCov.cx - enemyCov.sw / 2) * boxW;
-      plate.style.marginRight = `${-Math.round(Math.min(leftPad, boxW * 0.34))}px`;
-      if (enemyCov.cx > 0.05 && enemyCov.cx < 0.95) enemyCx = enemyCov.cx;
-    }
     const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [plate, enemyBody]);
     const playerWrap = el('div', { class: 'enc-fighter enc-player' }, [playerBody]);
-    // 横线：黑底 + 主题色（主题色跟着地图走，CSS 用 var(--accent)，见 body[data-biome]）
-    const band = el('div', { class: 'enc-band' }, [el('i', { class: 'enc-band-core' })]);
+    /**
+     * 黑幕 + 那条横线。
+     *
+     * 黑幕是**整屏**的、一上来就不透明 —— 用户明确要求「黑幕能遮挡住整个屏幕」，
+     * 所以它不是「被横线慢慢张开」的东西：地图从第一帧起就一点都看不见。
+     * 横线是黑幕的子节点，于是退场时黑幕往右滑，线跟着一起走。
+     */
+    const line = el('i', { class: 'enc-line' });
+    const curtain = el('div', { class: 'enc-curtain' }, [line]);
 
-    root = el('div', { class: 'encounter', dataset: { tier: enemy.tier ?? 'normal' } }, [
-      band, enemyWrap, playerWrap,
+    root = el('div', { class: 'encounter', dataset: { tier: enemy.tier ?? 'normal', phase: 'in' } }, [
+      curtain, enemyWrap, playerWrap,
     ]);
     document.body.append(root);
+    /**
+     * 把当前阶段写在 data-phase 上。
+     * 诊断脚本要按阶段切分时间线（「划入时横线贴着敌人」和「补满时横线当然在前头」
+     * 是两回事，靠肉眼猜阶段会误报）。生产代码里它只是四行赋值，没有别的用途。
+     */
+    const setPhase = (p) => { root.dataset.phase = p; };
 
     // 起点：整个在屏幕外。用 px 而不是 vw，是为了让横线的宽度能和它精确对上。
     const off = Math.round(Math.max(vw, vh) * 1.3);
@@ -290,13 +286,13 @@ export async function playEncounter(opts = {}) {
       const dx = Math.round(off * (1 - e));
       playerWrap.style.transform = `translateY(-50%) translateX(${dx}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${-dx}px)`;
-      const r = (enemyAnim ? enemyBody : enemyWrap).getBoundingClientRect();
-      // 右端贴的是**画面**的中线（画布中线已经用 alignCanvas 对齐过了，
-      // 横向则按 cx 修正 —— 帧左右也可能不对称）
-      band.style.width = `${Math.max(0, Math.round(r.left + r.width * enemyCx))}px`;
-      band.style.top = `${Math.round(r.top + r.height / 2 - LINE_H / 2)}px`;
+      const r = (enemyArt ? enemyBody : enemyWrap).getBoundingClientRect();
+      // 右端贴的是敌人立绘的中线；线的**高度**也对齐它的中腰 ——
+      // 两只错开站位之后，线跟着上边那只走（这是「跟随正面图」的字面意思），
+      // 而不是钉在屏幕正中。
+      line.style.width = `${Math.max(0, Math.round(r.left + r.width / 2))}px`;
+      line.style.top = `${Math.round(r.top + r.height / 2 - LINE_H / 2)}px`;
     };
-    band.style.height = `${LINE_H}px`;
 
     // ---- ① 划入 + 横线跟着敌人铺过来 ----
     /**
@@ -322,18 +318,17 @@ export async function playEncounter(opts = {}) {
     }
     if (abort()) return false;
 
-    // ---- ② 横线张开，把屏幕盖满 ----
-    // 起点就取横线此刻的实际值（而不是再算一遍），接着往下长
-    const w0 = parseFloat(band.style.width) || 0;
-    const top0 = parseFloat(band.style.top) || 0;
+    // ---- ② 横线铺满整幅宽度 ----
+    setPhase('fill');
+    // 起点就取横线此刻的实际值（而不是再算一遍），接着往右铺到屏幕另一头。
+    // 黑幕本身早就是满屏的了，这一步只是把那条主题色横线拉通（"把屏幕盖住"的是黑幕）。
+    const w0 = parseFloat(line.style.width) || 0;
     await tween(t(PACE.bandFill), (p) => {
-      const e = easeInOut(p);
-      band.style.width = `${Math.round(lerp(w0, vw, e))}px`;
-      band.style.height = `${Math.round(lerp(LINE_H, vh, e))}px`;
-      band.style.top = `${Math.round(lerp(top0, 0, e))}px`;
+      line.style.width = `${Math.round(lerp(w0, vw, p))}px`;
     });
     audio.play('maximize', { volume: 0.5 });
     root.classList.add('is-full');
+    setPhase('hold');
     if (abort()) return false;
 
     // ---- ③ 双双停留：此刻屏幕已经被幕布盖住，正好拿来等资源 ----
@@ -352,12 +347,13 @@ export async function playEncounter(opts = {}) {
     if (abort()) return false;
 
     // ---- ④ 一起滑出屏幕 ----
+    setPhase('out');
     await tween(t(PACE.slideOut), (p) => {
       const e = easeIn(p);
       playerWrap.style.transform = `translateY(-50%) translateX(${Math.round(-off * e)}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${Math.round(off * e)}px)`;
-      // 幕布跟着敌人一起退场：从左边开始把战斗画面让出来
-      band.style.transform = `translateX(${Math.round(vw * e)}px)`;
+      // 整块黑幕（连同上面那条线）跟着敌人一起退场：从左边开始把战斗画面让出来
+      curtain.style.transform = `translateX(${Math.round(vw * e)}px)`;
     });
     return true;
   } catch (err) {
@@ -365,10 +361,6 @@ export async function playEncounter(opts = {}) {
     return false;
   } finally {
     root?.remove();
-    // 行走图的定时器是 createAnim 起的，元素从 DOM 上摘掉它还在跑，
-    // 必须显式 destroy —— 否则每打一场就漏两个 setInterval。
-    enemyAnim?.destroy?.();
-    playerAnim?.destroy?.();
     encounterDebug._release = null;
     // 演出没走完（出错 / 被中断）也要保证战斗界面能挂上，别把玩家一个人留在黑屏上
     if (!abort()) cover();

@@ -342,4 +342,52 @@ export const GEN9_ART = {
     front: { w: 94, h: 82, canvas: { w: 192, h: 192 }, box: { x: 52, y: 58, w: 90, h: 78 } },
     back: { w: 151, h: 118, canvas: { w: 288, h: 288 }, box: { x: 78, y: 90, w: 147, h: 114 } },
   },
+  hippowdon: {
+    front: { w: 164, h: 126, canvas: { w: 192, h: 192 }, box: { x: 16, y: 36, w: 160, h: 122 } },
+    back: { w: 277, h: 205, canvas: { w: 288, h: 288 }, box: { x: 6, y: 45, w: 273, h: 201 } },
+  },
+  claydol: {
+    front: { w: 118, h: 132, canvas: { w: 192, h: 192 }, box: { x: 36, y: 32, w: 114, h: 128 } },
+    back: { w: 175, h: 196, canvas: { w: 288, h: 288 }, box: { x: 57, y: 48, w: 171, h: 192 } },
+  },
+  camerupt: {
+    front: { w: 148, h: 124, canvas: { w: 192, h: 192 }, box: { x: 24, y: 38, w: 144, h: 120 } },
+    back: { w: 235, h: 184, canvas: { w: 288, h: 288 }, box: { x: 27, y: 57, w: 231, h: 180 } },
+  },
+  torkoal: {
+    front: { w: 128, h: 130, canvas: { w: 192, h: 192 }, box: { x: 36, y: 34, w: 124, h: 126 } },
+    back: { w: 190, h: 193, canvas: { w: 288, h: 288 }, box: { x: 48, y: 51, w: 186, h: 189 } },
+  },
+  scizor: {
+    front: { w: 140, h: 150, canvas: { w: 192, h: 192 }, box: { x: 30, y: 28, w: 136, h: 146 } },
+    back: { w: 187, h: 226, canvas: { w: 288, h: 288 }, box: { x: 57, y: 33, w: 183, h: 222 } },
+  },
+  scolipede: {
+    front: { w: 182, h: 168, canvas: { w: 192, h: 192 }, box: { x: 8, y: 14, w: 178, h: 164 } },
+    back: { w: 274, h: 241, canvas: { w: 288, h: 288 }, box: { x: 9, y: 27, w: 270, h: 237 } },
+  },
+  kingdra: {
+    front: { w: 112, h: 136, canvas: { w: 192, h: 192 }, box: { x: 42, y: 30, w: 108, h: 132 } },
+    back: { w: 145, h: 211, canvas: { w: 288, h: 288 }, box: { x: 75, y: 42, w: 141, h: 207 } },
+  },
+  mantine: {
+    front: { w: 150, h: 114, canvas: { w: 192, h: 192 }, box: { x: 24, y: 40, w: 146, h: 110 } },
+    back: { w: 244, h: 157, canvas: { w: 288, h: 288 }, box: { x: 24, y: 63, w: 240, h: 153 } },
+  },
+  braviary: {
+    front: { w: 180, h: 168, canvas: { w: 192, h: 192 }, box: { x: 6, y: 14, w: 176, h: 164 } },
+    back: { w: 223, h: 283, canvas: { w: 288, h: 288 }, box: { x: 33, y: 3, w: 219, h: 279 } },
+  },
+  archeops: {
+    front: { w: 144, h: 172, canvas: { w: 192, h: 192 }, box: { x: 26, y: 12, w: 140, h: 168 } },
+    back: { w: 226, h: 277, canvas: { w: 288, h: 288 }, box: { x: 42, y: 6, w: 222, h: 273 } },
+  },
+  chandelure: {
+    front: { w: 134, h: 132, canvas: { w: 192, h: 192 }, box: { x: 30, y: 32, w: 130, h: 128 } },
+    back: { w: 199, h: 196, canvas: { w: 288, h: 288 }, box: { x: 45, y: 48, w: 195, h: 192 } },
+  },
+  cofagrigus: {
+    front: { w: 186, h: 156, canvas: { w: 192, h: 192 }, box: { x: 6, y: 20, w: 182, h: 152 } },
+    back: { w: 277, h: 223, canvas: { w: 288, h: 288 }, box: { x: 6, y: 21, w: 273, h: 219 } },
+  },
 };

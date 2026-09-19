@@ -145,6 +145,7 @@ AP        = min(8, 2 + 敏捷 / 2)
   立绘就在那条横扫屏幕的**回合光带上**，不是别的地方。
   素材是 Generation 9 Pack 的官方风格图（`assets/gen9/`），
   我方用**背面**、敌方用**正面**（和正作一样：自己的宝可梦给看后背）。
+  **同一套立绘也用在「遭遇演出」里**（从地图踏进战斗的那段过场，见 `src/ui/encounter.js`）。
   几条设计上的硬约束（都有断言守着，见 `tools/diag-turnart.js`）：
   - **过场不挡操作**：`turnIntro()` 把浮层挂上去就返回，事件流不等它演完 ——
     抽牌演完、手牌一解锁，光带还在屏幕上飘着，**玩家已经可以出牌了**；
@@ -159,6 +160,19 @@ AP        = min(8, 2 + 敏捷 / 2)
   - 素材缺失（新物种还没导图）时**安静跳过**，不留破图。
   想调就改 `src/ui/battle-view.js` 的 `PACE.turnSweep / turnArtLead / turnArtIn / turnArtHold / turnArtOut`，
   起始倍数在 `src/core/gen9.js` 的 `ART_FROM_SCALE`，立绘大小在 `style.css` 的 `--tart-h`。
+- **遭遇演出**（`src/ui/encounter.js`，从地图踏进战斗之间那 ~1.9 秒）：
+  黑幕**从第一帧起就盖住整个屏幕**，我方**背面立绘**从右边非线性划到**左下**、
+  敌人的**正面立绘**从左滑到**右上**（两只错开，不在同一条水平线上）；
+  一条黑底 + 主题色的**横线跟着敌人的正面图**铺过来（右端逐帧贴着它的中线，纵向对齐它的中腰）；
+  双双停留一小会，然后一起滑出屏幕、进战斗。敌人的立绘旁边写着大号名字与档位标注。
+  三个附带的设计点：
+  - 用的是**回合立绘**（和上面那套同一份素材），不是战斗场地上的 PMD 行走图；
+  - 停留那一小会**不是纯装饰**：战斗要用的 26 个音效（约 2.9 MB）和这一场的 BGM
+    在这段时间里**预载 + 解码**完 —— 否则每个音效第一次响都要先等一次下载 + 解码，
+    听感上就是「点下第一张卡，挥剑声慢半拍」（线上实测冷启动 2865ms，本地 39ms）；
+  - 只在**真的从地图走过去撞见**的战斗里出现（`game.battleEntry === 'map'`）：
+    `?scene=` 与其余诊断脚本都是直接进战斗，中间插 1.7 秒过场会把它们全打乱。
+    想强行开关用 `?enc=1` / `?enc=0`。
 - **敏捷到底影响什么，界面上直接写着**：`敏捷` 管的是**一回合的三项预算** ——
   行动点 `2 + 敏捷÷2`（上限 8）、每回合抽牌 `3 + 敏捷÷5`（上限 8）、
   出牌上限 `3 + 敏捷÷2`（上限 9）。这三项以前只有悬停里一句「都看它」，
@@ -316,7 +330,7 @@ src/
     hud.js                 顶部状态栏
     cards.js               卡牌渲染（图标表来自 src/data/cards.js 的生成区块）
     battle-view.js         战斗演出（事件流 → 动画）
-    encounter.js           遭遇演出：地图 → 战斗之间的过场（划入 + 横线盖屏 + 停留时预载战斗资源）
+    encounter.js           遭遇演出：地图 → 战斗之间的过场（黑幕满屏 + 两只立绘错开划入 + 停留时预载战斗资源）
     screens.js             标题/地图/事件/宝箱/商店/营地/奖励/结算
     overlays.js            卡组、背包、帮助、设置弹窗
     dom.js                 DOM 小工具
@@ -327,7 +341,8 @@ assets/
   img/{icons,cards,fx,ui,frame}/          图标与特效素材（icons/pack/*.svg 来自 Game-Icon-Pack，其余来自 Kenney）
   audio/sfx/                              界面提示音（Kenney，ogg）
   audio/pansound/                         战斗与事件音效（PANICPUMPKIN，wav）
-  fonts/LXGWNeoXiHeiPlus.ttf              游戏字体
+  fonts/LXGWNeoXiHeiPlus.ttf              兜底字体（完整字库）
+  fonts/*-subset.woff2                     正文 / 粗体 / 手写体三套子集（tools/subset-fonts.mjs 生成）
   audio/bgm/                              BGM（音楽の卵，23 首 ogg(L)，按地图分曲、无缝循环）
   portraits/<slug>/<Emotion>.png          表情头像（SpriteCollab，每物种 16 种表情）
   gen9/<slug>/{front,back}.png            回合切换立绘（Generation 9 Pack，已裁到包围盒；84 只 × 2 张共 210 KB）
@@ -374,13 +389,13 @@ node tools/bundle.mjs           # ③ 重新打包单文件
 | --- | --- | --- |
 | 宝可梦精灵图 | PMDCollab/SpriteCollab | 由 `tools/fetch_sprites.ps1` 下载，署名见仓库 `credits.txt` |
 | 宝可梦表情头像 | PMDCollab/SpriteCollab（`portrait/`） | 由 `tools/fetch-portraits.ps1` 下载，每个物种 16 种表情 |
-| 回合切换立绘（正 / 背面） | **Generation 9 Pack v3.3.7**（用户提供的 rar） | 由 `tools/import-gen9.mjs` 从 `Graphics/Pokemon/{Front,Back}` 里挑出本作的 84 只，裁到包围盒后存成 `assets/gen9/`（168 张共 210 KB）；**原始 rar 不进仓库**（`.gitignore` 里挡了 `*.rar`） |
+| 回合切换立绘（正 / 背面） | **Generation 9 Pack v3.3.7**（用户提供的 rar） | 由 `tools/import-gen9.mjs` 从 `Graphics/Pokemon/{Front,Back}` 里挑出本作的 96 只，裁到包围盒后存成 `assets/gen9/`（192 张共 257 KB）；**原始 rar 不进仓库**（`.gitignore` 里挡了 `*.rar`）。遭遇演出也用这套立绘 |
 | 界面图标 / 桌游图标 / 面板 / 粒子 | 工作区里的 Kenney 素材包 | 由 `tools/copy-kenney.mjs` 挑选复制，CC0 |
 | 卡牌与界面图标（101 个） | [Nieobie/Game-Icon-Pack](https://github.com/Nieobie/game-icon-pack)（另有 Kenney 那批） | 由 `tools/fetch-iconpack.ps1` 下载，**CC0 1.0**（815 个圆角图标，见下方「图标是怎么来的」） |
 | 界面提示音 | Kenney 素材包 | `assets/audio/sfx/` |
 | 战斗与事件音效 | [PANICPUMPKIN](https://www.pansound.com/panicpumpkin/music/se.html) | 由 `tools/fetch-sfx-pansound.ps1` 下载，31 个 wav |
 | BGM（23 首，ogg(L) 无缝循环版） | [音楽の卵 (ontama-m.com)](https://ontama-m.com/) | 由 `tools/fetch-bgm.ps1` 下载，见下方曲目表 |
-| 字体 | LXGW Neo XiHei Plus（霞鹜新晰黑 Plus） | `assets/fonts/LXGWNeoXiHeiPlus.ttf`，用户提供 |
+| 字体 | SGHr（正文）/ 文源宋体粗（卡名·商店名）/ 851Lakeus 手写（旁白·对白）/ LXGW Neo XiHei Plus（兜底） | `assets/fonts/`，前三套是用户提供的原始字体裁出来的子集（`tools/subset-fonts.mjs`） |
 | 数值与招式命名 | 52poke 神奇宝贝百科 | 如「地震」威力 100、「羽栖」「龙爪」等 |
 
 ### 回合切换立绘（Generation 9 Pack）
@@ -392,7 +407,7 @@ node tools/bundle.mjs           # ③ 重新打包单文件
 # 1) 把包里那两个目录解到临时目录（Bandizip 的命令行工具 bz.exe）
 & 'D:\Program Files\bandizip\bz.exe' x -y -o:"$env:TEMP\gen9x" 'Generation 9 Pack v3.3.7.rar' `
     'Graphics\Pokemon\Front\*' 'Graphics\Pokemon\Back\*'
-# 2) 挑出本作用的 84 只、裁到可见内容的包围盒、写出 assets/gen9/ 与 src/data/gen9.js
+# 2) 挑出本作用的 96 只、裁到可见内容的包围盒、写出 assets/gen9/ 与 src/data/gen9.js
 node tools/import-gen9.mjs
 # 3) 重新打包（单文件版会把 168 张图内联成 window.__OASIS_GEN9__）
 node tools/bundle.mjs
@@ -455,12 +470,34 @@ node tools/bundle.mjs
 
 ### 字体
 
-`assets/fonts/LXGWNeoXiHeiPlus.ttf`（8.5 MB）通过 `@font-face` 引入，
-`--font-game` 与 `--font-title` 都以它为首选，后面跟系统字体与衬线兜底。
+四套字体，按用途分工（都在 style.css 顶部声明 `@font-face`）：
 
-打包时字体会内联成 data URI，所以 `oasis-game.html` 因此长到 ~15 MB。
+| 变量 | 字体 | 用在哪 |
+| --- | --- | --- |
+| `--font-body` | `SGHr-Regular-subset.woff2` | 正文：卡面描述、数值、日志、按钮… |
+| `--font-bold` | `WenYuanSerifSC-Bold-subset.woff2` | 需要粗体的地方：卡名、商店名、面板标题、遭遇演出里的怪名 |
+| `--font-hand` | `851LakeusNightWriting-subset.woff2` | 手写体：事件旁白、商人对白、结算文案、标题页旁白 |
+| （兜底） | `LXGWNeoXiHeiPlus.ttf`（8.5 MB） | 上面三套**子集里没有的字**由它接住 |
+
+后三套是从仓库根目录那三份**原始字体**裁出来的子集 —— 原始文件加起来 46 MB
+（SGHr 3.9 / 文源宋体粗 14.5 / 851Lakeus 手写 27.5），直接内联进单文件构建会让
+`oasis-game.html` 从 22 MB 涨到 80 MB 以上。裁完之后合计 **1.4 MB**：
+
+```powershell
+python -m pip install fonttools brotli     # 只需要一次
+node tools/subset-fonts.mjs                # 生成 assets/fonts/*-subset.woff2
+```
+
+裁的依据是「游戏可能显示出来的每一个字」：`content/*.json`、`src/**/*.js`、`index.html`
+里出现的所有字符，再补上 ASCII 与常用中文标点。**内容改了（加新卡、新事件）要重跑一次**，
+否则新文案里可能有字落到兜底字体上（不会出方块，但两套字体会混着显示）。
+原始文件在 `.gitignore` 里（和 Kenney 素材包、Generation 9 的 rar 一样：
+只用来生成，运行时读的是 `assets/fonts/` 里的成品）。
+
+打包时字体会内联成 data URI（woff2 按 `font/woff2` 声明 —— 写成 `font/ttf` 浏览器会静默拒收），
+所以 `oasis-game.html` 因此长到 ~24 MB。
 **如果不想要这么大的单文件**，把 `tools/bundle.mjs` 里「字体内联」那一段删掉，
-重新打包就回到 ~3.4 MB（离线版会用系统字体）。
+重新打包就回到 ~12 MB（离线版会用系统字体）。
 
 ### 精灵图的朝向行序（踩过的坑）
 
@@ -619,7 +656,8 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `ab-deck.mjs` | **配对 A/B**：同一颗种子、同一副随机卡组，只改「带进战斗的牌」（全部卡牌 vs `defaultBattleDeck()` 挑的那 14 张），量卡组规模对战力的影响（40 对/档：带全部卡强 15~22 个百分点） |
 | `diag-loop.js` | 连招诊断（`?dgloop=1`）：在真实界面里量「小卡组一回合能打几张、打掉多少 HP、单次出牌耗时、连按数字键会不会刷牌」，用来复现「无限循环」这类问题 |
 | `diag-dodge.js` | 闪避诊断（`?dgdodge=1`）：把双方幸运拉满（闪避率顶到上限）+ 敌人血量拉到 99999，逐张出牌并逐条事件记录状态，专门回答「是不是闪避把界面卡住了」 |
-| `diag-encounter.js` | 遭遇演出诊断（`?dgenc=1`，25 项断言，**真实时间**跑）：从地图踏进战斗的那段过场。逐条验收用户点名的效果 —— 我方**背影**（`DIR.UP` 那一行）从右往左、敌人**正面图**（`DIR.DOWN`）从左往右、**非线性**（前半段时间要走完 >60% 路程，匀速正好 50%）、那条黑底 + 主题色的**横线右端始终贴着敌人立绘的中线**（现量现比，最大偏差 ≤3px 才算「跟着」）、立绘旁边的大号名字与档位标注、双双停留时两只一动不动的漂移量、滑出屏幕。另外还验收两件看不见的事：**停留结束时 25 个战斗音效必须已经解码好**（`audio.warmed()`，而不是「排上了队」—— 这是「音效慢半拍」那条反馈的正题），以及连打两场不会漏掉行走图的 `setInterval`（`sprites.liveAnimCount()`）。反向测试：真打一场，把 `audio.playedNames()` 和 `BATTLE_SFX` 对一遍，谁往战斗里加了新音效却忘了登记就会红。`?dgenc=shot&at=hold\|in-mid` 把演出钉在某一帧给 `shot.mjs ... motion=1` 截图 |
+| `diag-encounter.js` | 遭遇演出诊断（`?dgenc=1`，30 项断言，**真实时间**跑）：从地图踏进战斗的那段过场。逐条验收用户点名的效果 —— **黑幕从第一帧起就盖住整个屏幕**（不留一角给地图）、两只立绘**错开**（敌人正面图在右上、我方背影在左下，垂直间距 ≥ 视口高的 25%）、用的是**回合立绘**（gen9 的 front/back 图，不是 PMD 行走图）、立绘旁边的大号名字与档位标注、**非线性**（前半段时间要走完 >60% 路程，匀速正好 50%）、那条黑底 + 主题色的**横线右端始终贴着敌人立绘的中线**（进屏后逐帧现量现比，最大偏差 ≤3px 才算「跟着」；纵向也对齐它的中腰而不是屏幕正中）、双双停留时两只一动不动的漂移量、滑出屏幕。另外还验收两件看不见的事：**停留结束时 25 个战斗音效必须已经解码好**（`audio.warmed()`，而不是「排上了队」—— 这是「音效慢半拍」那条反馈的正题），以及连打两场不会漏掉行走图的 `setInterval`（`sprites.liveAnimCount()`）。反向测试：真打一场，把 `audio.playedNames()` 和 `BATTLE_SFX` 对一遍，谁往战斗里加了新音效却忘了登记就会红。`?dgenc=shot&at=hold\|in-mid` 把演出钉在某一帧给 `shot.mjs ... motion=1` 截图；`?dgenc=cold` 只量「26 个战斗音效冷启动要多久」（本地 39ms，线上走网络 2865ms） |
+| `subset-fonts.mjs` | 把仓库根目录那三份原始字体按「游戏实际用到的字」裁成子集（`python -m fontTools.subset` + brotli），46 MB → 1.4 MB 写进 `assets/fonts/`。加完新卡 / 新事件要重跑 |
 | `diag-stuck.js` | 卡死诊断（`?dgstuck=1`）：**主动制造**五种「打不出卡」的情形（演出链卡死 20 秒 / 收尾抛异常 / 出牌次数用完 / AP 不够 / 对手行动中），验证看门狗能自己爬出来、且每种情形都给玩家一句原因 |
 | `tune-curve.mjs` | **难度曲线调参**：按「档位 × 章节」二分搜索敌人 HP，使实测胜率逼近脚本顶部的目标曲线（`--write` 才写进 `balance.js`） |
 | `diag-enemydeck.mjs` | 逐回合打印敌人的手牌/牌堆/销毁堆 + 「一张伤害牌都没放」的回合数，用来查「敌人打到后面没牌可打」（`node tools/diag-enemydeck.mjs 5 3 boss`） |
@@ -641,7 +679,7 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `diag-help.js` | 玩法说明文案诊断（`?dghelp=1`，**30 项断言**）：说明页里的百分比必须等于 `BALANCE` 的现值（营地 / 战后 / 首领前）、章节数等于 `stageCount()`、四个上限与暴击倍率取自 `BALANCE`、旧文案（三章 / 35% / 4% / 出战选择 / 流血）彻底消失、快捷键补齐、状态名与 `STATUS_INFO` 一致、新增的「道具与背包」一节在。`?dghelp=shot` 留在屏幕上给 `shot.mjs` 截图 |
 | `probe-portrait-colors.mjs` | 把某种宝可梦 16 张表情头像的**底色**量出来（自带 PNG 解码），回答「用户说的『那个黄底的』到底是哪一张」—— 实测黄底是 `Happy` / `Joyous`，`Inspired` 是淡黄 |
 | `probe-ui-facts.mjs` | 一次性对账工具：把「UI 文案里会写到的每个数字」从 `BALANCE` / `stageCount()` / 卡牌数据里现查一遍（续航百分比、四个上限、状态定义、回复与护盾类卡牌的实际数值），改说明页之前先跑它 |
-| `import-gen9.mjs` | 从 Generation 9 Pack 的 rar 解包里挑出本作 84 只宝可梦的正面 / 背面立绘 → `assets/gen9/<slug>/{front,back}.png`（自带 PNG 解码 / 包围盒裁切 / PNG 编码），并生成 `src/data/gen9.js`（宽高 + 原画布 + 包围盒）。原始 rar 不进仓库 |
+| `import-gen9.mjs` | 从 Generation 9 Pack 的 rar 解包里挑出本作 96 只宝可梦的正面 / 背面立绘 → `assets/gen9/<slug>/{front,back}.png`（自带 PNG 解码 / 包围盒裁切 / PNG 编码），并生成 `src/data/gen9.js`（宽高 + 原画布 + 包围盒）。原始 rar 不进仓库 |
 | `fetch-sfx-pansound.ps1` | 从 PANICPUMPKIN 下载战斗音效（读 `tools/sfx-tracks.json`） |
 | `find-dsymphony-track.mjs` | 在 d-symphony 页面里定位某首曲子的下载链接 |
 | `serve.mjs` | 本地静态服务器（`play.cmd` 调的就是它）：端口被占自动换、自动开浏览器、启动前查素材 |

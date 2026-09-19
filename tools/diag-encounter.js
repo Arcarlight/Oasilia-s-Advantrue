@@ -1,22 +1,28 @@
 // 诊断：遭遇演出（地图 → 战斗的过场）到底演成什么样了（?dgenc=1）
 //
-// 用户的要求原话：
+// 用户的要求原话（两轮）：
 //   「我方背影的贴图从右方非线性划到左边，同时敌人的正面图非线性从左滑到右，
 //     同时一条黑色的带主题色的横线跟随正面图将屏幕遮盖，双双停留一小会，
 //     随后滑出屏幕进入战斗。」
 //   「敌人出现的时候可以在其立绘旁边写名字（大号）和野生、强敌等标注。」
 //   「停留的时候可以进行资源预加载。这样是否能防止战斗中因为音效加载较慢而出现的
 //     音效播放较慢的情况？」
+//   「我所希望的是这样错开的，并且我表示的立绘是放在表示回合数旁边的那个立绘，
+//     而不是精灵图。我希望黑幕能遮挡住整个屏幕。」
 //
-// 这份诊断就是逐条把这些变成能失败的断言 —— 尤其是两个光看截图看不出来的点：
-//   ① 「跟随正面图」：横线的右端必须和敌人立绘的中线贴着（差几像素就看得出来没跟着）
-//   ② 「非线性」：前半段走完的路程必须明显超过一半（线性的话正好是一半）
-//   ③ 预载：停留结束时这批音效必须**已经解码好**（而不是「排上了队」）
+// 这份诊断就是逐条把这些变成能失败的断言 —— 尤其是几个光看截图看不出来的点：
+//   ① 黑幕必须**从第一个采样点起**就是满屏且不透明（「遮挡住整个屏幕」）
+//   ② 两只立绘必须**错开**：一个在视口上半、一个在下半，垂直间距够大
+//   ③ 用的是**回合立绘**（gen9 正/背面图）而不是 PMD 行走图
+//   ④ 「跟随正面图」：横线的右端必须和敌人立绘的中线贴着（差几像素就看得出来没跟着）
+//   ⑤ 「非线性」：前半段走完的路程必须明显超过一半（线性的话正好是一半）
+//   ⑥ 预载：停留结束时这批音效必须**已经解码好**（而不是「排上了队」）
 //
 // 采样是在外面看着 DOM 记时间线，而不是往被测量的代码里插桩 —— 那样测的是插桩后的东西。
 //
 // 由 tools/diag2.mjs 通过 ?dgenc=1 加载（真实时间：rt）。
-// ?dgenc=shot&at=hold|in-mid 则把演出钉在某一帧不动，给 tools/shot.mjs 截图用。
+// ?dgenc=shot&at=hold|in-mid 把演出钉在某一帧不动，给 tools/shot.mjs 截图用；
+// ?dgenc=cold 只量「26 个战斗音效冷启动要多久」（音效慢半拍那条反馈的正题）。
 (async () => {
   const log = (...a) => console.log('[d2]', ...a);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -37,7 +43,8 @@
     const game = window.__oasis;
     const ui = window.__oasisUI;
     const { audio, BATTLE_SFX, ENCOUNTER_SFX } = await import('../src/core/audio.js');
-    const { DIR, liveAnimCount, createAnim, frameCoverage } = await import('../src/core/sprites.js');
+    const { liveAnimCount, createAnim, DIR } = await import('../src/core/sprites.js');
+    const { turnArt } = await import('../src/core/gen9.js');
     const { TIERS } = await import('../src/data/enemies.js');
     const enc = await import('../src/ui/encounter.js');
     const { encounterDebug } = enc;
@@ -51,7 +58,7 @@
     // 这就是「音效慢半拍」的原始成本：play() 是 fetch → decodeAudioData → start，
     // 所以每个音效第一次响都要先付这笔钱。遭遇演出在停留阶段把它付掉了。
     // 本地服务器没有网络延迟，量到的是**解码**那部分的底噪；
-    // 想量真实的网络成本就对线上站点跑：?dgenc=cold（加代理）
+    // 想量真实的网络成本就对线上站点跑：?dgenc=cold（加 D2_PROXY）
     if (params.get('dgenc') === 'cold') {
       const names = [...BATTLE_SFX, ...ENCOUNTER_SFX];
       const t0 = performance.now();
@@ -126,33 +133,41 @@
       '标题 ↔ 地图来回切两轮，不会积累游离的动画定时器',
       `${nChurn0} → ${nChurn1}`);
 
-    // 起点：这一刻还没人预载过任何音效（下面用来证明「预载是这场演出做的」）
     const warmBefore = (await audio.warmed()).length;
     ok(warmBefore === 0, '演出前没有任何音效被预载过（后面全靠这场演出）', `已解码 ${warmBefore} 个`);
 
-    // ---- 采样：把「谁在哪 / 幕布多大 / 预载好了几个」按时间记下来 ----
+    // ---- 采样：把「谁在哪 / 黑幕多大 / 预载好了几个」按时间记下来 ----
     const liveBefore = liveAnimCount();
     const domBefore = document.querySelectorAll('canvas.anim').length;
     const samples = [];
     let sampling = true;
     const t0 = performance.now();
+    const box = (node) => {
+      if (!node) return null;
+      const r = node.getBoundingClientRect();
+      return { left: r.left, top: r.top, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+    };
     const sampler = (async () => {
       while (sampling) {
         const root = document.querySelector('.encounter');
         if (!root) { if (samples.length) break; }
         else {
-          const band = root.querySelector('.enc-band');
-          const player = root.querySelector('.enc-player');
-          const enemyC = root.querySelector('.enc-enemy canvas');
-          if (band && player) {
-            const br = band.getBoundingClientRect();
-            const pr = player.getBoundingClientRect();
-            const er = enemyC ? enemyC.getBoundingClientRect() : null;
+          const curtain = root.querySelector('.enc-curtain');
+          const line = root.querySelector('.enc-line');
+          const enemyArt = root.querySelector('.enc-enemy .enc-art');
+          const playerArt = root.querySelector('.enc-player .enc-art');
+          if (curtain && line) {
+            const c = box(curtain);
+            const l = box(line);
+            const e = box(enemyArt);
+            const p = box(playerArt);
             samples.push({
               t: Math.round(performance.now() - t0),
-              bandLeft: br.left, bandW: br.width, bandH: br.height,
-              playerX: pr.left,
-              enemyCx: er ? er.left + er.width / 2 : null,
+              phase: root.dataset.phase ?? '',
+              curtainLeft: c.left, curtainW: c.w, curtainH: c.h,
+              curtainOpacity: parseFloat(getComputedStyle(curtain).opacity),
+              lineW: l.w, lineTop: l.top + l.h / 2,
+              enemy: e, player: p,
               warm: (await audio.warmed()).length,
             });
           }
@@ -167,8 +182,8 @@
     game.startBattle('elite', 0, 'map');
     const enemyName = game.battle?.enemy?.name;
     const enemyTier = game.battle?.enemy?.tier;
+    const enemySlug = game.battle?.enemy?.slug;
     await wait(60);
-    const liveDuring = liveAnimCount();
     ok(game.battleEntry === 'map', '这一场的 battleEntry = map', String(game.battleEntry));
 
     // 立绘 + 名字标注（趁演出还在场的时候查）
@@ -177,128 +192,133 @@
     if (root) {
       const nameEl = root.querySelector('.enc-name');
       const tierEl = root.querySelector('.enc-tier');
-      const pCanvas = root.querySelector('.enc-player canvas');
-      const eCanvas = root.querySelector('.enc-enemy canvas');
+      const eImg = root.querySelector('.enc-enemy .enc-art');
+      const pImg = root.querySelector('.enc-player .enc-art');
       ok(nameEl?.textContent === enemyName, '敌人立绘旁边写着大号名字', `「${nameEl?.textContent}」 vs 敌人 ${enemyName}`);
       ok(tierEl?.textContent === (TIERS[enemyTier]?.name ?? ''),
         '档位标注（野生 / 较强 / 精英 / 首领）和敌人数据一致', `「${tierEl?.textContent}」 vs TIERS.${enemyTier}.name`);
-      ok(!!pCanvas && pCanvas.dirRow === DIR.UP,
-        '我方用的是 UP 那一行 = 背对镜头的**背影**', `dirRow=${pCanvas?.dirRow}（UP=${DIR.UP}）`);
-      ok(!!eCanvas && eCanvas.dirRow === DIR.DOWN,
-        '敌人用的是 DOWN 那一行 = 正对镜头的**正面图**', `dirRow=${eCanvas?.dirRow}（DOWN=${DIR.DOWN}）`);
-
-      // 立绘尺寸：必须**趁演出还在场上**量 —— 元素一旦从 DOM 上摘掉，
-      // getBoundingClientRect 一律返回 0×0（第一版就是这个原因误报成「0×0 迷你图」）。
-      // 尺寸得是按视口算出来的，不是兜底值：写死缩放会让某些物种巨大、某些迷你（帧高各物种不同）。
-      const sz = (sel) => {
-        const c = root.querySelector(sel);
-        if (!c) return null;
-        const r = c.getBoundingClientRect();
-        return { w: Math.round(r.width), h: Math.round(r.height) };
-      };
-      const pSize = sz('.enc-player canvas');
-      const eSize = sz('.enc-enemy canvas');
-      // 帧里的透明留白：缩放是按「有画面的那块」算的（见 sprites.js 的 frameCoverage），
-      // 所以这里同时报出「画布多大」和「留白比例」，一眼能看出补偿有没有生效
-      const cov = await frameCoverage(game.data.slug, 'Idle', DIR.UP).catch(() => null);
-      log(`  立绘渲染尺寸：我方背影 ${pSize?.w}×${pSize?.h}px · 敌人正面图 ${eSize?.w}×${eSize?.h}px（视口高 ${window.innerHeight}）`);
-      log(`  帧内留白：我方背影的画布有画面的部分只占 ${((cov?.sw ?? 1) * 100).toFixed(0)}% × ${((cov?.sh ?? 1) * 100).toFixed(0)}% —— 缩放已经把这部分补回来`);
-      ok(pSize && pSize.h >= window.innerHeight * 0.18, '我方背影有存在感（不是兜底的迷你图）', `高 ${pSize?.h}px`);
-      ok(eSize && eSize.h >= window.innerHeight * 0.15, '敌人正面图有存在感', `高 ${eSize?.h}px`);
+      // 「立绘而不是精灵图」：用的是 Generation 9 的正面/背面图（回合数旁边那种）
+      const eWant = turnArt(enemySlug, 'front');
+      const pWant = turnArt(game.data.slug, 'back');
+      ok(!!eImg && eImg.tagName === 'IMG' && eImg.getAttribute('src') === eWant?.url,
+        '敌人用的是**正面立绘**（gen9 front，不是 PMD 行走图）', `src=${String(eImg?.getAttribute('src')).slice(-42)}`);
+      ok(!!pImg && pImg.tagName === 'IMG' && pImg.getAttribute('src') === pWant?.url,
+        '我方用的是**背面立绘**（gen9 back）', `src=${String(pImg?.getAttribute('src')).slice(-42)}`);
+      ok(root.querySelectorAll('canvas').length === 0,
+        '这一屏里没有行走图 canvas（立绘和精灵图是两套素材，别混用）');
+      // 名字用的是粗体那一套字体（卡名 / 商店名 / 怪名同族）
+      ok(!!nameEl && getComputedStyle(nameEl).fontFamily.includes('Oasis Bold'),
+        '大号名字用的是粗体字体', getComputedStyle(nameEl).fontFamily.split(',')[0]);
+      // 立绘得真的加载出来了（宽高非 0；naturalWidth 非 0 才说明图真在）
+      const pRect = box(pImg);
+      const eRect = box(eImg);
+      log(`  立绘渲染尺寸：我方背影 ${Math.round(pRect?.w ?? 0)}×${Math.round(pRect?.h ?? 0)}px · 敌人正面图 ${Math.round(eRect?.w ?? 0)}×${Math.round(eRect?.h ?? 0)}px（视口 ${window.innerWidth}×${window.innerHeight}）`);
+      ok(pRect && pRect.h >= window.innerHeight * 0.2, '我方背影有存在感（不是兜底的迷你图）', `高 ${Math.round(pRect?.h ?? 0)}px`);
+      ok(eRect && eRect.h >= window.innerHeight * 0.16, '敌人正面图有存在感', `高 ${Math.round(eRect?.h ?? 0)}px`);
     }
 
     // 等演出走完、战斗界面挂上
     const mounted = await until(() => ui.battleScreen?.mounted === true, 20000);
-    // 挂载是在「幕布盖满」那一刻发生的 —— 后面还有停留和退场，所以还要等幕布真的被摘掉
+    // 挂载是在「黑幕盖满」那一刻发生的 —— 后面还有停留和退场，所以还要等黑幕真的被摘掉
     const gone = await until(() => !document.querySelector('.encounter'), 10000);
     await wait(200);
     sampling = false;
     await sampler;
     const liveAfter = liveAnimCount();
-    ok(mounted, '演出结束后战斗界面挂载完成（幕布掀开时战斗画面已经就位）');
-    ok(gone, '演出收场了（幕布层从 DOM 上摘掉了）');
+    ok(mounted, '演出结束后战斗界面挂载完成（黑幕掀开时战斗画面已经就位）');
+    ok(gone, '演出收场了（黑幕层从 DOM 上摘掉了）');
     ok(samples.length > 8, '采样到了足够的时间线', `${samples.length} 个采样点，覆盖 ${samples.at(-1)?.t ?? 0}ms`);
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const docW = document.documentElement.clientWidth;
-    const docH = document.documentElement.clientHeight;
-    log(`  视口：inner ${vw}×${vh} · documentElement ${docW}×${docH} · 截图用的是窗口尺寸（无头下这两者会差一圈）`);
 
-    // ---- 阶段切分（按幕布的宽高来分，不靠时间猜） ----
-    // ① 划入：幕布还是一条线（高度 ≈ 8px）但已经在长（宽度 > 5）
-    const slide = samples.filter((s) => s.bandH < 14 && s.bandW > 5 && s.enemyCx != null);
-    // ② 停留：幕布满屏、而且还没开始平移
-    const hold = samples.filter((s) => s.bandW >= vw - 3 && s.bandH >= vh - 3 && s.bandLeft < 1);
-    // ③ 退场：幕布开始往右平移
-    const exit = samples.filter((s) => s.bandLeft > 2 && s.bandW >= vw - 3);
+    // ---- ① 黑幕：从第一个采样点起就满屏 + 不透明 ----
+    const first = samples.find((s) => s.curtainW > 0);
+    ok(!!first && first.curtainW >= vw - 3 && first.curtainH >= vh - 3 && first.curtainOpacity >= 0.99,
+      '黑幕**从第一帧起**就盖住整个屏幕（不留任何一角给地图）',
+      first ? `第一个采样点(${first.t}ms)：${Math.round(first.curtainW)}×${Math.round(first.curtainH)}，不透明度 ${first.curtainOpacity}` : '（没采到）');
+    ok(samples.every((s) => s.curtainW >= vw - 3 && s.curtainH >= vh - 3),
+      '整场演出里黑幕始终是满屏的（不会中途缩回去）',
+      `共 ${samples.length} 个采样点`);
 
-    log(`  阶段采样：划入 ${slide.length} 点 · 停留 ${hold.length} 点 · 退场 ${exit.length} 点（视口 ${vw}×${vh}）`);
-    ok(slide.length >= 4, '① 划入阶段被采到了');
-    ok(hold.length >= 4, '② 满屏停留阶段被采到了');
-    ok(exit.length >= 2, '③ 滑出屏幕阶段被采到了');
+    // ---- ② 错开站位 ----
+    // 阶段直接用演出自己写在 data-phase 上的标记来切分（靠「线多宽」猜会误判：
+    // 补满阶段线也是一点点变宽的，和划入长得一样）
+    const byPhase = (p) => samples.filter((s) => s.phase === p && s.enemy && s.player);
+    const slide = byPhase('in');
+    const hold = byPhase('hold');
+    const exit = byPhase('out');
+    log(`  阶段采样：划入 ${slide.length} 点 · 补满+停留 ${hold.length} 点 · 退场 ${exit.length} 点`);
+    ok(slide.length >= 4 && hold.length >= 4 && exit.length >= 2, '三个阶段都被采到了');
 
-    // ---- 「横线跟随正面图」：横线右端 == 敌人立绘中线 ----
-    const gaps = slide.map((s) => Math.abs(s.bandW - s.enemyCx));
+    if (hold.length) {
+      const h = hold[Math.floor(hold.length / 2)];
+      const gap = h.player.cy - h.enemy.cy;
+      ok(h.enemy.cy < vh * 0.5 && h.player.cy > vh * 0.5,
+        '两只立绘**错开**站位：敌人正面图在上半屏、我方背影在下半屏',
+        `敌人中线 ${Math.round(h.enemy.cy)}（${(h.enemy.cy / vh * 100).toFixed(0)}%）· 我方 ${Math.round(h.player.cy)}（${(h.player.cy / vh * 100).toFixed(0)}%）`);
+      ok(gap >= vh * 0.25, '错开的幅度够大（两只不会挤在同一条水平线上）', `垂直间距 ${Math.round(gap)}px（视口高的 ${(gap / vh * 100).toFixed(0)}%）`);
+      ok(h.enemy.cx > vw * 0.5 && h.player.cx < vw * 0.5,
+        '水平方向也对角：敌人在右、我方在左',
+        `${Math.round(h.player.cx)} / ${Math.round(h.enemy.cx)}（视口宽 ${vw}）`);
+    }
+
+    // ---- ③ 「横线跟随正面图」：划入阶段里横线右端 == 敌人立绘中线 ----
+    // 两个前提：
+    //   · 补满阶段线本来就要跑在敌人前面把它拉到屏幕另一头，那一段不算「跟随」；
+    //   · 敌人还在屏幕外时它中线是负的，而线的宽度只能是 0（浏览器不接受负宽度），
+    //     这一段也没法「贴」——从它踏进屏幕那一刻开始比才有意义。
+    const onScreen = slide.filter((s) => s.enemy.cx > 2);
+    const gaps = onScreen.map((s) => Math.abs(s.lineW - s.enemy.cx));
     const worst = gaps.length ? Math.max(...gaps) : 999;
-    ok(gaps.length > 0 && worst <= 3,
+    ok(gaps.length > 3 && worst <= 3,
       '横线的右端始终贴着敌人立绘的中线（「跟随正面图」）',
-      `最大偏差 ${worst.toFixed(1)}px（取整误差，>3px 就是没跟着）`);
+      `进屏后 ${gaps.length} 个采样点，最大偏差 ${worst.toFixed(1)}px（取整误差，>3px 就是没跟着）`);
+    // 线的高度也要跟着上边那只，而不是钉在屏幕正中
+    const lineOffsets = hold.map((s) => Math.abs(s.lineTop - s.enemy.cy));
+    const worstY = lineOffsets.length ? Math.max(...lineOffsets) : 999;
+    ok(worstY <= 3, '横线的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
+      `最大偏差 ${worstY.toFixed(1)}px；敌人中线 ${Math.round(hold[0]?.enemy?.cy ?? 0)} vs 屏幕正中 ${Math.round(vh / 2)}`);
+    ok(hold.some((s) => s.lineW >= vw - 3), '横线最后铺满整幅宽度', `最宽 ${Math.round(Math.max(...samples.map((s) => s.lineW)))}px`);
 
-    // ---- 「非线性」：前半段时间里走完的路程要明显超过一半 ----
+    // ---- ④ 「非线性」：前半段时间里走完的路程要明显超过一半 ----
     if (slide.length >= 4) {
       const a = slide[0];
       const z = slide.at(-1);
-      const dist = a.playerX - z.playerX;                    // 往左走，正数
+      const dist = a.player.left - z.player.left;            // 往左走，正数
       const tMid = (a.t + z.t) / 2;
       const mid = slide.reduce((best, s) => (Math.abs(s.t - tMid) < Math.abs(best.t - tMid) ? s : best), a);
-      const frac = dist > 1 ? (a.playerX - mid.playerX) / dist : -1;
+      const frac = dist > 1 ? (a.player.left - mid.player.left) / dist : -1;
       ok(frac >= 0.6,
         '我方背影是**非线性**划入（前半段时间走完 >60% 路程；匀速的话正好 50%）',
         `前半段走了 ${(frac * 100).toFixed(0)}%，用时 ${mid.t - a.t}ms / 全程 ${z.t - a.t}ms`);
       ok(dist > 40, '我方背影确实横穿了屏幕（不是原地不动）', `位移 ${dist.toFixed(0)}px`);
     }
 
-    // ---- 「一条黑色的带主题色的横线…将屏幕遮盖」 ----
-    const lineSample = slide[0];
-    ok(lineSample && lineSample.bandH <= 12,
-      '起步时它是一条**横线**（还没张开）', `高 ${lineSample?.bandH.toFixed(1)}px`);
-    ok(hold.length > 0, '它最后张满整个屏幕（把屏幕遮盖）', `最大 ${Math.max(...samples.map((s) => s.bandW)).toFixed(0)}×${Math.max(...samples.map((s) => s.bandH)).toFixed(0)}px`);
-    // 幕布必须盖住的是「可视区」，不是别的什么东西：和 documentElement 的客户区比一遍
-    ok(Math.abs(Math.max(...samples.map((s) => s.bandW)) - docW) <= 2
-      && Math.abs(Math.max(...samples.map((s) => s.bandH)) - docH) <= 2,
-      '幕布的尺寸 == 可视区尺寸（不留缝，也不多盖）', `${Math.max(...samples.map((s) => s.bandW)).toFixed(0)}×${Math.max(...samples.map((s) => s.bandH)).toFixed(0)} vs ${docW}×${docH}`);
-
-    // 立绘尺寸在上面（演出还在场时）已经量过了
-
-    // ---- 「双双停留一小会」：停留期间两只都不许动 ----
+    // ---- ⑤ 「双双停留一小会」：停留期间两只都不许动 ----
     if (hold.length >= 3) {
-      const drift = (key) => {
-        const v = hold.map((s) => s[key]).filter((x) => x != null);
+      const drift = (get) => {
+        const v = hold.map(get).filter((x) => x != null);
         return Math.max(...v) - Math.min(...v);
       };
-      ok(drift('playerX') <= 1 && drift('enemyCx') <= 1,
+      ok(drift((s) => s.player.left) <= 1 && drift((s) => s.enemy.left) <= 1,
         '停留期间两只立绘一动不动（真的在「停」）',
-        `我方漂移 ${drift('playerX').toFixed(1)}px，敌方 ${drift('enemyCx').toFixed(1)}px，停留 ${hold.at(-1).t - hold[0].t}ms`);
+        `我方漂移 ${drift((s) => s.player.left).toFixed(1)}px，敌方 ${drift((s) => s.enemy.left).toFixed(1)}px，停留 ${hold.at(-1).t - hold[0].t}ms`);
     }
 
-    // ---- 预载：这是「音效慢半拍」那条反馈的正题 ----
-    const warmAtSlide = samples[0]?.warm ?? -1;
+    // ---- ⑥ 预载：这是「音效慢半拍」那条反馈的正题 ----
     const warmAtHoldEnd = hold.at(-1)?.warm ?? -1;
     const need = BATTLE_SFX.length;
     ok(warmAtHoldEnd >= need,
       `停留结束时 ${need} 个战斗音效**已经解码好**了（不是「排上了队」）`,
-      `已解码 ${warmAtHoldEnd} 个（演出刚开始时 ${warmAtSlide} 个 —— 是从 0 起的）`);
+      `已解码 ${warmAtHoldEnd} 个（演出刚开始时 ${samples[0]?.warm ?? 0} 个 —— 是从 0 起的）`);
     // 预载是并行发的，不能把入场动画拖慢
     const slideMs = slide.length >= 2 ? slide.at(-1).t - slide[0].t : -1;
     ok(slideMs > 0 && slideMs <= 900,
       '划入没有被并行的预载拖慢（2.9 MB 的音效在后台下载）', `划入实测 ${slideMs}ms`);
-    const warmedNow = await audio.warmed();
-    const missing = BATTLE_SFX.filter((n) => !warmedNow.includes(n));
-    ok(missing.length === 0, 'BATTLE_SFX 一个不漏', missing.length ? `缺 ${missing.join(', ')}` : `${warmedNow.length} 个就位`);
 
     // ---- 收场 ----
-    ok(document.querySelectorAll('.encounter').length === 0, '演出结束后幕布层被摘掉了（不会挡着战斗界面）');
+    ok(document.querySelectorAll('.encounter').length === 0, '演出结束后黑幕层被摘掉了（不会挡着战斗界面）');
     ok(!!document.querySelector('.battle-screen'), '战斗界面在场上');
     // 泄漏：演出前后各数一次「活着但不在 DOM 里的动画」——它们就是没人管的孤儿。
     // （元素摘出 DOM 不会停掉 setInterval，所以这种漏一定要显式 destroy。）
@@ -333,7 +353,7 @@
       '战斗里响过的音效全部在预载表 BATTLE_SFX 里（谁加了新音效却忘了登记，这里会红）',
       leaks.length ? `漏登记：${leaks.join(', ')}` : '全覆盖');
 
-    // ---- 三、再来一场：确认第二场也干净 ----
+    // ---- 三、再打一场：确认第二场也干净 ----
     log('=== 三、再打一场（动画定时器泄漏）===');
     const live1 = liveAnimCount();
     game.startBattle('elite', 0, 'map');
@@ -342,7 +362,7 @@
     await wait(400);
     const live2 = liveAnimCount();
     ok(live2 <= live1,
-      '第二场遭遇演出没有留下游离的动画定时器（createAnim 起的 setInterval 必须 destroy）',
+      '第二场遭遇演出没有留下游离的动画定时器',
       `第一场后 ${live1} 个，第二场后 ${live2} 个`);
 
     if (fails.length) log(`ENC_ERRORS=[${fails.join(' | ')}]`);

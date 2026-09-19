@@ -438,7 +438,7 @@
       "rarity": "uncommon",
       "targeting": "enemy",
       "art": "flask_half",
-      "text": "给对手 3 层剧毒（每回合流失「最大生命的 0.6% × 层数」，层数不衰减、每回合 +1）。",
+      "text": "给对手 3 层剧毒：每回合流失最大生命的 0.6%×层数，不衰减、每回合 +1。",
       "effects": [
         {
           "kind": "status",

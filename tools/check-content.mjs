@@ -93,6 +93,25 @@ if (missingSprites) {
 }
 
 /**
+ * 回合立绘（assets/gen9）也必须齐全 —— 每个物种的正面 + 背面。
+ *
+ * 起因：遭遇演出改成用**回合立绘**（用户点名「我表示的立绘是放在表示回合数旁边的那个立绘」），
+ * 而上一轮加的那 12 只强敌只有 PMD 行走图、没有立绘。那场演出对缺图是**静默降级**的
+ * （宁可少画一只也不出破图），所以缺了没人会发现 —— 只有门禁拦得住。
+ * 补图：tools/import-gen9.mjs（它读 content/species.json，所以加完物种直接跑它就行）。
+ */
+let missingArt = 0;
+for (const slug of speciesSlugs) {
+  for (const kind of ['front', 'back']) {
+    if (!(await exists(path.join(ROOT, 'assets', 'gen9', slug, kind + '.png')))) {
+      err(`缺少回合立绘 assets/gen9/${slug}/${kind}.png`);
+      missingArt++;
+    }
+  }
+}
+if (missingArt) warn('立绘缺失：先把 Generation 9 Pack 解到 %TEMP%\\gen9x，再跑 node tools/import-gen9.mjs');
+
+/**
  * 精灵表的切分必须和图片尺寸严丝合缝，而且 **Idle 至少要 8 帧**。
  *
  * 起因（玩家反馈）：「大针蜂的行走图有问题」—— 战斗里它显示成一堆小蜜蜂铺满屏幕。

@@ -6,6 +6,13 @@ kenney_*/
 # 工作区里那份没被任何代码引用的字体（游戏用的是 assets/fonts/LXGWNeoXiHeiPlus.ttf）
 森泽UD新黑 Gb4 R.otf
 
+# 三套新字体的**原始文件**（合计 46MB）：只用来「生成」assets/fonts/ 里按用到的字
+# 裁出来的子集（tools/subset-fonts.mjs），运行时读的是子集。
+# 不 ignore 的话 git add -A 会把 46MB 卷进仓库，而线上站点根本用不到它们。
+SGHr-Regular.ttf
+WenYuanSerifSC-Bold.ttf
+851LakeusNightWriting-Regular.ttf
+
 # Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，
 # 而且是从 %TEMP% 解包后由 tools/import-gen9.mjs 挑图，运行时完全不读它。
 # 顺手加一条 *.rar 兜住别的素材包，免得再被 git add -A 卷进仓库。

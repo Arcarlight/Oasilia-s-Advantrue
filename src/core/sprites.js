@@ -258,55 +258,6 @@ export function preloadAnim(slug, anim = 'Idle') {
   return loadSheet(slug, resolved.anim).catch(() => null);
 }
 
-/**
- * 一帧里「真正有画面的那块」占整帧多大（0~1），以及它在帧内的中心位置。
- *
- * 为什么要这个：精灵图的**帧尺寸包含透明留白**，而留白各物种差很多 ——
- * 沙漠蜻蜓 Idle 的帧是 32×72，但真正画着龙的那块只有约 30×28（其余全是透明）。
- * 于是「按帧高算缩放」的地方（遭遇演出）就会把留白也算进去：
- * 看上去怪兽只有屏幕高的 13%，明明写的是 40%。拿这个比例把留白补回来，
- * 「让它在屏幕上占 40% 高」才真的是 40%。
- *
- * @returns {Promise<{sw:number, sh:number, cx:number, cy:number}|null>}
- *   sw/sh = 内容宽/高 ÷ 帧宽/帧高；cx/cy = 内容中心在帧内的相对位置
- */
-export async function frameCoverage(slug, anim = 'Idle', dir = null) {
-  const resolved = resolveAnim(slug, anim);
-  if (!resolved) return null;
-  const img = await loadSheet(slug, resolved.anim).catch(() => null);
-  if (!img) return null;
-  const { fw, fh } = resolved.info;
-  const probe = document.createElement('canvas');
-  probe.width = fw;
-  probe.height = fh;
-  const pctx = probe.getContext('2d', { willReadFrequently: true });
-  // frameList 已经帮我们跳过了全透明的空白帧，取第一帧有内容的就够代表这个动作了
-  const frames = frameList(resolved.info, img, pctx, dir);
-  if (!frames.length) return null;
-  const f = frames[0];
-  pctx.clearRect(0, 0, fw, fh);
-  pctx.drawImage(img, f.x, f.y, fw, fh, 0, 0, fw, fh);
-  const data = pctx.getImageData(0, 0, fw, fh).data;
-  let x0 = fw; let y0 = fh; let x1 = -1; let y1 = -1;
-  for (let y = 0; y < fh; y++) {
-    for (let x = 0; x < fw; x++) {
-      if (data[(y * fw + x) * 4 + 3] > 8) {
-        if (x < x0) x0 = x;
-        if (x > x1) x1 = x;
-        if (y < y0) y0 = y;
-        if (y > y1) y1 = y;
-      }
-    }
-  }
-  if (x1 < 0) return null;
-  return {
-    sw: (x1 - x0 + 1) / fw,
-    sh: (y1 - y0 + 1) / fh,
-    cx: (x0 + x1 + 1) / 2 / fw,
-    cy: (y0 + y1 + 1) / 2 / fh,
-  };
-}
-
 /** 只取某一帧的静态封面（用于卡牌 / 图鉴 / 头像），返回 canvas */
 export async function createStill(slug, anim = 'Idle', scale = 2, frameIndex = 0, dir = DIR.DOWN) {
   const resolved = resolveAnim(slug, anim);

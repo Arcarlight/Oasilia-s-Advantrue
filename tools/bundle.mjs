@@ -151,17 +151,22 @@ let css = await fs.readFile(path.join(ROOT, 'src', 'ui', 'style.css'), 'utf8');
 css = css.replace(/\.\.\/\.\.\/assets\//g, 'assets/');
 
 // 字体也内联：file:// 下 CSS 里的 url() 会被拦掉，内联之后离线版也能用上自定义字体。
-// 字体文件挺大（8.5MB → base64 约 11MB），但只有这一处，换来的是「双击也能用对字体」。
+// 正文字体挺大（LXGW 8.5MB → base64 约 11MB），但只有这一处，换来的是「双击也能用对字体」。
+// 另外三套是**按用到的字裁过的子集**（tools/subset-fonts.mjs，合计约 1.4MB），
+// 不裁的话这三个加起来 46MB，光内联就 61MB。
 const FONT_RE = /url\((['"]?)(assets\/fonts\/[^'")]+)\1\)/g;
 for (const m of [...css.matchAll(FONT_RE)]) {
   const rel = m[2];
   try {
     const buf = await fs.readFile(path.join(ROOT, rel));
-    const uri = `data:font/ttf;base64,${buf.toString('base64')}`;
+    // MIME 跟着扩展名走：woff2 写成 font/ttf 的话浏览器会拒绝解析（静默不成字）
+    const ext = path.extname(rel).toLowerCase();
+    const mime = ext === '.woff2' ? 'font/woff2' : ext === '.woff' ? 'font/woff' : 'font/ttf';
+    const uri = `data:${mime};base64,${buf.toString('base64')}`;
     css = css.split(`url(${rel})`).join(`url(${uri})`);
     css = css.split(`url('${rel}')`).join(`url(${uri})`);
     css = css.split(`url("${rel}")`).join(`url(${uri})`);
-    console.log(`字体内联: ${rel}（${(buf.length / 1024 / 1024).toFixed(1)} MB）`);
+    console.log(`字体内联: ${rel}（${(buf.length / 1024 / 1024).toFixed(1)} MB，${mime}）`);
   } catch {
     console.warn('  字体缺失，跳过内联:', rel);
   }
