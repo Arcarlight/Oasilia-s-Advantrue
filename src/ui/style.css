@@ -2288,19 +2288,19 @@ input, textarea { cursor: text !important; }
   filter: drop-shadow(0 16px 12px rgba(0, 0, 0, .55));
 }
 
-/* 名牌：霓虹灯档位在上、名字在下，整块挂在屏幕右下。
+/* 名牌：霓虹灯在下、名字压在它正中，整块挂在屏幕右下。
    它是 .encounter 的**直接子节点**，z-index 比两只立绘都高 ——
-   用户要求「霓虹灯叠在所有元素（除了背景）之上」，塞在立绘那一组里是做不到的。 */
+   用户要求「霓虹灯叠在所有元素（除了背景）之上」，塞在立绘那一组里是做不到的。
+   霓虹灯和名字用 grid 放在**同一格**里：格子大小由霓虹灯撑出来，
+   名字 align/justify 居中 → 正好压在霓虹灯正中（用户：「霓虹灯叠在名字之下，名字放中间」）。 */
 .enc-plate {
   position: absolute;
   right: 4%;
   bottom: 5%;
   z-index: 4;                 /* 黑幕 1 · 敌人立绘 2 · 我方立绘 3 · 名牌 4 */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: clamp(0px, .4vh, 6px);
-  text-align: right;
+  display: grid;
+  grid-template-columns: auto;
+  text-align: center;
   pointer-events: none;
   opacity: 0;
   transform: translateX(-28px);
@@ -2315,39 +2315,46 @@ input, textarea { cursor: text !important; }
   line-height: 1.06;
   letter-spacing: .02em;
   color: #fff;
-  /* 描边 + 主题色外发光：字要压在黑幕上 */
+  /* 压在霓虹灯上面，所以除了描边还要一层暗色底影，免得被灯管的花纹吃掉 */
   text-shadow:
     0 4px 0 rgba(0, 0, 0, .55),
-    0 0 4px rgba(0, 0, 0, .85),
+    0 0 4px rgba(0, 0, 0, .9),
+    0 0 10px rgba(0, 0, 0, .8),
     0 0 44px var(--accent, #f0a93c);
 }
+/* 名字压在霓虹灯**之上**：同一个格子，z-index 高的那个在上面 */
+.enc-neon { z-index: 0; }
+.enc-name { grid-area: 1 / 1; align-self: center; justify-self: center; z-index: 1; }
 
 /**
  * 档位标注做成**霓虹灯**：同一个词（野生 / 较强 / 精英 / 首领）用超大**空心**字
- * 横向错开叠 4 份、半透明 —— 整组叠在所有元素之上（背景那块黑幕除外）。
+ * 横向错开叠 4 份、半透明 —— 整组叠在所有元素之上（背景那块黑幕除外）、名字之下。
  *   · 空心 = 字身透明 + -webkit-text-stroke 画描边（落不到 text-stroke 的浏览器上
  *     它就整个不显示 —— 这里是纯装饰，宁可不显示也不要出实心方块）；
- *   · 错开量与描边粗细都写成 em（跟着字号走），所以放大之后比例不会走样；
+ *   · 四份用 grid 放进**同一格**，格子大小就是这个词本身的大小，
+ *     再各自 translateX 错开 —— 于是整组天然围绕中心对称，名字居中压在正中就对齐了；
+ *   · 错开量与描边粗细都写成 em（跟着字号走），放大之后比例不会走样；
  *   · 错开量由每一份自己的 --i 决定，所以「四份」在 DOM 上数得出来（诊断会数）。
  */
 .enc-neon {
-  position: relative;
-  height: 1em;
-  min-width: 1px;              /* 宽度交给里面绝对定位的字去撑 */
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: auto;
   font-size: clamp(72px, 15vw, 210px);
   line-height: 1;
   letter-spacing: .02em;
 }
 .enc-neon-i {
-  position: absolute;
-  right: calc(var(--i, 0) * .12em);
-  bottom: 0;
+  grid-area: 1 / 1;
+  justify-self: center;
   font-family: var(--font-bold);
   font-weight: 700;
   white-space: nowrap;
   color: transparent;
   -webkit-text-stroke: max(2px, .022em) var(--neon, var(--accent-2, #ffc96b));
   opacity: .34;
+  /* 以中心为基准左右错开（四份分布在 -0.18em ~ +0.18em） */
+  transform: translateX(calc((var(--i, 0) - 1.5) * .12em));
   /* 描边外面再糊一层同色光晕，才有灯管的感觉 */
   filter: drop-shadow(0 0 .08em var(--neon, var(--accent-2, #ffc96b)));
 }

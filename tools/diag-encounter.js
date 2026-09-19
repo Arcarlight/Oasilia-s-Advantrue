@@ -145,7 +145,7 @@
     const box = (node) => {
       if (!node) return null;
       const r = node.getBoundingClientRect();
-      return { left: r.left, top: r.top, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
     };
     const sampler = (async () => {
       while (sampling) {
@@ -165,6 +165,7 @@
             const p = box(playerArt);
             const pl = box(plate);
             const nm = box(root.querySelector('.enc-name'));
+            const neonBox = box(root.querySelector('.enc-neon'));
             const neon = [...root.querySelectorAll('.enc-neon-i')].map(box);
             samples.push({
               t: Math.round(performance.now() - t0),
@@ -173,7 +174,7 @@
               curtainOpacity: parseFloat(getComputedStyle(curtain).opacity),
               lineW: l.w, lineTop: l.top + l.h / 2, lineCount,
               enemy: e, player: p,
-              plate: pl, name: nm,
+              plate: pl, name: nm, neonBox,
               neonBottom: neon.length ? Math.max(...neon.map((n) => n.top + n.h)) : null,
               neonLeft: neon.length ? Math.min(...neon.map((n) => n.left)) : null,
               warm: (await audio.warmed()).length,
@@ -234,8 +235,13 @@
           '名牌是 .encounter 的直接子节点（不是塞在敌人立绘那一组里）',
           `父节点 ${plateEl?.parentElement?.className}`);
         ok(z(plateEl) > z(pWrap) && z(plateEl) > z(eWrap),
-          '霓虹灯那块**叠在所有元素之上**（层级高于两只立绘，只低于背景黑幕）',
+          '名牌整块**叠在所有元素之上**（层级高于两只立绘，只低于背景黑幕）',
           `名牌 ${z(plateEl)} > 我方 ${z(pWrap)} / 敌人 ${z(eWrap)}，黑幕 ${z(root.querySelector('.enc-curtain'))}`);
+        // 霓虹灯在**名字之下**，名字压在它正中（用户：「霓虹灯叠在名字之下，名字放中间」）
+        const neonEl = root.querySelector('.enc-neon');
+        ok(z(nameEl) > z(neonEl),
+          '**霓虹灯在名字之下**（名字压在霓虹灯上面）',
+          `名字 ${z(nameEl)} > 霓虹灯 ${z(neonEl)}`);
       }
       // 「立绘而不是精灵图」：用的是 Generation 9 的正面/背面图（回合数旁边那种）
       const eWant = turnArt(enemySlug, 'front');
@@ -304,9 +310,17 @@
       // 名牌的位置：停在敌人立绘**下面**、屏幕右半边（用户指的那个位置）
       const ph = hold.find((s) => s.plate && s.neonBottom != null);
       ok(ph && ph.plate.top >= ph.enemy.top + ph.enemy.h * 0.8,
-        '名字写在敌人立绘**下面**（用户指的位置）',
+        '名牌挂在敌人立绘**下面**（用户指的位置）',
         `立绘底 ${Math.round(ph ? ph.enemy.top + ph.enemy.h : 0)} → 名牌顶 ${Math.round(ph?.plate?.top ?? 0)}`);
       ok(ph && ph.plate.left > vw * 0.5, '名牌落在屏幕右半边', `名牌左边 ${Math.round(ph?.plate?.left ?? 0)} / 视口宽 ${vw}`);
+      // 名字**压在霓虹灯正中**（用户：「名字放中间」）
+      if (ph && ph.name && ph.neonBox) {
+        const dx = Math.abs((ph.name.cx) - ph.neonBox.cx);
+        const dy = Math.abs((ph.name.cy) - ph.neonBox.cy);
+        ok(dx <= 6 && dy <= 6,
+          '名字**压在霓虹灯正中**（水平 / 垂直都居中）',
+          `水平差 ${dx.toFixed(1)}px、垂直差 ${dy.toFixed(1)}px（霓虹灯 ${Math.round(ph.neonBox.w)}×${Math.round(ph.neonBox.h)} / 名字 ${Math.round(ph.name.w)}×${Math.round(ph.name.h)}）`);
+      }
       // 立绘不许被视口切掉：站位是按视口百分比算的，窗口一矮就容易把下边那只顶出去
       const clipped = hold.filter((s) => [s.enemy, s.player].some((b) => b.top < -2 || b.top + b.h > vh + 2 || b.left < -2 || b.left + b.w > vw + 2));
       ok(clipped.length === 0,
@@ -314,14 +328,14 @@
         clipped.length ? `${clipped.length}/${hold.length} 个采样点越界` : `视口 ${vw}×${vh}`);
       // 名牌挂在右下、霓虹灯又是超大字号 —— 最容易顶出屏幕的就是它。
       // 上、下、左、右都要看：底边被切掉是最容易发生的（名牌是 bottom 锚定的）
-      const plateOut = hold.filter((s) => (s.neonBottom ?? 0) > vh + 2
+      const plateOut = hold.filter((s) => (s.plate?.top ?? 0) < 0
+        || (s.plate?.bottom ?? 0) > vh + 2
         || (s.neonLeft ?? 0) < -2
-        || (s.plate?.top ?? 0) < 0
-        || (s.name?.top ?? 0) + (s.name?.h ?? 0) > vh + 2
-        || (s.name?.left ?? 0) < -2);
+        || (s.name?.left ?? 0) < -2
+        || (s.name?.right ?? 0) > vw + 2);
       ok(plateOut.length === 0,
         '名字 + 霓虹灯都完整落在视口内（超大空心字没有被屏幕切掉）',
-        hold.length ? `霓虹灯最低 ${Math.round(Math.max(...hold.map((s) => s.neonBottom ?? 0)))}px · 名字底 ${Math.round(Math.max(...hold.map((s) => (s.name?.top ?? 0) + (s.name?.h ?? 0))))}px · 最左 ${Math.round(Math.min(...hold.map((s) => Math.min(s.neonLeft ?? 0, s.name?.left ?? 0))))}px / 视口 ${vw}×${vh}` : '（没采到）');
+        hold.length ? `名牌 ${Math.round(Math.min(...hold.map((s) => s.plate?.top ?? 0)))}~${Math.round(Math.max(...hold.map((s) => s.plate?.bottom ?? 0)))}px · 最左 ${Math.round(Math.min(...hold.map((s) => Math.min(s.neonLeft ?? 0, s.name?.left ?? 0))))}px · 最右 ${Math.round(Math.max(...hold.map((s) => s.name?.right ?? 0)))}px / 视口 ${vw}×${vh}` : '（没采到）');
     }
 
     // ---- ③ 「横线跟随正面图」：划入阶段里横线右端 == 敌人立绘中线 ----

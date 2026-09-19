@@ -250,14 +250,15 @@ export async function playEncounter(opts = {}) {
     const enemyBody = el('div', { class: 'enc-body' }, [enemyArt]);
     const playerBody = el('div', { class: 'enc-body' }, [playerArt]);
     /**
-     * 名牌：**霓虹灯档位在上、名字在下**，整块挂在屏幕右下。
+     * 名牌：**霓虹灯在下、名字压在它正中**，整块挂在屏幕右下。
      *
      * 它是 .encounter 的**直接子节点**（不是塞在敌人那一组里）—— 这是「叠在所有元素之上」
      * 的结构前提：塞在 .enc-enemy 里的话，它的层级永远低于 z-index 更高的我方立绘，
      * 霓虹灯一放大就会被立绘压住。现在它是独立的 z-index: 4，只在黑幕(1)和两只立绘(2/3)之上。
      *
      * 霓虹灯 = 同一个词用**超大空心字**横向错开叠 4 份、半透明 ——
-     * 空心靠 -webkit-text-stroke（字身透明、只留描边），错开量由每份自己的 --i 决定。
+     * 空心靠 -webkit-text-stroke（字身透明、只留描边），错开量由每份自己的 --i 决定，
+     * 四份在 grid 的同一格里，所以整组自然围绕中心对称。
      * 所以「四份」在 DOM 上是看得见的：诊断直接数 .enc-neon-i 的个数，不靠肉眼。
      * 档位词用 TIERS[tier].name（野生 / 较强 / 精英 / 首领），不另抄一份。
      */
