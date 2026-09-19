@@ -16,6 +16,9 @@ import { save } from '../core/save.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
 import { changeLanguage } from './langswitch.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
+// 标题页的三块收藏 / 战绩页：卡牌图鉴、敌人图鉴、通关记录（游戏内也能开敌人图鉴）
+import { showCardCodex, showEnemyCodex, cardCodexProgress, enemyCodexProgress } from './codex.js';
+import { showRecords, runCount } from './records.js';
 import { renderHud } from './hud.js';
 
 /**
@@ -131,6 +134,22 @@ async function renderTitle(game) {
     }, [t('导入存档 JSON')]),
   );
   inner.append(menu);
+
+  /**
+   * 标题页第二排：通关记录 / 卡牌图鉴 / 敌人图鉴。
+   *
+   * 为什么放在标题页：这三样以前要么根本不存在（通关记录、敌人图鉴），
+   * 要么被锁在「先开一局」后面（卡牌图鉴是卡组一览里一个折叠块）——
+   * 刚进游戏的人想看「这游戏里有什么牌、有什么怪、别人打到了哪」，一件都做不到。
+   * 每个按钮上直接带进度：看一眼就知道还有多少没收。
+   */
+  const cardProgress = cardCodexProgress([]);   // 标题页没有 run，「这一局带着的」自然算空
+  const enemyProgress = enemyCodexProgress();
+  inner.append(el('div', { class: 'title-codex' }, [
+    titleCodexBtn('ico-trophy', t('通关记录'), runCount() ? t('{n} 局', { n: runCount() }) : t('还没有'), () => showRecords()),
+    titleCodexBtn('ico-cards', t('卡牌图鉴'), `${cardProgress.got}/${cardProgress.total}`, () => showCardCodex(game)),
+    titleCodexBtn('ico-target', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
+  ]));
 
   /**
    * 标题页上的语言切换。
@@ -285,6 +304,10 @@ function renderMap(game) {
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showItems(game); } }, [
       el('span', { class: 'ico-backpack' }), el('span', { text: t('背包') }),
+    ]),
+    // 敌人图鉴在地图上也要能开：接下来打哪一格之前，先查查那张图上有什么怪
+    el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showEnemyCodex(); } }, [
+      el('span', { class: 'ico-target' }), el('span', { text: t('敌人图鉴') }),
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showHelp(); } }, [
       el('span', { class: 'ico-question_mark' }), el('span', { text: t('说明') }),
@@ -823,6 +846,10 @@ function renderGameOver(game) {
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
       el('span', { class: 'ico-refresh' }), el('span', { text: t('再来一次') }),
     ]),
+    // 刚打完这一局是最想看记录的时候（「刚才那局打到第几章来着」）
+    el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showRecords(); } }, [
+      el('span', { class: 'ico-trophy' }), el('span', { text: t('通关记录') }),
+    ]),
     // 走「改 phase + 交给 UI 渲染」这条路，而不是直接 renderTitle()：
     // renderTitle 要等精灵图，直接调用的话它会绕过 UI 的换屏记账（见那里的说明）
     el('button', {
@@ -880,6 +907,9 @@ function renderVictory(game) {
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
       el('span', { class: 'ico-refresh' }), el('span', { text: t('再来一次（更难的手感）') }),
     ]),
+    el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showRecords(); } }, [
+      el('span', { class: 'ico-trophy' }), el('span', { text: t('通关记录') }),
+    ]),
     el('button', {
       class: 'btn btn-ghost',
       onClick: () => { audio.ui('click'); game.phase = 'title'; game.onChange?.(game); },
@@ -895,6 +925,21 @@ function renderVictory(game) {
 
 function statBox(label, value) {
   return el('div', { class: 'run-stat' }, [el('b', { text: String(value) }), el('span', { text: label })]);
+}
+
+/**
+ * 标题页那一排「记录 / 图鉴」按钮：图标 + 名字 + 进度。
+ * 进度单独一个 span，**不拼进要翻译的句子**里 —— 数字不属于译文。
+ */
+function titleCodexBtn(ico, label, sub, onClick) {
+  return el('button', {
+    class: 'btn btn-ghost title-codex-btn',
+    onClick: () => { audio.ui('open'); onClick(); },
+  }, [
+    el('span', { class: `title-codex-ico ${ico}` }),
+    el('span', { class: 'title-codex-label', text: label }),
+    el('span', { class: 'title-codex-sub', text: sub }),
+  ]);
 }
 
 /* 导出：src/ui/ui.js 与 src/ui/battle-view.js 要用（写法对齐 src/ui/hud.js）*/

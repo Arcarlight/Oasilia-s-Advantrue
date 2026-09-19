@@ -1,14 +1,10 @@
 // 弹窗类界面：卡组 / 出战卡牌、背包、帮助、设置
 
 import { el, clear, modal, toast } from './dom.js';
-import { cardEl, cardTag } from './cards.js';
-import {
-  SORT_MODES, sortCards, groupLabel, cardDamageTotal, cardPowerTotal, richHTML, resolveCardText,
-  collectKeywords, effectLines,
-} from './cardtext.js';
+import { SORT_MODES } from './cardtext.js';
 import { audio } from '../core/audio.js';
 import { music } from '../core/bgm.js';
-import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance, dodgeChance, SPEED_OPTIONS, BATTLE_SPEED_KEY, loadBattleSpeed, RARITY } from '../data/balance.js';
+import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance, dodgeChance, SPEED_OPTIONS, BATTLE_SPEED_KEY, loadBattleSpeed } from '../data/balance.js';
 // itemEffect / inventoryEntries：道具有没有「主动使用」的效果、背包里哪些真的还有 ——
 // 背包界面和引擎共用这两份判断，别在界面里自己抄一遍数据模型的规则
 // （抄漏过一次：判断写的是 `item.heal` 而数据字段叫 `healPct`，整个背包一个按钮都没有）
@@ -21,6 +17,17 @@ import { BGM_NAMES } from '../core/bgm.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
 import { changeLanguage } from './langswitch.js';
 import { renderHud } from './hud.js';
+// 卡牌详情与图鉴网格都在别处（src/ui/carddetail.js / codex.js）——
+// 标题页的卡牌图鉴也要用同一个详情页，放这里就会和它成环。
+import { showCardDetail } from './carddetail.js';
+import { fillCardGrid, cardCodexProgress } from './codex.js';
+
+// 卡牌详情继续从这个模块转出去一份：tools/diag-cards.js 一直是从这里取的。
+// 转出去只能写成「只列本地名字」的那种形式，**绝不能**写成带 from 的转口导出 ——
+// 单文件打包器是正则拼的，带 from 的那种会在包里剩下半句 `from '…'`，
+// 而且它连注释里的字面样子都会当成代码去处理（这次就是这么翻车的：
+// 注释里举了个例子，包里就多出一个不存在的导出名，verify-bundle 直接「游戏没启动」）。
+export { showCardDetail };
 
 // ============================================================
 // 卡组一览（只读）
@@ -109,75 +116,32 @@ export function showDeck(game) {
   const grid = el('div', { class: 'card-grid' });
   body.append(statsPanel, sortBar, grid);
 
-  function openDetail(card) {
-    audio.ui('click2');
-    const owned = d.deck.filter((x) => x === card.id).length;
-    showCardDetail(card, {
-      state: () => ({ owned }),
-    });
-  }
-
   /**
-   * 把一批卡填进网格。卡组网格和卡牌图鉴共用这一份 ——
-   * 以前图鉴自己抄了一遍「排序后逐张 append」，于是漏了分组标题：
-   * 卡组页按「特殊效果」排序有分组，展开图鉴却没有（诊断脚本量出来的）。
-   *
-   * items 是 `{ card, state }`：state = 'deck' 这一局带着 / 'seen' 以前拿过 / 'new' 没见过
+   * 填网格的唯一入口：走 src/ui/codex.js 的 fillCardGrid()。
+   * 「这一局带着 / 以前拿过 / 没见过」三种状态、分组标题、没拿过的压暗，
+   * 卡组正片、展开的图鉴、标题页那一页图鉴**共用同一份实现**
+   * （以前图鉴自己抄了一遍「排序后逐张 append」，于是漏了分组标题）。
    */
-  function fillGrid(container, items) {
-    clear(container);
-    let lastGroup = null;
-    for (const { card, group } of sortCards(items.map((it) => it.card), sortMode)) {
-      const state = items.find((it) => it.card === card)?.state ?? 'deck';
-      // 「按特殊效果」时插分组标题：光靠排序玩家看不出为什么这张排在前面
-      if (sortMode === 'effect' && group !== lastGroup) {
-        lastGroup = group;
-        container.append(el('div', { class: 'grid-group' }, [el('span', { text: groupLabel(group) })]));
-      }
-      const badges = [];
-      if (sortMode === 'damage') badges.push(t('威力 {n}%', { n: cardPowerTotal(card) }));
-      // 同一张牌带了几份：卡组里同名卡比较多时一眼看得出来
-      const copies = d.deck.filter((x) => x === card.id).length;
-      if (state === 'deck' && copies > 1) badges.push(`×${copies}`);
-      if (state === 'new') badges.push(t('未获得'));
-      else if (state === 'seen') badges.push(t('曾拿过'));
-      const node = cardEl(card, { size: 'sm', badges, onClick: () => openDetail(card) });
-      // 没拿过的卡压暗：图鉴里「全亮」会让玩家以为这些都算已收集（用户反馈）
-      if (state === 'new') node.classList.add('card-unowned');
-      container.append(node);
-    }
-  }
+  const fillGrid = (container, cards) => fillCardGrid(container, cards, { sortMode, deckIds: d.deck });
 
   function paint() {
     // 卡组里同一张牌只画一张（角标写 ×N）—— 20 张的卡组里四张撞击画四遍没意义
     const seen = new Set();
-    const items = [];
+    const cards = [];
     for (const id of d.deck) {
       if (seen.has(id) || !CARD_BY_ID[id]) continue;
       seen.add(id);
-      items.push({ card: CARD_BY_ID[id], state: 'deck' });
+      cards.push(CARD_BY_ID[id]);
     }
-    fillGrid(grid, items);
+    fillGrid(grid, cards);
     sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint() ?? '';
   }
   paint();
 
-  /**
-   * 图鉴里每张卡的状态：
-   *   deck = 这一局带着（最亮，没有任何标记）
-   *   seen = 以前某局拿到过（跨局记录在 save 的 meta 里）
-   *   new  = 从没见过（压暗 + 「未获得」）
-   */
-  const codexState = (id) => {
-    if (d.deck.includes(id)) return 'deck';
-    return new Set(save.readMeta().seenCards ?? []).has(id) ? 'seen' : 'new';
-  };
-  const collectedCount = () => CARDS.filter((c) => codexState(c.id) !== 'new').length;
-
   const codex = el('details', { style: { marginTop: '14px' } }, [
     el('summary', { style: { cursor: 'pointer', padding: '6px 0', fontWeight: '700' } }, [
       el('span', { text: t('卡牌图鉴') }),
-      el('span', { style: { opacity: '.75', fontWeight: '400' }, text: t('（已收集 {got} / {total} 种，点开可以逐个看详情）', { got: collectedCount(), total: CARDS.length }) }),
+      el('span', { style: { opacity: '.75', fontWeight: '400' }, text: t('（已收集 {got} / {total} 种，点开可以逐个看详情）', { got: cardCodexProgress(d.deck).got, total: CARDS.length }) }),
     ]),
   ]);
   const codexGrid = el('div', { class: 'card-grid', style: { marginTop: '10px' } });
@@ -185,106 +149,11 @@ export function showDeck(game) {
   // 图鉴也跟着排序走：不然「按威力排序」只排上半页，图鉴还是乱的
   codex.addEventListener('toggle', () => {
     if (!codex.open) return;
-    fillGrid(codexGrid, CARDS.map((card) => ({ card, state: codexState(card.id) })));
+    fillGrid(codexGrid, CARDS);
   });
   body.append(codex);
 
   return modal({ title: t('卡组一览'), wide: true, body });
-}
-
-// ============================================================
-// 卡牌详情（卡组页点卡牌进来）
-// ============================================================
-/**
- * 卡牌详细介绍页：大卡面 + 完整说明 + 效果明细 + 关键词解释。
- *
- * 起因（用户需求）：卡组页原来只有卡面本身 —— 描述被卡面宽度截断、
- * 「无视对手一半防御」「给对手 2 层灼伤」这类效果到底值多少全靠猜。
- * 这里把 effects 数据原样翻成人话，并且把文案里出现的状态词做成
- * 可以悬停查看的词条（悬停说明由 tips.js 全站统一提供）。
- */
-export function showCardDetail(card, opts = {}) {
-  const { state = null } = opts;
-  const rarity = RARITY[card.rarity]?.name ?? card.rarity;
-  const dmg = cardDamageTotal(card);
-
-  /**
-   * 顶部那句「这张牌带了几份」。
-   *
-   * 这里以前还有一整套「加入 / 拿掉出战卡组」的按钮和文案，但**卡组一览早就是只读的**
-   * （带进战斗的恒等于全部所持卡牌，精简只能去商店花钱删卡），
-   * 所以那条分支从来没有被渲染过 —— 弹窗里留下的只有这句说明。
-   * 对应地，那句文案里的「出战卡组」也早就不存在了：现在只有一个卡组。
-   */
-  const stateEl = el('div', { class: 'detail-deckstate' });
-  const sync = () => {
-    if (!state) { stateEl.textContent = ''; return; }
-    const { owned = 0 } = state();
-    stateEl.textContent = owned > 0
-      ? t('你的卡组里有这张：{owned} 张', { owned })
-      : t('这张还没拿到（去奖励 / 商店 / 事件里找找）');
-  };
-
-  // 大卡面：只是展示，所以不可交互（说明文字在下面另有一份可悬停的）
-  const bigCard = cardEl(card, { size: 'lg' });
-  bigCard.classList.add('card-static');
-
-  const info = el('div', { class: 'card-detail-info' }, [
-    el('div', { class: 'detail-head' }, [
-      el('h2', { text: card.name }),
-      el('span', { class: `detail-chip rarity-${card.rarity}`, text: rarity }),
-      el('span', { class: 'detail-chip' }, [el('span', { class: 'ico-action_points', style: { width: '12px', height: '12px' } }), el('span', { text: `${card.ap} AP` })]),
-      el('span', { class: 'detail-chip', text: cardTag(card) }),
-      dmg ? el('span', { class: 'detail-chip', text: t('当前伤害 {dmg}', { dmg }) }) : null,
-      card.exhaust ? el('span', { class: 'detail-chip', text: t('用后销毁') }) : null,
-    ]),
-    el('div', { class: 'detail-desc', html: richHTML(resolveCardText(card)) }),
-  ]);
-
-  // 效果明细：一行一条，把 effects 翻成人话
-  const rows = effectLines(card);
-  if (rows.length) {
-    const box = el('div', { class: 'detail-rows' });
-    for (const r of rows) {
-      box.append(el('div', { class: 'detail-row' }, [
-        el('span', { class: `dr-ico ${r.ico}`, style: r.ink ? { backgroundColor: r.ink } : {} }),
-        el('span', { class: 'dr-label', text: r.label }),
-        el('span', { class: 'dr-value', text: r.value }),
-        r.note ? el('span', { class: 'dr-note', text: r.note }) : null,
-      ]));
-    }
-    info.append(el('div', { class: 'detail-sec' }, [el('h4', { text: t('效果明细') }), box]));
-  }
-
-  // 关键词：文案里出现过的词条，悬停看用处
-  const kws = collectKeywords(resolveCardText(card));
-  if (kws.length) {
-    const wrap = el('div', { class: 'detail-kw' });
-    for (const k of kws) {
-      // 颜色走 CSS 类（深色底上用亮色），不写内联
-      wrap.append(el('span', {
-        class: `kw ${k.cls}`,
-        dataset: { tip: k.tip },
-        text: k.label,
-      }));
-    }
-    info.append(el('div', { class: 'detail-sec' }, [
-      el('h4', { text: t('关键词（鼠标停上去看说明）') }),
-      wrap,
-    ]));
-  }
-
-  if (state) {
-    info.append(el('div', { class: 'detail-actions' }, [stateEl]));
-  }
-
-  const body = el('div', { class: 'card-detail' }, [
-    el('div', { class: 'card-detail-main' }, [bigCard]),
-    info,
-  ]);
-  sync();
-
-  return modal({ title: t('卡牌详情 · {name}', { name: card.name }), wide: true, body });
 }
 
 // ============================================================
@@ -463,6 +332,8 @@ export function showHelp() {
         el('li', { html: t('<code>空格</code> 结束回合。') }),
         el('li', { html: t('<code>D</code> 打开卡组一览（只读：能排序、看详情、看图鉴）。') }),
         el('li', { html: t('<code>I</code> 打开背包（喝药在这里）。') }),
+        el('li', { html: t('<code>E</code> 打开敌人图鉴（打之前先看看对面会什么）。') }),
+        el('li', { html: t('<code>C</code> 打开卡牌图鉴（看卡牌的收集进度）。') }),
         el('li', { html: t('<code>H</code> 或 <code>?</code> 打开这一页。') }),
         el('li', { html: t('<code>Esc</code> 关闭弹窗（叠了好几层时只关最上面那层）。') }),
       ]),

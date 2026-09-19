@@ -264,6 +264,11 @@ async function boot() {
     // 多语言诊断：真点语言按钮，验证「切换 → 内容原地改写 → 重画 → 切回中文逐字恢复」
     import('../tools/diag-i18n.js').catch((e) => console.error('多语言诊断加载失败', e));
   }
+  if (params.has('dgcodex')) {
+    // 通关记录 / 图鉴诊断：标题页三个入口、两个图鉴的状态与筛选、游戏内入口、记录写入
+    // （?dgcodex=1 自检；?dgcodex=shot&what=enemy|card|records|enemy-detail 留屏截图）
+    import('../tools/diag-codex.js').catch((e) => console.error('图鉴诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {

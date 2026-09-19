@@ -2669,6 +2669,170 @@ input, textarea { cursor: text !important; }
 }
 
 /* ============================================================
+   通关记录 / 图鉴（标题页入口 + 游戏内入口）
+   ============================================================ */
+
+/* ---- 标题页那一排入口 ---- */
+.title-codex {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-top: 10px; width: min(420px, 92vw);
+}
+.title-codex-btn {
+  flex: 1 1 0; min-width: 112px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 6px; line-height: 1.25;
+}
+.title-codex-ico { width: 20px; height: 20px; opacity: .95; }
+.title-codex-label { font-size: 13px; font-family: var(--font-title); letter-spacing: .04em; }
+.title-codex-sub { font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
+
+/* ---- 两个图鉴顶上的进度 ---- */
+.codex-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 10px;
+}
+.codex-progress { display: flex; align-items: baseline; gap: 8px; }
+.codex-progress b {
+  font-family: var(--font-title); font-size: 22px; color: var(--accent-2);
+  font-variant-numeric: tabular-nums;
+}
+.codex-progress span { font-size: 12px; opacity: .78; }
+.codex-sub { font-size: 12px; opacity: .7; }
+
+/* ---- 敌人图鉴 ---- */
+.dex-sections { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+.dex-section-head {
+  display: flex; align-items: center; gap: 8px;
+  padding-bottom: 6px; margin-bottom: 8px;
+  box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
+}
+.dex-section-dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.dex-section-name { font-family: var(--font-title); font-size: 15px; letter-spacing: .04em; }
+.dex-section-count { margin-left: auto; font-size: 11.5px; opacity: .65; font-variant-numeric: tabular-nums; }
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); gap: 9px; }
+
+.dex-card {
+  position: relative;
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 9px;
+  text-align: left;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .18);
+  color: var(--sand-8);
+  transition: background .15s ease, transform .12s ease;
+}
+.dex-card:hover { background: rgba(255, 255, 255, .12); transform: translateY(-1px); }
+.dex-art {
+  flex: 0 0 auto; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+}
+.dex-art img { width: 40px; height: 40px; image-rendering: pixelated; }
+.dex-card-body { min-width: 0; }
+.dex-card-name {
+  font-family: var(--font-title); font-size: 13.5px; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dex-card-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.dex-no { font-size: 10.5px; opacity: .55; font-variant-numeric: tabular-nums; }
+.dex-tier {
+  font-size: 10px; padding: 1px 6px; border-radius: 999px;
+  background: rgba(0, 0, 0, .3); color: var(--tier-ink, #c8bda6);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+.tier-mob    { --tier-ink: #a9b7a0; }
+.tier-normal { --tier-ink: #8fc4e8; }
+.tier-elite  { --tier-ink: #ff9a86; }
+.tier-boss   { --tier-ink: #ff8cc8; }
+
+/* 没见过：剪影 + 压暗（只留图鉴编号，就是「这里还有一只」的意思） */
+.dex-card.new { filter: grayscale(.9) brightness(.62); }
+.dex-card.new:hover { filter: grayscale(.5) brightness(.8); }
+.dex-unknown {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title); font-size: 20px; color: var(--sand-7);
+  background: rgba(0, 0, 0, .35);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .25);
+}
+.dex-unknown.big { width: 84px; height: 84px; font-size: 46px; }
+/* 打赢过：右上角一个勾（用图标而不是「✓」这个字符 ——
+   日文那两套字体里没有这个字形，写字会掉到兜底字体上，和旁边的字不是一套） */
+.dex-slain {
+  position: absolute; top: 5px; right: 7px;
+  width: 14px; height: 14px;
+  color: #8ee89a;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .85));
+}
+.dex-empty { font-size: 13px; opacity: .75; margin: 8px 0; }
+
+/* ---- 图鉴详情 ---- */
+.dex-detail-face {
+  flex: 0 0 auto; width: 128px; height: 128px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md);
+  background: radial-gradient(70% 70% at 50% 40%, rgba(255, 255, 255, .12), rgba(0, 0, 0, .25));
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .22);
+}
+.dex-detail-face img { width: 128px; height: 128px; image-rendering: pixelated; }
+.dex-detail-info { flex: 1 1 auto; min-width: 0; }
+.dex-lines { font-family: var(--font-hand); font-size: 15px; line-height: 1.85; opacity: .92; }
+.dex-lines p { margin: 0 0 4px; }
+.dex-locked { font-size: 13px; opacity: .8; }
+.dex-record { font-size: 13px; opacity: .85; margin: 0; }
+.dex-moves { display: flex; flex-wrap: wrap; gap: 6px; }
+.dex-move {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px; font-size: 12px;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .22);
+}
+.dex-move .ico-action_points { opacity: .7; }
+/* 招牌招式：和普通招式区分开（开打时它一定在手上） */
+.dex-move.sig {
+  color: #ffd9a0;
+  box-shadow: inset 0 0 0 1px rgba(255, 185, 92, .55);
+  background: rgba(255, 185, 92, .12);
+}
+
+/* ---- 通关记录 ---- */
+.rec-stats { width: 100%; margin: 0 0 14px; }
+.rec-list { display: flex; flex-direction: column; gap: 8px; }
+.rec-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px; border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .05);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+}
+.rec-row.win { background: rgba(255, 210, 120, .1); box-shadow: inset 0 0 0 1px rgba(255, 200, 110, .38); }
+.rec-badge {
+  flex: 0 0 auto; min-width: 52px; text-align: center;
+  padding: 4px 8px; border-radius: 999px;
+  font-family: var(--font-title); font-size: 12.5px;
+  background: rgba(0, 0, 0, .32); color: #f0a58f;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+.rec-row.win .rec-badge { color: #ffd27a; }
+.rec-main { flex: 1 1 auto; min-width: 0; }
+.rec-title { font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.rec-dot { opacity: .4; }
+.rec-biomes { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.rec-biome {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; opacity: .85;
+  padding: 1px 7px; border-radius: 999px;
+  background: rgba(0, 0, 0, .22);
+}
+.rec-biome-dot { width: 7px; height: 7px; border-radius: 50%; }
+.rec-when { margin-top: 4px; font-size: 11px; opacity: .6; display: flex; gap: 10px; }
+.rec-seed { font-variant-numeric: tabular-nums; }
+.rec-empty { font-size: 13px; opacity: .78; margin: 6px 0 0; }
+.rec-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.rec-note { font-size: 11.5px; opacity: .6; }
+.rec-deck-title { margin: 16px 0 8px; font-family: var(--font-title); color: var(--accent-2); }
+.rec-detail { display: flex; gap: 20px; align-items: flex-start; }
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width: 900px) {
@@ -2676,6 +2840,9 @@ input, textarea { cursor: text !important; }
   .hud-stats { display: none; }
   .hud-hp { width: 140px; }
   .fighter-card { min-width: 150px; padding: 6px 9px; }
+  /* 图鉴/记录：卡面变窄了，敌人卡片一行也能多放几张 */
+  .dex-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); }
+  .rec-row { flex-wrap: wrap; }
 }
 @media (max-width: 620px) {
   :root { --card-w: 150px; --card-h: 168px; }
@@ -2683,6 +2850,10 @@ input, textarea { cursor: text !important; }
   .hud-species { display: none; }
   .battle-log { max-height: 76px; min-height: 40px; font-size: 11px; }
   .float-text { font-size: 24px; }
+  /* 详情页（卡牌 / 图鉴）竖着排：窄屏上左右两栏会把说明挤成一条线 */
+  .card-detail { flex-direction: column; align-items: center; }
+  .dex-detail-face { width: 96px; height: 96px; }
+  .dex-detail-face img { width: 96px; height: 96px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

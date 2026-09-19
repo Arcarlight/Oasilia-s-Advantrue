@@ -46,6 +46,11 @@ function uiStrings(file) {
 const UI_FILES = [
   'src/ui/battle-view.js', 'src/ui/cards.js', 'src/ui/cardtext.js', 'src/ui/hud.js',
   'src/ui/overlays.js', 'src/ui/screens.js', 'src/ui/tips.js',
+  // 图鉴 / 记录 / 卡牌详情：三块都是**新加的玩家可见界面**，一律纳入这份体检
+  'src/ui/codex.js', 'src/ui/records.js', 'src/ui/carddetail.js',
+  // HUD 上那几个图标的悬停文字（`title="…"`）也在这里 —— 它同样会被玩家读到，
+  // 而且**单文件包里的那份是 tools/bundle.mjs 里抄的第二份**（见下面第 ⑦ 条）
+  'index.html',
 ];
 const strings = UI_FILES.flatMap(uiStrings);
 
@@ -60,7 +65,7 @@ const META = /(以前(?!.{0,4}(很久|有人|的路标))|曾经|旧版|旧写法
 
 console.log('\n② 已经改掉的旧规则');
 {
-  const STALE = /(回到?卡组最?底端|洗回牌堆最?底端|塞回牌堆|多出来的?直接进弃牌|自动进弃牌堆|出战卡组)/;
+  const STALE = /(回到?卡组最?底端|洗回牌堆最?底端|塞回牌堆|多出来的?直接进弃牌|自动进弃牌堆|出战卡组|出战卡牌|挑选出战)/;
   const hits = strings.filter((x) => STALE.test(x.s));
   ok(!hits.length, '界面文案里没有旧规则 / 旧概念的残留（「牌回到卡组最底端」「出战卡组」…）',
     hits.map((h) => `${h.file}:${h.line} ${h.s.slice(0, 60)}`).join(' ｜ ') || '');
@@ -149,6 +154,37 @@ console.log('\n⑥ 结算页里的章节数取自 stageCount()');
   const hard = [...src.matchAll(/推进章节[^\n]*?\/\s*(\d+)/g)].map((m) => m[1]);
   ok(!hard.length, '「推进章节」用的是 stageCount()，没有把章节数写死',
     hard.length ? `写死成 ${hard.join(' / ')}` : '');
+}
+
+console.log('\n⑦ HUD 的按钮和悬停文字：index.html 与单文件包模板不许走散');
+/**
+ * 这条是踩出来的：`index.html` 里 `#btn-deck` 的悬停文字早就改成了
+ * 「查看卡组（只读：排序 / 卡牌详情 / 图鉴）」—— 那句话里原本写着**早就删掉的
+ * 「挑选出战卡牌」**（玩家一悬停就会读到）。而单文件包里的 HTML 是
+ * `tools/bundle.mjs` 里**另抄的一份**，那份一直没跟着改：
+ * 线上（GitHub Pages 跑的正是单文件包）和本地开发页显示的是两套话。
+ *
+ * 判据：两边所有 `<button id="…" title="…">` 的 id → title 映射必须一致。
+ * 新增 HUD 按钮时只改一处，这条就会红。
+ */
+{
+  const hudButtons = (text) => {
+    const out = new Map();
+    for (const m of text.matchAll(/<button\b[^>]*>/g)) {
+      const tag = m[0];
+      const id = /\bid="([^"]+)"/.exec(tag)?.[1];
+      if (!id) continue;
+      out.set(id, /\btitle="([^"]*)"/.exec(tag)?.[1] ?? '');
+    }
+    return out;
+  };
+  const dev = hudButtons(rd('index.html'));
+  const bundled = hudButtons(rd('tools/bundle.mjs'));
+  const ids = [...new Set([...dev.keys(), ...bundled.keys()])].sort();
+  const drift = ids.filter((id) => dev.get(id) !== bundled.get(id))
+    .map((id) => `${id}：index.html「${dev.get(id) ?? '（没有）'}」vs bundle.mjs「${bundled.get(id) ?? '（没有）'}」`);
+  ok(!drift.length, `index.html 与 tools/bundle.mjs 的 ${ids.length} 个按钮 id / 悬停文字完全一致`,
+    drift.join(' ｜ ') || ids.join('、'));
 }
 
 console.log(`\n文案体检：通过 ${pass}，失败 ${fail}`);

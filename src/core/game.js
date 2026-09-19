@@ -352,7 +352,13 @@ export class Game {
     d.stage += 1;
     if (d.stage >= stageCount()) {
       this.phase = Phase.VICTORY;
-      this.meta = save.patchMeta({ wins: (this.meta.wins ?? 0) + 1, unlocked: true });
+      this.meta = save.patchMeta({
+        wins: (this.meta.wins ?? 0) + 1,
+        unlocked: true,
+        bestStage: stageCount(),
+      });
+      // 通关也记一条（注意 d.stage 这时已经越界了，runSummary 里会夹回章节总数）
+      this.meta = save.recordRun(this.runSummary(true));
       save.clearRun();
       this.changed();
       return;
@@ -377,6 +383,37 @@ export class Game {
     };
     this.save();
     this.changed();
+  }
+
+  /**
+   * 这一局的战绩摘要（写进跨局记录，见 save.recordRun / src/ui/records.js）。
+   *
+   * 只放 **id 与数字**：卡组是卡牌 id、地图是 biome key、最后那只怪是敌人 id ——
+   * 名字一律不存，渲染时按当前语言现查（存下来会被冻结成写完那一局时的语言）。
+   * `steps` 用 route 的总长度：`d.floor` 每章会归零，量不出「这一局走了多少步」。
+   */
+  runSummary(win) {
+    const d = this.data;
+    return {
+      at: Date.now(),
+      win: !!win,
+      seed: d.seed ?? null,
+      // 通关时 d.stage 已经加到越界（等于章节总数），所以夹回来
+      stage: Math.min(d.stage + 1, stageCount()),
+      // route 的总长度才是「这一局走了多少步」（d.floor 每章会归零）。
+      // 兜底那个 `||` 是给「没经过节点就直接开打的调试局」用的 —— route 为空时至少别报 0 步
+      steps: d.route?.length || (d.floor + 1),
+      kills: d.kills,
+      turns: d.turnsThisRun,
+      gold: d.gold,
+      hp: d.hp,
+      maxHp: d.maxHp,
+      atk: d.atk, def: d.def, agi: d.agi, luck: d.luck,
+      deck: [...d.deck],
+      biomes: [...(d.biomes ?? [])],
+      // 这一局最后打的那一只：通关时是结局首领，失败时是把你打回家的那只
+      foe: this.battle?.enemy?.id ?? this.battleContext?.enemyDef?.id ?? null,
+    };
   }
 
   // ================= 战斗 =================
@@ -639,6 +676,13 @@ export class Game {
       },
     });
     this.battle.start();
+    /**
+     * 图鉴：**遇见**就记下来（不用打赢）。
+     *
+     * 记在 startBattle 里而不是各条入口里：战斗有四个来源（地图节点、宝箱怪、首领、
+     * 诊断脚本直接开一场），逐个记一定会漏一个。
+     */
+    this.meta = save.noteEnemies([enemyDef.id]);
     this.phase = Phase.BATTLE;
     this.changed();
     return this.battle;
@@ -654,7 +698,15 @@ export class Game {
 
     if (b.winner !== 'player') {
       // 失败
-      this.meta = save.patchMeta({ runs: (this.meta.runs ?? 0) + 1, bestDistance: Math.max(this.meta.bestDistance ?? 0, d.floor) });
+      this.meta = save.patchMeta({
+        runs: (this.meta.runs ?? 0) + 1,
+        bestDistance: Math.max(this.meta.bestDistance ?? 0, d.floor),
+        // bestStage 这个字段从最早的版本就躺在记录里，但**从来没有人写过它**
+        // （通关记录页要用「最远打到第几章」，顺手在这里补上）
+        bestStage: Math.max(this.meta.bestStage ?? 0, d.stage + 1),
+      });
+      // 这一局照样进通关记录（「止步第 N 章」）—— 记录里只有通关的话，多数玩家的列表是空的
+      this.meta = save.recordRun(this.runSummary(false));
       save.clearRun();
       this.phase = Phase.GAMEOVER;
       this.changed();
@@ -663,6 +715,8 @@ export class Game {
 
     d.kills += 1;
     this.meta = save.patchMeta({ kills: (this.meta.kills ?? 0) + 1 });
+    // 图鉴：击败过的那一档（赢了才算，见 save.noteEnemies）
+    this.meta = save.noteEnemies([b.enemy?.id ?? this.battleContext?.enemyDef?.id], { slain: true });
     const ctx = this.battleContext;
     const rewardMult = ctx.scaled.rewardMult ?? 1;
     const range = ctx.kind === 'boss' ? BALANCE.goldPerElite : ctx.kind === 'elite' ? BALANCE.goldPerElite : BALANCE.goldPerBattle;

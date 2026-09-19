@@ -4,6 +4,7 @@ import { toast, el } from './dom.js';
 import { BattleScreen } from './battle-view.js';
 import { renderHud, hideHud } from './hud.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
+import { showEnemyCodex, showCardCodex } from './codex.js';
 import {
   renderTitle, renderMap, renderEvent, renderChest, renderRest,
   renderShop, renderReward, renderGameOver, renderVictory,
@@ -63,6 +64,11 @@ export class UI {
       // 卡组一览是只读的（出战卡组 = 全部所持卡牌），所以战斗中也能看 —— 查牌挺有用的
       if (this.game.data) showDeck(this.game);
     });
+    document.getElementById('btn-codex')?.addEventListener('click', () => {
+      audio.ui('open');
+      // 敌人图鉴：战斗中尤其有用（「这家伙会什么招」在开打前就该看得见）
+      if (this.game.data) showEnemyCodex();
+    });
 
     window.addEventListener('keydown', (e) => {
       if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
@@ -81,14 +87,30 @@ export class UI {
           const hand = this.game.battle.hand('player');
           const entry = hand[n - 1];
           if (entry) bs.playCard(entry.uid);
+          return;
         }
-        return;
+        /**
+         * 注意这里**不能**无条件 return。
+         *
+         * 以前战斗分支最后是一句裸 `return;`，于是战斗中 D / I / H 全都不响应 ——
+         * 而说明页明明写着「按 I 打开背包……**战斗中也随时能用**」（用户会被这句话骗），
+         * 新加的 E（敌人图鉴）更是最该在战斗中能按。现在只吞掉它自己处理的那两类键
+         * （空格、1~9），其余的继续往下走。
+         */
       }
       if (e.key === 'd' || e.key === 'D') {
         if (this.game.data && this.game.phase !== 'title') showDeck(this.game);
       }
       if (e.key === 'i' || e.key === 'I') {
         if (this.game.data && this.game.phase !== 'title') showItems(this.game);
+      }
+      // E = 敌人图鉴（Enemy）。战斗中按一下就能查「对面会什么」，不用离开战斗
+      if (e.key === 'e' || e.key === 'E') {
+        if (this.game.data && this.game.phase !== 'title') showEnemyCodex();
+      }
+      // C = 卡牌图鉴（全部卡牌的收集进度；卡组一览里那份是同一套数据）
+      if (e.key === 'c' || e.key === 'C') {
+        if (this.game.data && this.game.phase !== 'title') showCardCodex(this.game);
       }
       if (e.key === 'h' || e.key === 'H' || e.key === '?') showHelp();
     });
