@@ -180,6 +180,8 @@
               plate: pl, name: nm, neonBox,
               neonBottom: neon.length ? Math.max(...neon.map((n) => n.top + n.h)) : null,
               neonLeft: neon.length ? Math.min(...neon.map((n) => n.left)) : null,
+              // 4 份霓虹灯各自的右边缘：进场时它们的**间距**是拉开的（从右往左一份份落定）
+              neonRights: neon.map((n) => Math.round(n.right)),
               warm: (await audio.warmed()).length,
             });
           }
@@ -446,6 +448,41 @@
         `采到 ${lagged.length} 个「名字还在后面追」的点，最大差 ${lagged.length ? Math.round(Math.max(...lagged.map((s) => s.name.right - s.neonBox.right))) : 0}px`);
     }
 
+    // ---- ④c 霓虹灯的 4 份：进场时是**从右往左一份份拉开**的 ----
+    /**
+     * 用户：「霓虹灯之间最好也错开，做出那种从右往左逐渐拉开的感觉」。
+     * 静态时 4 份的右边缘相差 0.07em（约字号的 7%）；进场时每一份比右边那份多留一段距离，
+     * 所以**进场中途的间距明显更大**，落定时才收拢回 0.07em —— 这就是「拉开」。
+     */
+    {
+      const spreadOf = (s) => (s.neonRights?.length === 4
+        ? Math.max(...s.neonRights) - Math.min(...s.neonRights) : null);
+      const rest = hold.map(spreadOf).filter((x) => x != null);
+      const restSpread = rest.length ? Math.round(rest.reduce((a, b) => a + b, 0) / rest.length) : 0;
+      const flying = slide.map((s) => ({ t: s.t, spread: spreadOf(s), rights: s.neonRights })).filter((x) => x.spread != null);
+      const widest = flying.reduce((best, s) => (best && best.spread >= s.spread ? best : s), null);
+      ok(restSpread > 0 && widest && widest.spread > restSpread * 1.8,
+        '进场中途霓虹灯的 4 份**间距被拉开**（从右往左一份份落定），落定后收拢',
+        `中途最宽 ${widest ? Math.round(widest.spread) : '?'}px vs 落定后 ${restSpread}px（${(widest && restSpread ? (widest.spread / restSpread).toFixed(1) : '?')} 倍）`);
+      // 拉开的方向必须对：右边那份（--i: 0）离终点更近 = 它的「多留距离」更小
+      // 拿「当前右边缘 - 落定时的右边缘」当落后量，越靠左的应该越落后。
+      // 拿「拉开得最开」的那一帧来判断先后：那时候四份的差别最大，最好分辨
+      const target = hold.find((s) => s.neonRights)?.neonRights ?? null;
+      const mid = widest;
+      if (target && mid) {
+        const behind = mid.rights.map((r, i) => r - target[i]);   // 相对落点还差多少
+        // 越靠左（下标越大）应该越落后 → 这个数组应当是**递增**的
+        const ordered = behind.every((v, i) => i === 0 || v >= behind[i - 1] - 2);
+        ok(ordered, '最右边那份最先到位，往左的依次落后（「从右往左」拉开，不是反的）',
+          `各份还差 ${behind.map((v) => Math.round(v)).join(' / ')}px（下标 0 是最靠右那份）`);
+      }
+      // 落定后必须收拢回静态的错开量（不然就不是霓虹灯，而是糊成一片 / 一直散着）
+      const lastFlying = flying.at(-1);
+      ok(lastFlying && Math.abs(lastFlying.spread - restSpread) <= 6,
+        '划入结束那一刻 4 份已经收拢回静态间距（收成霓虹灯）',
+        `结束时 ${lastFlying ? Math.round(lastFlying.spread) : '?'}px vs 静态 ${restSpread}px`);
+    }
+
     // ---- ⑤ 「双双停留一小会」：停留期间两只都不许动 ----
     if (hold.length >= 3) {
       const drift = (get) => {
@@ -458,22 +495,31 @@
       ok(drift((s) => s.plate?.left) <= 1, '停留期间名牌也不动', `名牌漂移 ${drift((s) => s.plate?.left).toFixed(1)}px`);
     }
 
-    // ---- ⑤b 退场：名牌跟着黑幕一起出 ----
+    // ---- ⑤b 退场：名牌跟着黑幕出，但和黑幕**错开**（不是焊在一起） ----
     /**
-     * 用户：「出场就跟随着黑幕出就可以」。名牌叠在黑幕之上，所以判据是
-     * **两者的位移逐帧一致** —— 一致就是「被幕布一起带走」，不一致就会看到它自己飘出去。
+     * 用户先说「出场就跟随着黑幕出就可以」，看完又说「离开的和黑幕错开一点，
+     * 不要完全跟着走可能好一点」。所以判据是**两条同时成立**：
+     *   ① 方向一致（都在往右走，名牌不回头）；
+     *   ② 中途必须**明显拉开**（名牌比黑幕快，先一步出画）。
      */
     if (exit.length >= 2) {
-      const d = exit.map((s) => ({ t: s.t, plate: s.plate.left - (hold.at(-1)?.plate?.left ?? 0), curtain: s.curtainLeft }));
-      const drift = Math.max(...d.map((s) => Math.abs(s.plate - s.curtain)));
-      ok(drift <= 3,
-        '退场时名牌和黑幕**同一个位移**（跟着幕布一起走，不是各走各的）',
-        `最大差 ${drift.toFixed(1)}px（名牌走了 ${Math.round(d.at(-1).plate)}px，黑幕 ${Math.round(d.at(-1).curtain)}px）`);
-      const moved = d.at(-1).plate;
-      ok(moved > 40, '退场确实把名牌带走了（位移够大）', `位移 ${Math.round(moved)}px`);
+      const base = hold.at(-1)?.plate?.left ?? 0;
+      const d = exit.map((s) => ({
+        t: s.t,
+        plate: s.plate.left - base,          // 名牌相对停留时的位移
+        curtain: s.curtainLeft,              // 黑幕的位移（黑幕从 0 起走）
+        gap: (s.plate.left - base) - s.curtainLeft,
+      }));
+      const maxGap = Math.max(...d.map((s) => Math.abs(s.gap)));
+      ok(maxGap > 40,
+        '退场时名牌和黑幕**错开**（名牌跑得更快，先一步出画 —— 不是和幕布焊在一起）',
+        `中途最大错开 ${Math.round(maxGap)}px（末帧：名牌 ${Math.round(d.at(-1).plate)}px / 黑幕 ${Math.round(d.at(-1).curtain)}px）`);
+      const sameDir = d.every((s, i) => i === 0 || s.plate >= d[i - 1].plate - 1);
+      ok(sameDir, '名牌一路往右（和黑幕同向，只是快慢不同）', `末帧位移 ${Math.round(d.at(-1).plate)}px`);
+      ok(d.at(-1).plate > 40, '退场确实把名牌带走了（位移够大）', `位移 ${Math.round(d.at(-1).plate)}px`);
       // 光带在黑幕里（子节点），所以它跟着黑幕走是构造上成立的；这里顺手量一下
       ok(exit.every((s) => Math.abs((s.lineRight - s.curtainLeft) - (hold.at(-1)?.lineRight ?? 0)) <= 3),
-        '那组光带也在黑幕里，跟着一起退场', `退出时右端 ${Math.round(exit.at(-1).lineRight)}px`);
+        '那组光带在黑幕里，跟着黑幕一起退场（它不需要和黑幕错开）', `退出时右端 ${Math.round(exit.at(-1).lineRight)}px`);
     }
 
 

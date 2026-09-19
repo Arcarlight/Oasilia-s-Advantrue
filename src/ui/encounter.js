@@ -101,17 +101,37 @@ const LINES = [
  * 眼睛看到的就是「刷一下就满了」，用户的原话是「线好像没有任何进场动画」。
  * 现在它是一条**定长的光带**，右端贴着敌人的中线、整条跟着敌人从屏幕左边外面划进来 ——
  * 两头都在动，才看得出是在「划入」（用户：「敌人旁边的线可以向右划入」）。
- * 敌人站定之后再由补满阶段把两端一起展开到整幅宽度。
+ *
+ * 敌人站定之后再展开成整幅宽度。**展开用的是 smoothstep 而不是 ease-out**：
+ * 划入那一段的收尾本来就已经减速到接近 0，展开如果又从「最高速」起步，
+ * 看起来就是两个动作——「先进来，再拉长」（用户就是这么问的）。
+ * smoothstep 两头速度都是 0，两段接起来才是一个连贯的动作。
  */
 const BAND_TAIL_VW = 0.34;
 
 /**
- * 名牌（名字 + 霓虹灯）的进场参数：
- *   START —— 在整段划入的第几成进度时起步（前面一点时间先让敌人和光带动起来）
- *   LAG   —— 名字比霓虹灯晚多少起步（灯管先到、名字再落上去）
- *   NAME  —— 名字额外多留的这一段距离（占整段位移的比例）
+ * 名牌（名字 + 霓虹灯）的进场参数。
+ *
+ * 整块从屏幕右边划进来，但**里面三样东西到达的时间不同**，做出「从右往左逐渐拉开」：
+ *   START      —— 整段划入的第几成进度时名牌起步（前面先让敌人和光带动起来）
+ *   LAYER_LAG  —— 霓虹灯的 4 份里，每一份比**右边那一份**晚多少起步。
+ *                 基准那份（--i: 0）最靠右、最先到位，往左的几份依次慢一拍 ——
+ *                 于是整组是**从右往左**一份份拉开落定的（用户点名要的感觉）。
+ *   LAYER_PULL —— 每份多留的距离（占整段位移的比例），拉开幅度就靠它
+ *   NAME_AT    —— 名字在名牌进场的第几成时才落定（最后落：灯管先铺开、名字再压上去）
+ *   NAME_PULL  —— 名字多留的距离
+ *   EXIT_LEAD  —— 退场时名牌比黑幕**快**这一点（用户：「离开的和黑幕错开一点，
+ *                 不要完全跟着走」）。同一时刻黑幕走了 easeIn(p)，名牌走的是
+ *                 easeIn(p × EXIT_LEAD)，所以它先一步出画，两者在退场中途明显错开。
  */
-const PLATE = { START: 0.12, LAG: 0.22, NAME: 0.4 };
+const PLATE = {
+  START: 0.12,
+  LAYER_LAG: 0.18,
+  LAYER_PULL: 0.45,
+  NAME_AT: 0.84,
+  NAME_PULL: 0.3,
+  EXIT_LEAD: 1.25,
+};
 
 // ---------------------------------------------------------------------------
 // 开关：什么时候才演这一段
@@ -179,6 +199,8 @@ function tween(ms, onTick, until = 1) {
 const easeOut = (p) => 1 - Math.pow(1 - p, 3.2);
 /** 退场用 ease-in：慢慢起步、越走越快，像被甩出画面 */
 const easeIn = (p) => Math.pow(p, 2.2);
+/** 两头速度都是 0 的缓动：两段动画接在一起时用它，接缝处才不会有「一顿再起步」 */
+const smoothstep = (p) => p * p * (3 - 2 * p);
 const lerp = (a, b, p) => a + (b - a) * p;
 /** 夹到 0~1：名牌的进场进度会算出负数（那一段它就该待在屏幕外） */
 const clamp01 = (p) => (p < 0 ? 0 : p > 1 ? 1 : p);
@@ -345,24 +367,35 @@ export async function playEncounter(opts = {}) {
     };
 
     /**
-     * 名牌：**从屏幕右边外面划进来**。
+     * 名牌：**从屏幕右边外面划进来**，而且里面的东西是一份份落定的。
      *
      * 以前这一步是一段 28px 的位移 + 淡入（CSS transition）。霓虹灯的字号动辄 300px，
      * 28px 连一个字宽都不到，用户看到的就是「它本来就长在那儿」——
      * 原话：「名字和霓虹灯好像没有任何进场动画，名字和霓虹灯都可以从右划入」。
-     * 现在整块从屏幕右侧外滑到自己的位置：
-     *   · 起点距离 = 名牌自己的宽度 + 它到屏幕右边的空隙（现量，字体换上来之后也不会偏）；
-     *   · 名字比霓虹灯晚一点起步，读起来是「灯管先到、名字再落上去」。
+     *
+     * 现在整块从屏幕右侧外滑到自己的位置，**到位顺序是从右往左**：
+     *   霓虹灯的 4 份 —— 最靠右的基准那份（--i: 0）先落定，往左的每一份慢一拍、多留一段距离，
+     *     于是整组字是「从右往左一份份拉开」的（用户点名要的感觉）；
+     *   名字 —— 最后落定（灯管先铺开、名字再压上去）。
+     * 起点距离 = 名牌自己的宽度 + 它到屏幕右边的空隙（现量，字体换上来之后也不会偏）。
      */
     const nameEl = plate.querySelector('.enc-name');
+    const neonLayers = [...neon.querySelectorAll('.enc-neon-i')];
     const plateGap = Math.max(0, Math.round(vw - plate.getBoundingClientRect().right));
+    /** 第 i 份霓虹灯的进场进度：越靠左（i 越大）起步越晚、收尾时间不变 */
+    const layerP = (pp, i) => clamp01((pp - i * PLATE.LAYER_LAG) / (1 - i * PLATE.LAYER_LAG));
     const plateTick = (pp) => {
       const away = Math.round(plate.offsetWidth + plateGap + 16);
       const e = easeOut(clamp01(pp));
       plate.style.transform = `translateX(${Math.round(away * (1 - e))}px)`;
+      neonLayers.forEach((el, i) => {
+        // 多留的那段距离通过 CSS 变量交给 .enc-neon-i 的 transform（它还有自己的错开量）
+        const pull = Math.round(away * PLATE.LAYER_PULL * (1 - easeOut(layerP(pp, i))));
+        el.style.setProperty('--dx', `${pull}px`);
+      });
       if (!nameEl) return;
-      const np = clamp01((pp - PLATE.LAG) / (1 - PLATE.LAG));
-      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME * (1 - easeOut(np)))}px)`;
+      const np = clamp01((pp - PLATE.NAME_AT) / (1 - PLATE.NAME_AT));
+      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME_PULL * (1 - easeOut(np)))}px)`;
     };
     plateTick(0);
 
@@ -415,10 +448,12 @@ export async function playEncounter(opts = {}) {
     setPhase('fill');
     // 起点取此刻的实际端点（而不是再算一遍）：左端 → 屏幕左边，右端 → 屏幕右边。
     // 黑幕本身早就是满屏的了，这一步是把光带拉通（「把屏幕盖住」的是黑幕）。
+    // 缓动用 smoothstep：划入收尾时速度已经接近 0，这里也从 0 起速 ——
+    // 两段接起来才是「划进来，顺势铺开」，而不是「先进来，再拉长」。
     const l0 = bandL;
     const r0 = bandR;
     await tween(t(PACE.bandFill), (p) => {
-      const e = easeOut(p);
+      const e = smoothstep(p);
       applyBand(lerp(l0, 0, e), lerp(r0, vw, e));
     });
     audio.play('maximize', { volume: 0.5 });
@@ -443,23 +478,24 @@ export async function playEncounter(opts = {}) {
 
     // ---- ④ 一起滑出屏幕 ----
     setPhase('out');
-    // 诊断可以把退场也钉在中途（截图脚本要拍「名牌跟着黑幕走」那一下）
+    // 诊断可以把退场也钉在中途（截图脚本要拍「名牌和黑幕错开」那一下）
     const outStop = encounterDebug.freeze === 'out-mid' ? clamp01(encounterDebug.freezeP ?? 0.5) : 1;
     await tween(t(PACE.slideOut), (p) => {
       const e = easeIn(p);
       playerWrap.style.transform = `translateY(-50%) translateX(${Math.round(-off * e)}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${Math.round(off * e)}px)`;
       // 整块黑幕（连同上面那组光带）从左边开始把战斗画面让出来
-      const dx = Math.round(vw * e);
-      curtain.style.transform = `translateX(${dx}px)`;
+      curtain.style.transform = `translateX(${Math.round(vw * e)}px)`;
       /**
-       * 名牌**跟着黑幕一起出**（用户：「出场就跟随着黑幕出就可以」）。
+       * 名牌**跟着黑幕一起出**，但**比黑幕快一点**（用户：「离开的和黑幕错开一点，
+       * 不要完全跟着走可能好一点」）。
        *
-       * 它本来就叠在黑幕之上（z-index 4 > 1），所以给两者同一个位移，
-       * 看到的就是「名字和霓虹灯被幕布一起带走了」—— 不用再单独设计一套退场动画。
-       * 光带在里面（它是黑幕的子节点），自动跟着走。
+       * 它本来就叠在黑幕之上（z-index 4 > 1），所以只要位移不同就会肉眼可见地错开：
+       * 黑幕走 easeIn(p)，名牌走 easeIn(p × EXIT_LEAD) —— 同一个起点、更陡的曲线，
+       * 于是名牌先一步滑出画面，黑幕随后把战斗画面让出来。
+       * 光带在里面（它是黑幕的子节点），仍然跟着黑幕走。
        */
-      plate.style.transform = `translateX(${dx}px)`;
+      plate.style.transform = `translateX(${Math.round(vw * easeIn(clamp01(p * PLATE.EXIT_LEAD)))}px)`;
     }, outStop);
     if (outStop < 1) { await debugHold('out-mid'); }
     return true;

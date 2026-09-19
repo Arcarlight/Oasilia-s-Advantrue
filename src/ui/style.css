@@ -2494,8 +2494,10 @@ input, textarea { cursor: text !important; }
   opacity: .42;
   /* 基准那份（--i: 0）贴住右边缘，其余几份依次往左错开。
      错开量写小一点是有意的：字号到 300px 之后，0.12em 的错开会把两个字糊成一片网，
-     读不出是哪个词；.07em 既看得出「叠了四份」，笔画又还是分开的。 */
-  transform: translateX(calc(var(--i, 0) * -.07em));
+     读不出是哪个词；.07em 既看得出「叠了四份」，笔画又还是分开的。
+     --dx 是**进场时**额外多留的一段距离（encounter.js 每帧写）：越靠左的几份留得越多、
+     落定得越晚，整组字就是「从右往左一份份拉开」的。落定后 --dx 归 0，只剩下面这个错开量。 */
+  transform: translateX(calc(var(--i, 0) * -.07em + var(--dx, 0px)));
   /* 描边外面再糊一层同色光晕，才有灯管的感觉 */
   filter: drop-shadow(0 0 .08em var(--neon, var(--accent-2, #ffc96b)));
 }

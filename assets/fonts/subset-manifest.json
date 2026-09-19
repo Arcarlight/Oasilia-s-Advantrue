@@ -1,15 +1,15 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了",
-  "textSha256": "364527b246413c28bb6a823a9385898595e83b7a000c8c9f6c112db6ad67efee",
-  "chars": 2005,
+  "textSha256": "55df431c4894450e0576e9dbd09a45e28dc7ed66c6bff62e0074672c1041f5a2",
+  "chars": 2008,
   "fonts": [
     {
       "out": "SGHr-Regular-subset.woff2",
       "src": "SGHr-Regular.ttf",
       "label": "正文",
       "srcBytes": 4120572,
-      "outBytes": 327448,
-      "codepoints": 1899,
+      "outBytes": 327656,
+      "codepoints": 1902,
       "missingCount": 106,
       "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩いうえおかくぐけさしじぜたちっつてでとなにのはへほみめりれをんアイウェクスットヒプルロー乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️０１２３４５６７８９"
     },
@@ -18,8 +18,8 @@
       "src": "WenYuanSerifSC-Bold.ttf",
       "label": "粗体（卡名 / 商店名…）",
       "srcBytes": 15238244,
-      "outBytes": 429056,
-      "codepoints": 2001,
+      "outBytes": 429064,
+      "codepoints": 2004,
       "missingCount": 4,
       "missing": "⚠⟨⟩️"
     },
@@ -28,8 +28,8 @@
       "src": "YShiWrittenSC-Regular.ttf",
       "label": "手写体（写意体 SC）",
       "srcBytes": 3994192,
-      "outBytes": 318040,
-      "codepoints": 1969,
+      "outBytes": 318852,
+      "codepoints": 1972,
       "missingCount": 36,
       "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️－～"
     }
