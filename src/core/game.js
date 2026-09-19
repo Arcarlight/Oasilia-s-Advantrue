@@ -1,7 +1,7 @@
 // 游戏状态机：地图 → 战斗 / 事件 / 宝箱 / 商店 / 营地 → 下一章 → 结局。
 // 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
 
-import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
+import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, RARITY, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
 import { CARD_BY_ID, ITEMS, STARTER_DECK, STARTER_ITEMS, rollCard, rollCards, CARDS } from '../data/cards.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
@@ -684,9 +684,18 @@ export class Game {
     // 玩家一眼就看出来了（「boss 和精英给的卡并没有更好」）。现在档位表说了算。
     const tierKey = ctx.kind === 'boss' ? 'boss' : ctx.kind === 'elite' ? 'elite' : 'normal';
     const weights = REWARD_WEIGHTS[tierKey] ?? null;
-    const getCard = ctx.kind === 'boss' || this.rng.chance(BALANCE.cardRewardChance);
+    /**
+     * 精英与首领**必定出卡**。
+     *
+     * 以前这里只有 `ctx.kind === 'boss' ||`，精英那一档会跟着 70% 的概率走 ——
+     * 也就是**每 10 次精英有 3 次空手**。玩家报的就是这个（「打完 boss 或精英不掉卡」）。
+     * 精英 / 首领是玩家心里的大节点：金币、成长、选项数都按「更丰厚」设计，
+     * 唯独卡牌还掷骰子，那一句承诺就破功了。
+     * 普通怪仍按 cardRewardChance 抽 —— 一路都掉卡会让卡组膨胀得太快。
+     */
+    const getCard = ctx.kind === 'boss' || ctx.kind === 'elite' || this.rng.chance(BALANCE.cardRewardChance);
     const slots = ctx.kind === 'boss' || ctx.kind === 'elite' ? 4 : 3;
-    const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights)) : [];
+    const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights), weights) : [];
     const getPotion = this.rng.chance(BALANCE.potionDropChance);
 
     this.reward = {
@@ -720,19 +729,36 @@ export class Game {
    * 于是「既没有回血牌、也没有解状态牌」时（第 2 章起很常见），后一条会把前一条顶掉 ——
    * 实测 200/200 次奖励里一张回血牌都没有，也就是「必出回血牌」这条承诺**一直是失效的**。
    * 现在从末尾往前依次占位：回血占最后一个，解状态占倒数第二个。
+   *
+   * ⚠️ 保底**保的是功能，不是稀有度**：它以前是「在符合条件的卡里**等概率**抽一张」，
+   * 于是每次奖励固定被塞进 2 张（回血 + 解状态各一），而回血/解状态牌里恰好有几张是史诗
+   * （生命之泉、守护誓约）—— 结果**各档位的史诗占比被这 2 张抹平了**：
+   * 实测普通怪 20.8% / 精英 18.5% / 首领 22.3%，精英甚至比普通怪还低，
+   * 「精英与首领的奖励更好」当场破功。现在保底也走**该档位的稀有度权重表**，
+   * 档位差异才真的能看出来。
    */
-  withSustainPity(choices) {
+  withSustainPity(choices, weights = null) {
     if (!choices?.length) return choices;
     const deck = this.data.deck;
     const has = (kind) => deck.some((id) => CARD_BY_ID[id]?.effects?.some((e) => e.kind === kind));
     const out = [...choices];
     const used = new Set(out.map((c) => c.id));
     let slot = out.length - 1;
+    /** 按稀有度权重抽一张（和 rollCards 同一套权重：该档位说了算） */
+    const pickWeighted = (pool) => {
+      const w = (c) => (weights ? (weights[c.rarity] ?? 0) : (RARITY[c.rarity]?.weight ?? 1));
+      const rows = pool.map((c) => [w(c), c]).filter(([x]) => x > 0);
+      const list = rows.length ? rows : pool.map((c) => [1, c]);
+      const total = list.reduce((s, [x]) => s + x, 0);
+      let r = Math.random() * total;
+      for (const [x, c] of list) { r -= x; if (r <= 0) return c; }
+      return list[list.length - 1][1];
+    };
     const swapInto = (test) => {
       if (slot < 0) return false;
       const pool = CARDS.filter((c) => !c.enemyOnly && !used.has(c.id) && test(c));
       if (!pool.length) return false;
-      const pick = this.rng.pick(pool);
+      const pick = pickWeighted(pool);
       used.add(pick.id);
       out[slot] = pick;
       slot -= 1;
