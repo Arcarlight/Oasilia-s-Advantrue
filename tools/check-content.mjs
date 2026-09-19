@@ -92,6 +92,44 @@ if (missingSprites) {
   warn(`有 ${missingSprites} 个素材缺失，跑 & tools/fetch-content.ps1 下载（脚本会自动跳过已存在的）`);
 }
 
+/**
+ * 精灵表的切分必须和图片尺寸严丝合缝，而且 **Idle 至少要 8 帧**。
+ *
+ * 起因（玩家反馈）：「大针蜂的行走图有问题」—— 战斗里它显示成一堆小蜜蜂铺满屏幕。
+ * 根因：SpriteCollab 的 AnimData 里，大针蜂的 Idle 写的是 `<CopyOf>Walk</CopyOf>`（不写自己的帧尺寸），
+ * tools/build-sprite-meta.mjs 当时不认识这个标签，fw/fh 读成 undefined，
+ * 于是走了「整张图当一帧」的兜底 —— 128×384 的精灵表被当成一张立绘画了出来。
+ * 这条门禁把「切不出来」这件事直接拦在提交之前：帧尺寸乘回去必须等于图片尺寸，
+ * 而且 Idle 的帧数不能小于 8（PMD 的精灵表永远是 8 行 = 8 个朝向）。
+ */
+{
+  const metaPath = path.join(ROOT, 'assets', 'data', 'sprites.json');
+  const meta = await fs.readFile(metaPath, 'utf8').then(JSON.parse).catch(() => null);
+  if (!meta) err('assets/data/sprites.json 读不出来（跑 node tools/build-sprite-meta.mjs 生成）');
+  else {
+    const bad = [];
+    for (const slug of speciesSlugs) {
+      const anims = meta[slug]?.anims;
+      if (!anims) { bad.push(`${slug}: 没有元数据`); continue; }
+      for (const a of needAnims) {
+        const v = anims[a];
+        if (!v) { bad.push(`${slug}/${a}: 元数据里没有这一条`); continue; }
+        const p = path.join(ROOT, 'assets', 'pokemon', slug, a + '.png');
+        const buf = await fs.readFile(p).catch(() => null);
+        if (!buf) continue;   // 缺图上面已经报过了
+        const w = buf.readUInt32BE(16), h = buf.readUInt32BE(20);
+        if (v.fw * v.cols !== w || v.fh * v.rows !== h || v.frames !== v.cols * v.rows) {
+          bad.push(`${slug}/${a}: 元数据 ${v.fw}×${v.fh} × ${v.cols}×${v.rows} 对不上图片 ${w}×${h}`);
+        }
+        if (a === 'Idle' && v.frames < 8) {
+          bad.push(`${slug}/Idle: 只有 ${v.frames} 帧（PMD 精灵表是 8 行朝向，切不出来才会变成 1 帧——"整张图当一帧"）`);
+        }
+      }
+    }
+    if (bad.length) err(`精灵表切分有问题：${bad.slice(0, 6).join('、')}${bad.length > 6 ? ` …共 ${bad.length} 条` : ''}（跑 node tools/build-sprite-meta.mjs 重新生成）`);
+  }
+}
+
 const fxFiles = new Set(await fs.readdir(path.join(ROOT, 'assets', 'img', 'fx')).catch(() => []));
 const iconFiles = new Set(await fs.readdir(path.join(ROOT, 'assets', 'img', 'cards')).catch(() => []));
 const css = await fs.readFile(path.join(ROOT, 'src', 'ui', 'style.css'), 'utf8');

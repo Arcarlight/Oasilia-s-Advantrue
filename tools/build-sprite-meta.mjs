@@ -47,17 +47,43 @@ function parsePng(buf) {
   return { width, height };
 }
 
-// 极简 XML 提取：读出每个 <Anim> 的 Name / FrameWidth / FrameHeight
+/**
+ * 极简 XML 提取：读出每个 <Anim> 的 Name / FrameWidth / FrameHeight / CopyOf。
+ *
+ * **必须处理 `<CopyOf>`**：SpriteCollab 里有一批动画不写自己的帧尺寸，而是写
+ * `<CopyOf>Walk</CopyOf>`（「和 Walk 一样」），一共 112 条。以前这里忽略了这个标签，
+ * 于是那些动画的 fw/fh 读出来是 undefined → 走「整张图当一帧」的兜底 →
+ * 界面上把一整张精灵表当成一个立绘画出来。
+ * 实测踩到的就是**大针蜂的 Idle**（`<CopyOf>Walk</CopyOf>`，32×48），
+ * 战斗中它显示成一堆小蜜蜂铺满屏幕（玩家反馈「大针蜂的行走图有问题」）。
+ *
+ * CopyOf 可能指向**后面**才定义的动画，所以先全读出来、再统一解析一遍。
+ */
 function parseAnimData(xml) {
-  const out = {};
+  const raw = {};
   const re = /<Anim>([\s\S]*?)<\/Anim>/g;
   let m;
   while ((m = re.exec(xml))) {
     const body = m[1];
     const name = (/<Name>([^<]+)<\/Name>/.exec(body) || [])[1];
+    if (!name) continue;
     const fw = Number((/<FrameWidth>(\d+)<\/FrameWidth>/.exec(body) || [])[1]);
     const fh = Number((/<FrameHeight>(\d+)<\/FrameHeight>/.exec(body) || [])[1]);
-    if (name && fw && fh) out[name] = { fw, fh };
+    const copyOf = (/<CopyOf>([^<]+)<\/CopyOf>/.exec(body) || [])[1];
+    raw[name] = { fw: fw || null, fh: fh || null, copyOf: copyOf ?? null };
+  }
+  // 解析 CopyOf（带环路保护：上游数据里理论上不该有环，但不能让脚本因此挂死）
+  const resolve = (name, depth = 0) => {
+    const a = raw[name];
+    if (!a || depth > 6) return null;
+    if (a.fw && a.fh) return { fw: a.fw, fh: a.fh };
+    if (a.copyOf) return resolve(a.copyOf, depth + 1);
+    return null;
+  };
+  const out = {};
+  for (const name of Object.keys(raw)) {
+    const r = resolve(name);
+    if (r) out[name] = r;
   }
   return out;
 }
@@ -85,15 +111,56 @@ for (const slug of Object.keys(DEX)) {
   }
 
   meta[slug] = { dex: DEX[slug], anims: {} };
-  for (const file of await fs.readdir(dir)) {
-    if (!file.endsWith('.png')) continue;
+  const files = (await fs.readdir(dir)).filter((f) => f.endsWith('.png'));
+  /** 先把这个物种所有图的尺寸读出来，兜底推断要用到彼此 */
+  const sizes = {};
+  for (const file of files) {
+    sizes[path.basename(file, '.png')] = parsePng(await fs.readFile(path.join(dir, file)));
+  }
+  /**
+   * 兜底推断：AnimData 里查不到帧尺寸时，**不要**直接把整张图当成一帧
+   * （那是一整张精灵表，画出来就是「一堆小精灵铺满屏幕」）。
+   * 用同一物种里别的动画推：PMD 的精灵表永远是 8 行（8 个朝向），
+   * 于是 fh = 高 ÷ 8，fw = 宽 ÷ 列数 —— 列数取「同一物种别的动画的帧宽」能整除的那个。
+   */
+  const inferCell = (name, width, height) => {
+    if (height % 8 !== 0) return null;
+    const fh = height / 8;
+    // 优先用帧高相同的那个动画的帧宽（大针蜂的 Idle 就是「和 Walk 一样」）
+    const peers = Object.entries(anims).filter(([n]) => n !== name);
+    const sameHeight = peers.find(([, a]) => a.fh === fh && width % a.fw === 0);
+    if (sameHeight) return { fw: sameHeight[1].fw, fh };
+    const anyFits = peers.find(([, a]) => width % a.fw === 0 && width / a.fw >= 2 && width / a.fw <= 16);
+    if (anyFits) return { fw: anyFits[1].fw, fh };
+    // 实在没有参照：取能整除、且列数落在 2~16 的最大帧宽（帧越大越不容易切错行）
+    for (let w = Math.min(width, fh * 2); w >= 8; w--) {
+      if (width % w === 0 && width / w >= 2 && width / w <= 16) return { fw: w, fh };
+    }
+    return null;
+  };
+
+  for (const file of files) {
     const name = path.basename(file, '.png');
-    const { width, height } = parsePng(await fs.readFile(path.join(dir, file)));
-    let fw = anims[name]?.fw ?? width;
-    let fh = anims[name]?.fh ?? height;
-    if (width % fw !== 0 || height % fh !== 0) {
-      console.warn('size mismatch ' + slug + '/' + name + ': animdata ' + fw + 'x' + fh + ' vs image ' + width + 'x' + height + ' -> single frame');
-      fw = width; fh = height; warns++;
+    const { width, height } = sizes[name];
+    let fw = anims[name]?.fw ?? 0;
+    let fh = anims[name]?.fh ?? 0;
+    if (!fw || !fh || width % fw !== 0 || height % fh !== 0) {
+      const inferred = inferCell(name, width, height);
+      if (inferred) {
+        if (fw && fh) {
+          console.warn('size mismatch ' + slug + '/' + name + ': animdata ' + fw + 'x' + fh
+            + ' vs image ' + width + 'x' + height + ' -> 推断为 ' + inferred.fw + 'x' + inferred.fh);
+        } else {
+          console.warn('no frame size ' + slug + '/' + name + '（AnimData 里只有 CopyOf？）-> 推断为 '
+            + inferred.fw + 'x' + inferred.fh);
+        }
+        fw = inferred.fw; fh = inferred.fh;
+        warns++;
+      } else {
+        console.warn('size mismatch ' + slug + '/' + name + ': ' + fw + 'x' + fh
+          + ' vs image ' + width + 'x' + height + ' -> 无法推断，整张图当一帧');
+        fw = width; fh = height; warns++;
+      }
     }
     const cols = Math.round(width / fw);
     const rows = Math.round(height / fh);

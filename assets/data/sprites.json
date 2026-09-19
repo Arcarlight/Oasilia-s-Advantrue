@@ -849,11 +849,11 @@
     "frames": 16
    },
    "Idle": {
-    "fw": 128,
-    "fh": 384,
-    "cols": 1,
-    "rows": 1,
-    "frames": 1
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32
    }
   }
  },
