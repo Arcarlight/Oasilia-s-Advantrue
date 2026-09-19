@@ -186,6 +186,11 @@ async function boot() {
     // 战斗数值诊断：卡面伤害是不是按当前攻击力实时算的、毒 / 剧毒是不是按最大生命百分比结算
     import('../tools/diag-status.js').catch((e) => console.error('战斗数值诊断加载失败', e));
   }
+  if (params.get('dgenemy')) {
+    // 敌人面板诊断：把指定章节 / 档位的敌人摆到屏幕上，核对攻击力与意图提示
+    // （?dgenemy=1 自检；?dgenemy=shot&stage=5&tier=normal 留屏截图）
+    import('../tools/diag-enemy-panel.js').catch((e) => console.error('敌人面板诊断加载失败', e));
+  }
   if (params.get('dgfloat')) {
     // 浮字诊断：伤害 / AP 数字背后那块「蓝底」到底是谁画的
     import('../tools/diag-float.js').catch((e) => console.error('浮字诊断加载失败', e));
