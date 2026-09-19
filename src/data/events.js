@@ -91,7 +91,7 @@ export const EVENTS = [
             "hp": -18
           }
         ],
-        "hint": "拿走一颗（母鸟好像不在？）"
+        "hint": "拿走一颗（窝的主人好像不在？）"
       }),
       eventOption({
         "label": "在原地等它回来（幸运 +3，回复 20 HP）",
@@ -223,9 +223,9 @@ export const EVENTS = [
   },
   {
     "id": "cliff_vulture_debt",
-    "name": "秃鹫的账",
+    "name": "秃鹫娜的账",
     "biome": "cliff",
-    "text": "一只秃鹫站在岩尖上等你走近。它开口就说：「你上次欠我的。」你不记得有这回事。\n「诶？我有欠过吗……？」",
+    "text": "一只秃鹫娜站在岩尖上等你走近。它开口就说：「你上次欠我的。」你不记得有这回事。\n「诶？我有欠过吗……？」",
     "options": [
       eventOption({
         "label": "付钱（-45 金币，获得 1 张稀有卡）",
@@ -2296,7 +2296,7 @@ export const EVENTS = [
     "id": "tide_stranded_thing",
     "name": "搁浅的东西",
     "biome": "tide",
-    "text": "一条比你还大的鱼搁在盐壳上，嘴一动一动。它看着你，没有求救的意思。\n「唔……你还好吗？」",
+    "text": "一只比你还大的巨翅飞鱼搁在盐壳上，嘴一动一动。它看着你，没有求救的意思。\n「唔……你还好吗？」",
     "options": [
       eventOption({
         "label": "把它推回水里（-14 HP，幸运 +3）",

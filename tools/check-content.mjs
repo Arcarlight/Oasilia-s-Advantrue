@@ -612,6 +612,104 @@ if (BGM_FILES) {
   }
 }
 
+// ---------- 10. 现实动物（宝可梦世界里没有动物） ----------
+/**
+ * 用户要求：「游戏内不要出现动物，只能出现宝可梦。宝可梦世界是没有动物的。」
+ * 起因是「秃鹫的账」那个事件写了一只真的秃鹫 —— 已改成秃鹫娜。
+ *
+ * 判据必须**先把宝可梦自己的名字抠掉**再找动物词，否则「沙河马」「沙漠蜻蜓」
+ * 「大颚蚁」「泥驴仔」「滚滚蝙蝠」里的 河马/蜻蜓/蚁/驴/蝙蝠 全是误报。
+ * 台词里点名的物种（秃鹫娜、巨翅飞鱼…）同样要放行 —— 那正是想要的效果。
+ *
+ * 三种语言分别判：中文按词、日文按汉字词（物种名是片假名，不会撞）、
+ * 英文按整词（`\b`，这样 Woobat 不会撞 bat、Shellder 不会撞 shell）。
+ */
+{
+  // 景物 / 遗骸，不算动物：贝壳滩上全是贝壳是风景，大舌贝本身就是一只贝壳
+  const OK_ZH = ['贝壳'];
+  const ZH_ANIMALS = ['秃鹫', '秃鹰', '鹫', '鹰', '隼', '雕', '猫头鹰', '乌鸦', '鸦', '鸟', '雀', '鸽', '鸡', '鸭', '鹅', '鹤', '鹭',
+    '螃蟹', '蟹', '虾', '龙虾', '鱼', '鲸', '海豚', '鲨', '章鱼', '乌贼', '鱿鱼', '水母', '海星', '蜗牛', '蛞蝓',
+    '蜘蛛', '蝎', '蜈蚣', '蚂蚁', '蜜蜂', '蜂', '蝴蝶', '蛾', '蟑螂', '蚊子', '苍蝇', '蝉', '蟋蟀', '蚱蜢', '萤火虫',
+    '蛇', '蜥蜴', '壁虎', '鳄鱼', '乌龟', '青蛙', '蟾蜍', '蝾螈',
+    '老鼠', '鼠', '兔子', '猫', '狗', '狼', '狐狸', '熊', '老虎', '豹', '狮子', '大象', '犀牛', '长颈鹿', '斑马',
+    '马', '牛', '羊', '猪', '猴子', '猩猩', '骆驼', '鹿', '獾', '貂', '鼬', '刺猬', '蝙蝠', '袋鼠', '熊猫', '水獭', '海豹', '企鹅'];
+  // 台词里点名的物种，放行（这些正是「改成宝可梦」之后的写法）
+  const POKE_PROSE = ['秃鹫娜', '巨翅飞鱼', '波波', '小箭雀', '铁炮鱼', '弱丁鱼', '巨钳蟹', '木守宫', '沙漠蜻蜓', '欧亚西莉亚'];
+
+  const names = new Set(POKE_PROSE);
+  for (const e of ENEMIES) if (e.name) names.add(e.name);
+  for (const c of CARDS) if (c.name) names.add(c.name);
+  for (const i of Object.values(ITEMS)) if (i.name) names.add(i.name);
+  for (const m of MERCHANTS) if (m.name) names.add(m.name);
+  const NAME_LIST = [...names].sort((a, b) => b.length - a.length);
+  const mask = (s) => { let out = String(s); for (const n of NAME_LIST) out = out.split(n).join('◯'.repeat(n.length)); return out; };
+
+  const zhHits = [];
+  const scanZh = (obj, where) => {
+    if (typeof obj === 'string') {
+      let m = mask(obj);
+      for (const ok of OK_ZH) m = m.split(ok).join('◯'.repeat(ok.length));
+      const found = ZH_ANIMALS.filter((a) => m.includes(a));
+      if (found.length) zhHits.push(`${where}（${found.join('、')}）：${JSON.stringify(obj).slice(0, 60)}`);
+      return;
+    }
+    if (Array.isArray(obj)) { obj.forEach((v) => scanZh(v, where)); return; }
+    if (obj && typeof obj === 'object') for (const [k, v] of Object.entries(obj)) scanZh(v, `${where}.${k}`);
+  };
+  for (const e of EVENTS) {
+    scanZh(e.name, `event:${e.id}.name`); scanZh(e.text, `event:${e.id}.text`);
+    (e.options ?? []).forEach((o, i) => scanZh([o.label, o.hint, o.text], `event:${e.id}.opt${i}`));
+  }
+  for (const e of ENEMIES) scanZh([e.lines, e.bossTitle], `enemy:${e.id}`);
+  for (const c of CARDS) scanZh(c.text, `card:${c.id}.text`);
+  for (const m of MERCHANTS) scanZh([m.name, m.role, m.greet], `merchant:${m.id}`);
+  for (const b of Object.values(BIOMES)) scanZh([b.name, b.sub, b.desc], 'biome');
+  if (zhHits.length) {
+    err(`内容里有 ${zhHits.length} 处**现实动物**（宝可梦世界里没有动物，要换成宝可梦）：`
+      + `${zhHits.slice(0, 5).join(' ｜ ')}${zhHits.length > 5 ? ' …' : ''}`);
+  }
+
+  // 译文同样要干净 —— 中文改了、日文还留着「禿鷲」这种漏网，是用户明确提过的
+  // （「别的语言也要改掉啊」）。日文按汉字词判：物种名在日文里是片假名，不会撞；
+  // 英文按整词判（\b），这样 Woobat 不会撞 bat、Remoraid 不会撞 rat。
+  const JA_ANIMALS = ['禿鷲', '鷲', '鷹', '鳶', '烏', '鳥', '蟹', '魚', '鯨', '海豚', '蛸', '烏賊', '水母', '蝸牛', '蜘蛛', '蠍', '蜈蚣',
+    '蟻', '蜂', '蝶', '蛾', '蚊', '蛇', '蜥蜴', '蛙', '鼠', '兎', '猫', '犬', '狼', '狐', '熊', '虎', '豹', '獅子', '象',
+    '犀', '河馬', '馬', '牛', '羊', '豚', '猿', '駱駝', '鹿', '蝙蝠'];
+  // 不判「亀」：日文里「亀裂」（裂缝）满地都是，全是误报；乌龟在日文里一般写片假名 カメ。
+  const EN_RE = /\b(bird|birds|fish|fishes|crab|crabs|lizard|lizards|snake|snakes|vulture|vultures|rabbit|mouse|mice|rat|rats|cat|cats|dog|dogs|wolf|wolves|fox|foxes|spider|spiders|ant|ants|bee|bees|butterfly|moth|owl|eagle|hawk|crow|shark|whale|dolphin|octopus|jellyfish|turtle|frog|toad|bat|bats|horse|cow|pig|sheep|monkey|deer|bear|tiger|lion|elephant|camel|penguin|otter|hedgehog|squirrel|snail)\b/i;
+  // 英文里 fish 也是动词（fish around / fish out），这几个短语是正经写法
+  const OK_EN = ['fish around', 'fish out'];
+  for (const lg of ['ja', 'en']) {
+    const dict = JSON.parse(await fs.readFile(path.join(ROOT, `content/i18n/${lg}.json`), 'utf8').catch(() => '{}'));
+    // 先把「这一语言里的」宝可梦 / 卡牌 / 道具 / 商人名字抠掉：Brave Bird（勇鸟猛攻）、
+    // Wishiwashi Fish Market（弱丁鱼渔市）这类官方名里本来就带着 animal 词。
+    const masks = [];
+    const srcNames = [
+      ...ENEMIES.map((e) => e.name), ...CARDS.map((c) => c.name),
+      ...Object.values(ITEMS).map((i) => i.name), ...MERCHANTS.map((m) => m.name), ...POKE_PROSE,
+    ];
+    for (const n of srcNames) { const tr = dict[n]; if (tr && tr.length >= 3) masks.push(tr); }
+    masks.sort((a, b) => b.length - a.length);
+    const hits = [];
+    for (const [zh, v] of Object.entries(dict)) {
+      let s = String(v);
+      for (const m of masks) s = s.split(m).join('◯'.repeat(m.length));
+      let found = [];
+      if (lg === 'ja') found = JA_ANIMALS.filter((a) => s.includes(a));
+      else {
+        for (const ok of OK_EN) s = s.split(new RegExp(ok, 'gi')).join('◯'.repeat(ok.length));
+        const m = s.match(EN_RE);
+        found = m ? [m[0]] : [];
+      }
+      if (found.length) hits.push(`${JSON.stringify(zh.slice(0, 20))} → ${JSON.stringify(String(v).slice(0, 40))}（${found.join('、')}）`);
+    }
+    if (hits.length) {
+      err(`多语言 ${lg} 有 ${hits.length} 条译文里还有**现实动物**：${hits.slice(0, 4).join(' ｜ ')}${hits.length > 4 ? ' …' : ''}`);
+    }
+  }
+  if (!zhHits.length) note('内容里没有现实动物（台词点名的都是宝可梦：秃鹫娜 / 巨翅飞鱼 / 波波…）');
+}
+
 // ---------- 汇总 ----------
 console.log('内容体检：');
 console.log(`  卡牌 ${CARDS.length} · 敌人 ${ENEMIES.length}（${Object.keys(TIERS).map((t) => t + ' ' + ENEMIES.filter((e) => e.tier === t).length).join(' / ')}）`);

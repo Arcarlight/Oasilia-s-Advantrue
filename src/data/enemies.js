@@ -585,7 +585,7 @@ export const ENEMIES = [
     "biome": "desert",
     "deck": MOVE_POOLS.kit_steel_hi,
     "signature": [ "sig_iron_tail_wall" ],
-    "lines": [ "沙面裂开，一条由铁组成的蛇从中升起。" ],
+    "lines": [ "沙面裂开，一条铁铸的身躯从中升起。" ],
   },
   {
     "id": "tyranitar",
@@ -1035,7 +1035,7 @@ export const ENEMIES = [
     "tier": "mob",
     "biome": "tide",
     "deck": MOVE_POOLS.kit_water,
-    "lines": [ "一条鱼把水吸进嘴里，然后对着你吐了出来。", "它瞄准的时候会歪一下头。" ],
+    "lines": [ "一条铁炮鱼把水吸进嘴里，然后对着你吐了出来。", "它瞄准的时候会歪一下头。" ],
   },
   {
     "id": "tentacruel",
@@ -1080,7 +1080,7 @@ export const ENEMIES = [
     "tier": "normal",
     "biome": "tide",
     "deck": MOVE_POOLS.kit_water,
-    "lines": [ "它把一只螃蟹的壳拆开，扔在一边，然后看向你。" ],
+    "lines": [ "它把一只巨钳蟹的壳拆开，扔在一边，然后看向你。" ],
   },
   {
     "id": "kingler",
@@ -1156,7 +1156,7 @@ export const ENEMIES = [
     "tier": "mob",
     "biome": "cliff",
     "deck": MOVE_POOLS.kit_flying,
-    "lines": [ "一只鸟在你的头顶绕圈，一圈比一圈低。", "它落在岩架上，用一只眼睛看你。" ],
+    "lines": [ "一只波波在你的头顶绕圈，一圈比一圈低。", "它落在岩架上，用一只眼睛看你。" ],
   },
   {
     "id": "aron",
@@ -1451,7 +1451,7 @@ export const ENEMIES = [
     "tier": "mob",
     "biome": "forest",
     "deck": MOVE_POOLS.kit_grass,
-    "lines": [ "树干上贴着一只小蜥蜴，尾巴上还挂着一片叶子。", "它从树上一路滑下来，落地时几乎没有声音。" ],
+    "lines": [ "树干上贴着一只木守宫，尾巴上还挂着一片叶子。", "它从树上一路滑下来，落地时几乎没有声音。" ],
   },
   {
     "id": "snivy",
@@ -1536,7 +1536,7 @@ export const ENEMIES = [
     "tier": "mob",
     "biome": "tide",
     "deck": MOVE_POOLS.kit_water,
-    "lines": [ "一小群鱼挤在一起，挤成了一个比它们单个大得多的形状。", "它们同时转向你，整齐得有点吓人。" ],
+    "lines": [ "一小群弱丁鱼挤在一起，挤成了一个比它们单个大得多的形状。", "它们同时转向你，整齐得有点吓人。" ],
   },
   {
     "id": "mareanie",
@@ -1580,7 +1580,7 @@ export const ENEMIES = [
     "tier": "mob",
     "biome": "cliff",
     "deck": MOVE_POOLS.kit_flying,
-    "lines": [ "一只小鸟在风口上挂着不动，尾巴上的红羽毛很显眼。", "它冲你叫了两声，声音比它自己大。" ],
+    "lines": [ "一只小箭雀在风口上挂着不动，尾巴上的红羽毛很显眼。", "它冲你叫了两声，声音比它自己大。" ],
   },
   {
     "id": "woobat",
