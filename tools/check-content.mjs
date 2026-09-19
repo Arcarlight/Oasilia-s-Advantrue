@@ -441,6 +441,76 @@ if (BGM_FILES) {
   else note(`状态胶囊退场：CSS 与 JS 都是 ${jsMs}ms（入场 / 层数变化 / 退场三套动画见 style.css）`);
 }
 
+// ---------- 7. 字体子集是不是过期了 ----------
+/**
+ * 这一条治的是真出过的事故：上一轮我重写了 46 个事件的旁白，加了一堆「呀 / 诶 / 唔 / 哟」，
+ * 却忘了重跑 tools/subset-fonts.mjs —— 于是发出去的**子集**里没有这些字（子集是内容文本的旧快照），
+ * 它们在页面上一个字一个字掉到黑体兜底上。玩家看到的结论是「这个字体严重缺字」，
+ * 而真相是子集过期（字体本身一个都不缺）。这类错误肉眼只能看出「字不对」，量不出原因，
+ * 所以在体检里钉死：**子集的内容指纹必须等于现在的内容文本**。
+ */
+{
+  const { createHash } = await import('node:crypto');
+  const manifestFile = path.join(ROOT, 'assets/fonts/subset-manifest.json');
+  const manifest = JSON.parse(await fs.readFile(manifestFile, 'utf8').catch(() => 'null'));
+  if (!manifest) {
+    err('assets/fonts/subset-manifest.json 不存在 —— 跑一次 node tools/subset-fonts.mjs 生成字体子集与清单');
+  } else {
+    const SCAN = [{ dir: 'content', ext: ['.json'] }, { dir: 'src', ext: ['.js'] }, { dir: 'tools', ext: ['.js'] }];
+    const ALWAYS = [
+      ' !"#$%&\'()*+,-./0123456789:;<=>?@',
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`',
+      'abcdefghijklmnopqrstuvwxyz{|}~',
+      '　、。〈〉《》「」『』【】〔〕・ーー—–…‘’“”′″¥￥×÷±°％‰＃＆＊＠',
+      '，．；：？！（）［］｛｝＜＞＝＋－／＼｜～＄　',
+      '０１２３４５６７８９',
+      '←→↑↓★☆●○◆◇■□▲▼♪♭†‡§¶',
+    ];
+    const walk = async (dir, exts, out) => {
+      for (const e of await fs.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) { if (e.name !== 'node_modules' && !e.name.startsWith('.')) await walk(p, exts, out); }
+        else if (exts.includes(path.extname(e.name).toLowerCase())) out.push(p);
+      }
+    };
+    const files = [];
+    for (const s of SCAN) await walk(path.join(ROOT, s.dir), s.ext, files);
+    files.push(path.join(ROOT, 'index.html'));
+    const chars = new Set(ALWAYS.join(''));
+    for (const f of files) {
+      for (const ch of await fs.readFile(f, 'utf8')) {
+        const cp = ch.codePointAt(0);
+        if (cp < 0x20 || (cp >= 0xe000 && cp <= 0xf8ff)) continue;
+        chars.add(ch);
+      }
+    }
+    const text = [...chars].join('');
+    const sha = createHash('sha256').update(text, 'utf8').digest('hex');
+    if (sha !== manifest.textSha256) {
+      err(`字体子集过期了：内容文本已经变了（${manifest.chars} 字 → ${chars.size} 字），`
+        + '但它们裁出来的 assets/fonts/*-subset.woff2 还是旧快照 —— '
+        + '跑一次 node tools/subset-fonts.mjs 重裁（不然新写的字会掉到兜底字体上）');
+    } else {
+      note(`字体子集与内容一致（${manifest.chars} 字，指纹 ${sha.slice(0, 12)}）`);
+    }
+    for (const f of manifest.fonts) {
+      const p = path.join(ROOT, 'assets/fonts', f.out);
+      const st = await fs.stat(p).catch(() => null);
+      if (!st) err(`清单里列了 ${f.out}，但 assets/fonts 里没有这个文件`);
+      else if (st.size !== f.outBytes) err(`${f.out} 的大小和清单对不上（${st.size} vs ${f.outBytes}）—— 重新跑一遍 subset-fonts.mjs`);
+    }
+    if (manifest.patch) {
+      const p = path.join(ROOT, 'assets/fonts', manifest.patch.out);
+      if (!(await fs.stat(p).catch(() => null))) err(`清单里列了补丁子集 ${manifest.patch.out}，但文件不在`);
+      else if (manifest.patch.stillMissing) {
+        note(`手写体补丁也补不上的字（只能落兜底字体）：${manifest.patch.stillMissing}`);
+      }
+      // 补丁子集本来就只含那几个字，缺多说明裁歪了
+      if (manifest.patch.wants === 0) warn('手写体一个字都不缺，补丁子集其实是多余的（可以把它从 CSS 与清单里去掉）');
+    }
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('内容体检：');
 console.log(`  卡牌 ${CARDS.length} · 敌人 ${ENEMIES.length}（${Object.keys(TIERS).map((t) => t + ' ' + ENEMIES.filter((e) => e.tier === t).length).join(' / ')}）`);

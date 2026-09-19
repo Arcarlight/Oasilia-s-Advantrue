@@ -226,6 +226,10 @@ async function boot() {
     // （?dgchips=1 自检；?dgchips=shot 把动画定格在中途方便截图）
     import('../tools/diag-chips.js').catch((e) => console.error('状态胶囊诊断加载失败', e));
   }
+  if (params.has('dgfont')) {
+    // 字体 A/B：把手写体语境的真实句子并排渲染（?dgfont=shot 直接留在屏幕上截图）
+    import('../tools/diag-font.js').catch((e) => console.error('字体对照加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {

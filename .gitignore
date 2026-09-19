@@ -12,8 +12,8 @@ kenney_*/
 SGHr-Regular.ttf
 WenYuanSerifSC-Bold.ttf
 851LakeusNightWriting-Regular.ttf
-# 同一类：工作区里躺着的原始字体、没有任何代码引用它（4 MB）。
-# 上一次 git add -A 把它卷进了提交，已从索引里撤掉 —— 见 README 那条「-A 的坑」。
+# 手写体的现任（写意体 SC）与上一任（851 远星夜行）都是**构建输入**：
+# 只有 tools/subset-fonts.mjs 会把它们裁成 assets/fonts/ 里的子集，运行时读的是子集。
 YShiWrittenSC-Regular.ttf
 
 # Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，

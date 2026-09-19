@@ -32,8 +32,27 @@ const OUT_DIR = path.join(ROOT, 'assets', 'fonts');
 const FONTS = [
   { src: 'SGHr-Regular.ttf', out: 'SGHr-Regular-subset.woff2', label: '正文' },
   { src: 'WenYuanSerifSC-Bold.ttf', out: 'WenYuanSerifSC-Bold-subset.woff2', label: '粗体（卡名 / 商店名…）' },
-  { src: '851LakeusNightWriting-Regular.ttf', out: '851LakeusNightWriting-subset.woff2', label: '手写体（轻松搞笑的地方）' },
+  { src: 'YShiWrittenSC-Regular.ttf', out: 'YShiWrittenSC-subset.woff2', label: '手写体（写意体 SC）' },
 ];
+
+/**
+ * 补丁字体：新手写体（写意体 SC，码位 7977）**缺几个字**，用它上一任补上。
+ *
+ * 实测缺的是：～ ⓪ ✓ ↔ ≈ － 以及 23 个日文汉字（BGM 曲名里的「音楽の卵」这类）。
+ * 缺的字会掉到 LXGW 兜底 —— 那是套黑体，夹在手写句子里非常扎眼（用户看到的
+ * 「这个字体严重缺字」其实就是这个现象，只不过真正的原因是子集过期，见下面说明）。
+ * 所以把旧手写体按**只含这几个字**再裁一次，只有几 KB，逐字补洞。
+ */
+const PATCH = {
+  src: '851LakeusNightWriting-Regular.ttf',
+  out: '851LakeusNightWriting-patch.woff2',
+  /** 拿它当基准：它缺的字就是要补的字 */
+  base: 'YShiWrittenSC-Regular.ttf',
+  label: '手写体补丁（补写意体缺的字）',
+};
+
+/** 每份子集覆盖了哪些字 / 缺哪些字，写进这个清单；check-content.mjs 按它守住「别过期」 */
+const MANIFEST = path.join(OUT_DIR, 'subset-manifest.json');
 
 /** 收集文本时要扫的范围 */
 const SCAN = [
@@ -89,12 +108,60 @@ for (const f of files) {
 }
 
 const textFile = path.join(os.tmpdir(), 'oasis-font-subset.txt');
-await fs.writeFile(textFile, [...chars].join(''), 'utf8');
+const text = [...chars].join('');
+await fs.writeFile(textFile, text, 'utf8');
 console.log(`收集到 ${chars.size} 个不同字符（来自 ${files.length} 个文件）-> ${textFile}`);
 
 await fs.mkdir(OUT_DIR, { recursive: true });
+
+/** 跑一次 pyftsubset */
+function subset(srcFile, outFile, textFilePath) {
+  return spawnSync('python', [
+    '-m', 'fontTools.subset', srcFile,
+    `--text-file=${textFilePath}`,
+    `--output-file=${outFile}`,
+    '--flavor=woff2',
+    '--layout-features=*',
+    '--name-IDs=*',
+    '--notdef-outline',
+    '--recalc-bounds',
+  ], { encoding: 'utf8' });
+}
+
+/**
+ * 问 fontTools：这些字体各自缺哪些字（按上面那份字符全集算）。
+ * 返回 { 文件名: { missing: '缺的字', codepoints: n } }
+ */
+function coverage(fontFiles) {
+  const py = `
+import sys, json
+sys.stdout.reconfigure(encoding='utf-8')
+from fontTools.ttLib import TTFont
+text = open(sys.argv[1], encoding='utf-8').read()
+out = {}
+for p in sys.argv[2:]:
+    f = TTFont(p, fontNumber=0, lazy=True)
+    cmap = set()
+    for t in f['cmap'].tables:
+        cmap |= set(t.cmap.keys())
+    out[p.replace(chr(92), '/').split('/')[-1]] = {
+        'missing': ''.join(sorted({c for c in text if ord(c) not in cmap})),
+        'codepoints': len(cmap),
+    }
+print(json.dumps(out, ensure_ascii=False))
+`;
+  const scriptFile = path.join(os.tmpdir(), 'oasis-subset-coverage.py');
+  // 脚本本身每次写一遍：内容和这里保持一步之遥，省得两份文件不一致
+  return fs.writeFile(scriptFile, py, 'utf8').then(() => {
+    const r = spawnSync('python', [scriptFile, textFile, ...fontFiles], { encoding: 'utf8' });
+    if (r.status !== 0) throw new Error(`覆盖检查失败：${(r.stderr || '').split('\n').slice(-4).join(' ')}`);
+    return JSON.parse(r.stdout);
+  });
+}
+
 let before = 0;
 let after = 0;
+const produced = [];
 
 for (const font of FONTS) {
   const src = path.join(ROOT, font.src);
@@ -106,16 +173,7 @@ for (const font of FONTS) {
     console.log(`  ✗ 找不到源字体 ${font.src}（${font.label}）—— 跳过`);
     continue;
   }
-  const r = spawnSync('python', [
-    '-m', 'fontTools.subset', src,
-    `--text-file=${textFile}`,
-    `--output-file=${out}`,
-    '--flavor=woff2',
-    '--layout-features=*',
-    '--name-IDs=*',
-    '--notdef-outline',
-    '--recalc-bounds',
-  ], { encoding: 'utf8' });
+  const r = subset(src, out, textFile);
 
   if (r.status !== 0) {
     console.log(`  ✗ ${font.src} 裁剪失败：\n${(r.stderr || r.stdout || '').split('\n').slice(-6).join('\n')}`);
@@ -125,7 +183,64 @@ for (const font of FONTS) {
   const outSize = (await fs.stat(out)).size;
   before += size;
   after += outSize;
+  produced.push({ ...font, srcBytes: size, outBytes: outSize });
   console.log(`  ✓ ${font.label.padEnd(18)} ${font.src.padEnd(34)} ${(size / 1048576).toFixed(1)}MB -> ${font.out} ${(outSize / 1024).toFixed(0)}KB`);
+}
+
+// ---- 补丁子集：把「新字体缺、旧字体有」的那几个字单独裁出来 ----
+const mainOuts = produced.map((f) => path.join(OUT_DIR, f.out));
+let patchInfo = null;
+if (mainOuts.length) {
+  const cov = await coverage(mainOuts);
+  const baseOut = produced.find((f) => f.src === PATCH.base);
+  const baseMissing = baseOut ? (cov[baseOut.out]?.missing ?? '') : '';
+  const patchSrc = path.join(ROOT, PATCH.src);
+  const patchOut = path.join(OUT_DIR, PATCH.out);
+  if (baseMissing && (await fs.stat(patchSrc).catch(() => null))) {
+    const patchTextFile = path.join(os.tmpdir(), 'oasis-font-patch.txt');
+    await fs.writeFile(patchTextFile, baseMissing, 'utf8');
+    const r = subset(patchSrc, patchOut, patchTextFile);
+    if (r.status !== 0) {
+      console.log(`  ✗ 补丁子集裁剪失败：\n${(r.stderr || r.stdout || '').split('\n').slice(-6).join('\n')}`);
+      process.exitCode = 1;
+    } else {
+      const size = (await fs.stat(patchSrc)).size;
+      const outSize = (await fs.stat(patchOut)).size;
+      before += size;
+      after += outSize;
+      const patchCov = await coverage([patchOut]);
+      // 注意：要拿「想要补的那几个字」去比对，不是拿整个字符全集 ——
+      // 补丁文件本来就只有那几十个字，按全集比会列出两千个「缺字」，纯噪声。
+      const patchMissing = new Set(patchCov[PATCH.out]?.missing ?? '');
+      const stillMissing = [...baseMissing].filter((c) => patchMissing.has(c)).join('');
+      patchInfo = {
+        base: PATCH.base, wants: baseMissing.length, out: PATCH.out,
+        srcBytes: size, outBytes: outSize, stillMissing,
+      };
+      console.log(`  ✓ ${PATCH.label.padEnd(18)} ${PATCH.src.padEnd(34)} 补 ${baseMissing.length} 个字 -> ${PATCH.out} ${(outSize / 1024).toFixed(1)}KB`
+        + (stillMissing ? `（旧字体也没有的：${stillMissing}，只能落到兜底字体）` : ''));
+    }
+  } else if (!baseMissing) {
+    console.log(`  · ${PATCH.label}：${PATCH.base} 一个字都不缺，不需要补丁`);
+  }
+
+  // ---- 清单：给 check-content.mjs 守住「内容改了要重跑」 ----
+  const { createHash } = await import('node:crypto');
+  const manifest = {
+    note: '由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了',
+    textSha256: createHash('sha256').update(text, 'utf8').digest('hex'),
+    chars: chars.size,
+    fonts: produced.map((f) => ({
+      out: f.out, src: f.src, label: f.label,
+      srcBytes: f.srcBytes, outBytes: f.outBytes,
+      codepoints: cov[f.out]?.codepoints ?? 0,
+      missingCount: (cov[f.out]?.missing ?? '').length,
+      missing: cov[f.out]?.missing ?? '',
+    })),
+    patch: patchInfo,
+  };
+  await fs.writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  console.log(`  · 清单写入 assets/fonts/subset-manifest.json（内容指纹 ${manifest.textSha256.slice(0, 12)}）`);
 }
 
 console.log(`合计 ${(before / 1048576).toFixed(1)}MB -> ${(after / 1024).toFixed(0)}KB（省掉 ${(100 - (after / before) * 100).toFixed(1)}%）`);

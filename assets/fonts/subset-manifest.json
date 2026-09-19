@@ -1,0 +1,45 @@
+{
+  "note": "由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了",
+  "textSha256": "ffa4065e1801ff5461d9c46479766ab523062824ec0e9ef8cae5b474166cbec8",
+  "chars": 2004,
+  "fonts": [
+    {
+      "out": "SGHr-Regular-subset.woff2",
+      "src": "SGHr-Regular.ttf",
+      "label": "正文",
+      "srcBytes": 4120572,
+      "outBytes": 326904,
+      "codepoints": 1898,
+      "missingCount": 106,
+      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩いうえおかくぐけさしじぜたちっつてでとなにのはへほみめりれをんアイウェクスットヒプルロー乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️０１２３４５６７８９"
+    },
+    {
+      "out": "WenYuanSerifSC-Bold-subset.woff2",
+      "src": "WenYuanSerifSC-Bold.ttf",
+      "label": "粗体（卡名 / 商店名…）",
+      "srcBytes": 15238244,
+      "outBytes": 428568,
+      "codepoints": 2000,
+      "missingCount": 4,
+      "missing": "⚠⟨⟩️"
+    },
+    {
+      "out": "YShiWrittenSC-subset.woff2",
+      "src": "YShiWrittenSC-Regular.ttf",
+      "label": "手写体（写意体 SC）",
+      "srcBytes": 3994192,
+      "outBytes": 318088,
+      "codepoints": 1968,
+      "missingCount": 36,
+      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️－～"
+    }
+  ],
+  "patch": {
+    "base": "YShiWrittenSC-Regular.ttf",
+    "wants": 36,
+    "out": "851LakeusNightWriting-patch.woff2",
+    "srcBytes": 28880528,
+    "outBytes": 13844,
+    "stillMissing": "⟨⟩️"
+  }
+}

@@ -7,9 +7,15 @@
    三套字体各管一块，都是**按游戏实际用到的字裁出来的子集**（见 tools/subset-fonts.mjs）：
      · Oasis Body —— 正文/描述（SGHr-Regular）
      · Oasis Bold —— 卡名、商店名、标题这类需要粗体的地方（WenYuanSerifSC-Bold）
-     · Oasis Hand —— 事件旁白、商人对白这类轻松搞笑的地方（851LakeusNightWriting）
+     · Oasis Hand —— 事件旁白、商人对白这类轻松搞笑的地方（写意体 SC）
+     · Oasis Hand Patch —— 补手写体缺的那几十个字（旧的 851 手写体，只含那几个字）
    子集里没有的字（例如玩家自己导入的存档里出现的生僻字）会落到 LXGW 那一层 ——
-   宁可用另一套字体渲染，也不要出现方块。LXGW 是完整字体，所以这一层兜得住。 */
+   宁可用另一套字体渲染，也不要出现方块。LXGW 是完整字体，所以这一层兜得住。
+
+   为什么手写体会是「一套主字体 + 一套补丁」：写意体 SC 只有 7977 个码位，
+   游戏用到的 2004 个字里它缺 36 个（～ ⓪ ✓ ↔ ≈ － 和 23 个日文汉字）。
+   缺的字会直接掉到 LXGW —— 那是套黑体，夹在手写句子里写着「好久没见啦～」，
+   看起来就像「这个字体缺字」。所以把上一任手写体按那几个字再裁一次（13 KB）接在它后面。 */
 @font-face {
   font-family: 'Oasis Body';
   src: url(../../assets/fonts/SGHr-Regular-subset.woff2) format('woff2');
@@ -26,7 +32,14 @@
 }
 @font-face {
   font-family: 'Oasis Hand';
-  src: url(../../assets/fonts/851LakeusNightWriting-subset.woff2) format('woff2');
+  src: url(../../assets/fonts/YShiWrittenSC-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oasis Hand Patch';
+  src: url(../../assets/fonts/851LakeusNightWriting-patch.woff2) format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -91,7 +104,7 @@
      末尾永远是完整的 LXGW + 系统字体，子集里缺字时由它们接住，不会出方块。 */
   --font-body: 'Oasis Body', 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
   --font-bold: 'Oasis Bold', 'LXGW Neo XiHei Plus', "Georgia", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-  --font-hand: 'Oasis Hand', 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", cursive, sans-serif;
+  --font-hand: 'Oasis Hand', 'Oasis Hand Patch', 'LXGW Neo XiHei Plus', "PingFang SC", "Microsoft YaHei", "Noto Sans SC", cursive, sans-serif;
   /* 老名字保留成别名，改字体只要动上面三行，不用去满文件替换 */
   --font-game: var(--font-body);
   --font-ui: var(--font-body);
