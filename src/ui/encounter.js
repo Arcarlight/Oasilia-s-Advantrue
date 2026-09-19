@@ -250,7 +250,11 @@ export async function playEncounter(opts = {}) {
     const enemyBody = el('div', { class: 'enc-body' }, [enemyArt]);
     const playerBody = el('div', { class: 'enc-body' }, [playerArt]);
     /**
-     * 名牌：名字写**在敌人立绘下面**，档位标注做成霓虹灯。
+     * 名牌：**霓虹灯档位在上、名字在下**，整块挂在屏幕右下。
+     *
+     * 它是 .encounter 的**直接子节点**（不是塞在敌人那一组里）—— 这是「叠在所有元素之上」
+     * 的结构前提：塞在 .enc-enemy 里的话，它的层级永远低于 z-index 更高的我方立绘，
+     * 霓虹灯一放大就会被立绘压住。现在它是独立的 z-index: 4，只在黑幕(1)和两只立绘(2/3)之上。
      *
      * 霓虹灯 = 同一个词用**超大空心字**横向错开叠 4 份、半透明 ——
      * 空心靠 -webkit-text-stroke（字身透明、只留描边），错开量由每份自己的 --i 决定。
@@ -261,10 +265,10 @@ export async function playEncounter(opts = {}) {
     const neon = el('div', { class: 'enc-neon', 'aria-hidden': 'true' },
       [0, 1, 2, 3].map((i) => el('span', { class: 'enc-neon-i', text: tierName, style: { '--i': String(i) } })));
     const plate = el('div', { class: 'enc-plate' }, [
-      el('div', { class: 'enc-name', text: enemy.name ?? '' }),
       neon,
+      el('div', { class: 'enc-name', text: enemy.name ?? '' }),
     ]);
-    const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [enemyBody, plate]);
+    const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [enemyBody]);
     const playerWrap = el('div', { class: 'enc-fighter enc-player' }, [playerBody]);
     /**
      * 黑幕 + 那组横线。
@@ -280,7 +284,7 @@ export async function playEncounter(opts = {}) {
     const curtain = el('div', { class: 'enc-curtain' }, [lineBox]);
 
     root = el('div', { class: 'encounter', dataset: { tier: enemy.tier ?? 'normal', phase: 'in' } }, [
-      curtain, enemyWrap, playerWrap,
+      curtain, enemyWrap, playerWrap, plate,
     ]);
     document.body.append(root);
     /**
