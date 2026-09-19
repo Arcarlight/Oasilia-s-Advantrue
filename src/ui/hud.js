@@ -2,6 +2,7 @@
 
 import { el, clear } from './dom.js';
 import { createPortrait } from '../core/portraits.js';
+import { t } from '../core/i18n.js';
 import { apFromAgi, drawFromAgi, playsFromAgi, critChance, dodgeChance, BALANCE } from '../data/balance.js';
 
 /**
@@ -27,7 +28,7 @@ export function renderHud(game) {
   if (!nameEl || !hpFill || !stats) return; // 界面结构变了就安静退出，别把整个游戏搞崩
 
   nameEl.textContent = d.name;
-  speciesEl.textContent = `${d.speciesName} · 地面/龙 · 特性：飘浮`;
+  speciesEl.textContent = t('{species} · 地面/龙 · 特性：飘浮', { species: d.speciesName });
 
   const pct = Math.max(0, (d.hp / d.maxHp) * 100);
   hpFill.style.width = `${pct}%`;
@@ -40,16 +41,16 @@ export function renderHud(game) {
   // title 是浏览器原生提示，要悬停一两秒才出来、样式也不受控，
   // 等于「敏捷影响什么」这件事在界面上根本看不见（用户反馈过）。
   stats.append(
-    chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}：决定你打出多少伤害。\n伤害 = 攻击 × 招式威力% × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对手防御)。\n卡面上的伤害数字就是按这个攻击力实时算的。`),
-    chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+${d.def})。`),
-    chip('ico-shoe', '敏', d.agi,
+    chip('ico-sword', t('攻'), d.atk, t('基础攻击 {atk}：决定你打出多少伤害。\n伤害 = 攻击 × 招式威力% × {K} ÷ ({K} + 对手防御)。\n卡面上的伤害数字就是按这个攻击力实时算的。', { atk: d.atk, K: BALANCE.armorK })),
+    chip('ico-shield', t('防'), d.def, t('防御 {def}：受到伤害乘以 {K}/({K}+{def})。', { def: d.def, K: BALANCE.armorK })),
+    chip('ico-shoe', t('敏'), d.agi,
       // 公式里的数字取 BALANCE，不抄第二份（以前写死过，改平衡时不会跟着动）
-      `敏捷 ${d.agi}：**一回合的三项预算全看它**。\n`
-      + `· 行动点 AP = ${BALANCE.apBase} + 敏捷÷${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）→ 你现在 **${apFromAgi(d.agi)} 点**\n`
-      + `· 每回合抽牌 = ${BALANCE.drawBase} + 敏捷÷${BALANCE.drawPerAgi}（上限 ${BALANCE.drawMax}）→ 你现在 **${drawFromAgi(d.agi)} 张**\n`
-      + `· 出牌上限 = ${BALANCE.playBase} + 敏捷÷${BALANCE.playPerAgi}（上限 ${BALANCE.playMax}）→ 你现在 **${playsFromAgi(d.agi)} 张**\n`
-      + '战斗中这三项就写在底部：AP 圆点、以及「出牌 x/y」「抽牌 n」。'),
-    chip('ico-clover', '运', d.luck, `幸运 ${d.luck}：暴击 ${critChance(d.luck).toFixed(1)}%，闪避 ${dodgeChance(d.luck).toFixed(1)}%`),
+      t('敏捷 {agi}：**一回合的三项预算全看它**。\n', { agi: d.agi })
+      + t('· 行动点 AP = {base} + 敏捷÷{per}（上限 {max}）→ 你现在 **{now} 点**\n', { base: BALANCE.apBase, per: BALANCE.apPerAgi, max: BALANCE.apMax, now: apFromAgi(d.agi) })
+      + t('· 每回合抽牌 = {base} + 敏捷÷{per}（上限 {max}）→ 你现在 **{now} 张**\n', { base: BALANCE.drawBase, per: BALANCE.drawPerAgi, max: BALANCE.drawMax, now: drawFromAgi(d.agi) })
+      + t('· 出牌上限 = {base} + 敏捷÷{per}（上限 {max}）→ 你现在 **{now} 张**\n', { base: BALANCE.playBase, per: BALANCE.playPerAgi, max: BALANCE.playMax, now: playsFromAgi(d.agi) })
+      + t('战斗中这三项就写在底部：AP 圆点、以及「出牌 x/y」「抽牌 n」。')),
+    chip('ico-clover', t('运'), d.luck, t('幸运 {luck}：暴击 {crit}%，闪避 {dodge}%', { luck: d.luck, crit: critChance(d.luck).toFixed(1), dodge: dodgeChance(d.luck).toFixed(1) })),
   );
 
   goldEl.textContent = String(d.gold);

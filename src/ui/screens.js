@@ -13,6 +13,8 @@ import { CARD_BY_ID, ITEMS } from '../data/cards.js';
 import { itemEffect, STAT_NAMES } from '../core/game.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
+import { t, LANGS, currentLang } from '../core/i18n.js';
+import { changeLanguage } from './langswitch.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
 import { renderHud } from './hud.js';
 
@@ -83,7 +85,7 @@ async function renderTitle(game) {
   const lockup = el('div', { class: 'title-lockup' });
   const faceBox = el('div', { class: 'title-portrait' });
   const names = el('div', { class: 'title-names' }, [
-    el('h1', { class: 'title-h1', text: '沙漠精灵' }),
+    el('h1', { class: 'title-h1', text: t('沙漠精灵') }),
     el('div', { class: 'title-h2', text: heroName }),
   ]);
   lockup.append(faceBox, names);
@@ -95,7 +97,7 @@ async function renderTitle(game) {
 
   inner.append(el('p', {
     class: 'title-quote',
-    text: `「凡是听见沙子唱歌的人，最后都留在了沙里。」\n——你是${heroName}，一只雌性沙漠蜻蜓。沙海深处有个声音在叫你，你决定去看看。`,
+    text: t('「凡是听见沙子唱歌的人，最后都留在了沙里。」\n——你是{name}，一只雌性沙漠蜻蜓。沙海深处有个声音在叫你，你决定去看看。', { name: heroName }),
   }));
 
   const hasSave = !!save.readRun();
@@ -103,40 +105,51 @@ async function renderTitle(game) {
   if (hasSave) {
     menu.append(el('button', {
       class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.loadFromData(save.readRun()); },
-    }, [el('span', { class: 'ico-save' }), el('span', { text: '继续上次的旅程' })]));
+    }, [el('span', { class: 'ico-save' }), el('span', { text: t('继续上次的旅程') })]));
   }
   menu.append(
     el('button', {
       class: hasSave ? 'btn btn-lg' : 'btn btn-primary btn-lg',
       onClick: () => { audio.ui('confirm'); game.newRun(); },
-    }, [el('span', { class: 'ico-star' }), el('span', { text: '开始新的冒险' })]),
+    }, [el('span', { class: 'ico-star' }), el('span', { text: t('开始新的冒险') })]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showHelp(); } }, [
-      el('span', { class: 'ico-help' }), el('span', { text: '玩法说明' }),
+      el('span', { class: 'ico-help' }), el('span', { text: t('玩法说明') }),
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showSettings(); } }, [
-      el('span', { class: 'ico-gear' }), el('span', { text: '设置' }),
+      el('span', { class: 'ico-gear' }), el('span', { text: t('设置') }),
     ]),
     el('button', {
       class: 'btn btn-ghost btn-sm',
       onClick: async () => {
         const data = await save.importFile();
-        if (!data) return toast('读取失败：文件不是本作的存档。', 'bad');
+        if (!data) return toast(t('读取失败：文件不是本作的存档。'), 'bad');
         game.loadFromData(data);
-        toast('存档已导入！', 'good');
+        toast(t('存档已导入！'), 'good');
       },
-    }, ['导入存档 JSON']),
+    }, [t('导入存档 JSON')]),
   );
   inner.append(menu);
 
+  /**
+   * 标题页上的语言切换。
+   *
+   * 放在这里而不是只藏在「设置」里：换语言是**第一次进游戏就可能想做的事**
+   * （看不懂中文的人根本进不去设置页找它）。三个按钮直接摆出来。
+   */
+  inner.append(el('div', { class: 'lang-switch' }, LANGS.map((l) => el('button', {
+    class: `lang-btn${l.id === currentLang() ? ' on' : ''}`,
+    onClick: () => { audio.ui('click'); changeLanguage(l.id); },
+  }, [l.name]))));
+
   inner.append(el('div', { class: 'title-meta' }, [
-    el('span', {}, ['最远步数 ', el('b', { text: String(meta.bestDistance ?? 0) })]),
-    el('span', {}, ['累计击败 ', el('b', { text: String(meta.kills ?? 0) })]),
-    el('span', {}, ['通关次数 ', el('b', { text: String(meta.wins ?? 0) })]),
+    el('span', {}, [t('最远步数 '), el('b', { text: String(meta.bestDistance ?? 0) })]),
+    el('span', {}, [t('累计击败 '), el('b', { text: String(meta.kills ?? 0) })]),
+    el('span', {}, [t('通关次数 '), el('b', { text: String(meta.wins ?? 0) })]),
   ]));
 
   inner.append(el('div', {
     class: 'title-foot',
-    html: '素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>这是一个非商业的同人练习作品。',
+    html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>这是一个非商业的同人练习作品。'),
   }));
 
   /**

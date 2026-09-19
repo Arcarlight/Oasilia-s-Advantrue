@@ -511,6 +511,31 @@ if (BGM_FILES) {
   }
 }
 
+// ---------- 8. 多语言：孤儿译文 ----------
+/**
+ * 这一条治的是「翻译悄悄失效」：短语表的键**就是中文原文**，
+ * 所以源文案改一个字（哪怕只是加个逗号），旧译文就再也匹配不上、变成孤儿 ——
+ * 界面上会静默退回中文，谁也不会发现。build-i18n.mjs 扫源码时会算出来写进 _report.json，
+ * 这里只负责把它当门禁用。
+ */
+{
+  const report = JSON.parse(await fs.readFile(path.join(ROOT, 'content/i18n/_report.json'), 'utf8').catch(() => 'null'));
+  if (!report) {
+    note('还没有多语言报表（content/i18n/_report.json）—— 跑一次 node tools/build-i18n.mjs 就有了');
+  } else {
+    const langs = Object.entries(report.perLang ?? {});
+    note(`多语言：${langs.map(([lg, s]) => `${lg} ${s.done}/${s.total}（${s.percent}%）`).join(' · ')}`
+      + `（界面文案 + 内容，共 ${report.neededTotal} 条待翻）`);
+    for (const [lg, list] of Object.entries(report.orphans ?? {})) {
+      if (list?.length) {
+        err(`多语言 ${lg} 有 ${list.length} 条**孤儿**译文（源文案改过，译文再也匹配不上，界面上会静默退回中文）：`
+          + `${list.slice(0, 6).map((s) => JSON.stringify(s)).join('、')}${list.length > 6 ? ' …' : ''}`
+          + ' —— 要么把译文改成新原文，要么删掉它');
+      }
+    }
+  }
+}
+
 // ---------- 汇总 ----------
 console.log('内容体检：');
 console.log(`  卡牌 ${CARDS.length} · 敌人 ${ENEMIES.length}（${Object.keys(TIERS).map((t) => t + ' ' + ENEMIES.filter((e) => e.tier === t).length).join(' / ')}）`);

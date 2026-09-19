@@ -1,25 +1,25 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了",
-  "textSha256": "d6618fa48ae0f5e74c7ff2f9061a93e26b215fb28575dcec9733de0c40493fb0",
-  "chars": 2009,
+  "textSha256": "1a425e9cec9eb532c38bf6452776cafd24995e15fca421192ecc62626027b3e9",
+  "chars": 2119,
   "fonts": [
     {
       "out": "SGHr-Regular-subset.woff2",
       "src": "SGHr-Regular.ttf",
       "label": "正文",
       "srcBytes": 4120572,
-      "outBytes": 328096,
-      "codepoints": 1903,
-      "missingCount": 106,
-      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩いうえおかくぐけさしじぜたちっつてでとなにのはへほみめりれをんアイウェクスットヒプルロー乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️０１２３４５６７８９"
+      "outBytes": 329660,
+      "codepoints": 1912,
+      "missingCount": 207,
+      "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩あいうえおかがきくぐけげこさしじすずせぜそただちっつてでとどなにのはびふへべほまみむめもやゆよらりるれわをんァアイウェエオカキクケゲコゴシジスズセタダチッツデトドノヒピフブプポマムメモャラリルレロンー乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️０１２３４５６７８９"
     },
     {
       "out": "WenYuanSerifSC-Bold-subset.woff2",
       "src": "WenYuanSerifSC-Bold.ttf",
       "label": "粗体（卡名 / 商店名…）",
       "srcBytes": 15238244,
-      "outBytes": 429540,
-      "codepoints": 2005,
+      "outBytes": 461512,
+      "codepoints": 2115,
       "missingCount": 4,
       "missing": "⚠⟨⟩️"
     },
@@ -28,18 +28,18 @@
       "src": "YShiWrittenSC-Regular.ttf",
       "label": "手写体（写意体 SC）",
       "srcBytes": 3994192,
-      "outBytes": 318964,
-      "codepoints": 1973,
-      "missingCount": 36,
-      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘勝執払楽気熱畳竜組襲貸車達闇闘陣陽頂風飛️－～"
+      "outBytes": 327076,
+      "codepoints": 2038,
+      "missingCount": 81,
+      "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️－～"
     }
   ],
   "patch": {
     "base": "YShiWrittenSC-Regular.ttf",
-    "wants": 36,
+    "wants": 81,
     "out": "851LakeusNightWriting-patch.woff2",
     "srcBytes": 28880528,
-    "outBytes": 13844,
+    "outBytes": 32820,
     "stillMissing": "⟨⟩️"
   }
 }

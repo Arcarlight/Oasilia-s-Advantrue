@@ -18,6 +18,8 @@ import { CARD_BY_ID, CARDS, ITEMS } from '../data/cards.js';
 import { stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { BGM_NAMES } from '../core/bgm.js';
+import { t, LANGS, currentLang } from '../core/i18n.js';
+import { changeLanguage } from './langswitch.js';
 import { renderHud } from './hud.js';
 
 // ============================================================
@@ -485,13 +487,30 @@ export function showHelp() {
 // ============================================================
 export function showSettings() {
   const body = el('div', {});
-  const nowPlaying = el('span', { style: { opacity: '.7', fontSize: '12px' }, text: '（未播放）' });
+  const nowPlaying = el('span', { style: { opacity: '.7', fontSize: '12px' }, text: t('（未播放）') });
   const musicState = () => {
     const key = music.nowPlaying();
-    return key ? `正在播放：${BGM_NAMES[key] ?? key}` : '（未播放）';
+    return key ? t('正在播放：{name}', { name: BGM_NAMES[key] ?? key }) : t('（未播放）');
   };
 
   body.append(
+    /**
+     * 语言切换放在设置的**第一行**：它是最常被找的一项（看不懂界面的人第一件事就是找它）。
+     * 标题页上还有一份（同一套按钮），两份都调同一个 changeLanguage()。
+     */
+    el('div', { class: 'setting-row' }, [
+      el('label', { text: t('语言 / Language / 言語') }),
+      el('div', { class: 'lang-switch' }, LANGS.map((l) => el('button', {
+        class: `lang-btn${l.id === currentLang() ? ' on' : ''}`,
+        onClick: () => {
+          audio.ui('click');
+          // 换语言会重画界面（弹窗会被关掉），所以要在切换前先关掉这一层
+          document.querySelector('.modal-backdrop')?.remove();
+          changeLanguage(l.id);
+          toast(t('语言已切换：{name}', { name: l.name }), 'good');
+        },
+      }, [l.name]))),
+    ]),
     el('div', { class: 'setting-row' }, [
       el('label', { text: '音效音量' }),
       el('input', {

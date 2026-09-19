@@ -2185,6 +2185,26 @@ input[type="range"] { width: 160px; accent-color: var(--accent); }
 }
 .shop-ap .ico-action_points { background-color: #6b4a2a; }
 
+/* 语言切换（标题页与设置里各一份，样式共用） */
+.lang-switch { display: flex; gap: 6px; justify-content: center; margin: 10px 0 4px; }
+.lang-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 207, 162, .3);
+  background: rgba(255, 255, 255, .06);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.lang-btn:hover { background: rgba(255, 255, 255, .14); transform: translateY(-1px); }
+.lang-btn.on {
+  background: var(--accent);
+  border-color: var(--accent-2);
+  color: #2a1a08;
+}
+
 /* ============================================================
    按地图换 UI 主题色
    切屏时 ui.js 在 <body> 上打 data-biome，这三个 accent 变量整体跟着换 ——

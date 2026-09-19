@@ -12,6 +12,8 @@
 import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance, dodgeChance } from '../data/balance.js';
 import { CARD_BY_ID } from '../data/cards.js';
 import { makeRng } from './rng.js';
+// 日志文本也是给玩家看的，所以引擎里每一句模板都走 t()（见 src/core/i18n.js 顶部的说明）
+import { t } from './i18n.js';
 
 export const STATUS_INFO = {
   poison: {
@@ -354,7 +356,7 @@ export class Battle {
   // ====================== 回合流程 ======================
 
   start() {
-    this.emitLogged({ type: 'battleStart', player: this.snapshot('player'), enemy: this.snapshot('enemy') }, `遭遇 ${this.enemy.name}！`);
+    this.emitLogged({ type: 'battleStart', player: this.snapshot('player'), enemy: this.snapshot('enemy') }, t('遭遇 {name}！', { name: this.enemy.name }));
     this.beginPlayerTurn();
   }
 
@@ -408,7 +410,8 @@ export class Battle {
     if (amount <= 0) return 0;
     const dealt = Math.min(s.hp, amount);
     s.hp -= dealt;
-    this.emitLogged({ type: 'trueDamage', side: key, amount: dealt, hp: s.hp, reason }, `${s.name} 因${reason}失去 ${dealt} 点 HP。`, 'bad');
+    this.emitLogged({ type: 'trueDamage', side: key, amount: dealt, hp: s.hp, reason },
+      t('{name} 因{reason}失去 {amount} 点 HP。', { name: s.name, reason: t(reason), amount: dealt }), 'bad');
     this.checkDeath();
     return dealt;
   }
@@ -446,7 +449,7 @@ export class Battle {
     this.player.ap -= cost;
     this.player.playsLeft -= 1;
     d.hand.splice(idx, 1);
-    this.emitLogged({ type: 'playCard', side: 'player', id: card.id, name: card.name, cost }, `${this.player.name} 使用了「${card.name}」。`);
+    this.emitLogged({ type: 'playCard', side: 'player', id: card.id, name: card.name, cost }, t('{name} 使用了「{card}」。', { name: this.player.name, card: card.name }));
     this.resolveCard('player', card, opts);
 
     // 使用后的去向：销毁区 or **弃牌堆**
@@ -535,7 +538,7 @@ export class Battle {
         self.shield += amount;
         // keep：这一份护盾「下回合不清空」（普通护盾在持有者回合开始时归零）
         if (eff.keep) self.keepShield = true;
-        this.emitLogged({ type: 'shield', side: sourceKey, amount, total: self.shield }, `${self.name} 获得 ${amount} 点护盾。`, 'good');
+        this.emitLogged({ type: 'shield', side: sourceKey, amount, total: self.shield }, t('{name} 获得 {amount} 点护盾。', { name: self.name, amount }), 'good');
         break;
       }
       case 'heal': {
@@ -543,7 +546,7 @@ export class Battle {
         const healed = Math.min(amount, self.maxHp - self.hp);
         self.hp += healed;
         if (healed > 0) {
-          this.emitLogged({ type: 'heal', side: sourceKey, amount: healed, hp: self.hp }, `${self.name} 回复 ${healed} 点 HP。`, 'good');
+          this.emitLogged({ type: 'heal', side: sourceKey, amount: healed, hp: self.hp }, t('{name} 回复 {amount} 点 HP。', { name: self.name, amount: healed }), 'good');
         } else {
           this.emit({ type: 'heal', side: sourceKey, amount: 0, hp: self.hp });
         }
@@ -559,7 +562,9 @@ export class Battle {
       }
       case 'buff': {
         const targetKey = eff.target === 'enemy' ? foeKey : sourceKey;
-        const t = this[targetKey];
+        // 注意：这个局部变量以前叫 `t`，和 i18n 的 t() 撞名了（改名叫 actor，
+        // 否则下面 t('…') 会变成「拿角色对象当函数调」—— 直接 TypeError）。
+        const actor = this[targetKey];
         // 属性下降有下限（BALANCE.debuffFloorPct），recalcDerived() 里会把 defMod 等夹住。
         // 所以这里必须报**实际变化量**：夹住之后 delta 可能是 -1 甚至 0，
         // 以前不管夹没夹都照报 eff.amount（例如「防御 -2」），于是界面上日志、音效、
@@ -567,20 +572,25 @@ export class Battle {
         //
         // amount 是固定值，pct 是「按目标基础属性的百分比」：后期敌人防御只有 16 上下，
         // 固定 -5 两下就顶到底，所以稀有卡改用百分比削弱（-30% 永远有效）。
-        const amount = eff.pct != null ? Math.round((t[eff.stat] ?? 0) * eff.pct) : eff.amount;
+        const amount = eff.pct != null ? Math.round((actor[eff.stat] ?? 0) * eff.pct) : eff.amount;
         const before = this.statValue(targetKey, eff.stat);
-        if (eff.stat === 'atk') t.atkMod += amount;
-        else if (eff.stat === 'def') t.defMod += amount;
-        else if (eff.stat === 'agi') t.agiMod += amount;
-        else if (eff.stat === 'luck') t.luckMod += amount;
+        if (eff.stat === 'atk') actor.atkMod += amount;
+        else if (eff.stat === 'def') actor.defMod += amount;
+        else if (eff.stat === 'agi') actor.agiMod += amount;
+        else if (eff.stat === 'luck') actor.luckMod += amount;
         this.recalcDerived();
         const after = this.statValue(targetKey, eff.stat);
         const delta = after - before;
         const clamped = delta !== amount;
-        const label = `${t.name} 的${statName(eff.stat)}`;
+        const label = t('{name} 的{stat}', { name: actor.name, stat: statName(eff.stat) });
         const text = delta === 0
-          ? `${label}已经降到底了（当前 ${after}），这次没能再降。`
-          : `${label} ${delta > 0 ? '+' : ''}${delta}（当前 ${after}）${clamped ? '，已经到底了' : ''}。`;
+          ? t('{label}已经降到底了（当前 {now}），这次没能再降。', { label, now: after })
+          : t('{label} {delta}（当前 {now}）{clamped}。', {
+            label,
+            delta: `${delta > 0 ? '+' : ''}${delta}`,
+            now: after,
+            clamped: clamped ? t('，已经到底了') : '',
+          });
         this.emitLogged(
           { type: 'buff', side: targetKey, stat: eff.stat, amount: delta, requested: amount, clamped, value: after },
           text,
@@ -604,8 +614,10 @@ export class Battle {
         this.emitLogged(
           { type: 'strength', side: sourceKey, amount: gained, value: self.strength, capped: gained !== eff.n },
           gained > 0
-            ? `${self.name} 的攻击威力 +${gained}%（本场战斗累计 ${self.strength}%${self.strength >= cap ? '，已经到上限' : ''}）。`
-            : `${self.name} 的攻击威力已经到上限了（${self.strength}%）。`,
+            ? t('{name} 的攻击威力 +{gained}%（本场战斗累计 {total}%{capped}）。', {
+              name: self.name, gained, total: self.strength, capped: self.strength >= cap ? t('，已经到上限') : '',
+            })
+            : t('{name} 的攻击威力已经到上限了（{total}%）。', { name: self.name, total: self.strength }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
         break;
@@ -615,7 +627,7 @@ export class Battle {
         self.blockBonus = (self.blockBonus ?? 0) + eff.n;
         this.emitLogged(
           { type: 'gainAp', side: sourceKey, amount: eff.n, ap: self.ap + eff.n },
-          `${self.name} 下回合额外获得 ${eff.n} 点行动点。`,
+          t('{name} 下回合额外获得 {n} 点行动点。', { name: self.name, n: eff.n }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
         break;
@@ -623,7 +635,7 @@ export class Battle {
         self.playsLeft = (self.playsLeft ?? 0) + eff.n;
         this.emitLogged(
           { type: 'plays', side: sourceKey, amount: eff.n, value: self.playsLeft },
-          `${self.name} 本回合多出 ${eff.n} 次出牌机会。`,
+          t('{name} 本回合多出 {n} 次出牌机会。', { name: self.name, n: eff.n }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
         break;
@@ -635,7 +647,7 @@ export class Battle {
       case 'detonate': {
         const stacks = DOT_STATUSES.reduce((s, st) => s + (foe[st] ?? 0), 0);
         if (stacks <= 0) {
-          this.emitLogged({ type: 'detonate', side: foeKey, amount: 0, stacks: 0, statuses: [] }, `${foe.name} 身上没有可以引爆的持续伤害。`, 'info');
+          this.emitLogged({ type: 'detonate', side: foeKey, amount: 0, stacks: 0, statuses: [] }, t('{name} 身上没有可以引爆的持续伤害。', { name: foe.name }), 'info');
           break;
         }
         const per = eff.perStack ?? 3;
@@ -645,7 +657,7 @@ export class Battle {
         for (const st of DOT_STATUSES) foe[st] = 0;
         this.emitLogged(
           { type: 'detonate', side: foeKey, amount: dmg, stacks, statuses: cleared },
-          `引爆了 ${foe.name} 身上 ${stacks} 层持续伤害！`,
+          t('引爆了 {name} 身上 {n} 层持续伤害！', { name: foe.name, n: stacks }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
         this.dealTrueDamage(foeKey, dmg, '引爆');
@@ -653,7 +665,7 @@ export class Battle {
       }
       case 'status': {
         const targetKey = eff.target === 'self' ? sourceKey : foeKey;
-        const t = this[targetKey];
+        const actor = this[targetKey];   // 同上：别叫 t，会和 i18n 的 t() 撞名
         // 有些招式挂状态是「有概率的」（岩崩的虚弱就是）：没中要说清是谁抵抗了什么。
         // 以前这里只 emit 了一个不带日志的 resist 事件，界面上凭空飘出两个字「抵抗」，
         // 玩家根本不知道那是什么意思（实测被问到了）。
@@ -661,15 +673,15 @@ export class Battle {
           const nm = STATUS_INFO[eff.status]?.name ?? eff.status;
           this.emitLogged(
             { type: 'resist', side: targetKey, status: eff.status, chance: eff.chance },
-            `${t.name} 抵抗了${nm}。`,
+            t('{name} 抵抗了{status}。', { name: actor.name, status: nm }),
             targetKey === 'player' ? 'good' : 'bad'
           );
           break;
         }
-        t[eff.status] = (t[eff.status] ?? 0) + eff.stacks;
+        actor[eff.status] = (actor[eff.status] ?? 0) + eff.stacks;
         this.emitLogged(
-          { type: 'status', side: targetKey, status: eff.status, delta: eff.stacks, value: t[eff.status] },
-          `${t.name} 获得了 ${eff.stacks} 层${STATUS_INFO[eff.status].name}。`,
+          { type: 'status', side: targetKey, status: eff.status, delta: eff.stacks, value: actor[eff.status] },
+          t('{name} 获得了 {n} 层{status}。', { name: actor.name, n: eff.stacks, status: STATUS_INFO[eff.status].name }),
           targetKey === 'player' ? 'bad' : 'good'
         );
         break;
@@ -714,12 +726,12 @@ export class Battle {
          * 名单是给界面用的：它按名单把对应的胶囊逐个化掉。
          */
         const cleared = [];
-        if ((self.atkMod ?? 0) < 0) { removed.push(`攻击 ${self.atkMod}`); self.atkMod = 0; }
-        if ((self.defMod ?? 0) < 0) { removed.push(`防御 ${self.defMod}`); self.defMod = 0; }
-        if ((self.agiMod ?? 0) < 0) { removed.push(`敏捷 ${self.agiMod}`); self.agiMod = 0; }
+        if ((self.atkMod ?? 0) < 0) { removed.push(t('攻击 {n}', { n: self.atkMod })); self.atkMod = 0; }
+        if ((self.defMod ?? 0) < 0) { removed.push(t('防御 {n}', { n: self.defMod })); self.defMod = 0; }
+        if ((self.agiMod ?? 0) < 0) { removed.push(t('敏捷 {n}', { n: self.agiMod })); self.agiMod = 0; }
         if (eff.statuses) {
           for (const st of ALL_STATUSES) {
-            if ((self[st] ?? 0) > 0) { removed.push(`${STATUS_INFO[st].name} ${self[st]}`); cleared.push(st); self[st] = 0; }
+            if ((self[st] ?? 0) > 0) { removed.push(t('{status} {n}', { status: STATUS_INFO[st].name, n: self[st] })); cleared.push(st); self[st] = 0; }
           }
         }
         this.recalcDerived();
@@ -729,7 +741,9 @@ export class Battle {
             // 属性下降清完之后剩多少：界面副本按这个对齐（不清的话面板上还挂着「攻 -8」）
             mods: { atk: self.atkMod ?? 0, def: self.defMod ?? 0, agi: self.agiMod ?? 0 },
           },
-          removed.length ? `${self.name} 清除了身上的削弱（${removed.join('、')}）。` : `${self.name} 身上没有可清除的削弱。`,
+          removed.length
+            ? t('{name} 清除了身上的削弱（{list}）。', { name: self.name, list: removed.join(t('、')) })
+            : t('{name} 身上没有可清除的削弱。', { name: self.name }),
           'good'
         );
         break;
@@ -757,7 +771,7 @@ export class Battle {
     // 闪避判定
     const dodge = dodgeChance(effectiveLuck(defender));
     if (dodge > 0 && this.rng() * 100 < dodge) {
-      this.emitLogged({ type: 'dodge', side: foeKey, index: hitIndex }, `${defender.name} 闪开了攻击！`, foeKey === 'player' ? 'good' : 'bad');
+      this.emitLogged({ type: 'dodge', side: foeKey, index: hitIndex }, t('{name} 闪开了攻击！', { name: defender.name }), foeKey === 'player' ? 'good' : 'bad');
       return { dodged: true };
     }
 
@@ -781,7 +795,7 @@ export class Battle {
         attacker2.hp += healed;
         this.emitLogged(
           { type: 'heal', side: sourceKey, amount: healed, hp: attacker2.hp },
-          `${attacker2.name} 吸取了 ${healed} 点生命。`,
+          t('{name} 吸取了 {amount} 点生命。', { name: attacker2.name, amount: healed }),
           sourceKey === 'player' ? 'good' : 'bad'
         );
       }
@@ -805,14 +819,20 @@ export class Battle {
     }
     const dealt = Math.min(s.hp, left);
     s.hp -= dealt;
-    const label = meta.crit ? '会心一击！' : '';
+    const label = meta.crit ? t('会心一击！') : '';
     this.emitLogged(
       {
         type: 'damage', side: key, amount: dealt, absorbed, crit: !!meta.crit,
         hp: s.hp, shield: s.shield, index: meta.index ?? 0, total: meta.total ?? 1,
         source: meta.source,
       },
-      `${this[meta.source].name} 对 ${s.name} 造成 ${dealt} 点伤害${absorbed ? `（护盾挡下 ${absorbed}）` : ''}${label}`,
+      t('{attacker} 对 {target} 造成 {amount} 点伤害{shield}{label}', {
+        attacker: this[meta.source].name,
+        target: s.name,
+        amount: dealt,
+        shield: absorbed ? t('（护盾挡下 {n}）', { n: absorbed }) : '',
+        label,
+      }),
       key === 'player' ? 'bad' : 'good'
     );
     this.checkDeath();
@@ -834,7 +854,7 @@ export class Battle {
     }
     if (this.over) {
       this.emit({ type: 'battleEnd', winner: this.winner, hp: this.player.hp });
-      this.pushLog(this.winner === 'player' ? `${this.enemy.name} 倒下了！` : this.winner === 'enemy' ? `${this.player.name} 倒下了……` : '同归于尽。', this.winner === 'player' ? 'good' : 'bad');
+      this.pushLog(this.winner === 'player' ? t('{name} 倒下了！', { name: this.enemy.name }) : this.winner === 'enemy' ? t('{name} 倒下了……', { name: this.player.name }) : t('同归于尽。'), this.winner === 'player' ? 'good' : 'bad');
     }
   }
 
@@ -895,7 +915,7 @@ export class Battle {
       e.ap -= this.cardCost(pick.c);
       e.playsLeft -= 1;
       this.decks.enemy.hand.splice(this.decks.enemy.hand.indexOf(pick.c), 1);
-      this.emitLogged({ type: 'playCard', side: 'enemy', id: pick.c.card.id, name: pick.c.card.name, cost: this.cardCost(pick.c) }, `${e.name} 使用了「${pick.c.card.name}」。`);
+      this.emitLogged({ type: 'playCard', side: 'enemy', id: pick.c.card.id, name: pick.c.card.name, cost: this.cardCost(pick.c) }, t('{name} 使用了「{card}」。', { name: e.name, card: pick.c.card.name }));
       // 非攻击卡要让人看清，稍作停顿由 UI 处理
       this.resolveCard('enemy', pick.c.card, {});
       if (pick.c.card.exhaust) {
@@ -1088,5 +1108,5 @@ export class Battle {
 }
 
 function statName(stat) {
-  return { atk: '攻击', def: '防御', agi: '敏捷', luck: '幸运' }[stat] ?? stat;
+  return t({ atk: '攻击', def: '防御', agi: '敏捷', luck: '幸运' }[stat] ?? stat);
 }

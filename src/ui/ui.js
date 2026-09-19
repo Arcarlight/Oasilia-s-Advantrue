@@ -10,6 +10,8 @@ import {
 } from './screens.js';
 import { audio } from '../core/audio.js';
 import { bgmKeyFor } from '../core/bgm.js';
+import { initLang, currentLang } from '../core/i18n.js';
+import { refreshI18nTables } from '../core/i18n-tables.js';
 import { BALANCE, BIOMES } from '../data/balance.js';
 import { enemyDefFor } from '../data/enemies.js';
 import { effectiveDef } from '../core/battle.js';
@@ -18,16 +20,30 @@ import { applyCursorTheme } from './cursor.js';
 import { stageCount } from '../data/mapgen.js';
 import { playEncounter, wantsEncounter } from './encounter.js';
 
+// 注意：换语言的实现在 src/ui/langswitch.js（那边不 import 本文件，避免和 screens.js 成环）。
+// 这里**不要**写「转口导出」（也就是 export 花括号 + from 那种写法）：
+// 打包器只认普通 export 与 import，转口导出会剩下半句 from '...'，单文件包直接语法错误
+// （踩过一次：verify-bundle 报「游戏没启动」）。
+// 另外注释里也别出现那种写法的字面样子 —— 打包器是用正则扫的，注释里的也会被它当成代码。
+
 export class UI {
   constructor(game) {
     this.game = game;
     this.current = null;   // 当前界面 key，避免重复渲染
     this.battleScreen = null;
     this.stage = document.getElementById('stage');
+    /**
+     * 语言要在**第一次渲染之前**定下来：
+     *   ① initLang() 读跨局记录里的选择（没存过就按浏览器语言猜）；
+     *   ② refreshI18nTables() 把卡名 / 事件正文 / 状态名这些**数据里的**可见字段
+     *      原地刷成该语言 —— 界面是照着这些字段渲染的，慢一步就会先闪一屏中文。
+     */
+    initLang();
+    refreshI18nTables();
+    document.documentElement.lang = currentLang();
     game.onChange = () => this.render();
     this.bindGlobal();
   }
-
   bindGlobal() {
     // 首次交互解锁音频
     const unlock = () => {
