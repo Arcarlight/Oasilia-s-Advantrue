@@ -153,21 +153,28 @@
         if (!root) { if (samples.length) break; }
         else {
           const curtain = root.querySelector('.enc-curtain');
-          const line = root.querySelector('.enc-line');
+          const line = root.querySelector('.enc-line-main');
+          const lineCount = root.querySelectorAll('.enc-line').length;
           const enemyArt = root.querySelector('.enc-enemy .enc-art');
           const playerArt = root.querySelector('.enc-player .enc-art');
+          const plate = root.querySelector('.enc-plate');
           if (curtain && line) {
             const c = box(curtain);
             const l = box(line);
             const e = box(enemyArt);
             const p = box(playerArt);
+            const pl = box(plate);
+            const neon = [...root.querySelectorAll('.enc-neon-i')].map(box);
             samples.push({
               t: Math.round(performance.now() - t0),
               phase: root.dataset.phase ?? '',
               curtainLeft: c.left, curtainW: c.w, curtainH: c.h,
               curtainOpacity: parseFloat(getComputedStyle(curtain).opacity),
-              lineW: l.w, lineTop: l.top + l.h / 2,
+              lineW: l.w, lineTop: l.top + l.h / 2, lineCount,
               enemy: e, player: p,
+              plate: pl,
+              neonBottom: neon.length ? Math.max(...neon.map((n) => n.top + n.h)) : null,
+              neonLeft: neon.length ? Math.min(...neon.map((n) => n.left)) : null,
               warm: (await audio.warmed()).length,
             });
           }
@@ -191,12 +198,30 @@
     ok(!!root, '遭遇演出的容器挂上了');
     if (root) {
       const nameEl = root.querySelector('.enc-name');
-      const tierEl = root.querySelector('.enc-tier');
+      const neonEls = [...root.querySelectorAll('.enc-neon-i')];
       const eImg = root.querySelector('.enc-enemy .enc-art');
       const pImg = root.querySelector('.enc-player .enc-art');
-      ok(nameEl?.textContent === enemyName, '敌人立绘旁边写着大号名字', `「${nameEl?.textContent}」 vs 敌人 ${enemyName}`);
-      ok(tierEl?.textContent === (TIERS[enemyTier]?.name ?? ''),
-        '档位标注（野生 / 较强 / 精英 / 首领）和敌人数据一致', `「${tierEl?.textContent}」 vs TIERS.${enemyTier}.name`);
+      ok(nameEl?.textContent === enemyName, '敌人立绘下面写着大号名字', `「${nameEl?.textContent}」 vs 敌人 ${enemyName}`);
+      // 霓虹灯档位：同一个词用超大空心字横向错开叠 4 份
+      ok(neonEls.length === 4 && neonEls.every((n) => n.textContent === (TIERS[enemyTier]?.name ?? '')),
+        '档位标注是**霓虹灯**：同一个词叠 4 份（野生 / 较强 / 精英 / 首领，和敌人数据一致）',
+        `${neonEls.length} 份，内容「${neonEls[0]?.textContent}」 vs TIERS.${enemyTier}.name`);
+      if (neonEls.length === 4) {
+        const cs = getComputedStyle(neonEls[0]);
+        const stroke = cs.webkitTextStrokeWidth || cs.getPropertyValue('-webkit-text-stroke-width');
+        const fill = cs.color;
+        ok(parseFloat(stroke) > 0 && /rgba?\([^)]*,\s*0\)|transparent/.test(fill),
+          '霓虹灯是**空心**的（字身透明 + 描边）', `描边 ${stroke}，字身填色 ${fill}`);
+        ok(parseFloat(cs.opacity) < 0.9, '霓虹灯是**半透明**的', `不透明度 ${cs.opacity}`);
+        const fs = parseFloat(cs.fontSize);
+        const nameFs = parseFloat(getComputedStyle(nameEl).fontSize);
+        ok(fs >= nameFs * 1.5, '霓虹灯用的是**超大字号**（明显大于名字）', `霓虹 ${fs}px vs 名字 ${nameFs}px`);
+        // 横向错开：4 份的右边缘必须各不相同
+        const rights = neonEls.map((n) => Math.round(n.getBoundingClientRect().right));
+        ok(new Set(rights).size === 4, '4 份**横向错开**（右边缘各不相同）', rights.join(' / '));
+      }
+      // 名字的位置要**等停稳了**再量：此刻敌人还在屏幕外往里滑，名牌是跟着它走的
+      ok(root.querySelector('.enc-tier') === null, '旧的档位胶囊已经换掉了（不再是那个小圆角标签）');
       // 「立绘而不是精灵图」：用的是 Generation 9 的正面/背面图（回合数旁边那种）
       const eWant = turnArt(enemySlug, 'front');
       const pWant = turnArt(game.data.slug, 'back');
@@ -261,11 +286,22 @@
       ok(h.enemy.cx > vw * 0.5 && h.player.cx < vw * 0.5,
         '水平方向也对角：敌人在右、我方在左',
         `${Math.round(h.player.cx)} / ${Math.round(h.enemy.cx)}（视口宽 ${vw}）`);
+      // 名牌的位置：停在敌人立绘**下面**、屏幕右半边（用户指的那个位置）
+      const ph = hold.find((s) => s.plate && s.neonBottom != null);
+      ok(ph && ph.plate.top >= ph.enemy.top + ph.enemy.h * 0.8,
+        '名字写在敌人立绘**下面**（用户指的位置）',
+        `立绘底 ${Math.round(ph ? ph.enemy.top + ph.enemy.h : 0)} → 名牌顶 ${Math.round(ph?.plate?.top ?? 0)}`);
+      ok(ph && ph.plate.left > vw * 0.5, '名牌落在屏幕右半边', `名牌左边 ${Math.round(ph?.plate?.left ?? 0)} / 视口宽 ${vw}`);
       // 立绘不许被视口切掉：站位是按视口百分比算的，窗口一矮就容易把下边那只顶出去
       const clipped = hold.filter((s) => [s.enemy, s.player].some((b) => b.top < -2 || b.top + b.h > vh + 2 || b.left < -2 || b.left + b.w > vw + 2));
       ok(clipped.length === 0,
         '停留时两只立绘都完整在视口内（没有被边缘切掉）',
         clipped.length ? `${clipped.length}/${hold.length} 个采样点越界` : `视口 ${vw}×${vh}`);
+      // 名牌挂在立绘下面，霓虹灯又是超大字号 —— 最容易顶出屏幕的就是它
+      const plateOut = hold.filter((s) => (s.neonBottom ?? 0) > vh + 2 || (s.neonLeft ?? 0) < -2 || (s.plate?.top ?? 0) < 0);
+      ok(plateOut.length === 0,
+        '名字 + 霓虹灯都完整落在视口内（超大空心字没有顶出屏幕）',
+        hold.length ? `霓虹灯最低 ${Math.round(Math.max(...hold.map((s) => s.neonBottom ?? 0)))}px / 视口高 ${vh}，最左 ${Math.round(Math.min(...hold.map((s) => s.neonLeft ?? 0)))}px` : '（没采到）');
     }
 
     // ---- ③ 「横线跟随正面图」：划入阶段里横线右端 == 敌人立绘中线 ----
@@ -285,6 +321,11 @@
     ok(worstY <= 3, '横线的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
       `最大偏差 ${worstY.toFixed(1)}px；敌人中线 ${Math.round(hold[0]?.enemy?.cy ?? 0)} vs 屏幕正中 ${Math.round(vh / 2)}`);
     ok(hold.some((s) => s.lineW >= vw - 3), '横线最后铺满整幅宽度', `最宽 ${Math.round(Math.max(...samples.map((s) => s.lineW)))}px`);
+    // 背景不是「光秃秃一条」：围着主线还有几条更细更暗的（用户提的）
+    {
+      const n = samples[0]?.lineCount ?? 0;
+      ok(n >= 4, '背景那一组横线不止一条（围着主线还有几条更细更暗的）', `${n} 条`);
+    }
 
     // ---- ④ 「非线性」：前半段时间里走完的路程要明显超过一半 ----
     if (slide.length >= 4) {

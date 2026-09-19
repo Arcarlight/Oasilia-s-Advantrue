@@ -57,8 +57,6 @@ const PACE = {
 const WARM_CAP = 1200;
 /** 停留本身不能短于这个值（倍率调到最快时也得让人看清对面是谁） */
 const HOLD_MIN = 300;
-/** 横线的粗细 */
-const LINE_H = 8;
 
 /**
  * 两只立绘的站位（错开）与大小。
@@ -72,6 +70,22 @@ const SLOT = {
   enemy: { vh: 0.36, vw: 0.30, maxAspect: 1.7, top: '32%', side: 'right' },
   player: { vh: 0.44, vw: 0.34, maxAspect: 1.9, top: '72%', side: 'left' },
 };
+
+/**
+ * 那条横线**不是孤零零一条**（用户：「背景那条线可以多放几条，光秃秃的一条不太好看」）。
+ * 围着主线再放几条更细更暗的，组成一组霓虹灯管：
+ *   o = 相对主线的高度偏移（px，主线中线为 0）
+ *   t = 粗细（px）      a = 不透明度      w = 宽度倍率（外侧几条短一点，收出一点层次）
+ * 它们全都跟着敌人走（宽度、纵向位置都由外层 .enc-lines 统一给），
+ * 所以整组一起铺过来、一起铺满，不会各走各的。
+ */
+const LINES = [
+  { o: -56, t: 1, a: 0.26, w: 0.6 },
+  { o: -30, t: 2, a: 0.44, w: 0.84 },
+  { o: 0, t: 4, a: 1, w: 1, main: true },
+  { o: 32, t: 2, a: 0.38, w: 0.78 },
+  { o: 60, t: 1, a: 0.22, w: 0.5 },
+];
 
 // ---------------------------------------------------------------------------
 // 开关：什么时候才演这一段
@@ -235,22 +249,35 @@ export async function playEncounter(opts = {}) {
 
     const enemyBody = el('div', { class: 'enc-body' }, [enemyArt]);
     const playerBody = el('div', { class: 'enc-body' }, [playerArt]);
-    // 名字用大号写在立绘旁边，档位（野生 / 较强 / 精英 / 首领）用数据里的名字，别抄一份
+    /**
+     * 名牌：名字写**在敌人立绘下面**，档位标注做成霓虹灯。
+     *
+     * 霓虹灯 = 同一个词用**超大空心字**横向错开叠 4 份、半透明 ——
+     * 空心靠 -webkit-text-stroke（字身透明、只留描边），错开量由每份自己的 --i 决定。
+     * 所以「四份」在 DOM 上是看得见的：诊断直接数 .enc-neon-i 的个数，不靠肉眼。
+     * 档位词用 TIERS[tier].name（野生 / 较强 / 精英 / 首领），不另抄一份。
+     */
+    const tierName = TIERS[enemy.tier]?.name ?? '';
+    const neon = el('div', { class: 'enc-neon', 'aria-hidden': 'true' },
+      [0, 1, 2, 3].map((i) => el('span', { class: 'enc-neon-i', text: tierName, style: { '--i': String(i) } })));
     const plate = el('div', { class: 'enc-plate' }, [
       el('div', { class: 'enc-name', text: enemy.name ?? '' }),
-      el('div', { class: 'enc-tier', text: TIERS[enemy.tier]?.name ?? '' }),
+      neon,
     ]);
-    const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [plate, enemyBody]);
+    const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [enemyBody, plate]);
     const playerWrap = el('div', { class: 'enc-fighter enc-player' }, [playerBody]);
     /**
-     * 黑幕 + 那条横线。
+     * 黑幕 + 那组横线。
      *
      * 黑幕是**整屏**的、一上来就不透明 —— 用户明确要求「黑幕能遮挡住整个屏幕」，
      * 所以它不是「被横线慢慢张开」的东西：地图从第一帧起就一点都看不见。
-     * 横线是黑幕的子节点，于是退场时黑幕往右滑，线跟着一起走。
+     * 横线组跟着黑幕一起退场（它是黑幕的子节点）。
      */
-    const line = el('i', { class: 'enc-line' });
-    const curtain = el('div', { class: 'enc-curtain' }, [line]);
+    const lineBox = el('div', { class: 'enc-lines' }, LINES.map((L) => el('i', {
+      class: `enc-line${L.main ? ' enc-line-main' : ''}`,
+      style: { '--o': `${L.o}px`, '--t': `${L.t}px`, '--a': String(L.a), '--w': String(L.w) },
+    })));
+    const curtain = el('div', { class: 'enc-curtain' }, [lineBox]);
 
     root = el('div', { class: 'encounter', dataset: { tier: enemy.tier ?? 'normal', phase: 'in' } }, [
       curtain, enemyWrap, playerWrap,
@@ -287,11 +314,11 @@ export async function playEncounter(opts = {}) {
       playerWrap.style.transform = `translateY(-50%) translateX(${dx}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${-dx}px)`;
       const r = (enemyArt ? enemyBody : enemyWrap).getBoundingClientRect();
-      // 右端贴的是敌人立绘的中线；线的**高度**也对齐它的中腰 ——
+      // 那一组线的右端 = 敌人立绘的中线，纵向整组以它的中腰为基准 ——
       // 两只错开站位之后，线跟着上边那只走（这是「跟随正面图」的字面意思），
       // 而不是钉在屏幕正中。
-      line.style.width = `${Math.max(0, Math.round(r.left + r.width / 2))}px`;
-      line.style.top = `${Math.round(r.top + r.height / 2 - LINE_H / 2)}px`;
+      lineBox.style.width = `${Math.max(0, Math.round(r.left + r.width / 2))}px`;
+      lineBox.style.top = `${Math.round(r.top + r.height / 2)}px`;
     };
 
     // ---- ① 划入 + 横线跟着敌人铺过来 ----
@@ -318,13 +345,13 @@ export async function playEncounter(opts = {}) {
     }
     if (abort()) return false;
 
-    // ---- ② 横线铺满整幅宽度 ----
+    // ---- ② 那一组线铺满整幅宽度 ----
     setPhase('fill');
-    // 起点就取横线此刻的实际值（而不是再算一遍），接着往右铺到屏幕另一头。
-    // 黑幕本身早就是满屏的了，这一步只是把那条主题色横线拉通（"把屏幕盖住"的是黑幕）。
-    const w0 = parseFloat(line.style.width) || 0;
+    // 起点就取此刻的实际值（而不是再算一遍），接着往右铺到屏幕另一头。
+    // 黑幕本身早就是满屏的了，这一步只是把线拉通（"把屏幕盖住"的是黑幕）。
+    const w0 = parseFloat(lineBox.style.width) || 0;
     await tween(t(PACE.bandFill), (p) => {
-      line.style.width = `${Math.round(lerp(w0, vw, p))}px`;
+      lineBox.style.width = `${Math.round(lerp(w0, vw, p))}px`;
     });
     audio.play('maximize', { volume: 0.5 });
     root.classList.add('is-full');

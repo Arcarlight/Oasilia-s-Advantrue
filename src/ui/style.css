@@ -2231,19 +2231,39 @@ input, textarea { cursor: text !important; }
     linear-gradient(180deg, #100b14 0%, #05040a 52%, #100b14 100%);
   will-change: transform;
 }
-/* 那条「黑色 + 主题色」的横线：宽度与纵向位置由 JS 按敌人立绘现算
-   （右端 = 立绘中线，纵向 = 立绘中腰），所以它看起来是跟着正面图铺过来的。 */
-.enc-line {
+/* 那组「黑色 + 主题色」的横线：宽度与纵向位置由 JS 按敌人立绘现算
+   （整组右端 = 立绘中线，整组以立绘中腰为基准上下铺开），看起来就是跟着正面图铺过来的。
+   外层 .enc-lines 只是个「零点」：高度 0，所有线按 --o 相对它上下偏移。 */
+.enc-lines {
   position: absolute;
   left: 0;
   top: 0;
-  display: block;
   width: 0;
-  height: 8px;
-  background: #08060a;
-  border-right: 3px solid var(--accent-2, #ffc96b);
-  box-shadow: 0 0 18px 2px color-mix(in srgb, var(--accent, #f0a93c) 70%, transparent);
+  height: 0;
   will-change: width, top;
+}
+.enc-line {
+  position: absolute;
+  left: 0;
+  display: block;
+  /* --o 是这条线的中线相对零点的偏移，--t 是粗细 */
+  top: calc(var(--o, 0px) - var(--t, 2px) / 2);
+  width: calc(100% * var(--w, 1));
+  height: var(--t, 2px);
+  opacity: var(--a, 1);
+  /* 左端淡出、右端最亮：视觉上就是「从左往右铺过来」的那一下 */
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--accent, #f0a93c) 55%, transparent) 22%,
+    var(--accent-2, #ffc96b));
+  box-shadow: 0 0 16px 1px color-mix(in srgb, var(--accent, #f0a93c) 60%, transparent);
+}
+/* 主线：最粗最亮的一条，右端再补一道亮边（就是「铺到哪儿」的那条前沿） */
+.enc-line-main {
+  border-right: 3px solid var(--accent-2, #ffc96b);
+  box-shadow:
+    0 0 22px 3px color-mix(in srgb, var(--accent, #f0a93c) 75%, transparent),
+    0 0 60px 8px color-mix(in srgb, var(--accent, #f0a93c) 35%, transparent);
 }
 
 /* 两只立绘。站位**错开**：敌人正面图在右上、我方背影在左下（和战斗场地的对角站位一致），
@@ -2268,13 +2288,19 @@ input, textarea { cursor: text !important; }
   filter: drop-shadow(0 16px 12px rgba(0, 0, 0, .55));
 }
 
-/* 名字 + 档位标注：写在立绘旁边（靠右对齐，贴着立绘） */
+/* 名牌：名字 + 霓虹灯档位，挂在**敌人立绘下面**（用户指的位置）。
+   它是绝对定位的 —— 所以不参与 .enc-enemy 的 flex 布局，
+   立绘的中线/中腰仍然是「立绘自己的中线/中腰」，横线照旧贴得准。 */
 .enc-plate {
+  position: absolute;
+  top: calc(100% + clamp(6px, 1.6vh, 18px));
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: clamp(4px, .8vh, 10px);
+  gap: clamp(2px, .7vh, 8px);
   text-align: right;
+  pointer-events: none;
   opacity: 0;
   transform: translateX(-28px);
   transition: opacity .24s ease, transform .34s cubic-bezier(.14, .68, .16, 1);
@@ -2283,9 +2309,9 @@ input, textarea { cursor: text !important; }
 .enc-name {
   /* 粗体字体：卡名 / 商店名 / 这里的怪名都属于「要一眼认出来」的字 */
   font-family: var(--font-bold);
-  font-size: clamp(26px, 4.6vw, 62px);
+  font-size: clamp(24px, 4vw, 58px);
   font-weight: 700;
-  line-height: 1.06;
+  line-height: 1.1;
   letter-spacing: .02em;
   color: #fff;
   /* 描边 + 主题色外发光：字要压在黑幕上 */
@@ -2294,25 +2320,50 @@ input, textarea { cursor: text !important; }
     0 0 3px rgba(0, 0, 0, .85),
     0 0 30px var(--accent, #f0a93c);
 }
-.enc-tier {
-  font-size: clamp(11px, 1.3vw, 17px);
-  font-weight: 700;
-  letter-spacing: .22em;
-  padding: 2px 14px 2px 16px;   /* 左多 2px：letter-spacing 会在末尾留一个空位 */
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(255, 255, 255, .16);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .3);
+
+/**
+ * 档位标注做成**霓虹灯**：同一个词（野生 / 较强 / 精英 / 首领）用超大**空心**字
+ * 横向错开叠 4 份、半透明。
+ *   · 空心 = 字身透明 + -webkit-text-stroke 画描边（落不到 text-stroke 的浏览器上
+ *     它就整个不显示 —— 这里是纯装饰，宁可不显示也不要出实心方块）；
+ *   · 错开量由每一份自己的 --i 决定，所以「四份」在 DOM 上数得出来（诊断会数）。
+ * 字号跟着视口宽度走，窄窗口下自己变小，不会顶出屏幕。
+ */
+.enc-neon {
+  position: relative;
+  height: 1em;
+  min-width: 1px;              /* 宽度交给里面绝对定位的字去撑 */
+  font-size: clamp(44px, 8.2vw, 116px);
+  line-height: 1;
+  letter-spacing: .04em;
 }
-.encounter[data-tier="normal"] .enc-tier { background: rgba(120, 190, 255, .28); box-shadow: inset 0 0 0 2px rgba(190, 225, 255, .45); }
-.encounter[data-tier="elite"]  .enc-tier { background: rgba(255, 116, 116, .34); box-shadow: inset 0 0 0 2px rgba(255, 190, 190, .5); color: #ffe6e6; }
-.encounter[data-tier="boss"]   .enc-tier { background: rgba(255, 108, 182, .38); box-shadow: inset 0 0 0 2px rgba(255, 196, 230, .55); color: #ffe4f4; }
+.enc-neon-i {
+  position: absolute;
+  right: calc(var(--i, 0) * clamp(5px, .9vw, 16px));
+  bottom: 0;
+  font-family: var(--font-bold);
+  font-weight: 700;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--neon, var(--accent-2, #ffc96b));
+  opacity: .32;
+  /* 描边外面再糊一层同色光晕，才有灯管的感觉 */
+  filter: drop-shadow(0 0 10px var(--neon, var(--accent-2, #ffc96b)));
+}
+/* 四份的浓淡错开一点，像灯管接缝处的重叠 */
+.enc-neon-i:nth-child(2) { opacity: .22; }
+.enc-neon-i:nth-child(3) { opacity: .26; }
+.enc-neon-i:nth-child(4) { opacity: .16; }
+/* 档位各有自己的灯色：野生/较强跟地图主题走，精英红、首领品红（和档位胶囊时代的配色一致） */
+.encounter[data-tier="elite"] .enc-neon { --neon: #ff8080; }
+.encounter[data-tier="boss"]  .enc-neon { --neon: #ff6cb6; }
 
 @media (max-width: 900px) {
   .enc-fighter { gap: 8px; }
   .enc-player { left: 2%; }
   .enc-enemy { right: 2%; }
-  .enc-name { font-size: clamp(20px, 5.4vw, 36px); }
+  .enc-name { font-size: clamp(20px, 4.6vw, 34px); }
+  .enc-neon { font-size: clamp(36px, 9vw, 62px); }
 }
 
 /* ============================================================
