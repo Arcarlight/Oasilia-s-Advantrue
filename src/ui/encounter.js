@@ -3,16 +3,19 @@
 // 效果（用户点名要的）：
 //   黑幕**一上来就把整个屏幕盖住**（地图不再露出任何一角）；
 //   我方**背影**从右边非线性划到左下，敌人的**正面图**从左滑到右上 —— 两只**错开**站位；
-//   一组黑底 + 主题色的光带跟着敌人的正面图铺过来（右端始终贴着它的中线）：
-//   划入阶段它是一条**定长的带子**整条从屏幕左边扫进来，敌人站定后再由补满阶段展开到整幅宽度；
-//   名牌（大号名字 + 档位霓虹灯）**从屏幕右边外面划进来**，名字比霓虹灯晚一点到位；
-//   双双停留一小会（这段时间用来预载战斗资源），然后**名牌跟着黑幕一起滑出屏幕**、进战斗。
+//   一组黑底 + 主题色的光带从屏幕左边外面扫进来：它**从头到尾都是整幅视口宽**
+//   （用户：「我希望光条没有拉长，进来就是最长的」），扫到屏幕右边的那一刻敌人正好站定；
+//   名牌（大号名字 + 档位霓虹灯）**从屏幕右边外面划进来**，霓虹灯的 4 份从右往左一份份拉开、
+//   名字最后落定；
+//   双双停留一小会（这段时间用来预载战斗资源），然后名牌**比黑幕先一步**滑出屏幕、进战斗。
 //
-// 三个方向都各有各的「看得见」的标准（诊断逐条量，见 tools/diag-encounter.js）：
+// 每个动作都有一条能量的判据（诊断逐条验，见 tools/diag-encounter.js）：
 //   · 立绘 —— 非线性（前半段时间走完 >60% 路程）；
-//   · 光带 —— 两个端点都在动（尾巴也进屏幕、并且一路往右）；
-//   · 名牌 —— 起点在屏幕右边外面、一路往左、停在自己的位置上；
-//   · 退场 —— 名牌和黑幕**逐帧同一个位移**（跟着幕布一起走）。
+//   · 光带 —— 全程宽度恒等于视口宽（不漏一丝「先短后长」）、右端从左到右单调扫过、
+//             落定时正好贴到屏幕右边；
+//   · 名牌 —— 起点在屏幕右边外面、一路往左、停在自己的位置上；名字最后落定；
+//             霓虹灯 4 份中途间距被拉开、结束那刻收拢回静态间距；
+//   · 退场 —— 名牌和黑幕**同向但错开**（名牌更快，先一步出画）。
 //
 // 用的是**回合立绘**（Generation 9 Pack 的正/背面图，src/core/gen9.js），
 // 不是战斗场地上的 PMD 行走图 —— 用户特意澄清过：「我表示的立绘是放在表示回合数旁边的那个立绘」。
@@ -50,10 +53,8 @@ import { TIERS } from '../data/enemies.js';
  * 想整体调快调慢改这里，别去各个阶段里手改数字。
  */
 const PACE = {
-  /** 两只立绘横向划入（名牌也在这段时间里从右边划进来） */
+  /** 两只立绘横向划入（光带横扫、名牌从右边划进来都在这一段时间里） */
   slideIn: 560,
-  /** 横线跟着敌人铺完之后，把没铺到的部分补满 */
-  bandFill: 360,
   /** 双双停留：预载和战斗界面挂载都在这一小会里做完 */
   hold: 620,
   /** 一起滑出屏幕 */
@@ -95,30 +96,29 @@ const LINES = [
 ];
 
 /**
- * 划入阶段里那条光带的**长度**（占视口宽的比例）。
+ * 光带的长度：**恒等于整幅视口宽**（用户：「我希望光条没有拉长，进来就是最长的」）。
  *
- * 为什么不是「从屏幕左边缘开始铺」：那样只有右端在动，左端一直钉在屏幕边上，
- * 眼睛看到的就是「刷一下就满了」，用户的原话是「线好像没有任何进场动画」。
- * 现在它是一条**定长的光带**，右端贴着敌人的中线、整条跟着敌人从屏幕左边外面划进来 ——
- * 两头都在动，才看得出是在「划入」（用户：「敌人旁边的线可以向右划入」）。
- *
- * 敌人站定之后再展开成整幅宽度。**展开用的是 smoothstep 而不是 ease-out**：
- * 划入那一段的收尾本来就已经减速到接近 0，展开如果又从「最高速」起步，
- * 看起来就是两个动作——「先进来，再拉长」（用户就是这么问的）。
- * smoothstep 两头速度都是 0，两段接起来才是一个连贯的动作。
+ * 这条常数不再是「划入阶段的临时长度」，而是写死不动的长度 ——
+ * 光带从第一帧起就是满宽，唯一会变的是它的**位置**（整条从左往右扫）。
  */
-const BAND_TAIL_VW = 0.34;
+const BAND_VW = 1;
 
 /**
  * 名牌（名字 + 霓虹灯）的进场参数。
  *
- * 整块从屏幕右边划进来，但**里面三样东西到达的时间不同**，做出「从右往左逐渐拉开」：
+ * 整块从屏幕右边划进来，但**里面每一份到达的时间不同**，做出「从右往左逐渐拉开」：
  *   START      —— 整段划入的第几成进度时名牌起步（前面先让敌人和光带动起来）
- *   LAYER_LAG  —— 霓虹灯的 4 份里，每一份比**右边那一份**晚多少起步。
- *                 基准那份（--i: 0）最靠右、最先到位，往左的几份依次慢一拍 ——
- *                 于是整组是**从右往左**一份份拉开落定的（用户点名要的感觉）。
- *   LAYER_PULL —— 每份多留的距离（占整段位移的比例），拉开幅度就靠它
- *   NAME_AT    —— 名字在名牌进场的第几成时才落定（最后落：灯管先铺开、名字再压上去）
+ *   LAYER_*    —— 霓虹灯的 4 份，每一份自己有一段「把多留的距离收回去」的时间窗：
+ *       · 第 i 份从 `i × LAYER_STEP` 开始收，到 `LAYER_DONE + i × LAYER_DONE_STEP` 收完；
+ *       · 于是最靠右的基准那份（--i: 0）**最早**收回、往左的一份份排在后面 ——
+ *         中途那 4 份是**朝右边拖开**的一串（实测间距能到静态的 3 倍多），
+ *         再从左往右一份份落回自己的位置，这就是「从右往左逐渐拉开」。
+ *       · 收的速度用 smoothstep（两头速度都是 0）。用 ease-out 收的话，
+ *         每一份刚轮到自己的时候速度是**从 0 直接跳到最大**，看起来就是「猛地跳一下」。
+ *   LAYER_PULL —— 每份多留的距离（占整段位移的比例）。
+ *                 **不要调太小**：它决定了中途能拖多开；太小就等于整排一起平移、看不出错开。
+ *   NAME_AT    —— 名字从名牌进场的第几成开始收自己那点滞后
+ *                 （**不能留到最后一刻**：留到最后一刻收，就是「名字猛地往前一跳」）
  *   NAME_PULL  —— 名字多留的距离
  *   EXIT_LEAD  —— 退场时名牌比黑幕**快**这一点（用户：「离开的和黑幕错开一点，
  *                 不要完全跟着走」）。同一时刻黑幕走了 easeIn(p)，名牌走的是
@@ -126,9 +126,11 @@ const BAND_TAIL_VW = 0.34;
  */
 const PLATE = {
   START: 0.12,
-  LAYER_LAG: 0.18,
+  LAYER_STEP: 0.1,
+  LAYER_DONE: 0.55,
+  LAYER_DONE_STEP: 0.15,
   LAYER_PULL: 0.45,
-  NAME_AT: 0.84,
+  NAME_AT: 0.5,
   NAME_PULL: 0.3,
   EXIT_LEAD: 1.25,
 };
@@ -175,8 +177,8 @@ function debugHold(phase) {
 
 /**
  * 演出时间轴。**所有会动的东西都由同一个 ticker 推进**，
- * 所以「横线的右端 = 敌人立绘的中线」是构造上成立的，
- * 而不是靠两条 CSS 曲线碰巧对齐（差几像素就能看出横线没「跟着」立绘）。
+ * 所以「光带扫到哪儿」和「敌人走到哪儿」是同一套进度算出来的，
+ * 而不是靠两条 CSS 曲线碰巧对齐（差几像素就能看出两者没对上）。
  *
  * 用 setInterval 而不是 requestAnimationFrame：标签页不可见时 rAF 会被节流到几乎不动，
  * 那样演出会卡在半路、战斗永远进不去（行走图那边也是因为这个才用 setInterval）。
@@ -199,12 +201,10 @@ function tween(ms, onTick, until = 1) {
 const easeOut = (p) => 1 - Math.pow(1 - p, 3.2);
 /** 退场用 ease-in：慢慢起步、越走越快，像被甩出画面 */
 const easeIn = (p) => Math.pow(p, 2.2);
-/** 两头速度都是 0 的缓动：两段动画接在一起时用它，接缝处才不会有「一顿再起步」 */
+/** 两头速度都是 0 的缓动：接在别的运动后面时，接缝处才不会有「一顿再起步」 */
 const smoothstep = (p) => p * p * (3 - 2 * p);
-const lerp = (a, b, p) => a + (b - a) * p;
 /** 夹到 0~1：名牌的进场进度会算出负数（那一段它就该待在屏幕外） */
 const clamp01 = (p) => (p < 0 ? 0 : p > 1 ? 1 : p);
-
 /**
  * 造一张立绘 <img>。
  *
@@ -382,25 +382,47 @@ export async function playEncounter(opts = {}) {
     const nameEl = plate.querySelector('.enc-name');
     const neonLayers = [...neon.querySelectorAll('.enc-neon-i')];
     const plateGap = Math.max(0, Math.round(vw - plate.getBoundingClientRect().right));
-    /** 第 i 份霓虹灯的进场进度：越靠左（i 越大）起步越晚、收尾时间不变 */
-    const layerP = (pp, i) => clamp01((pp - i * PLATE.LAYER_LAG) / (1 - i * PLATE.LAYER_LAG));
+    /** 第 i 份霓虹灯「把多留的距离收回去」的进度：越靠左（i 越大）收得越晚 */
+    const layerP = (pp, i) => {
+      const from = i * PLATE.LAYER_STEP;
+      const to = PLATE.LAYER_DONE + i * PLATE.LAYER_DONE_STEP;
+      return clamp01((pp - from) / Math.max(0.05, to - from));
+    };
     const plateTick = (pp) => {
       const away = Math.round(plate.offsetWidth + plateGap + 16);
       const e = easeOut(clamp01(pp));
       plate.style.transform = `translateX(${Math.round(away * (1 - e))}px)`;
+      /**
+       * 每一份自己那点「多留的距离」用 **smoothstep** 收掉，不是 ease-out。
+       *
+       * 用 ease-out 的话，那一份刚开始收的时候速度是**从 0 直接跳到最大** ——
+       * 它本来就跟着整块在动，于是合速度突然翻好几倍，看起来就是「名字猛地往前一跳」
+       * （用户报的「名字进入有跳变」）。smoothstep 两头速度都是 0，
+       * 接在整块的运动上速度是连续的。
+       */
       neonLayers.forEach((el, i) => {
         // 多留的那段距离通过 CSS 变量交给 .enc-neon-i 的 transform（它还有自己的错开量）
-        const pull = Math.round(away * PLATE.LAYER_PULL * (1 - easeOut(layerP(pp, i))));
+        const pull = Math.round(away * PLATE.LAYER_PULL * (1 - smoothstep(layerP(pp, i))));
         el.style.setProperty('--dx', `${pull}px`);
       });
       if (!nameEl) return;
       const np = clamp01((pp - PLATE.NAME_AT) / (1 - PLATE.NAME_AT));
-      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME_PULL * (1 - easeOut(np)))}px)`;
+      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME_PULL * (1 - smoothstep(np)))}px)`;
     };
     plateTick(0);
 
     /**
-     * 划入：两只横向对穿；光带右端 = 敌人立绘**此刻**的中线，整条跟着它从左边外面扫进来。
+     * 划入：两只横向对穿；光带**从头到尾都是整幅视口宽**，整条从屏幕左边外面扫进来。
+     *
+     * 用户两轮下来的结论：「我希望光条没有拉长，进来就是最长的」。
+     * 所以这里不做任何「先短后长」的事 —— 光带的长度恒等于视口宽，
+     * 唯一的运动是**平移**：
+     *   · 右端 = 敌人推进的成数 × 视口宽（敌人落定时正好到屏幕右边）；
+     *   · 左端 = 右端 − 视口宽（敌人落定时正好贴住屏幕左边）。
+     * 也就是说亮着的那条前沿一路扫过去，扫完的那一刻敌人也正好站定，全屏覆盖，全程不拉长。
+     *
+     * 代价是右端不再严丝合缝地贴在敌人中线上（它比中线略靠前，最多 17% 屏宽）——
+     * 「恒长」和「贴着中线」在几何上没法同时成立：中线只到屏幕的 8x%，剩下那一段总得有人填。
      *
      * 位置每一帧都**现量**（不用开演前算好的常数）：名牌的字是 CJK 字体渲染的，
      * 而字体是异步加载的 —— 字体一落定，名牌宽度就变、整组立绘跟着挪，
@@ -415,10 +437,11 @@ export async function playEncounter(opts = {}) {
       playerWrap.style.transform = `translateY(-50%) translateX(${dx}px)`;
       enemyWrap.style.transform = `translateY(-50%) translateX(${-dx}px)`;
       const r = (enemyArt ? enemyBody : enemyWrap).getBoundingClientRect();
-      // 光带：右端就是敌人的中线（**不 clamp** —— 敌人还在屏幕外时整条也该在屏幕外），
-      // 左端 = 右端 - 定长。纵向整组以它的中腰为基准。
-      bandR = Math.round(r.left + r.width / 2);
-      bandL = bandR - Math.round(vw * BAND_TAIL_VW);
+      const cx = r.left + r.width / 2;
+      // dx 是这一帧给敌人加的左移量，所以「落定时」的中线 = 现在的中线 + dx
+      const k = clamp01(cx / Math.max(1, cx + dx));
+      bandR = Math.round(k * vw * BAND_VW);
+      bandL = bandR - Math.round(vw * BAND_VW);
       applyBand(bandL, bandR);
       lineBox.style.top = `${Math.round(r.top + r.height / 2)}px`;
       // 名牌：整段划入的后 88% 时间里从右边划进来
@@ -444,18 +467,8 @@ export async function playEncounter(opts = {}) {
     }
     if (abort()) return false;
 
-    // ---- ② 光带两端一起展开，铺满整幅宽度 ----
-    setPhase('fill');
-    // 起点取此刻的实际端点（而不是再算一遍）：左端 → 屏幕左边，右端 → 屏幕右边。
-    // 黑幕本身早就是满屏的了，这一步是把光带拉通（「把屏幕盖住」的是黑幕）。
-    // 缓动用 smoothstep：划入收尾时速度已经接近 0，这里也从 0 起速 ——
-    // 两段接起来才是「划进来，顺势铺开」，而不是「先进来，再拉长」。
-    const l0 = bandL;
-    const r0 = bandR;
-    await tween(t(PACE.bandFill), (p) => {
-      const e = smoothstep(p);
-      applyBand(lerp(l0, 0, e), lerp(r0, vw, e));
-    });
+    // 划完的那一刻光带已经铺满整幅宽度了（它进场时就是最长的），所以这里没有「补满」阶段 ——
+    // 只有那一下「铺到边」的音效，接着直接进停留。
     audio.play('maximize', { volume: 0.5 });
     root.classList.add('is-full');
     setPhase('hold');

@@ -87,6 +87,9 @@
       game.startBattle('elite', 0, 'map');
       await until(() => !!document.querySelector('.encounter'));
       await wait(500);
+      // 把这一帧上「霓虹灯各份的滞后量」打出来，方便对着截图核对「拉开」到底有没有生效
+      const layers = [...document.querySelectorAll('.enc-neon-i')];
+      log('霓虹灯各份：' + layers.map((n, i) => `#${i} --dx=${n.style.getPropertyValue('--dx') || '(空)'} 右边缘 ${Math.round(n.getBoundingClientRect().right)}`).join(' ｜ '));
       log('ENC_DONE');
       return;
     }
@@ -170,6 +173,14 @@
             const nm = box(root.querySelector('.enc-name'));
             const neonBox = box(root.querySelector('.enc-neon'));
             const neon = [...root.querySelectorAll('.enc-neon-i')].map(box);
+            /** 计算出来的 translateX（px）：用来查「跳变」—— 见下面 ④d */
+            const txOf = (node) => {
+              if (!node) return 0;
+              const t = getComputedStyle(node).transform;
+              if (!t || t === 'none') return 0;
+              const m = t.match(/matrix\(([^)]+)\)/);
+              return m ? Math.round(parseFloat(m[1].split(',')[4]) || 0) : 0;
+            };
             samples.push({
               t: Math.round(performance.now() - t0),
               phase: root.dataset.phase ?? '',
@@ -182,6 +193,8 @@
               neonLeft: neon.length ? Math.min(...neon.map((n) => n.left)) : null,
               // 4 份霓虹灯各自的右边缘：进场时它们的**间距**是拉开的（从右往左一份份落定）
               neonRights: neon.map((n) => Math.round(n.right)),
+              // 名牌 / 名字自己那点位移（不含整块的）：查「名字跳变」用
+              plateTx: txOf(plate), nameTx: txOf(root.querySelector('.enc-name')),
               warm: (await audio.warmed()).length,
             });
           }
@@ -352,54 +365,71 @@
         hold.length ? `名牌 ${Math.round(Math.min(...hold.map((s) => s.plate?.top ?? 0)))}~${Math.round(Math.max(...hold.map((s) => s.plate?.bottom ?? 0)))}px · 最左 ${Math.round(Math.min(...hold.map((s) => Math.min(s.neonLeft ?? 0, s.name?.left ?? 0))))}px · 最右 ${Math.round(Math.max(...hold.map((s) => s.name?.right ?? 0)))}px / 视口 ${vw}×${vh}` : '（没采到）');
     }
 
-    // ---- ③ 「光带跟随正面图」：划入阶段里光带右端 == 敌人立绘中线 ----
-    // 两个前提：
-    //   · 补满阶段光带本来就要跑在敌人前面把它拉到屏幕另一头，那一段不算「跟随」；
-    //   · 敌人还在屏幕外时它中线是负的，光带也在屏幕外，那一段没有可比性 ——
-    //     从它踏进屏幕那一刻开始比才有意义。
-    // 比的是**右端**（lineRight）而不是宽度：光带现在是一条从左边外面扫进来的定长带子，
-    // 宽度 = 右端 - 左端，拿宽度当判据等于假设左端钉在屏幕边上（那正是被改掉的老行为）。
-    const onScreen = slide.filter((s) => s.enemy.cx > 2);
-    const gaps = onScreen.map((s) => Math.abs(s.lineRight - s.enemy.cx));
-    const worst = gaps.length ? Math.max(...gaps) : 999;
-    ok(gaps.length > 3 && worst <= 3,
-      '光带的右端始终贴着敌人立绘的中线（「跟随正面图」）',
-      `进屏后 ${gaps.length} 个采样点，最大偏差 ${worst.toFixed(1)}px（取整误差，>3px 就是没跟着）`);
-    // 线的高度也要跟着上边那只，而不是钉在屏幕正中
-    const lineOffsets = hold.map((s) => Math.abs(s.lineTop - s.enemy.cy));
-    const worstY = lineOffsets.length ? Math.max(...lineOffsets) : 999;
-    ok(worstY <= 3, '光带的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
-      `最大偏差 ${worstY.toFixed(1)}px；敌人中线 ${Math.round(hold[0]?.enemy?.cy ?? 0)} vs 屏幕正中 ${Math.round(vh / 2)}`);
-    ok(hold.some((s) => s.lineW >= vw - 3), '光带最后铺满整幅宽度', `最宽 ${Math.round(Math.max(...samples.map((s) => s.lineW)))}px`);
-    // 背景不是「光秃秃一条」：围着主线还有几条更细更暗的（用户提的）
+    // ---- ③ 光带：全程恒长 + 从左扫到右 ----
+    /**
+     * 用户两轮下来的结论：「我希望光条没有拉长，进来就是最长的」。
+     * 所以判据从「右端贴着敌人中线」换成了三件更直接的事：
+     *   ① 划入阶段里光的宽度**恒等于视口宽**（一丝「先短后长」都不许有）；
+     *   ② 右端从左到右**单调**扫过，落定时正好贴到屏幕右边；
+     *   ③ 左端跟着从屏幕左边外面进来，落定时正好贴到 0。
+     * 纵向仍然跟着上边那只敌人的中腰（这条没变）。
+     */
     {
+      const widths = slide.map((s) => s.lineW);
+      const wMin = Math.min(...widths);
+      const wMax = Math.max(...widths);
+      ok(slide.length >= 4 && wMax - wMin <= 3 && Math.abs(wMax - vw) <= 3,
+        '光带**进来就是最长的**：划入全程宽度恒等于整幅视口宽（没有「先短后长」）',
+        `划入阶段宽度 ${Math.round(wMin)}~${Math.round(wMax)}px / 视口 ${vw}（极差 ${Math.round(wMax - wMin)}px）`);
+      const rights = slide.map((s) => s.lineRight);
+      const monotonic = rights.every((v, i) => i === 0 || v >= rights[i - 1] - 1);
+      const last = slide.at(-1);
+      ok(monotonic && last && Math.abs(last.lineRight - vw) <= 4,
+        '右端（亮着的那条前沿）从左到右**单调**扫过，落定时正好贴到屏幕右边',
+        `右端 ${Math.round(rights[0])} → ${Math.round(rights.at(-1))}px（单调 ${monotonic}，视口 ${vw}）`);
+      const lefts = slide.map((s) => s.lineLeft);
+      const leftMono = lefts.every((v, i) => i === 0 || v >= lefts[i - 1] - 1);
+      ok(lefts[0] < -vw * 0.5 && last && Math.abs(last.lineLeft) <= 4 && leftMono,
+        '左端也从屏幕左边外面一路跟进来，落定时正好贴到屏幕左边',
+        `左端 ${Math.round(lefts[0])} → ${Math.round(last?.lineLeft ?? 0)}px（单调 ${leftMono}）`);
+      // 宽度恒长 = 两端同步移动：右端走了多少，左端就该走多少
+      const dR = rights.at(-1) - rights[0];
+      const dL = lefts.at(-1) - lefts[0];
+      ok(Math.abs(dR - dL) <= 3,
+        '两端是**同步平移**的（不是一头拉长一头不动）',
+        `右端走了 ${Math.round(dR)}px，左端走了 ${Math.round(dL)}px`);
+      // 右端点的高度仍然跟着上边那只敌人的中腰
+      const lineOffsets = hold.map((s) => Math.abs(s.lineTop - s.enemy.cy));
+      const worstY = lineOffsets.length ? Math.max(...lineOffsets) : 999;
+      ok(worstY <= 3, '光带的纵向位置跟着敌人立绘的中腰（不是屏幕正中）',
+        `最大偏差 ${worstY.toFixed(1)}px；敌人中线 ${Math.round(hold[0]?.enemy?.cy ?? 0)} vs 屏幕正中 ${Math.round(vh / 2)}`);
+      ok(hold.every((s) => s.lineW >= vw - 3), '停留时它仍然是整幅宽（盖满屏幕）',
+        `最窄 ${Math.round(Math.min(...hold.map((s) => s.lineW)))}px`);
+      // 「补满」这个阶段已经不存在了：划完直接进停留
+      ok(!samples.some((s) => s.phase === 'fill'),
+        '已经**没有「补满」阶段**了（划完直接停留，光带不再有第二段拉伸）',
+        `出现过的阶段：${[...new Set(samples.map((s) => s.phase))].join(' / ')}`);
+      // 背景不是「光秃秃一条」：围着主线还有几条更细更暗的（用户提的）
       const n = samples[0]?.lineCount ?? 0;
       ok(n >= 4, '背景那一组横线不止一条（围着主线还有几条更细更暗的）', `${n} 条`);
     }
 
-    // ---- ③b 光带的进场：是一条**两头都在动**的带子从左边划进来 ----
+    // ---- ③b 光带在划入里是**平移**而不是被拉长（用户第二次反馈的正题） ----
     /**
-     * 用户反馈：「线好像没有任何进场动画，敌人旁边的线可以向右划入」。
-     * 老写法是「左端钉在屏幕最左边、宽度从 0 涨到敌人中线」—— 只有右端在动，
-     * 而缓动是强 ease-out，看着就是刷一下铺满。现在是一条定长的光带整条往右扫：
-     * 左端（尾巴）和右端（前沿）都在动，两端进入屏幕的时间也一前一后。
+     * 老写法分两段：先「定长带子跟着敌人扫进来」，再由补满阶段把两端展开 —— 用户看到的是
+     * 「进来等一会才拉长」。现在宽度恒等于视口宽（③ 已经验了），这里补一条**反向**的：
+     * 任何一帧的宽度都不许出现台阶（相邻采样之间的极差都得是 0）。
      */
     if (slide.length >= 4) {
-      const sw = slide.filter((s) => s.lineRight > 2 && s.lineLeft > -2);
-      const tailSeen = slide.filter((s) => s.lineLeft > 2);
-      ok(tailSeen.length >= 2,
-        '光带是**整条**从左边扫进来的：尾巴（左端）也进到屏幕里了（不是左端钉在屏幕边上）',
-        `采到 ${tailSeen.length} 个「左端已在屏幕内」的点，最后左端 ${Math.round(slide.at(-1).lineLeft)}px`);
-      const a = slide.find((s) => s.lineLeft > 2);
-      const z = slide.at(-1);
-      ok(a && z && z.lineLeft - a.lineLeft > vw * 0.08,
-        '光带左端在划入阶段确实**往右走了**（看得到它在移动，而不是一瞬间出现）',
-        a ? `左端 ${Math.round(a.lineLeft)} → ${Math.round(z.lineLeft)}px（${a.t}ms → ${z.t}ms）` : '（没采到）');
-      // 划入阶段它该是「一条带子」，不该已经铺满
-      ok(slide.every((s) => s.lineW <= vw * 0.45),
-        '划入阶段光带还是一条带子（铺满是后面补满阶段的事）',
-        `最宽 ${Math.round(Math.max(...slide.map((s) => s.lineW)))}px / 视口 ${vw}`);
-      ok(sw.length >= 3, '光带的端点都量到了', `${sw.length} 个采样点`);
+      let worstStep = 0;
+      for (let i = 1; i < slide.length; i++) {
+        worstStep = Math.max(worstStep, Math.abs(slide[i].lineW - slide[i - 1].lineW));
+      }
+      ok(worstStep <= 2,
+        '划入期间宽度**逐帧没有台阶**（不是「先短后长」，而是整条平移）',
+        `相邻采样最大宽度变化 ${worstStep.toFixed(1)}px`);
+      const moved = Math.abs(slide.at(-1).lineRight - slide[0].lineRight);
+      ok(moved > vw * 0.5, '光带确实横穿了屏幕（平移的距离够大）', `右端位移 ${Math.round(moved)}px / 视口 ${vw}`);
     }
 
     // ---- ④ 「非线性」：前半段时间里走完的路程要明显超过一半 ----
@@ -476,11 +506,56 @@
         ok(ordered, '最右边那份最先到位，往左的依次落后（「从右往左」拉开，不是反的）',
           `各份还差 ${behind.map((v) => Math.round(v)).join(' / ')}px（下标 0 是最靠右那份）`);
       }
-      // 落定后必须收拢回静态的错开量（不然就不是霓虹灯，而是糊成一片 / 一直散着）
-      const lastFlying = flying.at(-1);
-      ok(lastFlying && Math.abs(lastFlying.spread - restSpread) <= 6,
-        '划入结束那一刻 4 份已经收拢回静态间距（收成霓虹灯）',
-        `结束时 ${lastFlying ? Math.round(lastFlying.spread) : '?'}px vs 静态 ${restSpread}px`);
+      // 落定后必须收拢回静态的错开量（不然就不是霓虹灯，而是糊成一片 / 一直散着）。
+      // 用**第一个停留采样**而不是最后一个划入采样：划入的最后一帧可能落在 p≈0.94，
+      // 那时候还差一点点没走完（采样是 20ms 一次，抓不到恰好 p=1 的那一帧）。
+      const settled = hold.find((s) => s.neonRights);
+      const settledSpread = spreadOf(settled);
+      ok(settledSpread != null && Math.abs(settledSpread - restSpread) <= 4,
+        '落定那一刻 4 份收拢回静态间距（收成霓虹灯）',
+        `落定 ${settledSpread == null ? '?' : Math.round(settledSpread)}px vs 静态 ${restSpread}px`);
+    }
+
+    // ---- ④d 名字不许「跳变」（用户报的：「名字进入有跳变的情况」） ----
+    /**
+     * 跳变的根因：名字自己那点「多留的距离」如果留到最后一刻才用 ease-out 收掉，
+     * 收的那一刻速度是**从 0 直接跳到最大**，而它本来就跟着整块在动 ——
+     * 合速度突然翻好几倍，看起来就是「名字猛地往前一跳」。
+     * 判据：名字自己的位移必须**单调**（只收不放），而且逐帧的步长不能有尖峰
+     * （最大步长 ≤ 中位步长的 2.2 倍；ease-out 起步那种一两帧吃掉一大截的会被抓出来）。
+     */
+    {
+      const ps = slide.filter((s) => s.nameTx != null && s.plateTx != null);
+      const own = ps.map((s) => s.nameTx);                    // 名字自己那点位移（负数：还在后面）
+      const steps = [];
+      for (let i = 1; i < own.length; i++) steps.push(Math.abs(own[i] - own[i - 1]));
+      const nonzero = steps.filter((v) => v > 0.5);
+      const sorted = [...nonzero].sort((a, b) => a - b);
+      const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+      const maxStep = nonzero.length ? Math.max(...nonzero) : 0;
+      const back = own.filter((v, i) => i > 0 && v > own[i - 1] + 1).length;
+      ok(ps.length >= 4 && back === 0,
+        '名字自己那点滞后**一路只收不放**（单调，不会来回抖）',
+        `${ps.length} 个采样点，回退 ${back} 个`);
+      /**
+       * 有没有「跳一下」，看的是**第一步吃掉总量的多少**：
+       *   · ease-out 起步（老写法）：第一帧就走掉 50% 上下 —— 眼睛看到的就是猛地一窜；
+       *   · smoothstep 起步（现在）：第一帧只走 10% 上下，速度是从 0 加上去的。
+       * 只看「最大步长 / 中位步长」不够灵：两种写法都能到 2 倍上下，分不开。
+       */
+      const total = Math.abs(own[0] - own.at(-1));
+      const firstStep = nonzero.length ? nonzero[0] : 0;
+      ok(total > 20 && firstStep <= total * 0.2,
+        '名字不是「猛地一下就窜出去」（第一步只走掉总量的 ≤20%）',
+        `第一步 ${firstStep.toFixed(0)}px / 总量 ${total.toFixed(0)}px = ${total ? (firstStep / total * 100).toFixed(0) : '?'}%`);
+      ok(median > 0 && maxStep <= median * 2.6,
+        '名字的收尾没有尖峰（最大步长 ≤ 中位步长的 2.6 倍）',
+        `最大步长 ${maxStep.toFixed(0)}px vs 中位 ${median.toFixed(0)}px（${median ? (maxStep / median).toFixed(1) : '?'} 倍）`);
+      // 收干净：看**第一个停留采样**（划入最后一帧可能落在 p≈0.94，还差一点点）
+      const settledName = hold.find((s) => s.nameTx != null)?.nameTx ?? null;
+      ok(settledName != null && Math.abs(settledName) <= 2,
+        '名字最后**收干净**了（落定时自己那点滞后归零，和霓虹灯共享同一条右边缘）',
+        `落定时还差 ${settledName == null ? '?' : Math.round(settledName)}px`);
     }
 
     // ---- ⑤ 「双双停留一小会」：停留期间两只都不许动 ----
