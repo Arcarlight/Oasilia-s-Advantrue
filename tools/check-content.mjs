@@ -249,6 +249,37 @@ for (const r of Object.keys(RARITY)) {
 }
 const zeroCost = CARDS.filter((c) => c.ap === 0).length;
 if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length} 张，占比偏高（默认出战卡组会全是小牌）`);
+
+/**
+ * 卡面里写死的**护盾公式系数**必须和引擎一致。
+ *
+ * 引擎算护盾是 `round(amount × (1 + 防御 ÷ 12))`（见 battle.js 的 case 'shield'），
+ * 换算成人话就是「约 amount + 防御 × amount÷12」。有些卡把这句话印在了卡面上
+ * （「获得护盾（随防御成长，约 9 + 防御×0.75）」），而这两个数字是**手抄**的 ——
+ * 「缩入壳中」的基数改成 13 之后系数没跟着改，卡面写着 ×0.75、实际是 ×1.08，
+ * 玩家照着卡面算出来的护盾会比实际少三成。这条门禁把两个数字都对一遍。
+ */
+{
+  const DEF_DIVISOR = 12;
+  let shieldTexts = 0;
+  for (const c of CARDS) {
+    const m = (c.text ?? '').match(/随防御成长[^）]*?约\s*(\d+)\s*\+\s*防御\s*×\s*([\d.]+)/);
+    if (!m) continue;
+    shieldTexts++;
+    const sh = (c.effects ?? []).find((e) => e.kind === 'shield');
+    if (!sh) { err(`【${c.name}】卡面写了护盾公式，但 effects 里没有 shield`); continue; }
+    if (!sh.scaleWithDef) { err(`【${c.name}】卡面写了「随防御成长」，但 shield 效果没有 scaleWithDef`); continue; }
+    const wantBase = Number(m[1]);
+    const wantMul = Number(m[2]);
+    const realMul = sh.amount / DEF_DIVISOR;
+    if (sh.amount !== wantBase) err(`【${c.name}】护盾基数：卡面写 ${wantBase}，effects.amount = ${sh.amount}`);
+    if (Math.abs(realMul - wantMul) > 0.005) {
+      err(`【${c.name}】护盾的防御系数：卡面写 ×${wantMul}，实际是 ×${realMul.toFixed(2)}（= amount ÷ ${DEF_DIVISOR}）`);
+    }
+  }
+  if (shieldTexts) note(`卡面印了护盾公式的卡 ${shieldTexts} 张，系数已和引擎（amount ÷ ${DEF_DIVISOR}）对过`);
+}
+
 /**
  * 招式池体检。招式池现在分两类：
  *   · 旧的四档池（weak/basic/strong/elite/boss）—— 敌人已经不再指向它们，留着是给诊断脚本用

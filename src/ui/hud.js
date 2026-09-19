@@ -43,10 +43,11 @@ export function renderHud(game) {
     chip('ico-sword', '攻', d.atk, `基础攻击 ${d.atk}：决定你打出多少伤害。\n伤害 = 攻击 × 招式威力% × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对手防御)。\n卡面上的伤害数字就是按这个攻击力实时算的。`),
     chip('ico-shield', '防', d.def, `防御 ${d.def}：受到伤害乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+${d.def})。`),
     chip('ico-shoe', '敏', d.agi,
+      // 公式里的数字取 BALANCE，不抄第二份（以前写死过，改平衡时不会跟着动）
       `敏捷 ${d.agi}：**一回合的三项预算全看它**。\n`
-      + `· 行动点 AP = 2 + 敏捷÷2（上限 8）→ 你现在 **${apFromAgi(d.agi)} 点**\n`
-      + `· 每回合抽牌 = 3 + 敏捷÷5（上限 8）→ 你现在 **${drawFromAgi(d.agi)} 张**\n`
-      + `· 出牌上限 = 3 + 敏捷÷2（上限 9）→ 你现在 **${playsFromAgi(d.agi)} 张**\n`
+      + `· 行动点 AP = ${BALANCE.apBase} + 敏捷÷${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）→ 你现在 **${apFromAgi(d.agi)} 点**\n`
+      + `· 每回合抽牌 = ${BALANCE.drawBase} + 敏捷÷${BALANCE.drawPerAgi}（上限 ${BALANCE.drawMax}）→ 你现在 **${drawFromAgi(d.agi)} 张**\n`
+      + `· 出牌上限 = ${BALANCE.playBase} + 敏捷÷${BALANCE.playPerAgi}（上限 ${BALANCE.playMax}）→ 你现在 **${playsFromAgi(d.agi)} 张**\n`
       + '战斗中这三项就写在底部：AP 圆点、以及「出牌 x/y」「抽牌 n」。'),
     chip('ico-clover', '运', d.luck, `幸运 ${d.luck}：暴击 ${critChance(d.luck).toFixed(1)}%，闪避 ${dodgeChance(d.luck).toFixed(1)}%`),
   );

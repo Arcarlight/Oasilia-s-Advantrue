@@ -58,7 +58,7 @@ export function showDeck(game) {
       el('h4', { text: `每回合的预算（敏捷 ${d.agi}）` }),
       el('ul', {}, [
         el('li', { text: `行动点 AP ${apFromAgi(d.agi)} 点 —— 回合开始回满，出牌花的就是它。` }),
-        el('li', { text: `抽牌 ${drawFromAgi(d.agi)} 张 —— 手牌上限 ${handFromAgi(d.agi)} 张，抽满后多出来的直接进弃牌堆。` }),
+        el('li', { text: `抽牌 ${drawFromAgi(d.agi)} 张 —— 手牌上限 ${handFromAgi(d.agi)} 张，抽到手牌满为止（放不下的留在牌堆顶，不会消失）。` }),
         el('li', { text: `出牌上限 ${playsFromAgi(d.agi)} 张 —— 一回合最多打这么多张，AP 再多也越不过它。` }),
         el('li', { text: '三项都由敏捷决定；每场战斗胜利涨属性时，它们会跟着一起涨。' }),
       ]),
@@ -74,7 +74,7 @@ export function showDeck(game) {
     el('div', { class: 'help-card' }, [
       el('h4', { text: '怎么改卡组' }),
       el('ul', {}, [
-        el('li', { text: '带进战斗的就是你拥有的全部卡牌——不能挑着不带（以前能只带两张，会变成「两张牌互相刷」的无限连招）。' }),
+        el('li', { text: '带进战斗的就是你拥有的全部卡牌 —— 不能挑着不带，也不能只带两张。' }),
         el('li', { text: '想精简：去商店买「卡牌移除服务」删掉不要的牌，同一家店里越删越贵。' }),
         el('li', { text: '想换牌：营地的「冥想」可以把一张牌换成随机的高稀有度牌。' }),
         el('li', { text: '卡组越薄 → 越容易抽到关键牌；越厚 → 每回合能打出的总量上限更高。' }),
@@ -111,7 +111,7 @@ export function showDeck(game) {
     audio.ui('click2');
     const owned = d.deck.filter((x) => x === card.id).length;
     showCardDetail(card, {
-      state: () => ({ picked: owned, owned, readOnly: true }),
+      state: () => ({ owned }),
     });
   }
 
@@ -202,67 +202,25 @@ export function showDeck(game) {
  * 可以悬停查看的词条（悬停说明由 tips.js 全站统一提供）。
  */
 export function showCardDetail(card, opts = {}) {
-  const { picking = false, state = null, onAdd = null, onRemove = null } = opts;
+  const { state = null } = opts;
   const rarity = RARITY[card.rarity]?.name ?? card.rarity;
   const dmg = cardDamageTotal(card);
 
+  /**
+   * 顶部那句「这张牌带了几份」。
+   *
+   * 这里以前还有一整套「加入 / 拿掉出战卡组」的按钮和文案，但**卡组一览早就是只读的**
+   * （带进战斗的恒等于全部所持卡牌，精简只能去商店花钱删卡），
+   * 所以那条分支从来没有被渲染过 —— 弹窗里留下的只有这句说明。
+   * 对应地，那句文案里的「出战卡组」也早就不存在了：现在只有一个卡组。
+   */
   const stateEl = el('div', { class: 'detail-deckstate' });
-  /**
-   * 「加入」和「拿掉」两个按钮（只有**能改卡组**的界面才给，比如商店的删卡服务）。
-   *
-   * 以前只有一个按钮、按当前份数换文案（没带过 → 加入；带过 → 拿掉），
-   * 于是「我已经带了 1 张、想再带一张」这件事根本没有按钮可点 ——
-   * 卡组里只有一张的牌更是彻底点不进第二张，玩家看到的就是「点了没反应」。
-   * 加不进去的时候（这张牌全带上了 / 卡组满了）「加入」按钮会禁用并把原因写在按钮上。
-   *
-   * 卡组一览现在是**只读**的（出战卡组恒等于全部所持卡牌），那时传进来的
-   * onAdd / onRemove 都是 null，弹窗里只会显示「这张牌带了几份」。
-   */
-  const addBtn = el('button', {
-    class: 'btn btn-primary',
-    onClick: () => { onAdd?.(); sync(); },
-  });
-  const removeBtn = el('button', {
-    class: 'btn btn-ghost',
-    onClick: () => { onRemove?.(); sync(); },
-  });
-  /**
-   * 说明挂在**外层的 span** 上，不挂在按钮上：
-   * 禁用的表单控件在浏览器里收不到鼠标事件（mouseover 不会派发），
-   * 挂按钮上等于「说了原因但玩家看不到」。外层的 span 收得到。
-   */
-  const addWrap = el('span', { class: 'btn-wrap' }, [addBtn]);
   const sync = () => {
     if (!state) { stateEl.textContent = ''; return; }
-    const { picked = 0, owned = 1, full = false, max = 0, readOnly = false } = state();
-    stateEl.textContent = readOnly
-      ? (owned > 0
-        // 「出战卡组 = 全部所持卡牌」这句是旧概念的残留：现在根本没有单独的出战卡组了
-        ? `你的卡组里有这张：${owned} 张`
-        : '这张还没拿到（去奖励 / 商店 / 事件里找找）')
-      : (picked > 0
-        ? `出战卡组里有这张：${picked} / ${owned} 张`
-        : `这张还没进出战卡组（卡组里一共有 ${owned} 张）`);
-    if (!picking || readOnly) return;
-    if (picked >= owned) {
-      // 卡组里就只有这么多张：把话说在按钮上，别让玩家反复点
-      addBtn.textContent = `只能拥有 ${owned} 张`;
-      addBtn.disabled = true;
-      addBtn.className = 'btn';
-      addWrap.dataset.tip = `你的卡组里一共只有 ${owned} 张「${card.name}」，已经全部带上了。\n想再多带，得先在奖励 / 商店 / 营地里多拿几张。`;
-    } else if (full) {
-      addBtn.textContent = `出战卡组已满（${max} 张）`;
-      addBtn.disabled = true;
-      addBtn.className = 'btn';
-      addWrap.dataset.tip = `出战卡组上限是 ${max} 张，现在已经满了。\n先在卡组页拿掉几张，再加这一张。`;
-    } else {
-      addBtn.textContent = picked > 0 ? `再加入一张（${picked} / ${owned}）` : `加入出战卡组（共 ${owned} 张）`;
-      addBtn.disabled = false;
-      addBtn.className = 'btn btn-primary';
-      delete addWrap.dataset.tip;
-    }
-    removeBtn.textContent = `拿掉一张（${picked} / ${owned}）`;
-    removeBtn.classList.toggle('hidden', picked === 0);
+    const { owned = 0 } = state();
+    stateEl.textContent = owned > 0
+      ? `你的卡组里有这张：${owned} 张`
+      : '这张还没拿到（去奖励 / 商店 / 事件里找找）';
   };
 
   // 大卡面：只是展示，所以不可交互（说明文字在下面另有一份可悬停的）
@@ -315,11 +273,7 @@ export function showCardDetail(card, opts = {}) {
   }
 
   if (state) {
-    info.append(el('div', { class: 'detail-actions' }, [
-      picking ? addWrap : null,
-      picking ? removeBtn : null,
-      stateEl,
-    ]));
+    info.append(el('div', { class: 'detail-actions' }, [stateEl]));
   }
 
   const body = el('div', { class: 'card-detail' }, [
@@ -443,12 +397,12 @@ export function showHelp() {
     el('div', { class: 'help-card' }, [
       el('h4', { text: '战斗规则' }),
       el('ul', {}, [
-        el('li', { html: `每回合 AP 回满，由<code>敏捷</code>决定：AP = 2 + 敏捷 ÷ 2（上限 ${BALANCE.apMax}）。` }),
-        el('li', { html: `伤害 = 攻击 × <b>威力%</b> × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对方防御)，最低 1 点；先扣<code>护盾</code>。` }),
+        el('li', { html: `每回合 AP 回满，由<code>敏捷</code>决定：AP = ${BALANCE.apBase} + 敏捷 ÷ ${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）。` }),
+        el('li', { html: `伤害 = 攻击 × <b>威力%</b> × ${BALANCE.armorK} ÷ (${BALANCE.armorK} + 对方防御)，最低 ${BALANCE.minDamage} 点；先扣<code>护盾</code>。` }),
         el('li', { html: `<b>威力是攻击力的百分比</b>：卡面写「威力 110」就是打出 1.1 倍攻击。费用买的就是这个倍率 —— 1 费约 95~140%、2 费约 200~260%、3 费约 310~420%、4 费约 430~560%。<b>每点 AP 买到的威力随费用上升</b>，所以把 AP 花在贵牌上永远比连打 0 费牌划算（0 费牌只有 25~45%，它卖的是附加效果和「不花 AP」）。` }),
         el('li', { html: '卡面上写的伤害数字是<b>按你当前攻击力实时算的</b>：战斗外按本章普通怪的防御估，战斗中按当前这只敌人的防御。' }),
-        el('li', { html: `每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = 3 + 敏捷 ÷ 5（上限 ${BALANCE.drawMax}），出牌上限 = 3 + 敏捷 ÷ 2（上限 ${BALANCE.playMax}）。这三项在你战斗界面的底栏写着当前数值。` }),
-        el('li', { html: `抽上来的牌比手牌上限（3 + 敏捷 ÷ 5，上限 ${BALANCE.handMax}）多时，<b>只抽到手牌满为止</b>，剩下的留在牌堆顶 —— 不会凭空丢掉。` }),
+        el('li', { html: `每回合抽牌数、出牌上限也看<code>敏捷</code>：抽牌 = ${BALANCE.drawBase} + 敏捷 ÷ ${BALANCE.drawPerAgi}（上限 ${BALANCE.drawMax}），出牌上限 = ${BALANCE.playBase} + 敏捷 ÷ ${BALANCE.playPerAgi}（上限 ${BALANCE.playMax}）。这三项在你战斗界面的底栏写着当前数值。` }),
+        el('li', { html: `抽上来的牌比手牌上限（${BALANCE.handBase} + 敏捷 ÷ ${BALANCE.handPerAgi}，上限 ${BALANCE.handMax}）多时，<b>只抽到手牌满为止</b>，剩下的留在牌堆顶 —— 不会凭空丢掉。` }),
         el('li', { html: `<code>幸运</code>影响暴击率与闪避率，暴击伤害 ×${BALANCE.luckCritMult}。` }),
         el('li', { html: '打出去的牌进<code>弃牌区</code>；标着<code>销毁</code>的卡一场战斗只能用一次（进销毁区，不会洗回来）。' }),
         el('li', { html: '牌堆抽空、还要再抽的时候，<code>弃牌区</code>才会洗回牌堆 —— 所以牌组薄的时候同一张牌一轮里能被打上好几次（这是<code>花了钱删卡</code>换来的构筑），但每回合能打几张仍然卡死在出牌上限。' }),

@@ -11,7 +11,7 @@ import { BIOMES, BALANCE } from '../data/balance.js';
 import { CARD_BY_ID, ITEMS } from '../data/cards.js';
 // 道具有没有「主动使用」的效果、属性叫什么，都从引擎那一份问，别在界面里自己判断
 import { itemEffect, STAT_NAMES } from '../core/game.js';
-import { NODE_TYPES, nodeName } from '../data/mapgen.js';
+import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
 import { renderHud } from './hud.js';
@@ -136,7 +136,7 @@ async function renderTitle(game) {
 
   inner.append(el('div', {
     class: 'title-foot',
-    html: '素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面与音效来自 <b>Kenney</b> 素材包。<br>这是一个非商业的同人练习作品。',
+    html: '素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>这是一个非商业的同人练习作品。',
   }));
 
   /**
@@ -779,17 +779,15 @@ function renderGameOver(game) {
   inner.append(el('h1', { text: '灰溜溜地回家了' }));
   inner.append(el('div', {
     class: 'title-quote',
-    // 失败不再写成「她倒下了 / 沙子盖住了一切」：这一局只是没打完，人好好的
+    // 失败**不写成**「她倒下了 / 沙子盖住了一切」：这一局只是没打完，人好好的。
+    // （这里以前还跟着第二段「风很快就把她的痕迹吹平了——但沙漠记住了她走过」，
+    //   那是旧版「她死了」的挽歌，和上一段「回家洗澡、下次再来」自相矛盾，已删。）
     text: `${d.name} 在${biome.name}撑到第 ${d.floor + 1} 步，还是决定先回家。\n抖干净沙子、泡了个澡、把卡组重新洗了一遍——下次再来。`,
-  }));
-  inner.append(el('p', {
-    class: 'title-quote',
-    text: `${d.name} 停在了${biome.name}的第 ${d.floor + 1} 步。\n风很快就把她的痕迹吹平了——但沙漠记住了她走过。`,
   }));
 
   inner.append(el('div', { class: 'run-stats' }, [
     statBox('抵达步数', d.floor + 1),
-    statBox('推进章节', `${d.stage + 1} / 3`),
+    statBox('推进章节', `${d.stage + 1} / ${stageCount()}`),
     statBox('击败对手', d.kills),
     statBox('战斗回合', d.turnsThisRun),
     statBox('卡组张数', d.deck.length),
@@ -841,7 +839,7 @@ function renderVictory(game) {
   }));
 
   inner.append(el('div', { class: 'run-stats' }, [
-    statBox('推进章节', '3 / 3 通关'),
+    statBox('推进章节', `${stageCount()} / ${stageCount()} 通关`),
     statBox('总步数', d.floor + 1),
     statBox('击败对手', d.kills),
     statBox('战斗回合', d.turnsThisRun),

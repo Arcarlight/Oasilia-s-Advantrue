@@ -370,7 +370,8 @@ tools/                                    构建、验证、调参脚本（见�
 ```powershell
 node tools/build-content.mjs    # ① 校验 + 生成到 src/data/*.js 的「GENERATED 区块」
 node tools/check-content.mjs    # ② 内容体检：素材在不在、每章敌档是否齐全、图标/特效图、BGM 文件
-node tools/bundle.mjs           # ③ 重新打包单文件
+node tools/check-copy.mjs       # ③ 文案体检：界面文案有没有过期 / 开发口气 / 手抄的公式数字
+node tools/bundle.mjs           # ④ 重新打包单文件
 ```
 只想校验、不想改源码时用 `node tools/build-content.mjs --check`（多人同时改内容时用它）。
 
@@ -635,7 +636,8 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | 脚本 | 作用 |
 | --- | --- |
 | `build-content.mjs` | ★ **内容管线主脚本**：校验 `content/*.json` 并生成 `src/data/*.js` 的生成区块（`--check` 只校验不写） |
-| `check-content.mjs` | ★ **内容体检**：素材是否齐全、每章四档敌人是否都有、章节表长度、图标/特效图、BGM 文件（`--strict` 把警告也当失败） |
+| `check-content.mjs` | ★ **内容体检**：素材是否齐全、每章四档敌人是否都有、章节表长度、图标/特效图、BGM 文件、卡面印的护盾公式系数对不对得上引擎（`--strict` 把警告也当失败） |
+| `check-copy.mjs` | ★ **文案体检**（6 项）：把**玩家能读到的字**和引擎实际情况对一遍 —— 界面文案里有没有「以前是…现在是…」这种开发口气、早就删掉的概念（「出战卡组」「牌回到卡组最底端」）有没有残留、BALANCE 的公式数字有没有被手抄第二份、卡面印的护盾公式系数对不对（`amount × (1 + 防御 ÷ 12)`）、事件文案里写的数值和 `effects` 对不对、结算页的章节数有没有写死成 3。三类「把错的东西塞回去、看它响不响」的反向测试都跑过 |
 | `fetch-content.ps1` | ★ **一条命令拉齐素材**：按 `content/species.json` 下载精灵图 + `AnimData.xml` + 头像，最后重建 `sprites.json`（幂等可续传） |
 | `bundle.mjs` | **把整个游戏打包成单文件 `oasis-game.html`（可双击运行）** |
 | `verify-bundle.mjs` | 用 `file://` 打开打包产物，自动打一场 + 遍历所有界面 + 检查精灵真的画出来了 |

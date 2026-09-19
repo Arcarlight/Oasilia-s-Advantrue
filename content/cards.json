@@ -1189,7 +1189,7 @@
       "rarity": "uncommon",
       "targeting": "self",
       "art": "shield",
-      "text": "获得护盾（随防御成长，约 13 + 防御×0.75），并抽 1 张。",
+      "text": "获得护盾（随防御成长，约 13 + 防御×1.08），并抽 1 张。",
       "effects": [
         {
           "kind": "shield",

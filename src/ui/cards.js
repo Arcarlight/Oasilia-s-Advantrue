@@ -181,13 +181,18 @@ export function cardEl(card, opts = {}) {
   node.append(el('div', { class: 'card-foot' }, [footLeft, footRight]));
 
   if (check) {
-    // 左上角那个「已入选」圆圈本身也是按钮：卡面整体改成了「点开详情」，
-    // 所以勾选出战必须有自己独立的点击区（不然想加张牌还得先进详情页）。
+    /**
+     * 左上角那个「已入选」圆圈。
+     *
+     * 注意：它现在**没有任何调用方**会打开（`check` 只有卡面布局诊断当检具用），
+     * 因为「出战卡组」这个概念已经取消 —— 带进战斗的恒等于全部所持卡牌，
+     * 卡组页是只读的。所以这里不再挂「加进 / 拿出战卡组」那套文案：
+     * 那是一句玩家看不到、又和现在的规则自相矛盾的话。
+     * 圆圈本身留着是给诊断量「带圆圈时卡名的排版余量」当最坏情况的。
+     */
     const box = el(onCheck ? 'button' : 'div', {
       class: 'card-check',
       type: onCheck ? 'button' : null,
-      dataset: onCheck ? { tip: checked ? '点一下：从出战卡组里拿掉。' : '点一下：加进出战卡组。' } : null,
-      'aria-label': checked ? '从出战卡组移出' : '加入出战卡组',
     }, [el('span', { class: 'ico-check', style: { width: '12px', height: '12px' } })]);
     if (onCheck) {
       box.addEventListener('click', (e) => {

@@ -772,11 +772,12 @@ export class BattleScreen {
       攻: `攻击：决定你能打出多少伤害。\n实际伤害 = 攻击 × 招式威力% × ${BALANCE.armorK}/(${BALANCE.armorK}+对手防御)。\n威力是攻击力的百分比，所以攻击力涨了，每张牌都按比例更疼。`,
       防: `防御：越高越抗打。\n受到的伤害会乘以 ${BALANCE.armorK}/(${BALANCE.armorK}+防御)，所以防御是「减伤百分比」而不是直接扣血。`,
       速: isPlayer
-        // 敏捷管三件事，把当前这一局的具体数值直接算出来，别只说「看它」
+        // 敏捷管三件事，把当前这一局的具体数值直接算出来，别只说「看它」；
+        // 公式里的数字取自 BALANCE（写死过一份，改平衡时不会跟着动）
         ? `敏捷 ${agi}：一回合的三项预算全由它决定。\n`
-          + `· 行动点 AP **${apFromAgi(agi)}** 点（2 + 敏捷÷2，上限 8）\n`
-          + `· 每回合抽牌 **${drawFromAgi(agi)}** 张（3 + 敏捷÷5，上限 8）\n`
-          + `· 出牌上限 **${playsFromAgi(agi)}** 张（3 + 敏捷÷2，上限 9）`
+          + `· 行动点 AP **${apFromAgi(agi)}** 点（${BALANCE.apBase} + 敏捷÷${BALANCE.apPerAgi}，上限 ${BALANCE.apMax}）\n`
+          + `· 每回合抽牌 **${drawFromAgi(agi)}** 张（${BALANCE.drawBase} + 敏捷÷${BALANCE.drawPerAgi}，上限 ${BALANCE.drawMax}）\n`
+          + `· 出牌上限 **${playsFromAgi(agi)}** 张（${BALANCE.playBase} + 敏捷÷${BALANCE.playPerAgi}，上限 ${BALANCE.playMax}）`
         : '敏捷：对手的行动点、抽牌数与出牌上限都由它决定。',
       运: '幸运：暴击率与闪避率。',
     };
@@ -1004,12 +1005,21 @@ export class BattleScreen {
     const drawN = dp.drawN ?? p.drawN ?? drawFromAgi(agi);
     const handMax = dp.handMax ?? p.handMax ?? 8;
 
+    /**
+     * 三个「预算」胶囊的悬停说明。
+     * 公式里的数字全部从 BALANCE 取（别抄第二份）：这几句以前把 3 / 2 / 9 / 5 / 8 写死了，
+     * 改平衡时改的只有 balance.js，文案会悄悄和实际脱节。
+     */
+    const agiTip = `行动点 = ${BALANCE.apBase} + 敏捷 ÷ ${BALANCE.apPerAgi}（上限 ${BALANCE.apMax}）`;
+    const playTip = `出牌上限 = ${BALANCE.playBase} + 敏捷 ÷ ${BALANCE.playPerAgi}（向下取整，最高 ${BALANCE.playMax}）`;
+    const drawTip = `抽牌 = ${BALANCE.drawBase} + 敏捷 ÷ ${BALANCE.drawPerAgi}（向下取整，最高 ${BALANCE.drawMax}）`;
+
     clear(this.budgetEl).append(
       el('span', {
         class: `budget-chip${left <= 0 ? ' out' : ''}`,
         dataset: {
           tip: `本回合还能打出 **${left}** 张牌（上限 ${playsMax}）。\n`
-            + `出牌上限 = 3 + 敏捷 ÷ 2（向下取整，最高 9）——你现在敏捷 ${agi} → **${playsFromAgi(agi)} 张**。\n`
+            + `${playTip}——你现在敏捷 ${agi} → **${playsFromAgi(agi)} 张**。\n`
             + '打不出去通常不是卡住了：先看这里是不是 0，再看 AP 够不够。',
         },
       }, [
@@ -1021,8 +1031,8 @@ export class BattleScreen {
         class: 'budget-chip',
         dataset: {
           tip: `每回合开始抽 **${drawN}** 张。\n`
-            + `抽牌 = 3 + 敏捷 ÷ 5（向下取整，最高 8）——你现在敏捷 ${agi} → **${drawFromAgi(agi)} 张**。\n`
-            + `手牌上限 ${handMax} 张，抽满之后多出来的会直接进弃牌堆。`,
+            + `${drawTip}——你现在敏捷 ${agi} → **${drawFromAgi(agi)} 张**。\n`
+            + `手牌上限 ${handMax} 张，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。`,
         },
       }, [
         el('span', { class: 'ico-deck', style: { width: '12px', height: '12px' } }),
@@ -1129,7 +1139,9 @@ export class BattleScreen {
 
     clear(this.handEl);
     if (!hand.length) {
-      this.handEl.append(el('div', { class: 'hand-empty', text: '手牌空了，结束回合让沙暴把卡牌送回来。' }));
+      // 别写「让沙暴把卡牌送回来」——听起来像打出去的牌会自己回来。
+      // 现在打出去的牌在弃牌区，只有牌堆抽空时才会洗回来，所以只说「结束回合、下回合再抽」。
+      this.handEl.append(el('div', { class: 'hand-empty', text: '手牌空了 —— 结束回合，下回合会重新抽牌。' }));
       return;
     }
     let freshIndex = 0;

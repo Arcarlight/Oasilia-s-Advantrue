@@ -1,0 +1,169 @@
+=== 文案承诺但数据没实现 / 对不上 ===
+
+（无）
+
+合计 0 条问题，涉及 0 张卡（全部卡牌 162 张，检查项 160 条）
+
+=== 按稀有度统计 ===
+
+=== 全部检查项（含通过的，用来核对检查器本身没瞎报） ===
+OK   quick_attack 抽 1 张
+OK   rock_throw 防御 -2
+OK   focus_energy 抽 1 张
+OK   focus_energy 攻击 +4
+OK   harden 获得护盾
+OK   double_kick 连续 2 次
+OK   bug_buzz 抽 2 张
+OK   dragon_dance 攻击 +3
+OK   dragon_dance 敏捷 +3
+OK   screech 防御 -5
+OK   iron_defense 获得护盾
+OK   iron_defense 防御 +3
+OK   rock_blast 连续 3 次
+OK   u_turn 抽 2 张
+OK   u_turn 回复 1 点 AP
+OK   crunch 防御 -2
+OK   earthquake 防御 -4
+OK   outrage 自身受到 6 点反伤
+OK   dragon_rush 对手 HP < 40% 时强化
+OK   bulk_up 抽 1 张
+OK   bulk_up 攻击 +4
+OK   bulk_up 防御 +3
+OK   sandstorm 抽 1 张
+OK   sandstorm 防御 +4
+OK   sandstorm 幸运 +3
+OK   protect 获得护盾
+OK   draco_meteor 攻击 -8
+OK   fissure 无视全部防御
+OK   superpower 攻击 -3
+OK   superpower 防御 -3
+OK   first_aid 抽 1 张
+OK   endure 回复 3 点 AP
+OK   endure 获得护盾
+OK   dragon_darts 连续 4 次
+OK   twineedle 连续 2 次
+OK   fury_cutter 连续 3 次
+OK   silver_wind 抽 1 张
+OK   spider_web 敏捷 -3
+OK   razor_leaf 连续 2 次
+OK   razor_leaf 抽 1 张
+OK   quiver_dance 攻击 +3
+OK   quiver_dance 敏捷 +3
+OK   quiver_dance 幸运 +3
+OK   giga_drain 吸取/回血
+OK   u_turn_dance 攻击 -3
+OK   aqua_ring 获得护盾
+OK   life_dew 回复 1 点 AP
+OK   withdraw 抽 1 张
+OK   withdraw 获得护盾
+OK   brine 对手 HP < 40% 时强化
+OK   bulldoze 敏捷 -3
+OK   rolling_kick 连续 2 次
+OK   rolling_kick 防御 -2
+OK   tailwind 回复 1 点 AP
+OK   tailwind 敏捷 +3
+OK   safeguard 获得护盾
+OK   safeguard 防御 +4
+OK   super_luck 抽 1 张
+OK   super_luck 幸运 +4
+OK   leaf_storm 连续 4 次
+OK   leaf_storm 攻击 -5
+OK   rest 抽 2 张
+OK   sludge_bomb 无视一半防御
+OK   salt_cure 防御 -4
+OK   stone_edge 防御 -5
+OK   whirlpool 连续 3 次
+OK   whirlpool 攻击 -3
+OK   knock_off 攻击 -4
+OK   knock_off 防御 -3
+OK   double_edge 自身受到 8 点反伤
+OK   giga_impact 自身受到 5 点反伤
+OK   dragon_tail 防御 -4
+OK   swords_dance 攻击 +6
+OK   calm_mind 抽 1 张
+OK   calm_mind 攻击 +4
+OK   calm_mind 幸运 +3
+OK   agility 抽 1 张
+OK   agility 回复 1 点 AP
+OK   agility 敏捷 +5
+OK   bullet_punch 抽 1 张
+OK   focus_punch 敏捷 -3
+OK   feather_dance 获得护盾
+OK   feather_dance 攻击 -3
+OK   acrobatics 连续 3 次
+OK   acrobatics 防御 -3
+OK   mist 获得护盾
+OK   mist 净化
+OK   refresh 抽 1 张
+OK   refresh 净化
+OK   mob_guard 获得护盾
+OK   mob_growl 攻击 +2
+OK   mob_stare 防御 -1
+OK   flame_charge 敏捷 +2
+OK   rock_polish 抽 1 张
+OK   rock_polish 攻击 +2
+OK   rock_polish 敏捷 +2
+OK   defense_curl 获得护盾
+OK   defense_curl 防御 +2
+OK   sand_tomb 敏捷 -3
+OK   tail_whip 抽 1 张
+OK   tail_whip 防御 -3
+OK   acid_armor 获得护盾
+OK   fury_swipes 连续 2 次
+OK   bullet_seed 连续 4 次
+OK   scale_shot 连续 3 次
+OK   scale_shot 防御 -3
+OK   howl 抽 1 张
+OK   metal_sound 抽 1 张
+OK   metal_sound 防御 -35%
+OK   scary_face 敏捷 -35%
+OK   charm 攻击 -35%
+OK   recycle 抽 2 张
+OK   recycle 回复 1 点 AP
+OK   quick_draw 抽 2 张
+OK   synthesis 攻击 +2
+OK   iron_barbs 获得护盾
+OK   sand_veil 获得护盾
+OK   sand_veil 幸运 +5
+OK   venom_drain 吸取/回血
+OK   water_shuriken 连续 3 次
+OK   water_shuriken 抽 1 张
+OK   triple_axel 连续 3 次
+OK   corrode 防御 -30%
+OK   crush_grip 防御 -40%
+OK   drain_punch 吸取/回血
+OK   leech_life 吸取/回血
+OK   cotton_guard 防御 +8
+OK   wide_guard 获得护盾
+OK   mind_reader 抽 3 张
+OK   overclock 回复 3 点 AP
+OK   storm_throw 连续 2 次
+OK   storm_throw 敏捷 -4
+OK   frost_breath 敏捷 -30%
+OK   solar_beam 连续 2 次
+OK   doom_desire 无视全部防御
+OK   last_stand 防御 -8
+OK   guardian_oath 获得护盾
+OK   guardian_oath 防御 +6
+OK   life_spring 回复 2 点 AP
+OK   dragon_ascension 抽 2 张
+OK   dragon_ascension 攻击 +8
+OK   dragon_ascension 敏捷 +4
+OK   dragon_ascension 幸运 +6
+OK   sig_sand_fang 防御 +5
+OK   sig_dual_chomp 连续 2 次
+OK   sig_meteor_mash 攻击 +4
+OK   sig_land_wrath 敏捷 -4
+OK   sig_heavy_slam 防御 -30%
+OK   sig_iron_tail_wall 获得护盾
+OK   sig_rage_wave 攻击 +3
+OK   sig_sand_pit 敏捷 -3
+OK   sig_ancient_beam 防御 -30%
+OK   sig_magma_erupt 连续 2 次
+OK   sig_white_smoke 获得护盾
+OK   sig_bullet_slash 连续 3 次
+OK   sig_bullet_slash 攻击 +3
+OK   sig_tide_ride 抽 1 张
+OK   sig_tide_ride 获得护盾
+OK   sig_rock_slide_wing 防御 -4
+OK   sig_curse_mummy 攻击 -35%
