@@ -294,6 +294,17 @@ export class BattleScreen {
         for (const [st, v] of Object.entries(ev.values ?? {})) d[st] = v;
         break;
       /**
+       * 转嫁：自己那侧的层数清零、对手那侧加上去 —— 一条事件同时改两边。
+       * 这里只处理**自己**这一侧的副本（`side` 是发动者）；对手那侧的副本由它自己的事件分支
+       * 在 `status` 上更新不到，所以引擎把两边的最终值都放在 `values` 里，这里一并同步。
+       */
+      case 'statusSteal': {
+        for (const st of ev.statuses ?? []) d[st] = 0;
+        const other = this.disp?.[ev.side === 'player' ? 'enemy' : 'player'];
+        if (other) for (const [st, v] of Object.entries(ev.values ?? {})) other[st] = v;
+        break;
+      }
+      /**
        * 净化 / 引爆会一次性把好几个状态清成 0。
        *
        * 这两条事件以前**根本没有进这个副本**（switch 里没有对应的 case），
@@ -359,7 +370,10 @@ export class BattleScreen {
           el('div', { class: 'fighter-name' }, [
             el('span', { text: b.enemy.name }),
             el('span', { class: `tier tier-${b.enemy.tier}`, text: TIERS[b.enemy.tier]?.name ?? '' }),
-          ]),
+            // 首领称号：每个头领在内容里都写了 `bossTitle`（「流沙之主」「结晶的暴君」…），
+            // 以前界面上哪儿都不显示它 —— 现在打在名字后面，让「这只不是普通首领」看得见。
+            b.enemy.bossTitle ? el('span', { class: 'boss-title', text: b.enemy.bossTitle }) : null,
+          ].filter(Boolean)),
           el('div', { class: 'fighter-types', text: this.enemySubtitle() }),
         ]),
       ]),
@@ -1603,6 +1617,27 @@ export class BattleScreen {
           floatAt(body, t('层数 ×2'), 'float-dmg');
           await this.wait(PACE.purge);
           this.refreshSide(ev.side);
+        }
+        await this.wait(PACE.detonate);
+        break;
+      }
+      /**
+       * 转嫁：把自己身上的持续伤害推给对手。演出和「翻倍」刻意区分：
+       * 自己这侧的胶囊**化掉**、对手那侧**冒出来**，让人一眼看出是「搬过去了」。
+       */
+      case 'statusSteal': {
+        this.pushLogLine(this.logOf(ev));
+        const mine = ev.side === 'player' ? this.playerBody : this.enemyBody;
+        const other = ev.side === 'player' ? this.enemyBody : this.playerBody;
+        if ((ev.gained ?? 0) > 0) {
+          audio.poison();
+          floatAt(mine, t('转嫁'), 'float-heal');
+          this.burstFx(other, 'magic_1', { size: 160, ms: 560, klass: 'fx-status fx-status-toxic' });
+          this.burstFx(mine, 'light_1', { size: 140, ms: 460 });
+          if (this.markPurge(ev.side)) await this.wait(PACE.purge);
+          this.refreshSide(ev.side);
+          this.refreshSide(ev.side === 'player' ? 'enemy' : 'player');
+          await this.wait(PACE.purge);
         }
         await this.wait(PACE.detonate);
         break;

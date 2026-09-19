@@ -99,6 +99,8 @@ const TIP = {
   shieldScale: () => t('护盾量随**防御**成长：实际护盾 = 卡面基数 × (1 + 防御 ÷ {div})。\n所以基数越大的护盾牌，吃到的防御加成也越多。', { div: DEF_PER_SHIELD }),
   // 层数翻倍（新机制）：说清「怎么用才对」——它本身不产生伤害，全靠已经铺好的层数
   statusDouble: () => t('层数翻倍：把目标身上已有的**中毒 / 剧毒 / 灼伤 / 出血层数直接 ×2**。\n对手身上还没有层数时它不生效 —— 先铺层数再翻倍，收益是翻着涨的，配「引爆」收尾最狠。'),
+  // 转嫁（新机制）：把「被上毒」从坏事变成资源
+  statusSteal: () => t('转嫁：把自己身上的**中毒 / 剧毒 / 灼伤 / 出血层数全部搬到对手身上**，自己清零。\n顶着毒铺自己的节奏，再一次性还回去 —— 对手铺得越狠，这一下越值。'),
   exhaust: () => t('销毁：打出后进销毁区，**本场战斗不会再抽到**（一场只能用一次）。'),
   exhaustHand: () => t('销毁手牌：把手里剩下的牌全部销毁。'),
   discard: () => t('弃牌：进弃牌堆，牌堆抽空时会洗净再抽回来。'),
@@ -163,6 +165,8 @@ const ZH_RULES = [
   { src: '无视对手(?:全部|一半|\\d+\\s*%)防御', cls: 'kw-pierce', tip: TIP.pierce },
   // 层数翻倍（新机制）：毒流 / 出血流的放大器。整句一起染色，悬停说明它「先铺后翻」的用法
   { src: '(?:持续伤害)?层数翻倍|层数\\s*×\\s*2|翻倍', cls: 'kw-status', tip: TIP.statusDouble },
+  // 转嫁（新机制）：把「被上毒」变成资源，卡面写「全部转移给对手」
+  { src: '全部转移给对手|转移给对手', cls: 'kw-cleanse', tip: TIP.statusSteal },
   { src: '清除[^，。；]*?负面状态', cls: 'kw-cleanse', tip: TIP.cleanse },
   { src: '随防御成长', cls: 'kw-shield', tip: TIP.shieldScale },
   { src: '护盾', cls: 'kw-shield', tip: TIP.shield },
@@ -247,6 +251,8 @@ function rulesJa() {
     { src: '相手の防御を(?:すべて|半分|\\d+\\s*%)?\\s*無視', cls: 'kw-pierce', tip: TIP.pierce },
     // 層数翻倍（新機制）：「層数が倍になる」「層数が 2 倍」「倍増」
     { src: '層数[^。]{0,6}倍|倍増', cls: 'kw-status', tip: TIP.statusDouble },
+    // 転嫁（新機制）：「すべて相手に移す」「相手に移し替える」
+    { src: '(?:すべて)?相手に(?:移す|移し替える)|転嫁', cls: 'kw-cleanse', tip: TIP.statusSteal },
     // 「自分の能力ダウンと状態異常をすべて消し」「自身のマイナス効果をすべて消す」「自身のじゃくたいを浄化」
     { src: '(?:能力ダウン|状態異常|マイナス効果)[^、。]{0,12}?消|浄化', cls: 'kw-cleanse', tip: TIP.cleanse },
     // 「防御に応じて増加 / 成長」「防御に応じたシールドを獲得」
@@ -280,6 +286,8 @@ function rulesEn() {
     { src: 'ignoring (?:all|half|\\d+\\s*%)(?:[^.;]{0,24}?)Defense', cls: 'kw-pierce', tip: TIP.pierce },
     // Doubles the stacks（新机制）：卡面写的是「doubles the Poison / Toxic / Burn / Bleed stacks」
     { src: '[Dd]oubl(?:e|es|ing)[^.;]{0,20}?stack', cls: 'kw-status', tip: TIP.statusDouble },
+    // Transfer（新机制）：「move … onto the foe」
+    { src: '[Mm]ov(?:e|es|ing)[^.;]{0,26}?(?:onto|to) the foe', cls: 'kw-cleanse', tip: TIP.statusSteal },
     // 「Cleanse stat drops and negative statuses」「cleanse all negative status on yourself」
     { src: ci(t('净化')), cls: 'kw-cleanse', tip: TIP.cleanse },
     // 「Gain shield (scales with Defense…)」——卡面里「随防御成长」的译法都是这一句
@@ -495,6 +503,7 @@ const KIND_ICO = {
   plays: 'ico-action_points',
   detonate: 'ico-poison',
   statusDouble: 'ico-temperature_down',
+  statusSteal: 'ico-refresh',
   apBonus: 'ico-action_points',
 };
 const STATUS_ICO = {
@@ -595,6 +604,18 @@ export function effectLines(card) {
           label: t(e.target === 'self' ? '自身 · 持续伤害层数' : '对手 · 持续伤害层数'),
           value: t('×2'),
           note: t('把目标身上已有的中毒 / 剧毒 / 灼伤 / 出血层数**直接翻倍**。\n对手身上没有层数时不会生效 —— 先铺层数再用它，收益是翻着涨的。'),
+        });
+        break;
+      /**
+       * 转嫁（新机制）：把自己挨的持续伤害推回给对手。
+       * 详情页要说清「移走的是自己的、加在对手身上的」——不然会被当成一张净化牌。
+       */
+      case 'statusSteal':
+        rows.push({
+          ico: KIND_ICO.statusSteal ?? 'ico-refresh',
+          label: t('自身 → 对手 · 持续伤害层数'),
+          value: t('全部转移'),
+          note: t('把自己身上的中毒 / 剧毒 / 灼伤 / 出血层数**全部搬到对手身上**，自己清零。\n层层叠叠的毒也能变成资源：先顶着，再一次性还回去。'),
         });
         break;
       case 'shield':

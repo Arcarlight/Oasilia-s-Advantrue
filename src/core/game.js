@@ -631,6 +631,9 @@ export class Game {
       deck: this.activeBattleDeck(),
       enemy: {
         id: enemyDef.id, slug: enemyDef.slug, name: enemyDef.name,
+        // 首领称号（「流沙之主」那种）一路带到战斗里：敌人面板上会打在名字旁边。
+        // 以前这个字段只写在内容里、**界面上哪儿都不显示**，等于白写。
+        bossTitle: enemyDef.bossTitle ?? null,
         maxHp: scaled.maxHp, atk: scaled.atk, def: scaled.def, agi: scaled.agi,
         tier: scaled.tier, deck, powerMul: scaled.powerMul ?? 1,
       },

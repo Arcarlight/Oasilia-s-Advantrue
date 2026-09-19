@@ -18,7 +18,7 @@ const ROOT = path.resolve(here, '..');
 const CONTENT = path.join(ROOT, 'content');
 
 // 战斗引擎能解释的效果种类（改 battle.js 的 resolveEffect 时要同步这里）
-const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'statusDouble', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
+const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'statusDouble', 'statusSteal', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
 const STATUS_KINDS = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 const BUFF_STATS = ['atk', 'def', 'agi', 'luck'];
 const RARITIES = ['common', 'uncommon', 'rare', 'epic'];

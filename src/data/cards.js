@@ -3697,6 +3697,119 @@ export const CARDS = [
         "scaleWithDef": true
       }
     ]
+  },
+  {
+    "id": "sig_tomb_curse",
+    "name": "法老的诅咒",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "给对手 2 层虚弱，并让对手攻击 -5、防御 -3。",
+    "effects": [
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 2
+      },
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "amount": -5,
+        "target": "enemy"
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "amount": -3,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true,
+    "enemySpecies": "cofagrigus_pharaoh"
+  },
+  {
+    "id": "sig_spore_fist",
+    "name": "孢子拳",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "连续 2 次造成 {d} 点伤害，并给对手 2 层中毒和 1 层虚弱。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 115,
+        "hits": 2
+      },
+      {
+        "kind": "status",
+        "status": "poison",
+        "stacks": 2
+      },
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 1
+      }
+    ],
+    "enemyOnly": true,
+    "enemySpecies": "breloom_alpha"
+  },
+  {
+    "id": "sig_spark_ball",
+    "name": "电刺爆球",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并让对手敏捷 -5。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 235
+      },
+      {
+        "kind": "buff",
+        "stat": "agi",
+        "amount": -5,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": true,
+    "enemySpecies": "togedemaru_alpha"
+  },
+  {
+    "id": "sig_crystal_fang",
+    "name": "晶牙撕咬",
+    "ap": 2,
+    "rarity": "rare",
+    "targeting": "enemy",
+    "text": "造成 {d} 点伤害，并给对手 3 层出血。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 200
+      },
+      {
+        "kind": "status",
+        "status": "bleed",
+        "stacks": 3
+      }
+    ],
+    "enemyOnly": true,
+    "enemySpecies": "druddigon_alpha"
+  },
+  {
+    "id": "transference",
+    "name": "转嫁",
+    "ap": 1,
+    "rarity": "rare",
+    "targeting": "self",
+    "text": "把自己身上的中毒 / 剧毒 / 灼伤 / 出血层数**全部转移给对手**（自己清零）。使用后销毁。",
+    "effects": [
+      {
+        "kind": "statusSteal"
+      }
+    ],
+    "exhaust": true
   }
 ];
 
@@ -4451,6 +4564,26 @@ export const CARD_ART = {
   "crystal_wall": {
     "ico": "ico-diamond",
     "fx": "star_02"
+  },
+  "sig_tomb_curse": {
+    "ico": "ico-skull",
+    "fx": "magic_1"
+  },
+  "sig_spore_fist": {
+    "ico": "ico-fist",
+    "fx": "dirt_1"
+  },
+  "sig_spark_ball": {
+    "ico": "ico-lightning",
+    "fx": "spark_1"
+  },
+  "sig_crystal_fang": {
+    "ico": "ico-diamond",
+    "fx": "slash_1"
+  },
+  "transference": {
+    "ico": "ico-refresh",
+    "fx": "magic_1"
   }
 };
 

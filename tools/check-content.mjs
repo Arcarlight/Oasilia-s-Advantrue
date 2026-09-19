@@ -31,6 +31,7 @@ const { BIOMES, STAGE_BIOME, BALANCE, RARITY, REWARD_WEIGHTS } = await import('.
 const { NODE_TYPES } = await import('../src/data/mapgen.js');
 const { BGM_FILES } = await import('../src/core/bgm.js').catch(() => ({ BGM_FILES: null }));
 const { STATUS_INFO } = await import('../src/core/battle.js');
+const { CONTENT_FIELDS, entriesOf } = await import('../src/core/i18n.js');
 const { optionTextNodes } = await import('../src/core/i18n.js');
 
 const stageCount = STAGE_BIOME.length;
@@ -684,7 +685,9 @@ if (BGM_FILES) {
   // 不判「亀」：日文里「亀裂」（裂缝）满地都是，全是误报；乌龟在日文里一般写片假名 カメ。
   const EN_RE = /\b(bird|birds|fish|fishes|crab|crabs|lizard|lizards|snake|snakes|vulture|vultures|rabbit|mouse|mice|rat|rats|cat|cats|dog|dogs|wolf|wolves|fox|foxes|spider|spiders|ant|ants|bee|bees|butterfly|moth|owl|eagle|hawk|crow|shark|whale|dolphin|octopus|jellyfish|turtle|frog|toad|bat|bats|horse|cow|pig|sheep|monkey|deer|bear|tiger|lion|elephant|camel|penguin|otter|hedgehog|squirrel|snail)\b/i;
   // 英文里 fish 也是动词（fish around / fish out），这几个短语是正经写法
-  const OK_EN = ['fish around', 'fish out'];
+  // 英文里 fish 也是动词（fish around / fish out）；「fish market」是**地名**（弱丁鱼渔市），
+  // 不是把现实动物写进了世界 —— 这三样都放行。
+  const OK_EN = ['fish around', 'fish out', 'fish market'];
   // 日文里的**惯用语**不算动物：「一石二鳥」是「一举两得」，不是真的鸟
   const OK_JA = ['一石二鳥'];
   for (const lg of ['ja', 'en']) {
@@ -836,6 +839,48 @@ if (BGM_FILES) {
     err(`译文里的物种名 / 点名的卡牌道具名对不上原文（${bad.length} 处）：${bad.slice(0, 4).join(' ｜ ')}${bad.length > 4 ? ' …' : ''}`);
   } else {
     note(`译文物种名对账：${checked} 条提到物种、${namedChecked} 处用「」点名卡牌/道具的译文全部对得上`);
+  }
+}
+
+// ---------- 13. 内容里还有哪些「中文字段」没进 CONTENT_FIELDS ----------
+/**
+ * 这一类漏网已经出现三次了：事件选项的结果文案（藏在闭包里）、首领称号 `bossTitle`、
+ * 商人的离开按钮 `leave` —— 都是**界面上看得见、待翻清单里却没有**的内容字段，
+ * 于是日 / 英模式下那一行永远是中文，而所有体检都是绿的。
+ *
+ * 判据：把内容表里所有「含中文的字符串字段」列出来，减掉已经登记的 CONTENT_FIELDS，
+ * 剩下的报成备注（不是错误：有些字段确实不用翻，比如写给自己看的 shape.desc）。
+ * 新增字段时这条会主动提醒你「它要不要翻」。
+ */
+{
+  const FIELD_TABLES = [
+    ['card', CARDS], ['enemy', ENEMIES], ['event', EVENTS], ['merchant', MERCHANTS],
+    ['item', Object.values(ITEMS)], ['biome', Object.values(BIOMES)],
+    ['rarity', Object.values(RARITY)], ['status', Object.values(STATUS_INFO)],
+    ['node', Object.values(NODE_TYPES)],
+  ];
+  // 明确不翻 / 不是文案的字段
+  const SKIP = new Set(['id', 'slug', 'key', 'ico', 'fx', 'art', 'source', 'file', 'group', 'dex', 'en',
+    '_note', '_fields_note', '_readme', 'generated_from', 'icon_pack', 'tone', 'special', 'service', 'mustItems',
+    'biome', 'deck', 'rarity', 'targeting', 'bossTitle_en', 'effect', 'stat']);
+  const leaks = [];
+  for (const [kind, list] of FIELD_TABLES) {
+    const fields = CONTENT_FIELDS[kind] ?? [];
+    for (const obj of entriesOf(list, fields)) {
+      if (!obj || typeof obj !== 'object') continue;
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v !== 'string' || !/[\u4e00-\u9fff]/.test(v)) continue;
+        if (fields.includes(k) || SKIP.has(k)) continue;
+        leaks.push(`${kind}.${k}（例：${JSON.stringify(v).slice(0, 24)}）`);
+      }
+    }
+  }
+  const uniq = [...new Set(leaks)];
+  if (uniq.length) {
+    note(`内容里还有 ${uniq.length} 个中文字段没登记进 CONTENT_FIELDS（确认它们要不要跟着语言走）：`
+      + `${uniq.slice(0, 6).join('、')}${uniq.length > 6 ? ' …' : ''}`);
+  } else {
+    note('内容里的中文字段都登记进了 CONTENT_FIELDS（不会出现「界面看得见、清单里没有」的漏网）');
   }
 }
 

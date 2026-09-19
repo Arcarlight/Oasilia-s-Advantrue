@@ -1016,6 +1016,13 @@ button { font-family: inherit; }
 }
 .tier-elite { background: rgba(255, 140, 140, .25); color: #ffc2c2; }
 .tier-boss { background: rgba(255, 120, 180, .28); color: #ffc6e2; }
+/* 首领称号（「流沙之主」）：打在名字后面，金色小字 —— 和「ボス」角标一起说明
+   「这只不是路上的普通首领」。窗口矮时会连同 fighter-types 一起被 compact 收掉。 */
+.boss-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .02em;
+  color: #ffd98a; text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 38%;
+}
 .fighter-types { font-size: 10px; opacity: .7; margin-bottom: 4px; }
 
 /* 窗口很矮时（行高 < 128px，由 layoutBattle() 加这个类）把角色卡压缩：

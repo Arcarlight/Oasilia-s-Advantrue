@@ -199,6 +199,11 @@ export class Battle {
     const e = cfg.enemy;
     this.enemy = cloneSide({
       key: 'enemy',
+      // 这两个不是战斗数值、但界面上要用：`id` 用来回溯内容条目，`bossTitle` 是首领称号
+      // （「流沙之主」那种）。以前 cloneSide 只搬了战斗要用的字段，于是 bossTitle 一路
+      // 传到这儿就被丢掉了 —— 内容里写了、面板上却怎么都不显示。
+      id: e.id,
+      bossTitle: e.bossTitle ?? null,
       name: e.name,
       slug: e.slug,
       maxHp: e.maxHp,
@@ -693,6 +698,35 @@ export class Battle {
         );
         break;
       }
+      /**
+       * 转嫁：把自己身上的持续伤害层数**全部推给对手**（自己清零）。
+       *
+       * 和「层数翻倍」是一对：翻倍放大的是**对手**身上的层数，转嫁是把自己挨的那份**还回去**。
+       * 它让「被上毒」从纯粹的坏事变成一种资源 —— 顶着毒铺自己的节奏，再一次性还清。
+       * 自己身上没有层数时不空放（照实说一句）。
+       */
+      case 'statusSteal': {
+        const from = this[sourceKey];
+        const to = this[foeKey];
+        const hit = DOT_STATUSES.filter((st) => (from[st] ?? 0) > 0);
+        if (!hit.length) {
+          this.emitLogged(
+            { type: 'statusSteal', side: sourceKey, values: {}, gained: 0 },
+            t('{name} 身上没有可以转嫁的层数。', { name: from.name }),
+            'info'
+          );
+          break;
+        }
+        let moved = 0;
+        const values = {};
+        for (const st of hit) { moved += from[st]; to[st] = (to[st] ?? 0) + from[st]; from[st] = 0; values[st] = to[st]; }
+        this.emitLogged(
+          { type: 'statusSteal', side: sourceKey, values, gained: moved, statuses: hit },
+          t('{name} 把自己身上的持续伤害层数全部转嫁给了对手（{n} 层）！', { name: from.name, n: moved }),
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      }
       case 'status': {
         const targetKey = eff.target === 'self' ? sourceKey : foeKey;
         const actor = this[targetKey];   // 同上：别叫 t，会和 i18n 的 t() 撞名
@@ -719,7 +753,9 @@ export class Battle {
       case 'selfDmg': {
         // pct 版本按最大生命算（血祭类的代价随血量走，后期不会变成「几乎不痛」）
         const amount = eff.pct != null ? Math.round(self.maxHp * eff.pct) : eff.amount;
-        this.dealTrueDamage(sourceKey, amount, eff.reason ?? t('反作用力'));
+        // 代价的「名目」会写进战斗日志（「受到了 X 点伤害（血祭）」）。它写的是**卡名**，
+        // 所以要过一遍 t()，否则日 / 英模式里日志里会夹一个中文卡名。
+        this.dealTrueDamage(sourceKey, amount, t(eff.reason ?? '反作用力'));
         break;
       }
       case 'discard': {
@@ -1015,6 +1051,12 @@ export class Battle {
           // 翻倍本身不产生伤害，价值全看对手身上已经铺了多少层（没层数就是废牌）
           const stacks = DOT_STATUSES.reduce((n, st) => n + (foe[st] ?? 0), 0);
           score += stacks >= 3 ? Math.min(26, stacks * 2.6) : -6;
+          break;
+        }
+        case 'statusSteal': {
+          // 转嫁：自己身上层数越多越值得打（把要吃的伤害还给对手）
+          const mine = DOT_STATUSES.reduce((n, st) => n + (self[st] ?? 0), 0);
+          score += mine >= 2 ? Math.min(24, mine * 3) : -6;
           break;
         }
         case 'plays':

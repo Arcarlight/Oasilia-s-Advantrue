@@ -2250,7 +2250,7 @@ export const ENEMIES = [
 ],
     "tier": "elite",
     "biome": "ruins",
-    "deck": MOVE_POOLS.kit_crystal_hi,
+    "deck": MOVE_POOLS.kit_ruins_hi,
     "lines": [ "四根柱子同时浮了起来，柱子中间夹着一个铁青色的东西。", "它不看你，它在看整座遗迹，像是在清点什么。" ],
   },
   {
@@ -2265,7 +2265,7 @@ export const ENEMIES = [
 ],
     "tier": "boss",
     "biome": "ruins",
-    "deck": MOVE_POOLS.kit_crystal_hi,
+    "deck": MOVE_POOLS.kit_ruins_hi,
     "signature": [ "sig_pharaoh_curse" ],
     "lines": [ "风停了。柱廊尽头有个东西站起来，把整片沙都带了起来。", "「这里的东西，一件都不准带走。」" ],
     "bossTitle": "遗迹的守门人",
@@ -2944,6 +2944,72 @@ export const ENEMIES = [
     "signature": [ "sig_soul_lantern" ],
     "lines": [ "远处那盏灯一路把你引到这儿，然后停住了 —— 它一直没打算让你走出去。", "「跟了这么久，不差最后一段。」" ],
     "bossTitle": "引路的灯",
+  },
+  {
+    "id": "cofagrigus_pharaoh",
+    "slug": "cofagrigus",
+    "name": "死神棺",
+    "en": "Cofagrigus",
+    "dex": "0563",
+    "types": [
+  "幽灵"
+],
+    "tier": "boss",
+    "biome": "ruins",
+    "deck": MOVE_POOLS.kit_debuff_hi,
+    "signature": [ "sig_tomb_curse" ],
+    "lines": [ "棺盖上的金漆还没掉完。它坐起来的时候，整条柱廊的沙子一起往下滑。" ],
+    "bossTitle": "沉睡的法老",
+  },
+  {
+    "id": "breloom_alpha",
+    "slug": "breloom",
+    "name": "斗笠菇",
+    "en": "Breloom",
+    "dex": "0286",
+    "types": [
+  "草",
+  "格斗"
+],
+    "tier": "boss",
+    "biome": "fungal",
+    "deck": MOVE_POOLS.kit_fungal_hi,
+    "signature": [ "sig_spore_fist" ],
+    "lines": [ "菌盖底下那两只手臂一直垂着，直到你踩进它的圈。" ],
+    "bossTitle": "菌林的拳王",
+  },
+  {
+    "id": "togedemaru_alpha",
+    "slug": "togedemaru",
+    "name": "托戈德玛尔",
+    "en": "Togedemaru",
+    "dex": "0777",
+    "types": [
+  "电",
+  "钢"
+],
+    "tier": "boss",
+    "biome": "storm",
+    "deck": MOVE_POOLS.kit_electric_hi,
+    "signature": [ "sig_spark_ball" ],
+    "lines": [ "它把自己缩成一团，背上的针一根根竖起来 —— 云也跟着亮了。" ],
+    "bossTitle": "雷台的刺球",
+  },
+  {
+    "id": "druddigon_alpha",
+    "slug": "druddigon",
+    "name": "赤面龙",
+    "en": "Druddigon",
+    "dex": "0621",
+    "types": [
+  "龙"
+],
+    "tier": "boss",
+    "biome": "crystal",
+    "deck": MOVE_POOLS.kit_dragon,
+    "signature": [ "sig_crystal_fang" ],
+    "lines": [ "水晶里那团红色动了一下。它一直是醒着的，只是在等你走近。" ],
+    "bossTitle": "水晶的獠牙",
   }
 ];
 

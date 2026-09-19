@@ -1849,7 +1849,7 @@
       "slug": "metagross",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_ruins_hi",
       "lines": [
         "四根柱子同时浮了起来，柱子中间夹着一个铁青色的东西。",
         "它不看你，它在看整座遗迹，像是在清点什么。"
@@ -1860,7 +1860,7 @@
       "slug": "tyranitar",
       "tier": "boss",
       "biome": "ruins",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_ruins_hi",
       "bossTitle": "遗迹的守门人",
       "lines": [
         "风停了。柱廊尽头有个东西站起来，把整片沙都带了起来。",
@@ -2396,6 +2396,62 @@
       ],
       "signature": [
         "sig_soul_lantern"
+      ]
+    },
+    {
+      "id": "cofagrigus_pharaoh",
+      "slug": "cofagrigus",
+      "tier": "boss",
+      "biome": "ruins",
+      "deck": "kit_debuff_hi",
+      "lines": [
+        "棺盖上的金漆还没掉完。它坐起来的时候，整条柱廊的沙子一起往下滑。"
+      ],
+      "bossTitle": "沉睡的法老",
+      "signature": [
+        "sig_tomb_curse"
+      ]
+    },
+    {
+      "id": "breloom_alpha",
+      "slug": "breloom",
+      "tier": "boss",
+      "biome": "fungal",
+      "deck": "kit_fungal_hi",
+      "lines": [
+        "菌盖底下那两只手臂一直垂着，直到你踩进它的圈。"
+      ],
+      "bossTitle": "菌林的拳王",
+      "signature": [
+        "sig_spore_fist"
+      ]
+    },
+    {
+      "id": "togedemaru_alpha",
+      "slug": "togedemaru",
+      "tier": "boss",
+      "biome": "storm",
+      "deck": "kit_electric_hi",
+      "lines": [
+        "它把自己缩成一团，背上的针一根根竖起来 —— 云也跟着亮了。"
+      ],
+      "bossTitle": "雷台的刺球",
+      "signature": [
+        "sig_spark_ball"
+      ]
+    },
+    {
+      "id": "druddigon_alpha",
+      "slug": "druddigon",
+      "tier": "boss",
+      "biome": "crystal",
+      "deck": "kit_dragon",
+      "lines": [
+        "水晶里那团红色动了一下。它一直是醒着的，只是在等你走近。"
+      ],
+      "bossTitle": "水晶的獠牙",
+      "signature": [
+        "sig_crystal_fang"
       ]
     }
   ]
