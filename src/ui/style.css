@@ -2296,7 +2296,7 @@ input, textarea { cursor: text !important; }
 .enc-plate {
   position: absolute;
   right: 4%;
-  bottom: 5%;
+  bottom: 8%;
   z-index: 4;                 /* 黑幕 1 · 敌人立绘 2 · 我方立绘 3 · 名牌 4 */
   display: grid;
   grid-template-columns: auto;
@@ -2310,7 +2310,7 @@ input, textarea { cursor: text !important; }
 .enc-name {
   /* 粗体字体：卡名 / 商店名 / 这里的怪名都属于「要一眼认出来」的字 */
   font-family: var(--font-bold);
-  font-size: clamp(30px, 6.4vw, 92px);
+  font-size: clamp(40px, 8.6vw, 128px);
   font-weight: 700;
   line-height: 1.06;
   letter-spacing: .02em;
@@ -2340,9 +2340,11 @@ input, textarea { cursor: text !important; }
   grid-area: 1 / 1;
   display: grid;
   grid-template-columns: auto;
-  font-size: clamp(72px, 15vw, 210px);
+  font-size: clamp(100px, 21vw, 300px);
   line-height: 1;
   letter-spacing: .02em;
+  /* 两侧各留出错开量（最大 ±.105em），这样整组四份都落在自己的盒子里不会被屏幕切 */
+  padding: 0 .105em;
 }
 .enc-neon-i {
   grid-area: 1 / 1;
@@ -2352,16 +2354,18 @@ input, textarea { cursor: text !important; }
   white-space: nowrap;
   color: transparent;
   -webkit-text-stroke: max(2px, .022em) var(--neon, var(--accent-2, #ffc96b));
-  opacity: .34;
-  /* 以中心为基准左右错开（四份分布在 -0.18em ~ +0.18em） */
-  transform: translateX(calc((var(--i, 0) - 1.5) * .12em));
+  opacity: .42;
+  /* 以中心为基准左右错开（四份分布在 -0.105em ~ +0.105em）。
+     错开量写小一点是有意的：字号到 270px 之后，0.12em 的错开会把两个字糊成一片网，
+     读不出是哪个词；.07em 既看得出「叠了四份」，笔画又还是分开的。 */
+  transform: translateX(calc((var(--i, 0) - 1.5) * .07em));
   /* 描边外面再糊一层同色光晕，才有灯管的感觉 */
   filter: drop-shadow(0 0 .08em var(--neon, var(--accent-2, #ffc96b)));
 }
 /* 四份的浓淡错开一点，像灯管接缝处的重叠 */
-.enc-neon-i:nth-child(2) { opacity: .24; }
-.enc-neon-i:nth-child(3) { opacity: .28; }
-.enc-neon-i:nth-child(4) { opacity: .17; }
+.enc-neon-i:nth-child(2) { opacity: .3; }
+.enc-neon-i:nth-child(3) { opacity: .34; }
+.enc-neon-i:nth-child(4) { opacity: .22; }
 /* 档位各有自己的灯色：野生/较强跟地图主题走，精英红、首领品红（和档位胶囊时代的配色一致） */
 .encounter[data-tier="elite"] .enc-neon { --neon: #ff8080; }
 .encounter[data-tier="boss"]  .enc-neon { --neon: #ff6cb6; }
@@ -2370,9 +2374,9 @@ input, textarea { cursor: text !important; }
   .enc-fighter { gap: 8px; }
   .enc-player { left: 2%; }
   .enc-enemy { right: 2%; }
-  .enc-plate { right: 2%; bottom: 4%; }
-  .enc-name { font-size: clamp(24px, 6vw, 44px); }
-  .enc-neon { font-size: clamp(56px, 15.5vw, 96px); }
+  .enc-plate { right: 2%; bottom: 9%; }
+  .enc-name { font-size: clamp(28px, 8vw, 60px); }
+  .enc-neon { font-size: clamp(72px, 19vw, 140px); }
 }
 
 /* ============================================================

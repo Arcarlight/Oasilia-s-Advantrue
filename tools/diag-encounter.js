@@ -312,7 +312,11 @@
       ok(ph && ph.plate.top >= ph.enemy.top + ph.enemy.h * 0.8,
         '名牌挂在敌人立绘**下面**（用户指的位置）',
         `立绘底 ${Math.round(ph ? ph.enemy.top + ph.enemy.h : 0)} → 名牌顶 ${Math.round(ph?.plate?.top ?? 0)}`);
-      ok(ph && ph.plate.left > vw * 0.5, '名牌落在屏幕右半边', `名牌左边 ${Math.round(ph?.plate?.left ?? 0)} / 视口宽 ${vw}`);
+      // 「在右半边」看的是**中心**：霓虹灯放大之后整块会越过中线，
+      // 拿左边当判据会误报（左边到 687，而视口一半是 705 —— 但它明明在右边）
+      ok(ph && ph.plate.cx > vw * 0.5,
+        '名牌落在屏幕右半边',
+        `名牌 ${Math.round(ph?.plate?.left ?? 0)}~${Math.round(ph?.plate?.right ?? 0)}（中心 ${Math.round(ph?.plate?.cx ?? 0)} / 视口中线 ${Math.round(vw / 2)}）`);
       // 名字**压在霓虹灯正中**（用户：「名字放中间」）
       if (ph && ph.name && ph.neonBox) {
         const dx = Math.abs((ph.name.cx) - ph.neonBox.cx);
