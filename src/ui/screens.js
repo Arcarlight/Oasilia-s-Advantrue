@@ -590,7 +590,15 @@ function renderShop(game) {
         : s.kind === 'service'
           ? 'ico-trash'
           : (ITEMS[s.id]?.ico ?? 'ico-backpack');
-      const node = el('div', { class: `shop-item ${sold ? 'sold' : ''}` }, [
+      const node = el('div', {
+        /**
+         * 货架行的底色跟着**稀有度**走，用的是和卡面完全同一套变量
+         * （`.card-common, .shop-item.rarity-common` 那一组，见 style.css）。
+         * 道具 / 服务没有稀有度，按普通档上纸色 —— 所以这里统一给一个 rarity-* 类，
+         * 不留下「没有类的行」去走另一套默认样式（那正是「没有底色」的来源）。
+         */
+        class: `shop-item rarity-${card?.rarity ?? 'common'} ${sold ? 'sold' : ''}`,
+      }, [
         el('h4', {}, [
           el('span', { class: `shop-ico ${ico}` }),
           el('span', { text: s.name }),
