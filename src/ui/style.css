@@ -2310,7 +2310,7 @@ input, textarea { cursor: text !important; }
 .enc-name {
   /* 粗体字体：卡名 / 商店名 / 这里的怪名都属于「要一眼认出来」的字 */
   font-family: var(--font-bold);
-  font-size: clamp(40px, 8.6vw, 128px);
+  font-size: clamp(44px, 10.4vw, 158px);
   font-weight: 700;
   line-height: 1.06;
   letter-spacing: .02em;
@@ -2322,17 +2322,18 @@ input, textarea { cursor: text !important; }
     0 0 10px rgba(0, 0, 0, .8),
     0 0 44px var(--accent, #f0a93c);
 }
-/* 名字压在霓虹灯**之上**：同一个格子，z-index 高的那个在上面 */
+/* 名字压在霓虹灯**之上**：同一个格子，z-index 高的那个在上面。
+   两者都**居右**（用户要求）—— 共享同一条右边缘，所以名字右对齐、霓虹灯基准那份也右对齐。 */
 .enc-neon { z-index: 0; }
-.enc-name { grid-area: 1 / 1; align-self: center; justify-self: center; z-index: 1; }
+.enc-name { grid-area: 1 / 1; align-self: center; justify-self: end; z-index: 1; }
 
 /**
  * 档位标注做成**霓虹灯**：同一个词（野生 / 较强 / 精英 / 首领）用超大**空心**字
  * 横向错开叠 4 份、半透明 —— 整组叠在所有元素之上（背景那块黑幕除外）、名字之下。
  *   · 空心 = 字身透明 + -webkit-text-stroke 画描边（落不到 text-stroke 的浏览器上
  *     它就整个不显示 —— 这里是纯装饰，宁可不显示也不要出实心方块）；
- *   · 四份用 grid 放进**同一格**，格子大小就是这个词本身的大小，
- *     再各自 translateX 错开 —— 于是整组天然围绕中心对称，名字居中压在正中就对齐了；
+ *   · 四份用 grid 放进**同一格**、都**靠右对齐**，再各自往左错开 ——
+ *     于是基准那一份的右边缘就是整块的右边缘，和名字共用同一条对齐线；
  *   · 错开量与描边粗细都写成 em（跟着字号走），放大之后比例不会走样；
  *   · 错开量由每一份自己的 --i 决定，所以「四份」在 DOM 上数得出来（诊断会数）。
  */
@@ -2343,22 +2344,22 @@ input, textarea { cursor: text !important; }
   font-size: clamp(100px, 21vw, 300px);
   line-height: 1;
   letter-spacing: .02em;
-  /* 两侧各留出错开量（最大 ±.105em），这样整组四份都落在自己的盒子里不会被屏幕切 */
-  padding: 0 .105em;
+  /* 只留左边：错开是往左走的，右侧不留会白白把右对齐线推离屏幕边 */
+  padding: 0 0 0 .21em;
 }
 .enc-neon-i {
   grid-area: 1 / 1;
-  justify-self: center;
+  justify-self: end;
   font-family: var(--font-bold);
   font-weight: 700;
   white-space: nowrap;
   color: transparent;
   -webkit-text-stroke: max(2px, .022em) var(--neon, var(--accent-2, #ffc96b));
   opacity: .42;
-  /* 以中心为基准左右错开（四份分布在 -0.105em ~ +0.105em）。
-     错开量写小一点是有意的：字号到 270px 之后，0.12em 的错开会把两个字糊成一片网，
+  /* 基准那份（--i: 0）贴住右边缘，其余几份依次往左错开。
+     错开量写小一点是有意的：字号到 300px 之后，0.12em 的错开会把两个字糊成一片网，
      读不出是哪个词；.07em 既看得出「叠了四份」，笔画又还是分开的。 */
-  transform: translateX(calc((var(--i, 0) - 1.5) * .07em));
+  transform: translateX(calc(var(--i, 0) * -.07em));
   /* 描边外面再糊一层同色光晕，才有灯管的感觉 */
   filter: drop-shadow(0 0 .08em var(--neon, var(--accent-2, #ffc96b)));
 }
@@ -2375,7 +2376,7 @@ input, textarea { cursor: text !important; }
   .enc-player { left: 2%; }
   .enc-enemy { right: 2%; }
   .enc-plate { right: 2%; bottom: 9%; }
-  .enc-name { font-size: clamp(28px, 8vw, 60px); }
+  .enc-name { font-size: clamp(30px, 8.8vw, 76px); }
   .enc-neon { font-size: clamp(72px, 19vw, 140px); }
 }
 

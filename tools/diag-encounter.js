@@ -317,13 +317,18 @@
       ok(ph && ph.plate.cx > vw * 0.5,
         '名牌落在屏幕右半边',
         `名牌 ${Math.round(ph?.plate?.left ?? 0)}~${Math.round(ph?.plate?.right ?? 0)}（中心 ${Math.round(ph?.plate?.cx ?? 0)} / 视口中线 ${Math.round(vw / 2)}）`);
-      // 名字**压在霓虹灯正中**（用户：「名字放中间」）
+      // 名字和霓虹灯**都居右**（用户要求）：两者共享同一条右边缘，
+      // 而且名字仍然压在霓虹灯上（不是各占一边、也不是居中）
       if (ph && ph.name && ph.neonBox) {
-        const dx = Math.abs((ph.name.cx) - ph.neonBox.cx);
-        const dy = Math.abs((ph.name.cy) - ph.neonBox.cy);
-        ok(dx <= 6 && dy <= 6,
-          '名字**压在霓虹灯正中**（水平 / 垂直都居中）',
-          `水平差 ${dx.toFixed(1)}px、垂直差 ${dy.toFixed(1)}px（霓虹灯 ${Math.round(ph.neonBox.w)}×${Math.round(ph.neonBox.h)} / 名字 ${Math.round(ph.name.w)}×${Math.round(ph.name.h)}）`);
+        const dx = Math.abs(ph.name.right - ph.neonBox.right);
+        const overlapX = Math.min(ph.name.right, ph.neonBox.right) - Math.max(ph.name.left, ph.neonBox.left);
+        const overlapY = Math.min(ph.name.bottom, ph.neonBox.bottom) - Math.max(ph.name.top, ph.neonBox.top);
+        ok(dx <= 3,
+          '名字和霓虹灯**右对齐**（右边缘齐平）',
+          `名字右 ${Math.round(ph.name.right)} / 霓虹灯右 ${Math.round(ph.neonBox.right)}，差 ${dx.toFixed(1)}px`);
+        ok(overlapX > 0 && overlapY > 0,
+          '名字仍然压在霓虹灯上（两块是叠着的，不是各占一边）',
+          `重叠 ${Math.round(overlapX)}×${Math.round(overlapY)}px（霓虹灯 ${Math.round(ph.neonBox.w)}×${Math.round(ph.neonBox.h)} / 名字 ${Math.round(ph.name.w)}×${Math.round(ph.name.h)}）`);
       }
       // 立绘不许被视口切掉：站位是按视口百分比算的，窗口一矮就容易把下边那只顶出去
       const clipped = hold.filter((s) => [s.enemy, s.player].some((b) => b.top < -2 || b.top + b.h > vh + 2 || b.left < -2 || b.left + b.w > vw + 2));
