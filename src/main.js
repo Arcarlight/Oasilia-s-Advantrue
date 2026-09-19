@@ -230,6 +230,10 @@ async function boot() {
     // 字体 A/B：把手写体语境的真实句子并排渲染（?dgfont=shot 直接留在屏幕上截图）
     import('../tools/diag-font.js').catch((e) => console.error('字体对照加载失败', e));
   }
+  if (params.has('dgi18n')) {
+    // 多语言诊断：真点语言按钮，验证「切换 → 内容原地改写 → 重画 → 切回中文逐字恢复」
+    import('../tools/diag-i18n.js').catch((e) => console.error('多语言诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {

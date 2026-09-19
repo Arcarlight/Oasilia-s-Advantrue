@@ -1,15 +1,15 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 对不上就说明内容改过、子集过期了",
-  "textSha256": "1a425e9cec9eb532c38bf6452776cafd24995e15fca421192ecc62626027b3e9",
-  "chars": 2119,
+  "textSha256": "e274380b9164091641f458af233b09c2646c3a217c176961d265a461c61480f5",
+  "chars": 2120,
   "fonts": [
     {
       "out": "SGHr-Regular-subset.woff2",
       "src": "SGHr-Regular.ttf",
       "label": "正文",
       "srcBytes": 4120572,
-      "outBytes": 329660,
-      "codepoints": 1912,
+      "outBytes": 329552,
+      "codepoints": 1913,
       "missingCount": 207,
       "missing": "²①②③④⑤⑥⑦⑧⓪─■□▲▼◆◇○●★☆♀♪♭⚠✓✗⟨⟩あいうえおかがきくぐけげこさしじすずせぜそただちっつてでとどなにのはびふへべほまみむめもやゆよらりるれわをんァアイウェエオカキクケゲコゴシジスズセタダチッツデトドノヒピフブプポマムメモャラリルレロンー乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️０１２３４５６７８９"
     },
@@ -18,8 +18,8 @@
       "src": "WenYuanSerifSC-Bold.ttf",
       "label": "粗体（卡名 / 商店名…）",
       "srcBytes": 15238244,
-      "outBytes": 461512,
-      "codepoints": 2115,
+      "outBytes": 461644,
+      "codepoints": 2116,
       "missingCount": 4,
       "missing": "⚠⟨⟩️"
     },
@@ -28,8 +28,8 @@
       "src": "YShiWrittenSC-Regular.ttf",
       "label": "手写体（写意体 SC）",
       "srcBytes": 3994192,
-      "outBytes": 327076,
-      "codepoints": 2038,
+      "outBytes": 327240,
+      "codepoints": 2039,
       "missingCount": 81,
       "missing": "↔≈≤≥⏎⓪⚠✓✗⟨⟩乗傘効動勝収啰営執場塩増層復応戦払掛撃敗時書枠楽歩殻毎気決減熱現畳礎竜約終組絵続聴薬蝕襲見計設語読貸車込遊運達遠長開闇闘陣険陽霊頂風飛️－～"
     }

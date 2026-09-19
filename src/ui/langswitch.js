@@ -12,7 +12,11 @@ import { refreshI18nTables } from '../core/i18n-tables.js';
  *   ① setLang() 改状态并写进跨局记录；
  *   ② refreshI18nTables() 把数据里的可见字段（卡名、状态名、地图名…）原地刷成新语言 ——
  *      必须在重画之前做，否则界面上读到的还是旧语言；
- *   ③ 重画当前那一屏。战斗界面特殊：它自己持有一份演出副本，整屏重画会打断演出，
+ *   ③ 重画当前那一屏。这里**必须用 forceRerender()**（它会把 UI.current 清空再渲染）：
+ *      ui.render() 对「同一屏」是有防重复渲染的（`current` 一样就直接 return），
+ *      而语言变了不等于「换屏」—— 用 game.changed() 的话标题页那种自己不刷新的屏**不会重画**
+ *      （诊断当场抓到了：点「日本語」之后状态变了、卡名变了，标题却还是中文）。
+ *      战斗界面另说：它自己持有一份演出副本，整屏重画会打断演出，
  *      所以战斗中只刷新「读数据的那几块」（角色卡 / 手牌 / 牌堆），战斗继续演下去。
  *
  * @param {string} id 'zh' | 'ja' | 'en'
@@ -29,7 +33,8 @@ export function changeLanguage(id) {
 
   if (game.phase === 'battle' && ui.battleScreen) {
     try { ui.battleScreen.refreshAll(); } catch { /* 刷新失败不该影响战斗 */ }
+    return true;
   }
-  game.changed();
+  ui.forceRerender();
   return true;
 }
