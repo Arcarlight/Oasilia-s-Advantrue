@@ -9,6 +9,7 @@ import { audio } from './core/audio.js';
 import { toast } from './ui/dom.js';
 import { showDeck } from './ui/overlays.js';
 import { initTips } from './ui/tips.js';
+import { setEncounterMode } from './ui/encounter.js';
 
 async function boot() {
   const splash = document.createElement('div');
@@ -92,6 +93,14 @@ async function boot() {
 
   // 支持 ?scene=battle 之类的直接定位，方便截图与手动检查
   const params = new URLSearchParams(location.search);
+  /**
+   * 遭遇演出（地图 → 战斗的过场）默认只在「玩家从地图走过去撞见的」战斗里出现。
+   * ?enc=1 让所有入口都演（遭遇演出自己的诊断脚本用它，因为它是直接 startBattle 的），
+   * ?enc=0 完全关掉（其余截图 / 冒烟脚本用，它们都是「进战斗立刻读 DOM」）。
+   */
+  const encParam = params.get('enc');
+  if (encParam === '1' || (params.has('dgenc') && encParam !== '0')) setEncounterMode('always');
+  else if (encParam === '0') setEncounterMode('never');
   const scene = params.get('scene');
   if (params.get('smoke') === '1') {
     // 冒烟测试：加载 tools/smoke-script.js 后自动跑一遍主要流程
@@ -202,6 +211,11 @@ async function boot() {
   if (params.get('dgdodge')) {
     // 闪避诊断：对方闪开后会不会「卡住、出不了牌」
     import('../tools/diag-dodge.js').catch((e) => console.error('闪避诊断加载失败', e));
+  }
+  if (params.has('dgenc')) {
+    // 遭遇演出诊断：划入曲线 / 横线有没有跟着立绘 / 预载到底完成没有
+    // （?dgenc=1 自检；?dgenc=shot&at=hold 定格在停留那一下方便截图）
+    import('../tools/diag-encounter.js').catch((e) => console.error('遭遇演出诊断加载失败', e));
   }
   if (params.get('dgstuck')) {
     // 卡死诊断：主动制造各种「打不出卡」的情形，验证看门狗与提示

@@ -71,7 +71,37 @@ const PS = {
   surprise: 'surprise.wav',
 };
 
+/**
+ * 战斗里会响的音效名。
+ *
+ * 为什么要专门列一份：`play(name)` 的链路是 **fetch → decodeAudioData → src.start()**，
+ * 所以每一个音效**第一次响**都得先等一次网络往返 + 解码 —— 听感上就是
+ * 「点下第一张攻击卡，挥剑声比动画慢半拍」。遭遇演出（src/ui/encounter.js）
+ * 的停留阶段会拿那段时间把这批全部预热成 AudioBuffer，进战斗后第一击就是准点的。
+ *
+ * 这份表不靠人肉维护：tools/diag-encounter.js 会真打一场，把 audio 实际响过的名字
+ * 全部记下来逐个比对 —— 谁往战斗里加了新音效却忘了写进来，诊断就会红。
+ */
+export const BATTLE_SFX = [
+  // 出牌 / 抽牌 / 洗牌
+  'cardSlide', 'cardSlide2', 'shuffle',
+  // 命中与闪避
+  'hit_normal', 'hit_hard', 'hit_sword', 'hit_miss', 'enemy_down',
+  // 属性招式
+  'magic_fire', 'magic_quake', 'magic_rock', 'magic_wind', 'magic_bolt',
+  'magic_heal', 'magic_shield', 'buff_up', 'buff_down',
+  // 状态
+  'status_poison', 'status_burn', 'status_dizzy',
+  // 界面（战斗里也会响：点不动、结束回合、胜利、失败、销毁碎裂）
+  'glass', 'click2', 'ui_cancel', 'ui_confirm_big', 'ui_error',
+];
+
+/** 遭遇演出自己用的音效：划入的风声 + 横线张开的那一下 */
+export const ENCOUNTER_SFX = ['magic_wind', 'maximize'];
+
 const buffers = new Map();
+/** 本次会话真正播放过的音效名（诊断用：和 BATTLE_SFX 对一遍，看有没有漏预载的） */
+const played = new Set();
 let ctx = null;
 let master = null;
 let musicGain = null;
@@ -164,8 +194,33 @@ export const audio = {
     return p;
   },
 
+  /**
+   * 预载一批音效（只加载 + 解码，**不播放**）。
+   *
+   * 单个音效失败也算「处理完」——load() 内部已经 catch 成 null，
+   * 这里再兜一层，免得一个坏文件把整批预载卡住。
+   * 返回的 Promise 兑现时，这一批已经能立刻播了（或已确认放不出来）。
+   */
+  warm(names = []) {
+    return Promise.all([].concat(names).map((n) => this.load(n).catch(() => null)));
+  },
+
+  /** 已经**解码好**（可以立刻播）的音效名。诊断用：验证预载真的完成了，而不只是排上了队 */
+  async warmed() {
+    const out = [];
+    for (const [name, p] of buffers) {
+      const buf = await p.catch(() => null);
+      if (buf) out.push(name);
+    }
+    return out;
+  },
+
+  /** 本次会话真正播放过的音效名 */
+  playedNames() { return [...played]; },
+
   play(name, { volume = 1, rate = 1, detune = 0 } = {}) {
     if (!this.enabled) return;
+    played.add(name);
     this.init();
     if (!ctx || !unlocked) return;
     this.load(name).then((buf) => {

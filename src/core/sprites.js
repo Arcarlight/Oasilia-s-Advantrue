@@ -49,6 +49,18 @@ export function resolveAnim(slug, anim = 'Idle') {
 }
 
 const sheetCache = new Map();
+
+/**
+ * 还活着的动画 canvas 数量（createAnim 建一个 +1，destroy() -1）。
+ *
+ * 这是给诊断用的：动画是靠 setInterval 推进的（见 createAnim 里的说明），
+ * 元素从 DOM 上摘掉**不会**停掉那个定时器 —— 忘了 destroy 就是每打一场漏两个。
+ * 这种漏很难用眼睛看出来，所以把它变成一个能断言的数字：
+ * tools/diag-encounter.js 连打两场，比较前后的数量。
+ */
+let liveAnims = 0;
+export function liveAnimCount() { return liveAnims; }
+
 function loadSheet(slug, anim) {
   const key = `${slug}/${anim}`;
   if (sheetCache.has(key)) return sheetCache.get(key);
@@ -209,7 +221,16 @@ export async function createAnim(slug, opts = {}) {
     }, s);
   };
 
-  canvas.destroy = () => { stopped = true; stopLoop(); cancelAnimationFrame(raf); };
+  canvas.destroy = () => {
+    // 幂等：外部（战斗界面）会在换动作和收场时各调一次，重复调用不能把计数减穿
+    if (canvas._destroyed) return;
+    canvas._destroyed = true;
+    liveAnims -= 1;
+    stopped = true;
+    stopLoop();
+    cancelAnimationFrame(raf);
+  };
+  liveAnims += 1;
   canvas.frameCount = frames.length;
   canvas.dirRow = dir;
   /**
@@ -221,6 +242,69 @@ export async function createAnim(slug, opts = {}) {
   canvas.animName = animName;
 
   return canvas;
+}
+
+/**
+ * 只把精灵图取回来（不建 canvas、不起定时器、不探帧）。
+ *
+ * 战斗里 Idle → Attack → Hurt 每换一次动作都要现拉一张 png，冷启动时那一帧会卡一下。
+ * 遭遇演出（src/ui/encounter.js）的停留阶段顺手把这几张预热掉；
+ * loadSheet 有自己的缓存，所以预热过的图 createAnim 会直接命中，不会再发请求。
+ * 动作名解析走和 createAnim 同一条路（resolveAnim），不会出现「预热了 A、用的时候找 B」。
+ */
+export function preloadAnim(slug, anim = 'Idle') {
+  const resolved = resolveAnim(slug, anim);
+  if (!resolved) return Promise.resolve(null);
+  return loadSheet(slug, resolved.anim).catch(() => null);
+}
+
+/**
+ * 一帧里「真正有画面的那块」占整帧多大（0~1），以及它在帧内的中心位置。
+ *
+ * 为什么要这个：精灵图的**帧尺寸包含透明留白**，而留白各物种差很多 ——
+ * 沙漠蜻蜓 Idle 的帧是 32×72，但真正画着龙的那块只有约 30×28（其余全是透明）。
+ * 于是「按帧高算缩放」的地方（遭遇演出）就会把留白也算进去：
+ * 看上去怪兽只有屏幕高的 13%，明明写的是 40%。拿这个比例把留白补回来，
+ * 「让它在屏幕上占 40% 高」才真的是 40%。
+ *
+ * @returns {Promise<{sw:number, sh:number, cx:number, cy:number}|null>}
+ *   sw/sh = 内容宽/高 ÷ 帧宽/帧高；cx/cy = 内容中心在帧内的相对位置
+ */
+export async function frameCoverage(slug, anim = 'Idle', dir = null) {
+  const resolved = resolveAnim(slug, anim);
+  if (!resolved) return null;
+  const img = await loadSheet(slug, resolved.anim).catch(() => null);
+  if (!img) return null;
+  const { fw, fh } = resolved.info;
+  const probe = document.createElement('canvas');
+  probe.width = fw;
+  probe.height = fh;
+  const pctx = probe.getContext('2d', { willReadFrequently: true });
+  // frameList 已经帮我们跳过了全透明的空白帧，取第一帧有内容的就够代表这个动作了
+  const frames = frameList(resolved.info, img, pctx, dir);
+  if (!frames.length) return null;
+  const f = frames[0];
+  pctx.clearRect(0, 0, fw, fh);
+  pctx.drawImage(img, f.x, f.y, fw, fh, 0, 0, fw, fh);
+  const data = pctx.getImageData(0, 0, fw, fh).data;
+  let x0 = fw; let y0 = fh; let x1 = -1; let y1 = -1;
+  for (let y = 0; y < fh; y++) {
+    for (let x = 0; x < fw; x++) {
+      if (data[(y * fw + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null;
+  return {
+    sw: (x1 - x0 + 1) / fw,
+    sh: (y1 - y0 + 1) / fh,
+    cx: (x0 + x1 + 1) / 2 / fw,
+    cy: (y0 + y1 + 1) / 2 / fh,
+  };
 }
 
 /** 只取某一帧的静态封面（用于卡牌 / 图鉴 / 头像），返回 canvas */

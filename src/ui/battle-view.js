@@ -118,6 +118,12 @@ export class BattleScreen {
     /** 演出用的回合数 / 当前行动方：引擎的 active 会提前跳回玩家，直接读会让「敌方回合」显示成「你的行动」 */
     this.dispTurn = this.battle.turn;
     this.dispActive = this.battle.active;
+    /**
+     * 界面是否已经挂到 DOM 上。
+     * 进战斗前会先放一段遭遇演出（src/ui/encounter.js），那期间 BattleScreen 已经建好
+     * 但还没 mount()：此时玩家按空格 / 数字键不该作用在一张还没上场的界面上。
+     */
+    this.mounted = false;
     this.captureDisp('player');
     this.captureDisp('enemy');
   }
@@ -267,6 +273,7 @@ export class BattleScreen {
     const b = this.battle;
     const biome = BIOMES[this.game.data.map.biome] ?? BIOMES.desert;
     clear(this.host);
+    this.mounted = true;
 
     this.screen = el('div', {
       class: 'screen battle-screen',
@@ -1187,7 +1194,7 @@ export class BattleScreen {
   // ================= 玩家操作 =================
 
   async playCard(uid) {
-    if (this.busy) return;
+    if (this.busy || !this.mounted) return;
     const entry = this.battle.hand('player').find((c) => c.uid === uid);
     if (!entry) return;
     const res = this.battle.playCard(uid);
@@ -1218,7 +1225,7 @@ export class BattleScreen {
   }
 
   async onEndTurn() {
-    if (this.busy || this.battle.over) return;
+    if (this.busy || this.battle.over || !this.mounted) return;
     this.busy = true;
     this._eventAt = Date.now();
     audio.ui('click2');

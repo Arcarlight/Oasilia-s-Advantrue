@@ -289,14 +289,14 @@ export class Game {
 
   enterNode(node) {
     switch (node.type) {
-      case 'battle': return this.startBattle('normal', 0);
-      case 'elite': return this.startBattle('elite', 0);
+      case 'battle': return this.startBattle('normal', 0, 'map');
+      case 'elite': return this.startBattle('elite', 0, 'map');
       case 'boss': return this.startBossBattle();
       case 'event': return this.startEvent();
       case 'chest': return this.startChest();
       case 'shop': return this.startShop();
       case 'rest': return this.startRest();
-      default: return this.startBattle('normal', 0);
+      default: return this.startBattle('normal', 0, 'map');
     }
   }
 
@@ -305,7 +305,7 @@ export class Game {
     const d = this.data;
     const healed = this.heal(Math.round(d.maxHp * (BALANCE.preBossHealPct ?? 0.35)));
     this.preBossHeal = healed;
-    return this.startBattle('boss', 0);
+    return this.startBattle('boss', 0, 'map');
   }
 
   /** 章节推进 */
@@ -539,8 +539,15 @@ export class Game {
     return deck;
   }
 
-  /** @param {'normal'|'elite'|'boss'} kind */
-  startBattle(kind, retry = 0) {
+  /**
+   * @param {'normal'|'elite'|'boss'} kind
+   * @param {number} retry
+   * @param {'map'|'direct'} entry
+   *   'map' = 玩家在地图上走过去撞见的；'direct' = 直接开一场（诊断脚本 / 调试接口）。
+   *   UI 只给 'map' 放遭遇演出（见 src/ui/encounter.js）——
+   *   其余入口点进去就要立刻看到战斗画面，中间插 1.7 秒过场会把所有自动化脚本打乱。
+   */
+  startBattle(kind, retry = 0, entry = 'direct') {
     const d = this.data;
     const biome = d.map.biome;
     const stage = d.stage;
@@ -572,6 +579,8 @@ export class Game {
 
     this.battleKind = kind;
     this.battleContext = { kind, enemyDef, scaled, retry };
+    /** 这一场是怎么开起来的：'map' 会放遭遇演出，'direct' 直接进战斗 */
+    this.battleEntry = entry;
 
     this.battle = new Battle({
       seed: this.rng.int(0, 1e9),
@@ -829,7 +838,8 @@ export class Game {
     const mimic = this.chest?.kind === 'mimic';
     this.chest = null;
     if (mimic) {
-      this.startBattle('elite', 0);
+      // 宝箱怪也是「撞见」——照样放遭遇演出
+      this.startBattle('elite', 0, 'map');
     } else {
       this.phase = Phase.MAP;
       this.save();

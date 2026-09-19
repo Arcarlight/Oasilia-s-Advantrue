@@ -32,6 +32,16 @@ export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 export function clear(node) {
+  /**
+   * 顺手把里面的行走图动画停掉。
+   *
+   * 精灵动画是靠 setInterval 一帧帧画的，**元素从 DOM 上摘掉不会停掉那个定时器** ——
+   * 以前每次切屏都会把屏幕上的动画留在后台接着跑（标题页的沙漠蜻蜓、战斗里的立绘…），
+   * 一局下来能积十几个。这种泄漏眼睛看不出来，所以统一在这里收口：
+   * 凡是经过 clear() 被换掉的界面，里面的动画一定跟着停。
+   * （数量可以用 sprites.js 的 liveAnimCount() 量出来，见 tools/diag-encounter.js。）
+   */
+  for (const c of node.querySelectorAll?.('canvas.anim') ?? []) c.destroy?.();
   while (node.firstChild) node.removeChild(node.firstChild);
   return node;
 }

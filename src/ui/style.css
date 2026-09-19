@@ -2156,6 +2156,113 @@ input, textarea { cursor: text !important; }
 }
 
 /* ============================================================
+   遭遇演出：地图 → 战斗之间的过场
+   几何（谁的宽、谁的位置）全部由 src/ui/encounter.js 每帧写死，
+   这里只管长相与层级；所以别在这里写死 width/height/top。
+   ============================================================ */
+.encounter {
+  position: fixed;
+  inset: 0;
+  /* 盖住 HUD(30) / 浮字(60) / 弹窗(100) / 卡面(200)，但低于最高层(300) */
+  z-index: 250;
+  overflow: hidden;
+  /* 演出期间把点击吃掉：不然玩家手快点到地图上的下一个节点，会连着触发第二场战斗 */
+  pointer-events: auto;
+  /* 主题色不写在这里 —— body[data-biome] 已经把 --accent / --accent-2 换成当前地图的了 */
+}
+
+/* 两只精灵。朝向在 JS 里定死：我方 DIR.UP（背对镜头 = 背影），敌人 DIR.DOWN（正对镜头 = 正面图） */
+.enc-fighter {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2.2vw, 40px);
+  transform: translateY(-50%);
+  will-change: transform;
+}
+.enc-player { left: 3%; z-index: 3; }   /* 背影离镜头更近，从正面图上压过去 */
+.enc-enemy { right: 3%; z-index: 2; }
+.enc-body { position: relative; }
+.enc-body canvas { display: block; filter: drop-shadow(0 14px 10px rgba(0, 0, 0, .5)); }
+
+/* 名字 + 档位标注：写在立绘旁边（靠右对齐，贴着立绘） */
+.enc-plate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: clamp(4px, .8vh, 10px);
+  text-align: right;
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity .24s ease, transform .34s cubic-bezier(.14, .68, .16, 1);
+}
+.encounter.plate-in .enc-plate { opacity: 1; transform: none; }
+.enc-name {
+  font-family: var(--font-title);
+  font-size: clamp(26px, 4.6vw, 62px);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: .02em;
+  color: #fff;
+  /* 描边 + 主题色外发光：字要压在黑幕布上，也要压在还没被盖住的地图上 */
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, .6),
+    0 0 3px rgba(0, 0, 0, .85),
+    0 0 30px var(--accent, #f0a93c);
+}
+.enc-tier {
+  font-size: clamp(11px, 1.3vw, 17px);
+  font-weight: 700;
+  letter-spacing: .22em;
+  padding: 2px 14px 2px 16px;   /* 左多 2px：letter-spacing 会在末尾留一个空位 */
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .3);
+}
+.encounter[data-tier="normal"] .enc-tier { background: rgba(120, 190, 255, .28); box-shadow: inset 0 0 0 2px rgba(190, 225, 255, .45); }
+.encounter[data-tier="elite"]  .enc-tier { background: rgba(255, 116, 116, .34); box-shadow: inset 0 0 0 2px rgba(255, 190, 190, .5); color: #ffe6e6; }
+.encounter[data-tier="boss"]   .enc-tier { background: rgba(255, 108, 182, .38); box-shadow: inset 0 0 0 2px rgba(255, 196, 230, .55); color: #ffe4f4; }
+
+/* 那条横线：黑底 + 主题色的芯。宽度 / 高度 / 纵向位置都由 JS 控制 */
+.enc-band {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 8px;
+  z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(180deg, #100b14 0%, #05040a 50%, #100b14 100%);
+  will-change: width, height, top, transform;
+}
+.enc-band-core {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  background: linear-gradient(90deg, transparent, var(--accent-2, #ffc96b) 26%, var(--accent, #f0a93c) 78%, var(--accent-2, #ffc96b));
+  box-shadow: 0 0 16px 2px var(--accent, #f0a93c);
+}
+/* 幕布铺满之后压一层极淡的主题色辉光，免得整屏死黑 */
+.encounter.is-full .enc-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 50% 50%, rgba(255, 255, 255, .07), transparent 62%);
+}
+
+@media (max-width: 900px) {
+  .enc-fighter { gap: 10px; }
+  .enc-player { left: 2%; }
+  .enc-enemy { right: 2%; }
+  .enc-name { font-size: clamp(20px, 5.4vw, 36px); }
+}
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width: 900px) {

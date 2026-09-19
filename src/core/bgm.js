@@ -270,18 +270,31 @@ export const music = {
   // 播放
   // ------------------------------------------------------------------
 
-  /** 预加载若干场景（不播放），开场时偷偷准备好 */
-  preload(keys = []) {
+  /**
+   * 预加载若干场景（不播放）。
+   * @param {string|string[]} keys
+   * @param {{decode?:boolean}} opts
+   *   decode=false（默认）只预取压缩数据 —— 解码一首要几十 MB，留到真要放的时候再解。
+   *   decode=true 连 AudioBuffer 一起解好：遭遇演出（src/ui/encounter.js）的停留阶段
+   *   就是这么用的 —— 拿那段时间换「幕布一掀开，战斗曲已经在响」，
+   *   否则 music.play() 还得先 fetch 整首 ogg 再解码，开头会有半秒安静。
+   *   解码结果进的是和 play() 同一张缓存、同一个淘汰策略（MAX_DECODED），
+   *   所以这里提前解码不会多占内存。
+   * @returns {Promise<Array>} 这一批准备好的时候兑现（放不出来的也算准备好）
+   */
+  preload(keys = [], opts = {}) {
+    const jobs = [];
     for (const key of [].concat(keys)) {
       if (!key || !BGM_FILES[key]) continue;
       if (this._ctx) {
-        // 只预取压缩数据：解码一首要几十 MB，留到真要放的时候再解
-        this._bytesOf(key);
+        const p = this._bytesOf(key);
+        jobs.push(opts.decode ? this._buf(key) : p);
       } else {
         const el = this._element(key);
         if (el) { try { el.preload = 'auto'; el.load(); } catch { /* ignore */ } }
       }
     }
+    return Promise.all(jobs.map((p) => Promise.resolve(p).catch(() => null)));
   },
 
   /**

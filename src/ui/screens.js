@@ -64,7 +64,6 @@ const BIOME_ICO = {
 // ============================================================
 async function renderTitle(game) {
   const host = document.getElementById('stage');
-  clear(host);
   const meta = save.readMeta();
 
   const screen = el('div', { class: 'screen title-screen' });
@@ -140,12 +139,32 @@ async function renderTitle(game) {
     html: '素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面与音效来自 <b>Kenney</b> 素材包。<br>这是一个非商业的同人练习作品。',
   }));
 
+  /**
+   * 标题里的沙漠蜻蜓是**异步**取回来的，而这一屏的挂载点在这里。
+   *
+   * 以前是「进来就 clear(stage) → await 精灵 → append」，于是等图的这段时间里
+   * 界面已经被别人换掉了（例如脚本调用 game.newRun() 直接进地图），
+   * 紧接着这次 append 又把标题**压在**新界面上面 —— 屏幕上同时出现地图和标题
+   * （截图里真的拍到了，`#stage` 里是 [map-screen, title-screen]）。
+   *
+   * 现在改成：只有在「这一屏还该显示」的时候才清屏 + 挂上去。
+   * 判据用 game.phase —— 它才是「现在该显示哪一屏」的唯一真相；
+   * 界面自己的换屏入口也都走 phase + onChange（见 renderGameOver / renderVictory 的按钮）。
+   */
+  if (game.phase !== 'title') {
+    // 这一屏已经不该显示了。刚建好的那张行走图得**主动停掉** ——
+    // 它没挂到 DOM 上，但动画是 setInterval 推进的，不会因为没人看得见就自己停。
+    heroBox.querySelector('canvas.anim')?.destroy?.();
+    return screen;
+  }
+  clear(host);
   host.append(screen);
   return screen;
 }
 
 // ============================================================
 // 地图
+// ============================================================
 // ============================================================
 function renderMap(game) {
   const host = document.getElementById('stage');
@@ -781,7 +800,12 @@ function renderGameOver(game) {
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
       el('span', { class: 'ico-refresh' }), el('span', { text: '再来一次' }),
     ]),
-    el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('click'); renderTitle(game); } }, [
+    // 走「改 phase + 交给 UI 渲染」这条路，而不是直接 renderTitle()：
+    // renderTitle 要等精灵图，直接调用的话它会绕过 UI 的换屏记账（见那里的说明）
+    el('button', {
+      class: 'btn btn-ghost',
+      onClick: () => { audio.ui('click'); game.phase = 'title'; game.onChange?.(game); },
+    }, [
       el('span', { class: 'ico-home' }), el('span', { text: '回到标题' }),
     ]),
   ]));
@@ -833,7 +857,10 @@ function renderVictory(game) {
     el('button', { class: 'btn btn-primary btn-lg', onClick: () => { audio.ui('confirm'); game.newRun(); } }, [
       el('span', { class: 'ico-refresh' }), el('span', { text: '再来一次（更难的手感）' }),
     ]),
-    el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('click'); renderTitle(game); } }, [
+    el('button', {
+      class: 'btn btn-ghost',
+      onClick: () => { audio.ui('click'); game.phase = 'title'; game.onChange?.(game); },
+    }, [
       el('span', { class: 'ico-home' }), el('span', { text: '回到标题' }),
     ]),
   ]));

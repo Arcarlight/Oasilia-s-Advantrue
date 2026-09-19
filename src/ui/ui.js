@@ -1,6 +1,6 @@
 // UI 协调器：监听 game 状态变化，决定渲染哪个界面。
 
-import { clear, toast, el } from './dom.js';
+import { toast, el } from './dom.js';
 import { BattleScreen } from './battle-view.js';
 import { renderHud, hideHud } from './hud.js';
 import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
@@ -16,6 +16,7 @@ import { effectiveDef } from '../core/battle.js';
 import { setCardTextContext } from './cardtext.js';
 import { applyCursorTheme } from './cursor.js';
 import { stageCount } from '../data/mapgen.js';
+import { playEncounter, wantsEncounter } from './encounter.js';
 
 export class UI {
   constructor(game) {
@@ -151,18 +152,11 @@ export class UI {
       case 'battle': {
         if (this.current === 'battle' && this.battleScreen && this.battleScreen.battle === g.battle) return;
         this.teardownBattle();
-        clear(this.stage);
         renderHud(g);
         this.current = 'battle';
         const bs = new BattleScreen(g, this.stage);
         this.battleScreen = bs;
-        bs.mount().catch((err) => {
-          console.error('战斗界面挂载失败:', err?.message, '\n', err?.stack);
-          toast('战斗界面出错，已返回地图。', 'bad');
-          g.phase = 'map';
-          this.current = null;
-          this.render();
-        });
+        this.enterBattle(bs);
         break;
       }
       case 'event':
@@ -209,6 +203,40 @@ export class UI {
         break;
       default:
         break;
+    }
+  }
+
+  /**
+   * 进入战斗：先放遭遇演出（如果这一场该放），再挂载战斗界面。
+   *
+   * 为什么挂载要等到「幕布完全盖住屏幕」那一下（encounter 的 onCovered）：
+   * BattleScreen.mount() 第一件事就是 clear(stage) 把地图清掉 ——
+   * 那一刻地图正好被幕布挡着，玩家看不到这次清屏，交接是干净的。
+   * 而且此时战斗界面的行走图已经在遭遇演出里预热过，挂载几乎是瞬时的。
+   */
+  async enterBattle(bs) {
+    const g = this.game;
+    const start = () => {
+      bs.mount().catch((err) => {
+        console.error('战斗界面挂载失败:', err?.message, '\n', err?.stack);
+        toast('战斗界面出错，已返回地图。', 'bad');
+        g.phase = 'map';
+        this.current = null;
+        this.render();
+      });
+    };
+    if (!wantsEncounter(g.battleEntry)) { start(); return; }
+    try {
+      await playEncounter({
+        game: g,
+        battle: bs.battle,
+        onCovered: start,
+        // 演出期间玩家切屏了（例如战斗已经结算回地图）就别再往下演、也别挂战斗界面
+        shouldAbort: () => this.battleScreen !== bs || g.phase !== 'battle',
+      });
+    } catch (err) {
+      console.error('遭遇演出失败：', err);
+      if (this.battleScreen === bs) start();
     }
   }
 
