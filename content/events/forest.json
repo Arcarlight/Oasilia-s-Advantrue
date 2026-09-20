@@ -172,7 +172,7 @@
                 "text": "底下是一堆蛋壳，壳里塞着别人藏起来的药，居然还没坏。\n「谁藏的？我先借走咯。」\n获得{item} ×1。",
                 "effects": [
                   {
-                    "item": "potion_big"
+                    "item": "sitrus_berry"
                   }
                 ]
               },
@@ -429,7 +429,7 @@
         "effects": [
           {
             "item": {
-              "id": "potion_small",
+              "id": "oran_berry",
               "n": 2
             }
           }

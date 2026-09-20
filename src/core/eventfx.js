@@ -22,7 +22,9 @@
 //   {"if": {"goldAtLeast": 35}, "then": {...}, "else": {...}}   条件分支（then/else 是「块」）
 //   {"special": "handlerName"}     逃生舱：调 src/data/event-handlers.js 里注册的函数
 
-import { ITEMS, CARD_BY_ID } from '../data/cards.js';
+import { ITEMS } from '../data/items.js';
+import { CARD_BY_ID } from '../data/cards.js';
+import { heldCount } from './game.js';
 
 /** 简单效果：对象里只允许有这些键之一 */
 export const SIMPLE_EFFECT_KEYS = [
@@ -79,7 +81,8 @@ function checkCondition(cond, game) {
   if (cond.hpAtLeastPct != null && d.hp / d.maxHp < cond.hpAtLeastPct) return false;
   if (cond.goldAtLeast != null && d.gold < cond.goldAtLeast) return false;
   if (cond.goldBelow != null && d.gold >= cond.goldBelow) return false;
-  if (cond.hasItem != null && (d.items[cond.hasItem] ?? 0) <= 0) return false;
+  // 手持道具：条件是「手上有没有这件东西」（数组里数一遍，同名多件也算）
+  if (cond.hasItem != null && heldCount(d.held, cond.hasItem) <= 0) return false;
   if (cond.deckHas != null && !d.deck.includes(cond.deckHas)) return false;
   if (cond.deckLacks != null && d.deck.includes(cond.deckLacks)) return false;
   if (cond.stageAtLeast != null && d.stage < cond.stageAtLeast) return false;

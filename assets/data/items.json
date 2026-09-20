@@ -1,0 +1,350 @@
+{
+  "note": "道具图（Generation 9 Pack 的 Graphics/Items，按 content/items.json 的 art 字段挑选复制）。由 tools/import-items.mjs 生成。",
+  "items": {
+    "oran_berry": {
+      "art": "ORANBERRY",
+      "w": 48,
+      "h": 48
+    },
+    "sitrus_berry": {
+      "art": "SITRUSBERRY",
+      "w": 48,
+      "h": 48
+    },
+    "lum_berry": {
+      "art": "LUMBERRY",
+      "w": 48,
+      "h": 48
+    },
+    "pecha_berry": {
+      "art": "PECHABERRY",
+      "w": 48,
+      "h": 48
+    },
+    "rawst_berry": {
+      "art": "RAWSTBERRY",
+      "w": 48,
+      "h": 48
+    },
+    "sacred_ash": {
+      "art": "SACREDASH",
+      "w": 48,
+      "h": 48
+    },
+    "sweet_apple": {
+      "art": "SWEETAPPLE",
+      "w": 48,
+      "h": 48
+    },
+    "muscle_wing": {
+      "art": "MUSCLEWING",
+      "w": 48,
+      "h": 48
+    },
+    "resist_wing": {
+      "art": "RESISTWING",
+      "w": 48,
+      "h": 48
+    },
+    "health_wing": {
+      "art": "HEALTHWING",
+      "w": 48,
+      "h": 48
+    },
+    "normal_gem": {
+      "art": "NORMALGEM",
+      "w": 48,
+      "h": 48
+    },
+    "lucky_egg": {
+      "art": "LUCKYEGG",
+      "w": 48,
+      "h": 48
+    },
+    "flame_orb": {
+      "art": "FLAMEORB",
+      "w": 48,
+      "h": 48
+    },
+    "heat_rock": {
+      "art": "HEATROCK",
+      "w": 48,
+      "h": 48
+    },
+    "damp_rock": {
+      "art": "DAMPROCK",
+      "w": 48,
+      "h": 48
+    },
+    "blue_shard": {
+      "art": "BLUESHARD",
+      "w": 48,
+      "h": 48
+    },
+    "miracle_seed": {
+      "art": "MIRACLESEED",
+      "w": 48,
+      "h": 48
+    },
+    "big_root": {
+      "art": "BIGROOT",
+      "w": 48,
+      "h": 48
+    },
+    "electric_seed": {
+      "art": "ELECTRICSEED",
+      "w": 50,
+      "h": 50
+    },
+    "thunder_stone": {
+      "art": "THUNDERSTONE",
+      "w": 48,
+      "h": 48
+    },
+    "icicle_plate": {
+      "art": "ICICLEPLATE",
+      "w": 48,
+      "h": 48
+    },
+    "icy_rock": {
+      "art": "ICYROCK",
+      "w": 48,
+      "h": 48
+    },
+    "fighting_gem": {
+      "art": "FIGHTINGGEM",
+      "w": 48,
+      "h": 48
+    },
+    "expert_belt": {
+      "art": "EXPERTBELT",
+      "w": 48,
+      "h": 48
+    },
+    "poison_barb": {
+      "art": "POISONBARB",
+      "w": 48,
+      "h": 48
+    },
+    "toxic_orb": {
+      "art": "TOXICORB",
+      "w": 48,
+      "h": 48
+    },
+    "soft_sand": {
+      "art": "SOFTSAND",
+      "w": 48,
+      "h": 48
+    },
+    "earth_plate": {
+      "art": "EARTHPLATE",
+      "w": 48,
+      "h": 48
+    },
+    "pretty_feather": {
+      "art": "PRETTYFEATHER",
+      "w": 48,
+      "h": 48
+    },
+    "sharp_beak": {
+      "art": "SHARPBEAK",
+      "w": 48,
+      "h": 48
+    },
+    "psychic_seed": {
+      "art": "PSYCHICSEED",
+      "w": 50,
+      "h": 50
+    },
+    "moon_stone": {
+      "art": "MOONSTONE",
+      "w": 48,
+      "h": 48
+    },
+    "silver_powder": {
+      "art": "SILVERPOWDER",
+      "w": 48,
+      "h": 48
+    },
+    "bug_gem": {
+      "art": "BUGGEM",
+      "w": 48,
+      "h": 48
+    },
+    "hard_stone": {
+      "art": "HARDSTONE",
+      "w": 48,
+      "h": 48
+    },
+    "rock_gem": {
+      "art": "ROCKGEM",
+      "w": 48,
+      "h": 48
+    },
+    "spooky_plate": {
+      "art": "SPOOKYPLATE",
+      "w": 48,
+      "h": 48
+    },
+    "ghost_gem": {
+      "art": "GHOSTGEM",
+      "w": 48,
+      "h": 48
+    },
+    "dragon_fang": {
+      "art": "DRAGONFANG",
+      "w": 48,
+      "h": 48
+    },
+    "dragon_scale": {
+      "art": "DRAGONSCALE",
+      "w": 48,
+      "h": 48
+    },
+    "dread_plate": {
+      "art": "DREADPLATE",
+      "w": 48,
+      "h": 48
+    },
+    "dark_gem": {
+      "art": "DARKGEM",
+      "w": 48,
+      "h": 48
+    },
+    "metal_powder": {
+      "art": "METALPOWDER",
+      "w": 48,
+      "h": 48
+    },
+    "steel_gem": {
+      "art": "STEELGEM",
+      "w": 48,
+      "h": 48
+    },
+    "fairy_feather": {
+      "art": "FAIRYFEATHER",
+      "w": 48,
+      "h": 48
+    },
+    "fairy_gem": {
+      "art": "FAIRYGEM",
+      "w": 48,
+      "h": 48
+    },
+    "moomoo_milk": {
+      "art": "MOOMOOMILK",
+      "w": 48,
+      "h": 48
+    },
+    "razor_claw": {
+      "art": "RAZORCLAW",
+      "w": 48,
+      "h": 48
+    },
+    "toxic_candy": {
+      "art": "RAGECANDYBAR",
+      "w": 48,
+      "h": 48
+    },
+    "shell_bell": {
+      "art": "SHELLBELL",
+      "w": 48,
+      "h": 48
+    },
+    "life_orb": {
+      "art": "LIFEORB",
+      "w": 48,
+      "h": 48
+    },
+    "kings_rock": {
+      "art": "KINGSROCK",
+      "w": 48,
+      "h": 48
+    },
+    "bright_powder": {
+      "art": "BRIGHTPOWDER",
+      "w": 48,
+      "h": 48
+    },
+    "quick_claw": {
+      "art": "QUICKCLAW",
+      "w": 48,
+      "h": 48
+    },
+    "grip_claw": {
+      "art": "GRIPCLAW",
+      "w": 48,
+      "h": 48
+    },
+    "white_herb": {
+      "art": "WHITEHERB",
+      "w": 48,
+      "h": 48
+    },
+    "energy_root": {
+      "art": "ENERGYROOT",
+      "w": 48,
+      "h": 48
+    },
+    "revival_herb": {
+      "art": "REVIVALHERB",
+      "w": 48,
+      "h": 48
+    },
+    "stardust": {
+      "art": "STARDUST",
+      "w": 48,
+      "h": 48
+    },
+    "comet_shard": {
+      "art": "COMETSHARD",
+      "w": 48,
+      "h": 48
+    },
+    "luminous_moss": {
+      "art": "LUMINOUSMOSS",
+      "w": 48,
+      "h": 48
+    },
+    "honey": {
+      "art": "HONEY",
+      "w": 48,
+      "h": 48
+    },
+    "rare_bone": {
+      "art": "RAREBONE",
+      "w": 48,
+      "h": 48
+    },
+    "float_stone": {
+      "art": "FLOATSTONE",
+      "w": 48,
+      "h": 48
+    },
+    "smooth_rock": {
+      "art": "SMOOTHROCK",
+      "w": 48,
+      "h": 48
+    },
+    "charm_atk": {
+      "art": "POWERBAND",
+      "w": 48,
+      "h": 48
+    },
+    "charm_def": {
+      "art": "MUSCLEBAND",
+      "w": 48,
+      "h": 48
+    },
+    "charm_agi": {
+      "art": "FOCUSBAND",
+      "w": 48,
+      "h": 48
+    },
+    "charm_luck": {
+      "art": "RELICBAND",
+      "w": 48,
+      "h": 48
+    }
+  }
+}

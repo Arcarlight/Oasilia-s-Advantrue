@@ -16,7 +16,7 @@
             ]
           },
           {
-            "item": "potion_small"
+            "item": "oran_berry"
           }
         ],
         "hint": "打开看看嘛。"
@@ -158,7 +158,7 @@
         "effects": [
           {
             "item": {
-              "id": "potion_small",
+              "id": "oran_berry",
               "n": 2
             }
           }

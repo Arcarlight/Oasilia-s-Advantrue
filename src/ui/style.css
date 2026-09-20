@@ -3151,6 +3151,41 @@ input, textarea { cursor: text !important; }
 }
 .dex-medal-num { position: relative; margin-left: auto; font-size: 10px; opacity: .8; font-variant-numeric: tabular-nums; }
 
+/* ---- 手持道具面板（overlays.js 的 showItems）----
+   这一版把「背包」换成了「手持道具」：一排有限的格子 + 生效中的效果汇总 + 每件的使用 / 丢掉。
+   道具的图是 assets/items/<id>.png（Generation 9 Pack 的 Items，48×48）。 */
+.held-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.held-count { font-family: var(--font-title); font-size: 16px; color: var(--accent-2); letter-spacing: .04em; }
+.held-hint { font-size: 11.5px; opacity: .62; }
+.held-slots { display: flex; gap: 8px; flex-wrap: wrap; }
+.held-slot {
+  width: 54px; height: 54px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .26);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .22);
+}
+.held-slot.empty { box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .1); }
+.held-slot-plus { font-size: 20px; opacity: .25; }
+.held-slot-art { width: 44px; height: 44px; image-rendering: pixelated; }
+.held-active { display: flex; flex-wrap: wrap; gap: 6px; }
+.held-chip {
+  font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .18);
+  color: #ffe6b8;
+}
+.held-item h4 { display: flex; align-items: center; gap: 8px; }
+.held-art { width: 34px; height: 34px; image-rendering: pixelated; flex: 0 0 auto; }
+.held-kind {
+  font-size: 10.5px; padding: 1px 7px; border-radius: 999px; letter-spacing: .06em;
+  box-shadow: inset 0 0 0 1px currentColor; opacity: .85;
+}
+.held-kind.hold { color: #9fd6ff; }
+.held-kind.use { color: #ffd27a; }
+.shop-item-art { width: 26px; height: 26px; image-rendering: pixelated; flex: 0 0 auto; }
+.reward-pill-item { display: inline-flex; align-items: center; gap: 6px; }
+.reward-item-art { width: 22px; height: 22px; image-rendering: pixelated; }
+
 /* ---- 口吻台词：**头像 + 对话框**（用户给的版式）----
    头像用 PMD 头像（portraits），左边一列；右边是标题 + 对话框 + 一行小字。
    对话框左边那个小三角指向头像 —— 一眼看出这句话是谁说的。 */

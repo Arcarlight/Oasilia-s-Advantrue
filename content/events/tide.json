@@ -286,7 +286,7 @@
         "text": "装的时候瓶子外壁结了一层白霜，你舔了一下，舌头麻了半天。\n「唔！麻了麻了 —— 这个真的能喝吗？」\n获得{item} ×1。",
         "effects": [
           {
-            "item": "elixir"
+            "item": "sweet_apple"
           }
         ],
         "hint": "装一瓶带走。"
@@ -321,7 +321,7 @@
         "text": "你等了两个小时。它最后把嘴里含着的一块东西吐给了你，然后不动了。\n「唔……谢谢你呀。走好。」\n获得{item} ×1。",
         "effects": [
           {
-            "item": "potion_big"
+            "item": "sitrus_berry"
           }
         ],
         "hint": "坐在旁边等着。"
@@ -408,7 +408,7 @@
                     ]
                   },
                   {
-                    "item": "potion_small"
+                    "item": "oran_berry"
                   }
                 ]
               },

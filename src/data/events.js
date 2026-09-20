@@ -85,7 +85,7 @@ export const EVENTS = [
         "text": "窝的主人回来了。你叼着蛋往下跳，落地的时候蛋碎了，蛋液在瓶里凝成了一颗药。\n「对不起呀！……不过这个药真能用。」\nHP -{hp}，获得{item} ×1。",
         "effects": [
           {
-            "item": "elixir"
+            "item": "sweet_apple"
           },
           {
             "hp": -18
@@ -457,7 +457,7 @@ export const EVENTS = [
             ]
           },
           {
-            "item": "potion_small"
+            "item": "oran_berry"
           }
         ],
         "hint": "打开看看嘛。"
@@ -599,7 +599,7 @@ export const EVENTS = [
         "effects": [
           {
             "item": {
-              "id": "potion_small",
+              "id": "oran_berry",
               "n": 2
             }
           }
@@ -1122,7 +1122,7 @@ export const EVENTS = [
                 "text": "底下是一堆蛋壳，壳里塞着别人藏起来的药，居然还没坏。\n「谁藏的？我先借走咯。」\n获得{item} ×1。",
                 "effects": [
                   {
-                    "item": "potion_big"
+                    "item": "sitrus_berry"
                   }
                 ]
               },
@@ -1379,7 +1379,7 @@ export const EVENTS = [
         "effects": [
           {
             "item": {
-              "id": "potion_small",
+              "id": "oran_berry",
               "n": 2
             }
           }
@@ -1557,7 +1557,7 @@ export const EVENTS = [
         "text": "你举着瓶子在菌盖底下站了很久，接到小半瓶。露水滴进瓶里的时候是亮的，摇一摇就不亮了。\n「有点可惜，不过药就是药嘛。」\n获得{item} ×1，幸运 +1。",
         "effects": [
           {
-            "item": "potion_small"
+            "item": "oran_berry"
           },
           {
             "stat": {
@@ -1710,7 +1710,7 @@ export const EVENTS = [
             ]
           },
           {
-            "item": "potion_small"
+            "item": "oran_berry"
           }
         ],
         "hint": "开！"
@@ -1728,7 +1728,7 @@ export const EVENTS = [
                 "text": "你把箱子掀开，一只螺钉地鼠窜了出去。它窝里堆着一瓶高级伤药。\n「打扰了，这个我拿走。」\n获得{item} ×1。",
                 "effects": [
                   {
-                    "item": "potion_big"
+                    "item": "sitrus_berry"
                   }
                 ]
               },
@@ -1947,7 +1947,7 @@ export const EVENTS = [
         "effects": [
           {
             "item": {
-              "id": "potion_small",
+              "id": "oran_berry",
               "n": 2
             }
           }
@@ -2216,7 +2216,7 @@ export const EVENTS = [
         "effects": [
           {
             "item": {
-              "id": "potion_big",
+              "id": "sitrus_berry",
               "n": 2
             }
           }
@@ -2540,7 +2540,7 @@ export const EVENTS = [
         "text": "你把罐子里外刷干净，拿去柱子底下接了一罐从檐上滴下来的水。水是清的，带一点石头的味道。\n「反正罐子本来也是装水的嘛。」\n获得{item} ×1。",
         "effects": [
           {
-            "item": "potion_small"
+            "item": "oran_berry"
           }
         ]
       }),
@@ -3042,7 +3042,7 @@ export const EVENTS = [
         "text": "装的时候瓶子外壁结了一层白霜，你舔了一下，舌头麻了半天。\n「唔！麻了麻了 —— 这个真的能喝吗？」\n获得{item} ×1。",
         "effects": [
           {
-            "item": "elixir"
+            "item": "sweet_apple"
           }
         ],
         "hint": "装一瓶带走。"
@@ -3077,7 +3077,7 @@ export const EVENTS = [
         "text": "你等了两个小时。它最后把嘴里含着的一块东西吐给了你，然后不动了。\n「唔……谢谢你呀。走好。」\n获得{item} ×1。",
         "effects": [
           {
-            "item": "potion_big"
+            "item": "sitrus_berry"
           }
         ],
         "hint": "坐在旁边等着。"
@@ -3164,7 +3164,7 @@ export const EVENTS = [
                     ]
                   },
                   {
-                    "item": "potion_small"
+                    "item": "oran_berry"
                   }
                 ]
               },

@@ -2,13 +2,14 @@
 // 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
 
 import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, RARITY, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
-import { CARD_BY_ID, ITEMS, STARTER_DECK, STARTER_ITEMS, rollCard, rollCards, CARDS } from '../data/cards.js';
+import { CARD_BY_ID, STARTER_DECK, rollCard, rollCards, CARDS } from '../data/cards.js';
+import { ITEMS, ITEM_ART, STARTER_ITEMS } from '../data/items.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
 import { eventsFor } from '../data/events.js';
 import { pickMerchant, MERCHANTS } from '../data/merchants.js';
 import { makeRng } from './rng.js';
-import { Battle } from './battle.js';
+import { Battle, STATUS_INFO } from './battle.js';
 import { save } from './save.js';
 import { t } from './i18n.js';
 import { STAT_NAMES } from './ui-words.js';
@@ -32,41 +33,67 @@ export const Phase = {
 // 这里继续导出一次：src/ui/screens.js 等照旧从 game.js 取 STAT_NAMES。
 export { STAT_NAMES };
 
-// ================= 道具 =================
+// ================= 道具（手持道具） =================
+//
+// 这一版把「背包（id → 数量，无限格）」换成了**手持道具**：
+//   · 一局只有 3 个手持栏，每打赢一个 boss +1（heldMax()）；
+//   · `kind: 'hold'` 拿在手上就一直生效（heldMods() 把它们汇总成一张系数表）；
+//   · `kind: 'use'` **只能在战斗外使用**（战斗里能嗑药太强，用户点名禁掉）；
+//   · 拿满时给不进去 —— 由界面问玩家「丢掉哪一件」（giveItem 返回 overflow）。
+
+/** 手持栏里的东西按 id 归并（同名多件合成一条 ×n），顺序按拿到手的先后 */
+export function heldEntries(held) {
+  const out = [];
+  for (const id of held ?? []) {
+    const item = ITEMS[id];
+    if (!item) continue;
+    const found = out.find((e) => e.id === id);
+    if (found) found.n += 1;
+    else out.push({ id, item, n: 1 });
+  }
+  return out;
+}
+
+/** 手上这件东西有几个（事件的条件判断用它） */
+export function heldCount(held, id) {
+  return (held ?? []).filter((x) => x === id).length;
+}
+
+/**
+ * 把持有效果汇总成一张系数表：`{ attackPct: {add:0.2,n:2}, poisonNoDecay: {flag:true}, ... }`
+ *
+ * 叠加规则（用户定的）：**数值型按件数叠加**（两件 +10% 就是 +20%），
+ * **开关型重复无效**（多拿一件「中毒不衰减」没有任何额外好处，界面会标「已生效」）。
+ */
+export function sumHeldMods(held) {
+  const acc = {};
+  for (const id of held ?? []) {
+    const item = ITEMS[id];
+    if (!item || item.kind !== 'hold') continue;
+    for (const m of item.hold?.mods ?? []) {
+      const e = acc[m.key] ?? (acc[m.key] = { add: 0, mul: 1, flag: false, n: 0 });
+      e.n += 1;
+      if (typeof m.add === 'number') e.add += m.add;
+      else if (typeof m.mul === 'number') e.mul *= m.mul;
+      else e.flag = true;
+    }
+  }
+  return acc;
+}
 
 /**
  * 一件道具「用下去会发生什么」——**界面和引擎共用这一份判断**。
  *
- * 为什么必须抽出来：背包界面以前自己写了一句 `item.heal ? 显示「使用」按钮 : 显示「已生效」`，
- * 而药水的数据里根本没有 `heal` 字段（它们用的是 `healPct`）——
- * 于是**七件道具全部显示「已生效」、一个「使用」按钮都没有**，背包等于整个是死的
- * （玩家反馈：「道具都写着已生效，像好伤药那种完全没法用」）。
- * 这就是「界面把数据模型的规则又抄了一遍」的老毛病，改数据忘改界面。
- *
- * @returns {{kind:'heal', flat?:number, pct?:number}|{kind:'stat', key:string, amount:number}|null}
- *   null = 这件道具有没有主动使用的效果（那种才该显示「已生效」）
+ * 只有 `kind: 'use'` 的道具才有这一步；持有型没有「使用」这个动作（它的效果一直开着）。
  */
-export function itemEffect(item) {
-  if (!item) return null;
-  if (item.healPct) return { kind: 'heal', pct: item.healPct };
-  if (item.heal) return { kind: 'heal', flat: item.heal };
-  if (item.stat) {
-    const [key, amount] = Object.entries(item.stat)[0] ?? [];
-    if (key) return { kind: 'stat', key, amount };
-  }
-  return null;
+export function itemUseEffect(item) {
+  if (!item || item.kind !== 'use') return null;
+  return item.use ?? null;
 }
 
-/**
- * 背包里**真的还有**的东西（数量 > 0，而且认得出来是什么）。
- *
- * 数量为 0 的条目要滤掉：开局数据 `STARTER_ITEMS` 就带着一个 `potion_big: 0`，
- * 用光最后一件时也可能留下 0。以前背包照单全收，于是开局第一眼就是一行
- * 「厉害伤药 ×0」配着一个「使用」按钮，点下去只说「现在用不了」——
- * 这也是「背包看起来整个没用」的一部分。
- */
-export function inventoryEntries(items) {
-  return Object.entries(items ?? {}).filter(([id, n]) => n > 0 && !!ITEMS[id]);
+/** 卖出价：售价的 40%（持有效果越贵，卖得越多） */
+export function itemSellPrice(item) {
+  return Math.max(1, Math.round((item?.price ?? 0) * 0.4));
 }
 
 export class Game {
@@ -106,7 +133,13 @@ export class Game {
       luck: p.luck,
       gold: 60,
       deck: [...STARTER_DECK],
-      items: { ...STARTER_ITEMS },
+      /**
+       * **手持道具**（用户要的机制）：一个 id 数组，可以有重复（同名多件）。
+       * 上限 = heldMax() = 3 + 本局打赢的 boss 数。开局的几件在下面 giveItem 进去。
+       */
+      held: [],
+      /** 本局打赢过几个 boss —— 手持栏 +1 的依据（见 heldMax） */
+      bossKills: 0,
       relics: [],
       battleDeck: null,
       /**
@@ -146,6 +179,8 @@ export class Game {
     this.data.biomes = biomes;
     this.data.map = generateMap(0, this.rng, biomes[0]);
     this.phase = Phase.MAP;
+    // 开局道具（content/items.json 的 starter）：走 giveItem，所以「拿不下」也不会静默丢掉
+    for (const [id, n] of Object.entries(STARTER_ITEMS ?? {})) this.giveItem(id, n);
     this.pendingMap = null;
     this.save();
     this.changed();
@@ -223,52 +258,169 @@ export class Game {
     return Math.max(0, cost);
   }
 
+  /** 手上的栏位上限：3 个，每打赢一个 boss +1（用户定的规则） */
+  heldMax() {
+    return 3 + Math.max(0, this.data?.bossKills ?? 0);
+  }
+
+  /** 持有效果汇总表（战斗与界面都读它，见 sumHeldMods） */
+  heldMods() {
+    return this._modsCache ?? (this._modsCache = sumHeldMods(this.data?.held));
+  }
+
+  /** 某个持有效果的数值（没这件东西就是 0）：battle.js 读它，别自己去翻 held */
+  modAdd(key) {
+    return this.heldMods()[key]?.add ?? 0;
+  }
+
+  /** 某个乘法型持有效果（没这件东西就是 1） */
+  modMul(key) {
+    return this.heldMods()[key]?.mul ?? 1;
+  }
+
+  /** 某个开关型持有效果（中毒不衰减 / 濒死保命 / 开局净化） */
+  modFlag(key) {
+    return !!this.heldMods()[key]?.flag;
+  }
+
+  /** 一件道具在商人这里卖多少钱（商人系数 × 星星沙子之类的折扣，最低 1 折不下） */
+  itemPrice(item, priceMul = 1) {
+    const off = Math.min(0.6, Math.max(0, this.modAdd('shopDiscountPct')));
+    return Math.max(1, Math.round((item?.price ?? 0) * priceMul * (1 - off)));
+  }
+
+  /** 道具一变就把系数表作废（拿到 / 丢掉 / 卖掉 / 用掉都要调） */
+  invalidateMods() {
+    this._modsCache = null;
+  }
+
+  /**
+   * 拿到一件道具。
+   *
+   * 返回 `{ ok, stored, overflow }`：
+   *   · stored = true —— 进了手持栏；
+   *   · overflow = true —— **栏位满了，没地方放**，界面要问玩家「丢掉哪一件」
+   *     （或者把这件当场卖掉）；这时它没有被收下，调用方别当成功。
+   */
   giveItem(id, n = 1) {
     const item = ITEMS[id];
-    const eff = itemEffect(item);
-    /**
-     * **本局永久生效的道具（护符 / 活力药）拿到就直接生效，不占背包格子。**
-     *
-     * 为什么：这类道具写的是「本局攻击 +4」——它是永久加成，没有「什么时候用」这个决策，
-     * 留在背包里只会让玩家买了却什么都没得到（界面还会显示「已生效」，名不副实）。
-     * 药水不一样：**什么时候喝**是真决策，所以留在背包里按需使用。
-     *
-     * 返回值带上「实际生效了什么」，调用方可以把它写进给玩家看的文案里。
-     */
-    if (eff?.kind === 'stat') {
-      const applied = [];
-      for (let i = 0; i < n; i++) {
-        const gained = this.gainStat(eff.key, eff.amount);
-        applied.push(gained);
+    if (!item) return { ok: false, id, stored: false, overflow: false, text: t('没有这件道具。') };
+    this.invalidateMods();
+    let stored = 0;
+    for (let i = 0; i < n; i++) {
+      if (this.data.held.length >= this.heldMax()) {
+        return {
+          ok: stored > 0, id, item, stored: stored > 0, overflow: true, storedCount: stored,
+          text: t('手持栏满了（{n} / {max}）—— 得先丢掉一件才拿得下「{name}」。', {
+            n: this.data.held.length, max: this.heldMax(), name: item.name,
+          }),
+        };
       }
-      return { id, n, stored: false, applied: { key: eff.key, amount: applied.reduce((a, b) => a + b, 0) } };
+      this.data.held.push(id);
+      stored += 1;
     }
-    this.data.items[id] = (this.data.items[id] ?? 0) + n;
-    return { id, n, stored: true, applied: null };
+    return { ok: true, id, item, stored: true, overflow: false, storedCount: stored };
   }
 
+  /** 丢掉一件（超上限时玩家选的那一下；也可主动丢） */
+  dropItem(id) {
+    const i = this.data.held.lastIndexOf(id);
+    if (i < 0) return false;
+    this.data.held.splice(i, 1);
+    this.invalidateMods();
+    this.save();
+    this.changed();
+    return true;
+  }
+
+  /** 卖给商人（价钱见 itemSellPrice），返回拿到了多少金币 */
+  sellItem(id) {
+    const i = this.data.held.lastIndexOf(id);
+    if (i < 0) return null;
+    const item = ITEMS[id];
+    const gold = itemSellPrice(item);
+    this.data.held.splice(i, 1);
+    this.data.gold += gold;
+    this.invalidateMods();
+    this.save();
+    this.changed();
+    return { gold, name: item?.name ?? id };
+  }
+
+  /**
+   * 使用一件道具（**只能在战斗外**）。
+   *
+   * 用户点名：「战斗中不能使用『使用道具』，不然那样太 imba 了！」
+   * 所以战斗里这件东西只能看、不能用 —— 界面把按钮禁掉，引擎这里也再拦一道
+   * （两处都拦是故意的：这样以后谁写个新入口也绕不过去）。
+   */
   useItem(id) {
     const item = ITEMS[id];
-    if (!item || (this.data.items[id] ?? 0) <= 0) return null;
-    const eff = itemEffect(item);
-    if (!eff) return { ok: false, text: t('「{name}」没有可以主动使用的效果。', { name: item.name }) };
-    if (eff.kind === 'heal') {
-      const amount = eff.pct ? Math.round(this.data.maxHp * eff.pct) : eff.flat;
-      if (amount > 0 && this.data.hp >= this.data.maxHp) return { ok: false, text: t('HP 已经满了。') };
-      this.consumeItem(id);
-      const h = this.heal(amount);
-      return { ok: true, text: t('使用「{name}」，回复 {hp} 点 HP。', { name: item.name, hp: h }) };
+    if (!item || !this.data.held.includes(id)) return null;
+    if (this.phase === Phase.BATTLE) {
+      return { ok: false, text: t('战斗中不能使用道具 —— 先打完这一场。') };
     }
-    // 属性类：正常情况下拿到时就已经生效了（见 giveItem），
-    // 这里留着是为了兜住老存档里已经躺在背包里的那几件
-    this.consumeItem(id);
-    const gained = this.gainStat(eff.key, eff.amount);
-    return { ok: true, text: t('使用「{name}」，{stat} +{n}。', { name: item.name, stat: t(STAT_NAMES[eff.key] ?? eff.key), n: gained }) };
+    const eff = itemUseEffect(item);
+    if (!eff) return { ok: false, text: t('「{name}」是拿着就生效的，不用使用。', { name: item.name }) };
+
+    // ① 回血类
+    if (eff.healFull || eff.healPct || eff.healFlat) {
+      const amount = eff.healFull
+        ? this.data.maxHp
+        : (eff.healPct ? Math.round(this.data.maxHp * eff.healPct) : eff.healFlat);
+      if (!eff.healFull && amount > 0 && this.data.hp >= this.data.maxHp) {
+        return { ok: false, text: t('HP 已经满了。') };
+      }
+      this.dropItemSilent(id);
+      const h = this.heal(amount);
+      return { ok: true, text: t('吃下「{name}」，回复 {hp} 点 HP。', { name: item.name, hp: h }) };
+    }
+
+    // ② 清状态类
+    if (Array.isArray(eff.cleanse)) {
+      const cleared = this.cleanseStatuses(eff.cleanse);
+      if (!cleared.length) return { ok: false, text: t('身上没有它能解的东西。') };
+      this.dropItemSilent(id);
+      return {
+        ok: true,
+        text: t('吃下「{name}」，{list}消了。', {
+          name: item.name, list: cleared.map((k) => STATUS_INFO[k]?.name ?? k).join(' / '),
+        }),
+      };
+    }
+
+    // ③ 永久属性类（甜苹果 / 力量之羽…）
+    if (eff.stat) {
+      const parts = [];
+      for (const [key, amount] of Object.entries(eff.stat)) {
+        parts.push(`${t(STAT_NAMES[key] ?? key)} +${this.gainStat(key, amount)}`);
+      }
+      this.dropItemSilent(id);
+      return { ok: true, text: t('用掉「{name}」，{list}。', { name: item.name, list: parts.join('、') }) };
+    }
+
+    return { ok: false, text: t('「{name}」现在用不了。', { name: item.name }) };
   }
 
-  consumeItem(id) {
-    this.data.items[id] = (this.data.items[id] ?? 0) - 1;
-    if (this.data.items[id] <= 0) delete this.data.items[id];
+  /** 丢掉一件但不重画（useItem 内部用：界面自己会在拿到结果后重画） */
+  dropItemSilent(id) {
+    const i = this.data.held.lastIndexOf(id);
+    if (i >= 0) this.data.held.splice(i, 1);
+    this.invalidateMods();
+  }
+
+  /** 清掉身上指定的几个负面状态，返回真的清掉的那些 key */
+  cleanseStatuses(keys) {
+    const b = this.battle;
+    const cleared = [];
+    if (!b) return cleared;
+    for (const k of keys) {
+      if ((b.player?.[k] ?? 0) > 0) {
+        b.player[k] = 0;
+        cleared.push(k);
+      }
+    }
+    return cleared;
   }
 
   addCard(id) {
@@ -721,6 +873,12 @@ export class Game {
 
     this.battle = new Battle({
       seed: this.rng.int(0, 1e9),
+      /**
+       * 手持道具的持有效果（sumHeldMods 汇总）在这里交给战斗引擎。
+       * 只有玩家那一侧有它 —— 这也是「拿在手上就一直生效」这句话的落点：
+       * 每开一场战斗都重新算一次，所以中途捡到 / 丢掉 / 卖掉的道具立刻反映到下一场。
+       */
+      mods: this.heldMods(),
       player: {
         name: d.name, slug: d.slug,
         hp: d.hp, maxHp: d.maxHp,
@@ -813,23 +971,55 @@ export class Game {
     const getCard = ctx.kind === 'boss' || ctx.kind === 'elite' || this.rng.chance(BALANCE.cardRewardChance);
     const slots = ctx.kind === 'boss' || ctx.kind === 'elite' ? 4 : 3;
     const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights), weights) : [];
-    const getPotion = this.rng.chance(BALANCE.potionDropChance);
+
+    /**
+     * 掉落道具（用户要的第三条）：**打赢之后有概率掉，而且按敌人的属性加权** ——
+     * 「特定属性的敌人掉落其相应属性的掉落物概率更大」（见 rollItemDrop）。
+     * 首领 / 精英那两档概率更高（它们是这一局的大节点）。
+     */
+    const drop = this.rollItemDrop(b.enemy, ctx.kind);
 
     this.reward = {
-      win: true, gold, healed, cardChoices: choices, getPotion,
-      potion: getPotion ? (this.rng.chance(0.55) ? 'potion_small' : 'potion_big') : null,
+      win: true, gold, healed, cardChoices: choices,
+      item: drop?.id ?? null,
+      itemReason: drop?.reason ?? null,
       isBoss: ctx.kind === 'boss',
       enemyName: b.enemy.name,
       growth, growthText,
     };
-    if (ctx.kind === 'boss' && this.rng.chance(0.75)) {
-      const relicPool = ['charm_atk', 'charm_def', 'charm_agi', 'charm_luck', 'elixir'];
-      this.reward.relic = this.rng.pick(relicPool);
-    }
     this.phase = Phase.REWARD;
     this.save();
     this.changed();
     return this.reward;
+  }
+
+  /**
+   * 敌人掉落的道具（概率低，且**按属性加权**）。
+   *
+   * 规则（用户给的）：
+   *   · 基础概率很低：普通 8%、精英 18%、首领 35%（BALANCE.itemDropChance）；
+   *   · 掉什么：从**这件敌人的属性**对应的掉落物里挑，权重 ×4（BALANCE.itemDropTypeWeight）——
+   *     所以打毒系更容易掉毒针、剧毒宝珠；其余道具也能掉，只是权重低得多；
+   *   · 稀有度也参与权重（epic 比 common 罕见）。
+   *
+   * @returns {{id:string, reason:'type'|'random'}|null}
+   */
+  rollItemDrop(enemy, kind = 'normal') {
+    const chance = { mob: BALANCE.itemDropChance?.mob ?? 0.08, normal: BALANCE.itemDropChance?.normal ?? 0.08, elite: BALANCE.itemDropChance?.elite ?? 0.18, boss: BALANCE.itemDropChance?.boss ?? 0.35 }[kind] ?? 0.08;
+    if (!this.rng.chance(chance)) return null;
+    const types = new Set(enemy?.types ?? []);
+    const TYPE_W = BALANCE.itemDropTypeWeight ?? 4;
+    const RARITY_W = { common: 1, uncommon: 0.6, rare: 0.3, epic: 0.12 };
+    const pool = [];
+    for (const [id, item] of Object.entries(ITEMS)) {
+      if (item.drop == null) continue;                       // 只在商人 / 宝箱里出的，不掉落
+      const w = (RARITY_W[item.rarity] ?? 1) * (types.has(item.drop) ? TYPE_W : 1);
+      // 同名多件：权重按 w 分摊成整数份，摸到哪件都行
+      for (let i = 0; i < Math.max(1, Math.round(w * 20)); i++) pool.push(id);
+    }
+    if (!pool.length) return null;
+    const id = this.rng.pick(pool);
+    return { id, reason: types.has(ITEMS[id]?.drop) ? 'type' : 'random' };
   }
 
   /**
@@ -899,10 +1089,9 @@ export class Game {
       gold: isBoss ? 260 : kind === 'elite' ? 88 : 42,
       healed: 18,
       cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null),
-      getPotion: true,
-      potion: 'potion_small',
+      item: isBoss ? 'dragon_fang' : 'oran_berry',
+      itemReason: isBoss ? 'type' : 'random',
       isBoss,
-      relic: isBoss ? 'charm_atk' : undefined,
       enemyName: t('穿山鼠'),
       growth,
       growthText: growth.map((g) => `${t(STAT_NAMES[g.stat])} +${g.amount}`).join('，'),
@@ -948,11 +1137,24 @@ export class Game {
   takeRewardCard(cardId) {
     if (!this.reward) return;
     if (cardId) this.addCard(cardId);
-    if (this.reward.relic) this.giveItem(this.reward.relic, 1);
-    if (this.reward.potion) this.giveItem(this.reward.potion, 1);
+    /**
+     * 掉落的那件道具：走 giveItem。
+     *
+     * 拿不下（手持栏满）时**不静默丢掉** —— 把 overflow 记在 `awaitingOverflow` 上，
+     * 由界面弹一个「丢掉哪一件」（用户要的规则：到达上限后可以选择丢掉一个）。
+     */
+    const itemId = this.reward.item;
+    let overflow = null;
+    if (itemId) {
+      const res = this.giveItem(itemId, 1);
+      if (res.overflow) overflow = { id: itemId, text: res.text };
+    }
     const wasBoss = this.reward.isBoss;
     this.reward = null;
+    this.awaitingOverflow = overflow;
     if (wasBoss) {
+      // 每打赢一个 boss：手持栏 +1（用户定的规则）
+      this.data.bossKills = (this.data.bossKills ?? 0) + 1;
       this.nextStage();
     } else {
       this.phase = Phase.MAP;
@@ -1016,10 +1218,20 @@ export class Game {
       d.gold += gold;
       chest = { kind: 'card', cardId: card.id, gold, text: t('箱底压着一张卡，还有一点零钱。\n「压在最底下的多半是好东西。」\n获得「{card}」，金币 +{gold}。', { card: card.name, gold }) };
     } else if (roll < 0.9) {
-      const big = this.rng.chance(0.5);
-      this.giveItem(big ? 'potion_big' : 'potion_small', big ? 1 : 2);
+      /**
+       * 宝箱开出道具：从**全部道具**里按稀有度抽一件（比敌人掉落的概率高得多，
+       * 因为宝箱本来就是「专门来给东西的」）。
+       */
+      const id = this.rollChestItem();
+      const gave = this.giveItem(id, 1);
       const healed = this.heal(Math.round(d.maxHp * 0.12));
-      chest = { kind: 'item', text: t('一堆补给。你顺手给自己处理了伤口。\n「正好用得上。」\n获得{potion}，HP +{hp}。', { potion: big ? t('厉害伤药 ×1') : t('好伤药 ×2'), hp: healed }) };
+      this.awaitingOverflow = gave.overflow ? { id, text: gave.text } : null;
+      chest = {
+        kind: 'item', itemId: id,
+        text: gave.overflow
+          ? t('箱子里是一件「{name}」，可你手上已经拿满了。\n「得先放下点什么。」\n（手持栏满了，先丢掉一件再拿它。）', { name: ITEMS[id].name })
+          : t('箱子底垫着一层干草，上面躺着一件「{name}」。\n「正好用得上。」\n获得「{name}」，HP +{hp}。', { name: ITEMS[id].name, hp: healed }),
+      };
     } else {
       // 宝箱怪！
       chest = { kind: 'mimic', text: t('箱子说话了。而且它很饿。\n「……那我不开了。」') };
@@ -1031,8 +1243,17 @@ export class Game {
     return chest;
   }
 
-  leaveChest() {
-    const mimic = this.chest?.kind === 'mimic';
+  /** 宝箱里开出来的道具：稀有度越高的越难出（比敌人掉落的池子宽） */
+  rollChestItem() {
+    const pool = [];
+    const RARITY_W = { common: 1, uncommon: 0.7, rare: 0.35, epic: 0.15 };
+    for (const [id, item] of Object.entries(ITEMS)) {
+      for (let i = 0; i < Math.max(1, Math.round((RARITY_W[item.rarity] ?? 1) * 10)); i++) pool.push(id);
+    }
+    return this.rng.pick(pool);
+  }
+
+  leaveChest() {    const mimic = this.chest?.kind === 'mimic';
     this.chest = null;
     if (mimic) {
       // 宝箱怪也是「撞见」——照样放遭遇演出
@@ -1140,22 +1361,38 @@ export class Game {
       });
     }
 
-    // 道具：先放这位商人必进的货（药草商人一定有药、铁匠一定有护符），剩下的随机补满
-    const pool = ['potion_small', 'potion_big', 'charm_atk', 'charm_def', 'charm_agi', 'charm_luck', 'elixir'];
+    /**
+     * 道具货架：从**全部道具**里挑（content/items.json，69 件）。
+     *
+     * 以前池子是写死的七件；现在是手持道具时代，货架按「这位商人必进的货 + 随机补齐」组，
+     * 而且**便宜的先出**：一局最多只有 3~9 个手持栏，一上来就摆三件 epic 谁也买不起。
+     * 价钱 = 道具自己的 price × 商人的 priceMul ×（星星沙子之类的折扣，见 shopDiscount）。
+     */
+    const allItems = Object.keys(ITEMS);
+    const pool = allItems.slice().sort((a, b) => (ITEMS[a].price ?? 0) - (ITEMS[b].price ?? 0));
     const picked = [];
-    for (const id of p.mustItems ?? []) if (pool.includes(id) && !picked.includes(id)) picked.push(id);
+    for (const id of p.mustItems ?? []) if (ITEMS[id] && !picked.includes(id)) picked.push(id);
     for (const id of this.rng.shuffle(pool)) {
       if (picked.length >= p.items) break;
       if (!picked.includes(id)) picked.push(id);
     }
     for (const id of picked.slice(0, p.items)) {
-      stock.push({ kind: 'item', id, name: ITEMS[id].name, desc: ITEMS[id].desc, price: Math.round(ITEMS[id].price * p.priceMul) });
+      stock.push({
+        kind: 'item', id, name: ITEMS[id].name, desc: ITEMS[id].desc,
+        rarity: ITEMS[id].rarity, holdKind: ITEMS[id].kind,
+        price: this.itemPrice(ITEMS[id], p.priceMul),
+      });
     }
-    // 保底：每位商人至少备一瓶药（「开不出回血牌」的局总得有地方补血）
-    if (p.items > 0 && !stock.some((s) => s.kind === 'item' && (s.id === 'potion_small' || s.id === 'potion_big'))) {
-      const cheap = p.priceMul <= 0.9 ? 'potion_small' : 'potion_big';
+    // 保底：每位商人至少有一件「能回血的果子」（战斗里不能嗑药，回血只能靠牌和战斗外补给）
+    if (p.items > 0 && !stock.some((s) => s.kind === 'item' && ITEMS[s.id]?.use?.healPct)) {
+      const cheap = 'oran_berry';
       const last = stock.map((s) => s.kind).lastIndexOf('item');
-      stock[last] = { kind: 'item', id: cheap, name: ITEMS[cheap].name, desc: ITEMS[cheap].desc, price: Math.round(ITEMS[cheap].price * p.priceMul) };
+      if (last >= 0) {
+        stock[last] = {
+          kind: 'item', id: cheap, name: ITEMS[cheap].name, desc: ITEMS[cheap].desc,
+          rarity: ITEMS[cheap].rarity, holdKind: ITEMS[cheap].kind, price: this.itemPrice(ITEMS[cheap], p.priceMul),
+        };
+      }
     }
 
     if (p.service === 'remove') {
@@ -1197,13 +1434,25 @@ export class Game {
       return { ok: true, text: t('买下「{name}」，已放入卡组。', { name: entry.name }) };
     }
     if (entry.kind === 'item') {
-      const got = this.giveItem(entry.id, 1);
-      // 护符 / 活力药是**拿到就生效**的（见 giveItem）：文案要说清「已经加上了」，
-      // 否则玩家会去背包里找 —— 那里根本没有，看起来就像买了个没用的东西
-      if (got.applied) {
-        return { ok: true, text: t('买下「{name}」，{stat} +{n}（本局有效）。', { name: entry.name, stat: t(STAT_NAMES[got.applied.key] ?? got.applied.key), n: got.applied.amount }) };
+      /**
+       * 手持栏满了**不能收钱**（和上面的删卡服务同一个道理：付了钱又拿不到东西，
+       * 玩家只会觉得商店坏了）。所以先看栏位，满了就把这单退回去，让玩家先丢一件。
+       */
+      if (this.data.held.length >= this.heldMax()) {
+        return {
+          ok: false,
+          heldFull: true,
+          text: t('手持栏满了（{n} / {max}）—— 先在「手持道具」里丢掉一件，再回来买。', {
+            n: this.data.held.length, max: this.heldMax(),
+          }),
+        };
       }
-      return { ok: true, text: t('买下「{name}」，已放进背包（按 I 打开，点「使用」）。', { name: entry.name }) };
+      const got = this.giveItem(entry.id, 1);
+      const it = ITEMS[entry.id];
+      const kindNote = it?.kind === 'hold'
+        ? t('（持有：拿在手上一直生效）')
+        : t('（可用：战斗外使用）');
+      return { ok: true, text: t('买下「{name}」{note}。', { name: entry.name, note: kindNote }) };
     }
     return { ok: true, text: t('成交。') };
   }
@@ -1286,4 +1535,4 @@ export class Game {
   }
 }
 
-export { BIOMES, NODE_TYPES, BALANCE, ITEMS, CARD_BY_ID, CARDS, ENEMY_BY_ID, stageCount, ENEMIES };
+export { BIOMES, NODE_TYPES, BALANCE, ITEMS, ITEM_ART, CARD_BY_ID, CARDS, ENEMY_BY_ID, stageCount, ENEMIES };

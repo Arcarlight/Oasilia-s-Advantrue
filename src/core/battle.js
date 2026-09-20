@@ -53,9 +53,35 @@ export const ALL_STATUSES = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
  * 一层持续伤害值 = 目标最大生命 × 百分比 + 1。
  * 「+1」是为了让前期（血量两三百）的毒依然有存在感，不至于取整成 0。
  */
-export function dotTickDamage(side, stacks, pct) {
+export function dotTickDamage(side, stacks, pct, mul = 1) {
   if (!stacks || !pct) return 0;
-  return Math.max(0, Math.round((side.maxHp * pct + 1) * stacks));
+  const base = Math.max(0, Math.round((side.maxHp * pct + 1) * stacks));
+  // `mul` 由调用方给：持有效果「持续伤害 +X%」算在**施加者**头上（打人的人加强，不是挨打的人）
+  return Math.max(0, Math.round(base * mul));
+}
+
+// ================= 手持道具的系数（用户要的「手持道具」机制） =================
+//
+// 这一节是**道具与战斗的唯一接口**：道具的持有效果在 game.js 里被汇总成一张表
+// （sumHeldMods），开局时挂在 `side.mods` 上（只有玩家那一侧有），战斗里所有地方
+// 都通过下面这三个小函数去读 —— 想加一个新的持有效果，就在这里读它 + 在对应的
+// 计算点调一次，别的地方不用动。
+//
+// 为什么要收成三个函数：持有效果散在十几处计算里，直接写 `side.mods?.xxx?.add ?? 0`
+// 会出现「有的地方忘了判空、有的地方把 mul 和 add 搞混」这类错，而且很难查
+// （效果静默不生效，界面上看不出任何异常）。
+function modAdd(side, key) {
+  const v = side?.mods?.[key];
+  if (!v) return 0;
+  if (typeof v.add === 'number' && v.add) return v.add;
+  if (typeof v.mul === 'number' && v.mul !== 1) return v.mul - 1;
+  return 0;
+}
+function modMul(side, key) {
+  return side?.mods?.[key]?.mul ?? 1;
+}
+function modFlag(side, key) {
+  return !!side?.mods?.[key]?.flag;
 }
 
 function cloneSide(base) {
@@ -81,17 +107,17 @@ function cloneSide(base) {
 }
 
 export function effectiveAtk(side) {
-  const base = Math.max(0, (side.atk ?? 0) + (side.atkMod ?? 0));
+  const base = Math.max(0, (side.atk ?? 0) + (side.atkMod ?? 0) + modAdd(side, 'atk'));
   return Math.max(0, Math.round((side.weak ?? 0) > 0 ? base * 0.75 : base));
 }
 export function effectiveDef(side) {
-  return Math.max(0, Math.round((side.def ?? 0) + (side.defMod ?? 0)));
+  return Math.max(0, Math.round((side.def ?? 0) + (side.defMod ?? 0) + modAdd(side, 'def')));
 }
 export function effectiveAgi(side) {
-  return Math.max(1, Math.round((side.agi ?? 1) + (side.agiMod ?? 0)));
+  return Math.max(1, Math.round((side.agi ?? 1) + (side.agiMod ?? 0) + modAdd(side, 'agi')));
 }
 export function effectiveLuck(side) {
-  return Math.max(0, Math.round((side.luck ?? 0) + (side.luckMod ?? 0)));
+  return Math.max(0, Math.round((side.luck ?? 0) + (side.luckMod ?? 0) + modAdd(side, 'luck')));
 }
 
 /**
@@ -127,8 +153,7 @@ export function clampDebuffs(s) {
  * 加了新机制就会漏掉一两处（AI 会看不见新牌的价值，界面上数字对不上）。
  */
 export function damagePowerOf(attacker, defender, eff) {
-  let power = eff.power;
-  if (eff.execThreshold != null && defender.hp / defender.maxHp < eff.execThreshold) {
+  let power = eff.power;  if (eff.execThreshold != null && defender.hp / defender.maxHp < eff.execThreshold) {
     power += eff.execBonus ?? 0;
   }
   if (eff.bonusPerStack) {
@@ -139,14 +164,21 @@ export function damagePowerOf(attacker, defender, eff) {
   if (eff.bonusIfDot && ['poison', 'toxic', 'burn'].some((s) => (defender[s] ?? 0) > 0)) {
     power += eff.bonusIfDot;
   }
-  if (eff.plusShield) {
-    // 「每 1 点护盾折算成 plusShield 点威力百分比」。
+  if (eff.plusShield) {    // 「每 1 点护盾折算成 plusShield 点威力百分比」。
     // 曾经写成 round(护盾 / 攻击 × 100 × plusShield) —— 想让「护盾转伤害」跟攻击力脱钩，
     // 结果反过来了：攻击力**越低**、同样一层护盾折出来的威力越高。
     // 实测一个攻击力 3、叠了一身盾的首领能靠一张「重磅冲撞」打出 40+ 伤害，
     // 直接把推导工具的打桩测量污染成「攻击力 3 也能秒人」。现在不做除法，只做乘法。
     power += Math.min(eff.maxShieldBonus ?? 240, Math.round((attacker.shield ?? 0) * eff.plusShield));
   }
+  /**
+   * 手持道具的攻击加成（只有玩家那一侧挂了 mods）：
+   *   attackPct       攻击牌威力 +X%（每件叠加，见 sumHeldMods）
+   *   firstAttackPct  本回合**第一张**攻击牌额外 +X%（先制之爪 / 电气种子）
+   * 取整放在最后：先加再乘，免得小数值被四舍五入吃掉。
+   */
+  const bonus = modAdd(attacker, 'attackPct') + (attacker.firstAttackPending ? modAdd(attacker, 'firstAttackPct') : 0);
+  if (bonus) power = Math.round(power * (1 + bonus));
   return power;
 }
 
@@ -160,7 +192,11 @@ export function computeHit(attacker, defender, power, opts = {}) {
   const def = effectiveDef(defender) * (1 - ignoreDefPct);
   let dmg = Math.round((raw * BALANCE.armorK) / (BALANCE.armorK + def));
   if (isCrit) dmg = Math.round(dmg * critMult);
-  dmg += dotTickDamage(defender, defender.bleed ?? 0, BALANCE.statusPct?.bleed ?? 0);
+  // 出血每击一次额外掉血；「持续伤害 +X%」按施加者（attacker）算
+  dmg += dotTickDamage(defender, defender.bleed ?? 0, BALANCE.statusPct?.bleed ?? 0, 1 + modAdd(attacker, 'dotPct'));
+  // 手持道具的减伤（只有玩家那一侧有 mods）
+  const taken = modAdd(defender, 'damageTakenPct');
+  if (taken) dmg = Math.round(dmg * (1 + taken));
   return Math.max(BALANCE.minDamage, dmg);
 }
 
@@ -180,6 +216,12 @@ export class Battle {
     this.events = [];
     this.log = [];
     this.luckPointBonus = 0;
+    /**
+     * 手持道具的持有效果汇总表（由 game.js 的 heldMods() 传进来）。
+     * **只挂在玩家那一侧** —— 敌人没有手持道具，所以 `this.enemy.mods` 永远是 undefined，
+     * 上面那几个 modAdd / modMul / modFlag 对它就是 0 / 1 / false。
+     */
+    this.mods = cfg.mods ?? {};
 
     const p = cfg.player;
     this.player = cloneSide({
@@ -195,6 +237,7 @@ export class Battle {
       strength: 0,
     });
     this.player.hp = p.hp; // 战斗间的血量保留
+    this.player.mods = this.mods;
 
     const e = cfg.enemy;
     this.enemy = cloneSide({
@@ -376,20 +419,33 @@ export class Battle {
   tickStatuses(key) {
     const s = this[key];
     const pct = BALANCE.statusPct ?? {};
+    /**
+     * 持有效果（只对**玩家施加的**那些生效，所以倍率取 this.player 的 mods）：
+     *   dotPct          持续伤害总量 +X%
+     *   poisonTickPct   中毒每回合额外扣「最大生命 × X」（毒毒糖 / 剧毒宝珠）
+     *   poisonNoDecay   中毒层数不随时间减少（同上）
+     */
+    const dotMul = 1 + modAdd(this.player, 'dotPct');
+    const poisonExtra = modAdd(this.player, 'poisonTickPct');
+    const noDecay = modFlag(this.player, 'poisonNoDecay');
     if (s.poison > 0) {
-      const dmg = dotTickDamage(s, s.poison, pct.poison);
+      let dmg = dotTickDamage(s, s.poison, pct.poison, dotMul);
+      if (poisonExtra) dmg += dotTickDamage(s, s.poison, poisonExtra, 1);
       this.dealTrueDamage(key, dmg, t('中毒'));
-      s.poison = Math.max(0, s.poison - 1);
-      this.emit({ type: 'status', side: key, status: 'poison', delta: -1, value: s.poison });
+      if (!noDecay) {
+        s.poison = Math.max(0, s.poison - 1);
+        this.emit({ type: 'status', side: key, status: 'poison', delta: -1, value: s.poison });
+      }
     }
     if (s.toxic > 0) {
-      const dmg = dotTickDamage(s, s.toxic, pct.toxic);
+      let dmg = dotTickDamage(s, s.toxic, pct.toxic, dotMul);
+      if (poisonExtra) dmg += dotTickDamage(s, s.toxic, poisonExtra, 1);
       this.dealTrueDamage(key, dmg, t('剧毒'));
       s.toxic += 1;
       this.emit({ type: 'status', side: key, status: 'toxic', delta: 1, value: s.toxic });
     }
     if (s.burn > 0) {
-      const dmg = dotTickDamage(s, s.burn, pct.burn);
+      const dmg = dotTickDamage(s, s.burn, pct.burn, dotMul);
       this.dealTrueDamage(key, dmg, t('灼伤'));
     }
     // 虚弱**不在这里**扣层：见 decayWeak()。
@@ -431,13 +487,39 @@ export class Battle {
     // 「广域防守」这类牌会给一份 keepShield 标记，那一次的护盾留着不丢。
     if (p.keepShield) p.keepShield = false;
     else p.shield = 0;
-    p.ap = p.apMax + p.blockBonus;
+    /**
+     * 手持道具在**每回合开始**的那几件事（只在玩家这一侧，敌人没有 mods）：
+     *   apPerTurn / apFirstTurn  AP 加成（首回合那份只在第 1 回合给）
+     *   drawPerTurn              多抽几张
+     *   healPerTurnPct           每回合回一点血
+     *   battleStartShieldPct     第 1 回合开始先给一层护盾
+     *   battleStartCleanse       第 1 回合开始清掉自己身上的负面状态
+     *   firstAttackPending       给「本回合第一张攻击牌 +X%」（先制之爪）打一个标记，
+     *                            出过一张攻击牌就清掉（见 resolveCard）
+     */
+    const firstTurn = this.turn === 1;
+    if (firstTurn && modFlag(p, 'battleStartCleanse')) {
+      for (const k of ALL_STATUSES) if ((p[k] ?? 0) > 0) { p[k] = 0; this.emit({ type: 'status', side: 'player', status: k, delta: -99, value: 0 }); }
+    }
+    if (firstTurn && modAdd(p, 'battleStartShieldPct')) {
+      p.shield += Math.round(p.maxHp * modAdd(p, 'battleStartShieldPct') * (1 + modAdd(p, 'shieldPct')));
+    }
+    p.ap = p.apMax + p.blockBonus + modAdd(p, 'apPerTurn') + (firstTurn ? modAdd(p, 'apFirstTurn') : 0);
     p.blockBonus = 0;
     p.playsLeft = p.playMax;
+    p.firstAttackPending = true;
     this.emit({ type: 'turnStart', side: 'player', turn: this.turn, ap: p.ap });
     this.tickStatuses('player');
     if (this.over) return;
-    this.drawCards('player', p.drawN);
+    if (modAdd(p, 'healPerTurnPct')) {
+      const h = Math.round(p.maxHp * modAdd(p, 'healPerTurnPct'));
+      if (h > 0 && p.hp < p.maxHp) {
+        p.hp = Math.min(p.maxHp, p.hp + h);
+        this.emitLogged({ type: 'heal', side: 'player', amount: h, hp: p.hp },
+          t('{name} 因手上的道具回复了 {amount} 点 HP。', { name: p.name, amount: h }), 'good');
+      }
+    }
+    this.drawCards('player', p.drawN + modAdd(p, 'drawPerTurn'));
   }
 
   /** 玩家出牌 */
@@ -502,6 +584,13 @@ export class Battle {
     const hasDamage = card.effects.some((e) => e.kind === 'damage');
     let damageAttempted = false;
     let damageLanded = false;
+    const src = this[sourceKey];
+    /**
+     * 手持道具里那几件「每次出攻击牌都要付代价」的东西（生命宝珠的 selfDamagePct）：
+     * 一张牌里可能有好几段伤害，但**一件道具只为一张牌收一次利息**，
+     * 所以用 playedOnce 把「这一张牌已经收过」记下来。
+     */
+    let charged = false;
     for (const eff of card.effects) {
       if (this.over) break;
       if (hasDamage && damageAttempted && !damageLanded && this.targetsFoe(eff)) continue;
@@ -509,6 +598,13 @@ export class Battle {
       if (eff.kind === 'damage') {
         damageAttempted = true;
         if (!res?.allDodged) damageLanded = true;
+        // 第一张攻击牌打出去了：把「首张攻击 +X%」的标记清掉
+        if (src?.firstAttackPending) src.firstAttackPending = false;
+        if (!charged && modAdd(src, 'selfDamagePct')) {
+          charged = true;
+          const cost = Math.max(1, Math.round(src.maxHp * modAdd(src, 'selfDamagePct')));
+          this.dealTrueDamage(sourceKey, cost, t('手上的道具'));
+        }
       }
     }
   }
@@ -540,7 +636,8 @@ export class Battle {
         // 护盾量与玩家防御挂钩：防御越高，格挡牌越强。
         // 否则后期「变硬 +7」对比几十点的敌人输出完全没意义。
         const scale = 1 + (eff.scaleWithDef ? effectiveDef(self) / 12 : 0);
-        const amount = Math.round(eff.amount * scale * (1 + (self.shieldBonus ?? 0)));
+        // 手持道具的 shieldPct（蓝色碎片 / 岩石宝石 / 金属粉…）
+        const amount = Math.round(eff.amount * scale * (1 + (self.shieldBonus ?? 0)) * (1 + modAdd(self, 'shieldPct')));
         self.shield += amount;
         // keep：这一份护盾「下回合不清空」（普通护盾在持有者回合开始时归零）
         if (eff.keep) self.keepShield = true;
@@ -548,7 +645,8 @@ export class Battle {
         break;
       }
       case 'heal': {
-        const amount = eff.pct ? Math.round(self.maxHp * eff.pct) : eff.amount;
+        // 手持道具的 healPct（哞哞牛奶 / 奇迹种子 / 妖精羽毛…）：恢复类卡牌回得更多
+        const amount = Math.round((eff.pct ? self.maxHp * eff.pct : eff.amount) * (1 + modAdd(self, 'healPct')));
         const healed = Math.min(amount, self.maxHp - self.hp);
         self.hp += healed;
         if (healed > 0) {
@@ -742,10 +840,25 @@ export class Battle {
           );
           break;
         }
-        actor[eff.status] = (actor[eff.status] ?? 0) + eff.stacks;
+        /**
+         * 层数 + 手持道具（只在**给对手上状态**时生效，自己挨的状态不会被自己的道具加强）：
+         *   poisonStacks     中毒 / 剧毒 +n 层（毒针）
+         *   burnStacks       灼伤 +n 层（火焰宝珠）
+         *   bleedStacksMult  出血 ×n（锐利之爪，用户点名的例子）
+         *   debuffStacks     削弱类（虚弱）+n 层（大地石板 / 王者之证 / 月之石…）
+         */
+        let stacks = eff.stacks;
+        if (targetKey !== sourceKey) {
+          const from = this.player;
+          if (eff.status === 'poison' || eff.status === 'toxic') stacks += modAdd(from, 'poisonStacks');
+          else if (eff.status === 'burn') stacks += modAdd(from, 'burnStacks');
+          else if (eff.status === 'bleed') stacks = Math.round(stacks * modMul(from, 'bleedStacksMult'));
+          else if (eff.status === 'weak') stacks += modAdd(from, 'debuffStacks');
+        }
+        actor[eff.status] = (actor[eff.status] ?? 0) + stacks;
         this.emitLogged(
-          { type: 'status', side: targetKey, status: eff.status, delta: eff.stacks, value: actor[eff.status] },
-          t('{name} 获得了 {n} 层{status}。', { name: actor.name, n: eff.stacks, status: STATUS_INFO[eff.status].name }),
+          { type: 'status', side: targetKey, status: eff.status, delta: stacks, value: actor[eff.status] },
+          t('{name} 获得了 {n} 层{status}。', { name: actor.name, n: stacks, status: STATUS_INFO[eff.status].name }),
           targetKey === 'player' ? 'bad' : 'good'
         );
         break;
@@ -885,6 +998,20 @@ export class Battle {
     }
     const dealt = Math.min(s.hp, left);
     s.hp -= dealt;
+    /**
+     * 手持道具里与「造成伤害」挂钩的两件事：
+     *   lifestealPct  造成伤害时回复其 X%（贝壳铃）—— 只算**玩家打出去**的伤害；
+     *   healOnKillPct 击败敌人时回血（恶之宝石）在 checkDeath 里结（这里还没判死活）。
+     */
+    if (meta.source === 'player' && key === 'enemy' && dealt > 0 && modAdd(this.player, 'lifestealPct')) {
+      const heal = Math.max(1, Math.round(dealt * modAdd(this.player, 'lifestealPct')));
+      const got = Math.min(heal, this.player.maxHp - this.player.hp);
+      if (got > 0) {
+        this.player.hp += got;
+        this.emitLogged({ type: 'heal', side: 'player', amount: got, hp: this.player.hp },
+          t('{name} 因手上的道具回复了 {amount} 点 HP。', { name: this.player.name, amount: got }), 'good');
+      }
+    }
     const label = meta.crit ? t('会心一击！') : '';
     this.emitLogged(
       {
@@ -914,9 +1041,33 @@ export class Battle {
     } else if (this.enemy.hp <= 0) {
       this.over = true;
       this.winner = 'player';
+      // 手持道具「击败敌人时回复最大生命 X%」（恶之宝石 / 大蘑菇）
+      if (modAdd(this.player, 'healOnKillPct')) {
+        const heal = Math.max(1, Math.round(this.player.maxHp * modAdd(this.player, 'healOnKillPct')));
+        const got = Math.min(heal, this.player.maxHp - this.player.hp);
+        if (got > 0) {
+          this.player.hp += got;
+          this.emitLogged({ type: 'heal', side: 'player', amount: got, hp: this.player.hp },
+            t('{name} 因手上的道具回复了 {amount} 点 HP。', { name: this.player.name, amount: got }), 'good');
+        }
+      }
     } else if (this.player.hp <= 0) {
-      this.over = true;
-      this.winner = 'enemy';
+      /**
+       * 手持道具的「一局一次：濒死时留 1 点生命」（复活草 / 妖异石板）。
+       *
+       * 放在**判定死亡的那一刻**做，而不是在受伤时扣血 —— 这样它对「中毒致死」
+       * 「反伤致死」「真伤致死」全都成立（那些都不走 applyDamage）。
+       * 用过就把开关关掉（`usedSurvive` 记在玩家那一侧），一局只有一次。
+       */
+      if (modFlag(this.player, 'surviveOnce') && !this.player.usedSurvive) {
+        this.player.usedSurvive = true;
+        this.player.hp = 1;
+        this.emitLogged({ type: 'heal', side: 'player', amount: 1, hp: 1 },
+          t('手上的道具撑住了 {name} —— 只剩 1 点 HP。', { name: this.player.name }), 'good');
+      } else {
+        this.over = true;
+        this.winner = 'enemy';
+      }
     }
     if (this.over) {
       this.emit({ type: 'battleEnd', winner: this.winner, hp: this.player.hp });

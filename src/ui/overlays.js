@@ -8,8 +8,12 @@ import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance,
 // itemEffect / inventoryEntries：道具有没有「主动使用」的效果、背包里哪些真的还有 ——
 // 背包界面和引擎共用这两份判断，别在界面里自己抄一遍数据模型的规则
 // （抄漏过一次：判断写的是 `item.heal` 而数据字段叫 `healPct`，整个背包一个按钮都没有）
-import { itemEffect, inventoryEntries } from '../core/game.js';
-import { CARD_BY_ID, CARDS, ITEMS } from '../data/cards.js';
+// heldEntries / heldCount / itemUseEffect / sumHeldMods：手持道具（谁在手上、能不能用、
+// 加起来是什么效果）全部由引擎那一份判断说了算，界面不再自己抄一遍规则。
+import { heldEntries, itemUseEffect } from '../core/game.js';
+import { modLabel } from '../core/itemtext.js';
+import { ITEMS, itemArtUrl } from '../data/items.js';
+import { CARD_BY_ID, CARDS } from '../data/cards.js';
 // 说明页里「一共几章」也从地图生成器现问，别再手写（曾经写成「三章」，而实际是 6 章）
 import { stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
@@ -158,89 +162,113 @@ export function showDeck(game) {
 }
 
 // ============================================================
-// 背包
+// 手持道具（这一版把「背包」换成了它，见 content/items.json 的 _comment）
 // ============================================================
 export function showItems(game) {
   const wrap = el('div', {});
   const body = el('div', {});
   wrap.append(body);
+  const inBattle = game.phase === 'battle';
 
   const paint = () => {
     clear(body);
-    // 只列**真的还有**的东西（数量 > 0）：开局数据自带一个 `potion_big: 0`，
-    // 照单全收的话开局就有一行「厉害伤药 ×0」配着「使用」按钮，点了只说「现在用不了」
-    const entries = inventoryEntries(game.data.items);
+    const held = game.data.held ?? [];
+    const max = game.heldMax();
+    const entries = heldEntries(held);
+    const mods = game.heldMods();
+
+    // ① 栏位：一排格子，一眼看出还剩几个位置
+    const slots = el('div', { class: 'held-slots' });
+    for (let i = 0; i < max; i++) {
+      const id = held[i];
+      const item = id ? ITEMS[id] : null;
+      slots.append(el('div', { class: `held-slot${item ? '' : ' empty'}`, dataset: item ? { tip: `${item.name}：${item.desc}` } : null }, [
+        item ? el('img', { class: 'held-slot-art', src: itemArtUrl(id), alt: item.name, draggable: false }) : el('span', { class: 'held-slot-plus', text: '+' }),
+      ]));
+    }
+    body.append(el('div', { class: 'held-head' }, [
+      el('div', { class: 'held-count', text: t('手持栏 {n} / {max}', { n: held.length, max }) }),
+      el('span', { class: 'held-hint', text: t('每打赢一个首领 +1 个栏位。拿满了再捡到东西，会让你丢掉一件。') }),
+    ]));
+    body.append(slots);
+
+    // ② 持有效果汇总：把所有在手上的东西合成一张表给玩家看（省得自己一件件加）
+    const active = Object.entries(mods).filter(([, v]) => v && (v.n > 0));
+    if (active.length) {
+      const list = el('div', { class: 'held-active' });
+      for (const [key, v] of active) {
+        list.append(el('span', {
+          class: 'held-chip',
+          dataset: { tip: t('这一条由 {n} 件道具提供。', { n: v.n }) },
+        }, [modLabel(key, v)]));
+      }
+      body.append(el('div', { class: 'help-card', style: { marginTop: '10px' } }, [
+        el('h4', { text: t('现在生效的持有效果') }),
+        list,
+      ]));
+    }
+
+    // ③ 每一件：使用（只有 use 型、且只在战斗外）/ 丢掉
     if (!entries.length) {
-      body.append(el('p', { text: t('背包是空的。地图上的宝箱和商店会给你补货。') }));
+      body.append(el('p', { text: t('手上什么都没有。宝箱、商人、还有打赢之后偶尔掉落都会给你补货。') }));
     } else {
       const list = el('div', { class: 'shop-list' });
-      for (const [id, n] of entries) {
-        const item = ITEMS[id];
-        if (!item) continue;
-        /**
-         * 「这件东西能不能用」必须问 itemEffect()，**不能在这里自己判断**。
-         *
-         * 这里以前写的是 `item.heal ? 使用按钮 : 「已生效」`，而药水的数据字段叫 `healPct`
-         * ——于是七件道具全都显示「已生效」，一个「使用」按钮都没有，背包整个是死的
-         * （玩家反馈：「道具都写着已生效，像好伤药那种完全没法用」）。
-         * 同理，只有**回血类**才该因为「HP 已满」被禁用；护符类跟血量无关。
-         */
-        const eff = itemEffect(item);
+      for (const { id, item, n } of entries) {
+        const eff = itemUseEffect(item);
         const hpFull = game.data.hp >= game.data.maxHp;
-        const blocked = eff?.kind === 'heal' && hpFull;
-        const use = () => {
-          const res = game.useItem(id);
-          if (res?.ok) {
-            audio.useItem();
-            toast(res.text, 'good');
-            paint();
-            renderHud(game);
-          } else {
-            toast(res?.text ?? t('现在用不了。'), 'bad');
-          }
-        };
-        // 背包以前一行图标都没有，只能读名字；现在用注册表给道具挑的图标
-        list.append(el('div', { class: 'shop-item' }, [
+        const heals = !!(eff?.healPct || eff?.healFlat || eff?.healFull);
+        /**
+         * 「能不能用」两处判断，都写在这里，不散到界面各处：
+         *   · `eff` 为空 = 持有型（拿着就生效，没有「使用」这个动作）；
+         *   · `inBattle` = 战斗里一律不能用（用户点名：战斗中嗑药太 imba）。
+         */
+        const blocked = !eff || (inBattle ? false : (heals && hpFull));
+        const blockTip = !eff
+          ? t('这类道具拿在手上就一直生效，不需要使用。')
+          : (inBattle ? t('战斗中不能使用道具 —— 先打完这一场。') : t('HP 已经满了，吃了也是浪费。'));
+        list.append(el('div', { class: 'shop-item held-item' }, [
           el('h4', {}, [
-            el('span', { class: `shop-ico ${item.ico ?? 'ico-backpack'}` }),
-            el('span', { text: `${item.name} ×${n}` }),
+            el('img', { class: 'held-art', src: itemArtUrl(id), alt: item.name, draggable: false }),
+            el('span', { text: n > 1 ? `${item.name} ×${n}` : item.name }),
+            el('span', { class: `held-kind ${item.kind}`, text: item.kind === 'hold' ? t('持有') : t('可用') }),
           ]),
-          el('p', { text: item.desc }),
+          el('p', { text: t(item.desc) }),
           el('div', { class: 'row' }, [
             eff
               ? el('button', {
                   class: 'btn btn-sm btn-primary',
                   disabled: blocked,
-                  dataset: blocked ? { tip: t('HP 已经满了，喝了也是浪费 —— 受伤之后再来。') } : null,
-                  onClick: use,
-                }, [blocked ? t('HP 已满') : t('使用')])
-              : el('span', { class: 'price', dataset: { tip: t('这类道具拿到手就已经生效了，不需要使用。') } }, [t('已生效')]),
+                  dataset: { tip: blocked ? blockTip : t('战斗外使用，用掉就没了。') },
+                  onClick: () => {
+                    const res = game.useItem(id);
+                    if (res?.ok) { audio.useItem(); toast(res.text, 'good'); paint(); renderHud(game); }
+                    else toast(res?.text ?? t('现在用不了。'), 'bad');
+                  },
+                }, [t('使用')])
+              : el('span', { class: 'price', dataset: { tip: blockTip } }, [t('持有中')]),
+            el('button', {
+              class: 'btn btn-sm btn-ghost',
+              dataset: { tip: t('丢掉这一件（不可撤销）。') },
+              onClick: () => { game.dropItem(id); paint(); renderHud(game); },
+            }, [t('丢掉')]),
           ]),
         ]));
       }
       body.append(list);
     }
+
     body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
-      el('h4', { text: t('道具怎么用') }),
+      el('h4', { text: t('手持道具怎么用') }),
       el('ul', {}, [
-        el('li', { text: t('药水留在背包里，想什么时候喝就点「使用」——不占出牌次数，战斗中也随时能用（按 I 打开背包）。') }),
-        el('li', { html: t('护符 / 活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>了，不会留在背包里。') }),
-      ]),
-    ]));
-    body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
-      el('h4', { text: t('地图上的回血方式') }),
-      el('ul', {}, [
-        // 数字全部现算：这几条以前写死成 35% / 4%，和 BALANCE 里的 40% / 12% 早就对不上了
-        el('li', { text: t('绿洲营地：回复最大生命的 {pct}%（营地还可以把一张卡换成更强的卡）。', { pct: Math.round(BALANCE.restHealPct * 100) }) }),
-        el('li', { text: t('卡牌：羽栖、文柚果、急救等回复类卡牌，战斗中随时可用。') }),
-        el('li', { text: t('事件：不少选项能直接回血，或者提升最大生命。') }),
-        el('li', { text: t('每场战斗胜利后自动回复最大生命的 {pct}%。', { pct: Math.round(BALANCE.healAfterBattlePct * 100) }) }),
-        el('li', { text: t('走到首领节点前会先自动回复 {pct}% 生命。', { pct: Math.round(BALANCE.preBossHealPct * 100) }) }),
+        el('li', { text: t('手里最多 3 件，每打赢一个首领 +1 件。拿满了再捡到东西，会让你丢掉一件。') }),
+        el('li', { text: t('「持有」的那类拿在手上就一直生效（右边那排小字就是它们加起来的效果）。') }),
+        el('li', { text: t('「可用」的那类**只能在战斗外使用** —— 战斗中不能嗑药，回血得靠卡牌和营地。') }),
+        el('li', { text: t('不要的可以在这里丢掉，也可以到商人那里卖掉换金币。') }),
       ]),
     ]));
   };
   paint();
-  return modal({ title: t('背包与补给'), body: wrap, wide: true });
+  return modal({ title: t('手持道具'), body: wrap, wide: true });
 }
 
 // ============================================================

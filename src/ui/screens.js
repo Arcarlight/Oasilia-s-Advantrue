@@ -8,9 +8,10 @@ import { createAnim, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion } from '../core/portraits.js';
 import { audio } from '../core/audio.js';
 import { BIOMES, BALANCE } from '../data/balance.js';
-import { CARD_BY_ID, ITEMS } from '../data/cards.js';
-// 道具有没有「主动使用」的效果、属性叫什么，都从引擎那一份问，别在界面里自己判断
-import { itemEffect, STAT_NAMES } from '../core/game.js';
+import { CARD_BY_ID } from '../data/cards.js';
+import { ITEMS, itemArtUrl } from '../data/items.js';
+// 属性叫什么名字、道具怎么分类，都从引擎那一份问，别在界面里自己判断
+import { STAT_NAMES } from '../core/game.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
@@ -733,7 +734,11 @@ function renderShop(game) {
         ? (CARD_ART[s.id]?.ico ?? 'ico-card')
         : s.kind === 'service'
           ? 'ico-trash'
-          : (ITEMS[s.id]?.ico ?? 'ico-backpack');
+          : null;
+      /** 道具行用**道具自己的图**（48×48 的 png），不是图标类名 —— 一眼认得出是哪件 */
+      const icoNode = ico
+        ? el('span', { class: `shop-ico ${ico}` })
+        : el('img', { class: 'shop-item-art', src: itemArtUrl(s.id), alt: s.name, draggable: false });
       const node = el('div', {
         /**
          * 货架行的底色跟着**稀有度**走，用的是和卡面完全同一套变量
@@ -744,7 +749,7 @@ function renderShop(game) {
         class: `shop-item rarity-${card?.rarity ?? 'common'} ${sold ? 'sold' : ''}`,
       }, [
         el('h4', {}, [
-          el('span', { class: `shop-ico ${ico}` }),
+          icoNode,
           el('span', { text: s.name }),
           // 卡牌要标出行动点费用：以前商店里只写名字和说明，买回去才发现 2 费打不动
           card
@@ -869,15 +874,23 @@ function renderReward(game) {
   pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-money' }), t('金币 +{n}', { n: r.gold })]));
   if (r.healed > 0) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-heal' }), t('战后恢复 +{n} HP', { n: r.healed })]));
   if (r.growthText) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-arrow_up' }), t('成长：{text}', { text: r.growthText })]));
-  // 道具 / 遗物各自用注册表里给它挑的图标（以前两个都是 ico-star，压根看不出拿的是什么）
-  if (r.potion) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.potion]?.ico ?? 'ico-flask' }), t('获得 {name}', { name: ITEMS[r.potion].name })]));
-  if (r.relic) {
-    const relic = ITEMS[r.relic];
-    const eff = itemEffect(relic);
-    // 护符类拿到就生效了（见 Game.giveItem），所以把「加了什么」直接写在奖励条上 ——
-    // 只写「获得 锐爪护符」，玩家会以为还得自己去背包里用一次
-    const note = eff?.kind === 'stat' ? t('（{stat} +{n}，本局有效）', { stat: t(STAT_NAMES[eff.key] ?? eff.key), n: eff.amount }) : '';
-    pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: ITEMS[r.relic]?.ico ?? 'ico-clover' }), `${t('获得 {name}', { name: relic?.name ?? r.relic })}${note}`]));
+  /**
+   * 掉落 / 开出来的道具：用道具自己的图（assets/items/<id>.png），不用图标类名。
+   *
+   * 一行说明它**是哪一类**（持有型拿到就一直生效、使用型只能战斗外用），
+   * 免得玩家看到「获得 毒针」还得自己去翻手持栏看它干什么。
+   */
+  if (r.item) {
+    const it = ITEMS[r.item];
+    const kindNote = it?.kind === 'hold'
+      ? t('（持有：拿在手上一直生效）')
+      : t('（可用：战斗外使用）');
+    // 属性对上的掉落特别标一下 —— 这是「打毒系更容易掉毒系东西」给玩家的反馈
+    const typeNote = r.itemReason === 'type' ? t(' · 属性掉落') : '';
+    pills.append(el('span', { class: 'reward-pill reward-pill-item', dataset: { tip: `${it?.name ?? r.item}：${it?.desc ?? ''}` } }, [
+      el('img', { class: 'reward-item-art', src: itemArtUrl(r.item), alt: it?.name ?? r.item, draggable: false }),
+      `${t('获得 {name}', { name: it?.name ?? r.item })}${kindNote}${typeNote}`,
+    ]));
   }
   panel.append(pills);
 

@@ -9,7 +9,8 @@
 // 中文原文自动留副本，来回切语言不会串味。
 
 import { applyContentLang } from './i18n.js';
-import { CARDS, ITEMS } from '../data/cards.js';
+import { CARDS } from '../data/cards.js';
+import { ITEMS } from '../data/items.js';
 import { EVENTS } from '../data/events.js';
 import { MERCHANTS } from '../data/merchants.js';
 import { ENEMIES, TIERS } from '../data/enemies.js';

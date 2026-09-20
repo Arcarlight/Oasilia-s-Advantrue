@@ -41,6 +41,13 @@ async function loadAll() {
   const enemyIntro = await readJson(path.join(CONTENT, 'enemy-intro.json')).catch(() => ({ intro: {} }));
   // 图鉴详情「它可能会这么说」的口吻台词（每只 3 句，tools/merge-enemy-voice.mjs 生成）
   const enemyVoice = await readJson(path.join(CONTENT, 'enemy-voice.json')).catch(() => ({ voice: {} }));
+  /**
+   * 道具（手持道具）：**自己的文件**（content/items.json），不再塞在 cards.json 里。
+   * 这一版道具从「背包里的消耗品」变成了有持有效果 / 战斗外使用两类的一等公民，
+   * 和卡牌放一起只会让两边都难读。图尺寸表来自 assets/data/items.json（tools/import-items.mjs）。
+   */
+  const itemsData = await readJson(path.join(CONTENT, 'items.json'));
+  const itemArt = await readJson(path.join(ROOT, 'assets', 'data', 'items.json')).catch(() => ({ items: {} }));
   const enemies = await readJson(path.join(CONTENT, 'enemies.json'));
   const biomes = await readJson(path.join(CONTENT, 'biomes.json'));
   const eventsDir = path.join(CONTENT, 'events');
@@ -65,7 +72,7 @@ async function loadAll() {
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice, itemsData, itemArt };
 }
 
 // ============================================================
@@ -220,13 +227,84 @@ function validateCards(data, iconNames) {
     }
   }
   for (const id of starterDeck ?? []) if (!ids.has(id)) err(`初始卡组里的 ${id} 不在卡牌表里`);
-  for (const [key, it] of Object.entries(items ?? {})) {
-    if (it.id !== key) err(`道具 ${key} 的 id 字段（${it.id}）和键名不一致`);
-    if (!['flask_half', 'flask_full', 'star_1', 'sword', 'shield', 'spark_1'].includes(it.art)) {
-      warn(`道具 ${key} 的 art=${it.art} 可能没有对应图标`);
+  return cards.map((c) => c.id);
+}
+
+/**
+ * 道具体检（新系统：手持道具）。
+ *
+ * 每一条都能在界面上变成「看起来正常、其实坏了」：
+ *   · art 没对应图片 → 图鉴 / 手持栏里一个空白方块；
+ *   · hold.mods 里的 key 拼错 → 效果静默不生效（玩家花了钱什么都没得到）；
+ *   · drop 写了不存在的属性 → 这件道具永远掉不出来；
+ *   · use 既没有效果也不是持有型 → 拿了没法用、也不起作用。
+ */
+function validateItems(itemsData, artMeta, biomeTypes) {
+  const items = itemsData?.items ?? {};
+  const keys = new Set(Object.keys(items));
+  if (!keys.size) err('content/items.json 里一件道具都没有');
+  const MOD_KEYS = new Set([
+    'atk', 'def', 'agi', 'luck',
+    'attackPct', 'firstAttackPct', 'damageTakenPct', 'shieldPct', 'healPct',
+    'dotPct', 'poisonTickPct', 'poisonNoDecay', 'poisonStacks', 'burnStacks',
+    'bleedStacksMult', 'debuffStacks', 'buffTurns',
+    'apPerTurn', 'apFirstTurn', 'drawPerTurn',
+    'lifestealPct', 'selfDamagePct', 'surviveOnce', 'battleStartShieldPct',
+    'battleStartCleanse', 'healPerTurnPct', 'healAfterBattlePct', 'healOnKillPct',
+    'goldPct', 'shopDiscountPct', 'rewardChoices', 'eventHealPct',
+  ]);
+  /** 开关型：没有数值，只要拿在手上就成立（重复持有不会叠加） */
+  const FLAG_KEYS = new Set(['poisonNoDecay', 'surviveOnce', 'battleStartCleanse']);
+  let held = 0;
+  let usable = 0;
+  for (const [key, it] of Object.entries(items)) {
+    const at = `道具「${key}」`;
+    if (it.id !== key) err(`${at} 的 id 字段（${it.id}）和键名不一致`);
+    if (!it.name) err(`${at} 没有 name`);
+    if (!it.desc) err(`${at} 没有 desc（图鉴与悬停说明都要显示它）`);
+    if (!['hold', 'use'].includes(it.kind)) err(`${at} 的 kind=${it.kind} 只能是 hold（持有生效）或 use（战斗外使用）`);
+    if (!['common', 'uncommon', 'rare', 'epic'].includes(it.rarity)) err(`${at} 的 rarity=${it.rarity} 不认识`);
+    if (!(Number.isFinite(it.price) && it.price > 0)) err(`${at} 的 price 必须是正数`);
+    if (it.kind === 'hold') {
+      held += 1;
+      const mods = it.hold?.mods;
+      if (!Array.isArray(mods) || !mods.length) err(`${at} 是持有效果，但 hold.mods 是空的`);
+      for (const m of mods ?? []) {
+        if (!MOD_KEYS.has(m.key)) err(`${at} 的持有效果 key=「${m.key}」不在引擎认识的那套里（会静默不生效）`);
+        // 开关型（没有数值，只要在手上就成立）：重复持有不会叠加，多写 add/mul 反而是笔误
+        if (FLAG_KEYS.has(m.key)) {
+          if ('add' in m || 'mul' in m) err(`${at} 的 ${m.key} 是开关型，不该带 add / mul`);
+          continue;
+        }
+        const val = m.add ?? m.mul;
+        if (typeof val !== 'number') err(`${at} 的持有效果 ${m.key} 既没有 add 也没有 mul`);
+        if ('add' in m && 'mul' in m) err(`${at} 的持有效果 ${m.key} 同时写了 add 和 mul`);
+      }
+      if (it.use) err(`${at} 是持有型，不该同时有 use`);
+    } else {
+      usable += 1;
+      const u = it.use;
+      if (!u || typeof u !== 'object') err(`${at} 是使用型，但没有 use 效果`);
+      const known = ['healPct', 'healFlat', 'healFull', 'cleanse', 'stat'];
+      if (u && !Object.keys(u).some((k) => known.includes(k))) err(`${at} 的 use 效果（${Object.keys(u).join('/')}）一个都不认识`);
+      if (u?.cleanse && !Array.isArray(u.cleanse)) err(`${at} 的 use.cleanse 必须是数组`);
+      if (it.hold) err(`${at} 是使用型，不该同时有 hold`);
+    }
+    // 图：assets/data/items.json 里必须有（tools/import-items.mjs 生成）
+    if (!artMeta?.[key]) {
+      err(`${at} 没有图：assets/data/items.json 里没有它 —— 检查 art=${it.art} 后跑 node tools/import-items.mjs`);
+    } else if (artMeta[key].art !== it.art) {
+      err(`${at} 的 art（${it.art}）和 assets/data/items.json 里记的（${artMeta[key].art}）不一致：重新跑 node tools/import-items.mjs`);
+    }
+    // 掉落属性：必须是这 18 个属性之一（写错了这件道具永远掉不出来）
+    if (it.drop != null && !biomeTypes.has(it.drop)) {
+      err(`${at} 的 drop=${it.drop} 不是本作的属性之一（${[...biomeTypes].join('/')}）`);
     }
   }
-  return cards.map((c) => c.id);
+  for (const id of Object.keys(itemsData.starter ?? {})) {
+    if (!keys.has(id)) err(`开局道具里的 ${id} 不在道具表里`);
+  }
+  return { held, usable };
 }
 
 function validateSpecies(species, enemyList) {
@@ -575,7 +653,7 @@ async function writeBlock(relPath, name, body, syntax = 'js') {
 
 const J = (v) => JSON.stringify(v, null, 2);
 
-function emitCards(cards, items, starterDeck, starterItems) {
+function emitCards(cards, starterDeck) {
   const art = Object.fromEntries(cards.map((c) => [c.id, { ico: c.ico, fx: c.fx }]));
   const bare = cards.map((c) => {
     const { ico, fx, ...rest } = c;
@@ -590,10 +668,29 @@ function emitCards(cards, items, starterDeck, starterItems) {
     'export const CARD_ART = ' + J(art) + ';',
     '',
     'export const STARTER_DECK = ' + J(starterDeck) + ';',
-    '',
-    'export const STARTER_ITEMS = ' + J(starterItems) + ';',
-    '',
+  ].join('\n');
+}
+
+/**
+ * 道具数据（src/data/items.js）。
+ *
+ * 道具从 cards.js 里搬了出来：这一版它是「手持道具」系统 —— 有持有生效、战斗外使用、
+ * 掉落属性、商人买卖、图鉴，和卡牌不是一回事了。分成两个模块，两边都好读。
+ */
+function emitItems(itemsData, artMeta) {
+  const items = itemsData.items;
+  // 图尺寸挂在数据里：界面按 assets/items/<id>.png 直接 <img>，尺寸只用来占位防跳动
+  const art = Object.fromEntries(Object.entries(artMeta ?? {}).map(([id, m]) => [id, { w: m.w, h: m.h }]));
+  return [
+    '/** 道具（手持道具）。id → 定义；art 里的尺寸见 assets/data/items.json */',
     'export const ITEMS = ' + J(items) + ';',
+    '',
+    'export const ITEM_BY_ID = ITEMS;',
+    '',
+    'export const ITEM_ART = ' + J(art) + ';',
+    '',
+    '/** 开局就在手上的道具（content/items.json 的 starter） */',
+    'export const STARTER_ITEMS = ' + J(itemsData.starter ?? {}) + ';',
   ].join('\n');
 }
 
@@ -812,8 +909,11 @@ validateSpecies(data.species, data.enemies.enemies);
 validateEnemies({ ...data.enemies, cardList: data.cards.cards }, cardIds, Object.keys(data.biomes.biomes), data.species.species);
 validateBiomes(data.biomes, data.enemies.enemies);
 validateBgm(data.bgm, data.biomes.stageOrder, data.oggMap, data.bgmManifest);
-validateMerchants(data.merchants, new Set(Object.keys(data.species.species)), Object.keys(data.biomes.biomes), Object.keys(data.cards.items));
-validateEvents(data.events, cardIds, Object.keys(data.cards.items), Object.keys(data.biomes.biomes), new Set(Object.keys(specials ?? {})));
+// 道具：图（assets/data/items.json）+ 持有效果 key + 掉落属性，三样都卡住
+const allTypes = new Set(Object.values(data.species.species).flatMap((s) => s.types ?? []));
+const itemCounts = validateItems(data.itemsData, data.itemArt?.items, allTypes);
+validateMerchants(data.merchants, new Set(Object.keys(data.species.species)), Object.keys(data.biomes.biomes), Object.keys(data.itemsData.items));
+validateEvents(data.events, cardIds, Object.keys(data.itemsData.items), Object.keys(data.biomes.biomes), new Set(Object.keys(specials ?? {})));
 
 if (errors.length) {
   console.error('\n内容校验没通过：');
@@ -824,7 +924,8 @@ if (errors.length) {
 
 const changed = [];
 if (!CHECK_ONLY) {
-  if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.items, data.cards.starterDeck, data.cards.starterItems))) changed.push('src/data/cards.js');
+  if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.starterDeck))) changed.push('src/data/cards.js');
+  if (await writeBlock('src/data/items.js', 'ITEMS', emitItems(data.itemsData, data.itemArt?.items))) changed.push('src/data/items.js');
   if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}, data.enemyVoice?.voice ?? {}))) changed.push('src/data/enemies.js');
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');
   if (await writeBlock('src/data/events.js', 'EVENTS', emitEvents(data.events))) changed.push('src/data/events.js');

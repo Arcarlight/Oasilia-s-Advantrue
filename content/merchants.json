@@ -43,7 +43,7 @@
       "cards": 3,
       "items": 4,
       "rarityBoost": 0.35,
-      "mustItems": ["potion_small", "potion_big"],
+      "mustItems": ["oran_berry", "sitrus_berry"],
       "service": "remove",
       "servicePrice": 60
     },
@@ -213,7 +213,7 @@
       "cards": 6,
       "items": 2,
       "rarityBoost": 0.75,
-      "mustItems": ["elixir"],
+      "mustItems": ["sweet_apple"],
       "service": "remove",
       "servicePrice": 100
     },
@@ -230,7 +230,7 @@
       "cards": 4,
       "items": 4,
       "rarityBoost": 0.35,
-      "mustItems": ["potion_small", "charm_luck"],
+      "mustItems": ["oran_berry", "charm_luck"],
       "service": "remove",
       "servicePrice": 55
     },
@@ -247,7 +247,7 @@
       "cards": 5,
       "items": 3,
       "rarityBoost": 0.5,
-      "mustItems": ["charm_agi", "elixir"],
+      "mustItems": ["charm_agi", "sweet_apple"],
       "service": "remove",
       "servicePrice": 70
     },

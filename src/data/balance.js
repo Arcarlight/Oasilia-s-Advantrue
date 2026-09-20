@@ -181,7 +181,17 @@ export const BALANCE = {
   fullHealAfterBoss: true, // 打完首领完全恢复，准备下一章
   restHealPct: 0.40,
   cardRewardChance: 0.7,
-  potionDropChance: 0.68,
+  /**
+   * 道具掉落（用户要的第三条：敌人掉落，概率低，按属性加权）。
+   *
+   * `potionDropChance`（0.68，旧背包制「打赢大概率掉药」）已经删掉 —— 那一版药水能带进战斗嗑，
+   * 现在的「使用道具」**只能在战斗外用**，掉落太频繁就等于白送续航。
+   * 这里的数字是「打赢之后掉一件道具」的概率，按敌人档位分：
+   * 普通怪很少掉，首领几乎每次都给点什么。
+   */
+  itemDropChance: { mob: 0.06, normal: 0.08, elite: 0.18, boss: 0.35 },
+  /** 掉落的道具里，**这件敌人的属性**对应的那些权重 ×这么多（其余属性权重 1） */
+  itemDropTypeWeight: 4,
 
   // ---- 玩家最少出战的卡牌数 ----
   minBattleDeck: 2,
