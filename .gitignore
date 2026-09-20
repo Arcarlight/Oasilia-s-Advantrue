@@ -51,3 +51,6 @@ assets/audio/bgm/*.mp3
 
 # 杂项
 *.log
+
+# 提交信息临时文件（别跟着提交进去）
+.git-commit-msg.txt

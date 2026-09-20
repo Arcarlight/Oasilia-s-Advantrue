@@ -100,6 +100,43 @@
       ok(drawCalls >= 2, '一次发多张牌会连响几下（1 张一声，封顶 3 声）', `响了 ${drawCalls} 声`);
     }
 
+    /**
+     * ④ 卡面角标：增益 / 削弱用**染色的上下箭头**（用户要求，取代温度计）。
+     * 光看图标名字不够 —— 角标是按 effects 推出来的（cardRoles），要确认「哪张牌拿到哪个角标」。
+     */
+    log('④ 卡面角标：红上箭头（增益）/ 蓝下箭头（削弱）');
+    {
+      const { cardRoles } = await import('/src/ui/cards.js');
+      const { CARD_BY_ID } = await import('/src/data/cards.js');
+      const { showCardCodex } = await import('/src/ui/codex.js');
+      // 用**卡牌图鉴**：它一次铺出全部卡面，两种角标都能找到（起始卡组里没有自强化牌）
+      game.phase = 'map';
+      ui.forceRerender();
+      await wait(300);
+      showCardCodex(game);
+      await wait(700);
+      const modal = [...document.querySelectorAll('.modal-backdrop')].pop();
+      const up = [...(modal?.querySelectorAll('.card-act.ico-arrow_up_red') ?? [])];
+      const down = [...(modal?.querySelectorAll('.card-act.ico-arrow_down_blue') ?? [])];
+      ok(up.length > 0, '卡面上有「红上箭头」角标（强化自己）', `${up.length} 处`);
+      ok(down.length > 0, '卡面上有「蓝下箭头」角标（削弱对手）', `${down.length} 处`);
+      // 反向验证：角标必须和 effects 推出来的角色一致（别把「给自己加攻」标成削弱）
+      let mismatched = 0;
+      for (const cardNode of modal?.querySelectorAll('.card') ?? []) {
+        const name = cardNode.querySelector('.card-name')?.textContent;
+        const card = Object.values(CARD_BY_ID).find((c) => c.name === name);
+        if (!card) continue;
+        const r = cardRoles(card);
+        const hasUp = !!cardNode.querySelector('.card-act.ico-arrow_up_red');
+        const hasDown = !!cardNode.querySelector('.card-act.ico-arrow_down_blue');
+        if (hasUp !== !!r.buffsSelf || hasDown !== !!r.weakensFoe) mismatched++;
+      }
+      ok(mismatched === 0, '角标和这张牌的效果对得上（增益=上箭头、削弱=下箭头，逐张核过）',
+        `${mismatched} 张对不上`);
+      for (const b of modal?.querySelectorAll('.modal-head button') ?? []) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(150);
+    }
+
     if (fails.length) log(`CS_ERRORS=[${fails.join(' | ')}]`);
     else log('卡牌音效自检：通过 ✓');
     log('CS_DONE');

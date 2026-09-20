@@ -1,0 +1,14 @@
+角标补齐：卡面上的增益 / 削弱换成红上箭头 / 蓝下箭头
+
+上一批把 6 张牌的 ico 换成了箭头，但卡面角标（.card-act）还挂在温度计上 ——
+而且 cardRoles() 根本没把 buffsSelf 返回出去，红色上箭头永远画不出来。
+现在：
+- cardRoles() 返回 buffsSelf（自己属性提升），卡面挂 .card-act.ico-arrow_up_red；
+  削弱对手还是 .card-act.ico-arrow_down_blue（紫 → 蓝，和新图标一致）。
+- diag-cardsound 新增第 ④ 节：在卡牌图鉴里逐张核对「角标 ↔ effects」，
+  实测红上箭头 33 处 / 蓝下箭头 138 处 / 0 张对不上。
+
+顺带：.git-commit-msg.txt 不再跟着提交（进 .gitignore）。
+
+验证：check-content --strict ✓ · check-copy 7/7 ✓ · diag-cardsound 全过 ✓ ·
+VERIFY_OK · SMOKE_OK。

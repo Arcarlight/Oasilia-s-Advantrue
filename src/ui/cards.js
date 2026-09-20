@@ -83,7 +83,7 @@ export function cardRoles(card) {
     });
   }
   // 最多挂两个：卡面底栏就那么宽，三个标记会挤掉类型标签
-  return { roles: roles.slice(0, 2), weakensFoe };
+  return { roles: roles.slice(0, 2), weakensFoe, buffsSelf };
 }
 
 /**
