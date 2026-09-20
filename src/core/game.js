@@ -33,8 +33,27 @@ export const Phase = {
 // 这里继续导出一次：src/ui/screens.js 等照旧从 game.js 取 STAT_NAMES。
 export { STAT_NAMES };
 
-// ================= 道具（手持道具） =================
+// ================= 营地冥想：把一张卡换成更强的 =================
 //
+// 这两个小工具放在文件顶部，是因为 restUpgrade / upgradeCandidates 要用它们，
+// 而那两个方法在类里（写在类前面更清楚：它们不认识 Game，只认卡牌数据）。
+
+/** 卡牌稀有度从低到高（冥想换牌按这个顺序比较「更强」） */
+const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic'];
+
+/**
+ * 这张牌算哪种**用途**（冥想换牌时尽量保持卡组形状：攻击牌换攻击牌）。
+ * 只看效果种类，不看数值 —— 数值强弱由稀有度那一档保证。
+ */
+function cardRoleOf(card) {
+  const kinds = new Set((card?.effects ?? []).map((e) => e.kind));
+  if (kinds.has('damage')) return 'attack';
+  if (kinds.has('shield')) return 'defense';
+  if (kinds.has('heal')) return 'heal';
+  return 'utility';
+}
+
+// ================= 道具（手持道具） =================//
 // 这一版把「背包（id → 数量，无限格）」换成了**手持道具**：
 //   · 一局只有 3 个手持栏，每打赢一个 boss +1（heldMax()）；
 //   · `kind: 'hold'` 拿在手上就一直生效（heldMods() 把它们汇总成一张系数表）；
@@ -1259,19 +1278,77 @@ export class Game {
     return healed;
   }
 
-  /** 营地：把一张卡换成更好的（相当于「升级」）*/
-  restUpgrade(cardId) {
+  /**
+   * 冥想：这张卡能换成哪些牌 —— **稀有度必须严格更高**。
+   *
+   * 用户报的问题（原话）：「说换更厉害的卡，可是实测下来给的卡却是随机的，根本不会增加品质」。
+   * 旧实现是一句 `rollCard(1.2, [])`：**随机**一张，只是把稀有卡概率抬了一点点 ——
+   * 换到和原来同级、甚至更差的牌完全可能（玩家当然看得出「冥想」白做了）。
+   *
+   * 现在的硬规则：
+   *   ① 候选的稀有度**严格高一档以上**（普通 → 精良 → 稀有 → 史诗）；
+   *   ② 尽量**只升一档**（普通牌不会一步变成史诗），而且**用途相同**优先
+   *      （原来的牌是攻击牌就给攻击牌），卡组的形状不会被打乱；
+   *   ③ 已经最高一档（史诗）→ 返回空数组，调用方要**如实拒绝**，而不是硬塞一张。
+   *
+   * 打分排序（分数相同随机）：同用途 +2、刚好高一档 +1，再加一点随机扰动。
+   *
+   * @returns {object[]} 最多 n 张候选（已按「更适合」排好序）
+   */
+  upgradeCandidates(cardId, n = 3) {
+    const card = CARD_BY_ID[cardId];
+    if (!card) return [];
+    const tier = RARITY_ORDER.indexOf(card.rarity);
+    if (tier < 0 || tier >= RARITY_ORDER.length - 1) return [];   // 已经最高一档：没得换
+    const role = cardRoleOf(card);
+    const nextTier = RARITY_ORDER[tier + 1];
+    const higher = CARDS.filter((c) => !c.enemyOnly && RARITY_ORDER.indexOf(c.rarity) > tier);
+    const scored = higher.map((c) => ({
+      c,
+      score: (cardRoleOf(c) === role ? 2 : 0) + (c.rarity === nextTier ? 1 : 0) + this.rng() * 0.9,
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, n).map((s) => s.c);
+  }
+
+  /**
+   * 营地：把一张卡换成更好的（冥想）。
+   *
+   * @param {string} cardId 要换掉的卡
+   * @param {string} [newId] 玩家从候选里挑的那张；不传就自动取最合适的一张（测试与老调用方用）
+   * @returns {{removed:string, gained:string, from:string, to:string}|{ok:false, text:string}|null}
+   */
+  restUpgrade(cardId, newId = null) {
     if (this.rest?.done) return null;
     const card = CARD_BY_ID[cardId];
     if (!card) return null;
-    const better = rollCard(1.2, []);
     const idx = this.data.deck.indexOf(cardId);
     if (idx < 0) return null;
+    const cands = this.upgradeCandidates(cardId);
+    if (!cands.length) {
+      /**
+       * 换不出更强的牌 —— **不消耗这次机会**，如实说清楚。
+       * 旧实现这里会硬塞一张随机牌并且照样用掉机会，玩家等于白扔一次营地。
+       */
+      return {
+        ok: false,
+        text: t('「{name}」已经是{rarity}了 —— 冥想换不出更强的牌，这次机会先留着。', {
+          name: card.name, rarity: RARITY[card.rarity]?.name ?? card.rarity,
+        }),
+      };
+    }
+    const better = cands.find((c) => c.id === newId) ?? cands[0];
     this.data.deck.splice(idx, 1);
     this.addCard(better.id);
     this.rest.upgraded = true;
     this.rest.done = true;
-    this.rest.upgradeResult = { removed: card.name, gained: better.name };
+    this.rest.upgradeResult = {
+      removed: card.name,
+      gained: better.name,
+      // 稀有度也一起记下来：界面要显示「精良 → 稀有」，让玩家**看得见**这次换牌确实变强了
+      from: RARITY[card.rarity]?.name ?? card.rarity,
+      to: RARITY[better.rarity]?.name ?? better.rarity,
+    };
     if (this.data.rests?.[this.rest.key]) this.data.rests[this.rest.key].upgradeResult = this.rest.upgradeResult;
     this.save();
     this.changed();

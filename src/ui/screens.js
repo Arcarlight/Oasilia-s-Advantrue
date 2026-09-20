@@ -620,7 +620,14 @@ function renderRest(game) {
         if (spent) return;
         audio.ui('open');
         showUpgradePicker(game, rest, (res) => {
-          if (res) toast(`「${res.removed}」→「${res.gained}」`, 'good');
+          /**
+           * res 有三种：
+           *   · `{removed, gained, from, to}` —— 换成功（把稀有度变化一起报给玩家，让他**看得见**变强了）
+           *   · `{ok:false, text}` —— 换不出更强的牌（那张已经是最高一档），这次机会没被用掉
+           *   · `null` —— 玩家取消了
+           */
+          if (res && res.ok === false) toast(res.text, 'bad');
+          else if (res) toast(t('「{a}」→「{b}」（{from} → {to}）', { a: res.removed, b: res.gained, from: res.from, to: res.to }), 'good');
           paint();
         });
       },
@@ -631,10 +638,15 @@ function renderRest(game) {
       ]),
       el('small', {
         text: rest.upgraded
-          ? t('已经把「{card}」换掉了。', { card: rest.upgradeResult?.removed ?? t('一张卡') })
+          ? t('已经把「{card}」换掉了（{from} → {to}）。', {
+              card: rest.upgradeResult?.removed ?? t('一张卡'),
+              from: rest.upgradeResult?.from ?? '',
+              to: rest.upgradeResult?.to ?? '',
+            })
           : spent
             ? t('这次机会已经用在休息上了。')
-            : t('随机替换为一张更高稀有度的卡'),
+            // 说清规则：不是随机塞一张，而是**你挑**一张更强的
+            : t('从三张更强的牌里挑一张（稀有度更高、用途相同优先）'),
       }),
     ]));
 
@@ -652,12 +664,25 @@ function renderRest(game) {
   return screen;
 }
 
+/**
+ * 冥想：两步选牌。
+ *
+ * 第一步选「要换掉的卡」，第二步**从 3 张确实更强的候选里挑一张**（用户要的：换更厉害的卡）。
+ *
+ * 为什么要给候选而不是直接换：旧实现随机塞一张，玩家看不出「冥想」做了什么
+ * （用户实测报的就是这个：「给的卡却是随机的，根本不会增加品质」）。
+ * 候选由 `game.upgradeCandidates()` 出，**稀有度严格更高**；换不出更强的牌时
+ * 第二步会说清楚并且**不消耗这次机会**。
+ */
 function showUpgradePicker(game, rest, done) {
   const m = modal({
-    title: t('选择要替换的卡牌'),
+    title: t('冥想：选一张要换掉的卡'),
     wide: true,
     body: el('div', {}, [
-      el('p', { text: t('这张卡会从卡组里移除，并换成一张随机的高稀有度卡牌。'), style: { marginTop: 0, opacity: .8 } }),
+      el('p', {
+        text: t('这张卡会从卡组里移除，然后你从三张**更强**的牌里挑一张（稀有度更高、用途相同优先）。'),
+        style: { marginTop: 0, opacity: .8 },
+      }),
     ]),
   });
   const grid = el('div', { class: 'card-grid' });
@@ -670,15 +695,56 @@ function showUpgradePicker(game, rest, done) {
       size: 'sm',
       badges: n > 1 ? [`×${n}`] : [],
       onClick: () => {
-        const res = game.restUpgrade(id);
         m.close();
-        done(res);
+        showUpgradeChoice(game, id, done);
       },
     });
     grid.append(node);
   }
   m.box.querySelector('.modal-body').append(grid);
 }
+
+/**
+ * 第二步：从候选里挑一张。
+ *
+ * 候选为空（那张牌已经是最高一档）→ 直接走 restUpgrade 的拒绝分支，
+ * 把理由原样透给玩家（并且这次营地机会**不会被用掉**）。
+ */
+function showUpgradeChoice(game, cardId, done) {
+  const card = CARD_BY_ID[cardId];
+  const cands = game.upgradeCandidates(cardId);
+  if (!cands.length) {
+    done(game.restUpgrade(cardId));   // 会返回 {ok:false, text} —— 界面负责把话说清楚
+    return;
+  }
+  const m = modal({
+    title: t('冥想：给「{name}」换一张', { name: card?.name ?? cardId }),
+    wide: true,
+    body: el('div', {}, [
+      el('p', {
+        text: t('下面这几张都比它更强（稀有度更高）。挑一张带走 —— 选不了就取消，机会还留着。'),
+        style: { marginTop: 0, opacity: .8 },
+      }),
+    ]),
+    foot: [el('button', { class: 'btn btn-ghost', onClick: () => m.close() }, [t('算了，先不换')])],
+  });
+  const grid = el('div', { class: 'card-grid' });
+  for (const c of cands) {
+    grid.append(cardEl(c, {
+      size: 'sm',
+      badges: [t(RARITY_LABEL[c.rarity] ?? c.rarity)],
+      onClick: () => {
+        const res = game.restUpgrade(cardId, c.id);
+        m.close();
+        done(res);
+      },
+    }));
+  }
+  m.box.querySelector('.modal-body').append(grid);
+}
+
+/** 稀有度中文名（和卡面 / 图鉴同一套说法） */
+const RARITY_LABEL = { common: '普通', uncommon: '精良', rare: '稀有', epic: '史诗' };
 
 // ============================================================
 // 商店

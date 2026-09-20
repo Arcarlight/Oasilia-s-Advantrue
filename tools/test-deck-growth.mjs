@@ -23,7 +23,7 @@ globalThis.localStorage = {
 };
 
 const { Game } = await imp('src/core/game.js');
-const { CARD_BY_ID } = await imp('src/data/cards.js');
+const { CARD_BY_ID, CARDS } = await imp('src/data/cards.js');
 
 const RUNS = Number(process.argv[2] ?? 150);
 let pass = 0;
@@ -261,6 +261,74 @@ console.log('\n④ 奖励保底：既没有回血牌、也没有解状态牌时�
     if (picked[0].id !== 'a' || picked[1].id !== 'b') frontTouched += 1;
   }
   ok(frontTouched === 0, '保底只动末尾的选项，前两个随机结果始终保留', `${frontTouched} 次被改动`);
+}
+
+// ---------------- ⑤ 营地冥想：换来的牌必须**真的更强** ----------------
+/**
+ * 用户报的问题（原话）：「说换更厉害的卡，可是实测下来给的卡却是随机的，根本不会增加品质」。
+ * 旧实现是 `rollCard(1.2, [])` —— 随机一张，顺手把稀有度抬一点点；
+ * 换到同级甚至更差的牌完全可能，玩家当然看得出「冥想白做了」。
+ *
+ * 这条测试把新的硬规则钉死：
+ *   ① 候选**稀有度严格更高**（300 次抽样里一次例外都不许有）；
+ *   ② 用途优先相同（攻击牌换攻击牌），卡组形状不被打乱；
+ *   ③ 已经是最高一档（史诗）→ **拒绝，并且不消耗这次营地机会**（旧实现会白扔一次）。
+ */
+{
+  console.log('\n⑤ 营地冥想：换来的牌必须真的更强');
+  const ORDER = ['common', 'uncommon', 'rare', 'epic'];
+  const roleOf = (c) => {
+    const k = new Set((c.effects ?? []).map((e) => e.kind));
+    if (k.has('damage')) return 'attack';
+    if (k.has('shield')) return 'defense';
+    if (k.has('heal')) return 'heal';
+    return 'utility';
+  };
+  const mk = (seed) => { const g = new Game({ seed }); g.newRun(seed); g.startRest(); return g; };
+
+  let trials = 0;
+  let notHigher = 0;
+  let roleKept = 0;
+  for (let i = 0; i < 300; i++) {
+    const g = mk(4000 + i);
+    const id = g.data.deck[0];
+    const card = CARD_BY_ID[id];
+    if (!card) continue;
+    const cands = g.upgradeCandidates(id);
+    if (!cands.length) continue;                     // 已经是史诗：本来就没得换
+    const res = g.restUpgrade(id, cands[0].id);
+    if (!res || res.ok === false) { notHigher += 1; continue; }
+    trials += 1;
+    const gained = CARDS.find((c) => c.id === cands[0].id);
+    if (ORDER.indexOf(gained?.rarity) <= ORDER.indexOf(card.rarity)) notHigher += 1;
+    if (roleOf(gained) === roleOf(card)) roleKept += 1;
+  }
+  ok(trials > 250 && notHigher === 0, '300 次冥想里，每一次换来的牌稀有度都**严格更高**',
+    `${trials} 次成功 · 没变高的 ${notHigher} 次`);
+  ok(roleKept >= trials * 0.9, '用途优先相同（攻击牌换攻击牌，卡组形状不乱）',
+    `${Math.round((roleKept / Math.max(1, trials)) * 100)}% 用途相同`);
+
+  // 候选本身也不能夹带同级 / 更低的牌
+  {
+    const g = mk(555);
+    const id = g.data.deck[0];
+    const base = CARD_BY_ID[id];
+    const bad = g.upgradeCandidates(id, 50).filter((c) => ORDER.indexOf(c.rarity) <= ORDER.indexOf(base.rarity));
+    ok(!bad.length, '候选列表里没有同级或更低的牌',
+      bad.length ? bad.map((c) => `${c.name}(${c.rarity})`).join('、') : `「${base.name}」(${base.rarity}) 的候选全是更高稀有度`);
+  }
+
+  // 史诗牌：拒绝且不吃掉机会
+  {
+    const g = mk(556);
+    const epic = CARDS.find((c) => c.rarity === 'epic' && !c.enemyOnly);
+    g.data.deck = [epic.id, 'tackle'];
+    g.startRest();
+    const res = g.restUpgrade(epic.id);
+    ok(res?.ok === false, '史诗牌冥想会被**如实拒绝**（换不出更强的）', res?.text);
+    ok(g.rest?.done !== true, '拒绝时**不消耗**这次营地机会（旧实现会白扔一次）');
+    ok(g.data.deck.includes(epic.id), '牌还在卡组里（没被误删）');
+  }
 }
 
 console.log(`\n卡组增长回归测试：通过 ${pass}，失败 ${fail}`);
