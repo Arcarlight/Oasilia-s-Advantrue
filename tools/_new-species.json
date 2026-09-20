@@ -1,0 +1,938 @@
+{
+ "26": {
+  "dex": "0026",
+  "slug": "raichu",
+  "zh": "雷丘",
+  "en": "Raichu",
+  "ja": "ライチュウ",
+  "types": [
+   "电"
+  ],
+  "gen": 1
+ },
+ "45": {
+  "dex": "0045",
+  "slug": "vileplume",
+  "zh": "霸王花",
+  "en": "Vileplume",
+  "ja": "ラフレシア",
+  "types": [
+   "草",
+   "毒"
+  ],
+  "gen": 1
+ },
+ "88": {
+  "dex": "0088",
+  "slug": "grimer",
+  "zh": "臭泥",
+  "en": "Grimer",
+  "ja": "ベトベター",
+  "types": [
+   "毒"
+  ],
+  "gen": 1
+ },
+ "92": {
+  "dex": "0092",
+  "slug": "gastly",
+  "zh": "鬼斯",
+  "en": "Gastly",
+  "ja": "ゴース",
+  "types": [
+   "幽灵",
+   "毒"
+  ],
+  "gen": 1
+ },
+ "94": {
+  "dex": "0094",
+  "slug": "gengar",
+  "zh": "耿鬼",
+  "en": "Gengar",
+  "ja": "ゲンガー",
+  "types": [
+   "幽灵",
+   "毒"
+  ],
+  "gen": 1
+ },
+ "95": {
+  "dex": "0095",
+  "slug": "onix",
+  "zh": "大岩蛇",
+  "en": "Onix",
+  "ja": "イワーク",
+  "types": [
+   "岩石",
+   "地面"
+  ],
+  "gen": 1
+ },
+ "101": {
+  "dex": "0101",
+  "slug": "electrode",
+  "zh": "顽皮雷弹",
+  "en": "Electrode",
+  "ja": "マルマイン",
+  "types": [
+   "电"
+  ],
+  "gen": 1
+ },
+ "104": {
+  "dex": "0104",
+  "slug": "cubone",
+  "zh": "卡拉卡拉",
+  "en": "Cubone",
+  "ja": "カラカラ",
+  "types": [
+   "地面"
+  ],
+  "gen": 1
+ },
+ "166": {
+  "dex": "0166",
+  "slug": "ledian",
+  "zh": "安瓢虫",
+  "en": "Ledian",
+  "ja": "レディアン",
+  "types": [
+   "虫",
+   "飞行"
+  ],
+  "gen": 2
+ },
+ "195": {
+  "dex": "0195",
+  "slug": "quagsire",
+  "zh": "沼王",
+  "en": "Quagsire",
+  "ja": "ヌオー",
+  "types": [
+   "水",
+   "地面"
+  ],
+  "gen": 2
+ },
+ "201": {
+  "dex": "0201",
+  "slug": "unown",
+  "zh": "未知图腾",
+  "en": "Unown",
+  "ja": "アンノーン",
+  "types": [
+   "超能"
+  ],
+  "gen": 2
+ },
+ "218": {
+  "dex": "0218",
+  "slug": "slugma",
+  "zh": "熔岩虫",
+  "en": "Slugma",
+  "ja": "マグマッグ",
+  "types": [
+   "火"
+  ],
+  "gen": 2
+ },
+ "239": {
+  "dex": "0239",
+  "slug": "elekid",
+  "zh": "电击怪",
+  "en": "Elekid",
+  "ja": "エレキッド",
+  "types": [
+   "电"
+  ],
+  "gen": 2
+ },
+ "259": {
+  "dex": "0259",
+  "slug": "marshtomp",
+  "zh": "沼跃鱼",
+  "en": "Marshtomp",
+  "ja": "ヌマクロー",
+  "types": [
+   "水",
+   "地面"
+  ],
+  "gen": 3
+ },
+ "267": {
+  "dex": "0267",
+  "slug": "beautifly",
+  "zh": "狩猎凤蝶",
+  "en": "Beautifly",
+  "ja": "アゲハント",
+  "types": [
+   "虫",
+   "飞行"
+  ],
+  "gen": 3
+ },
+ "285": {
+  "dex": "0285",
+  "slug": "shroomish",
+  "zh": "蘑蘑菇",
+  "en": "Shroomish",
+  "ja": "キノココ",
+  "types": [
+   "草"
+  ],
+  "gen": 3
+ },
+ "290": {
+  "dex": "0290",
+  "slug": "nincada",
+  "zh": "土居忍士",
+  "en": "Nincada",
+  "ja": "ツチニン",
+  "types": [
+   "虫",
+   "地面"
+  ],
+  "gen": 3
+ },
+ "303": {
+  "dex": "0303",
+  "slug": "mawile",
+  "zh": "大嘴娃",
+  "en": "Mawile",
+  "ja": "クチート",
+  "types": [
+   "钢",
+   "妖精"
+  ],
+  "gen": 3
+ },
+ "309": {
+  "dex": "0309",
+  "slug": "electrike",
+  "zh": "落雷兽",
+  "en": "Electrike",
+  "ja": "ラクライ",
+  "types": [
+   "电"
+  ],
+  "gen": 3
+ },
+ "310": {
+  "dex": "0310",
+  "slug": "manectric",
+  "zh": "雷电兽",
+  "en": "Manectric",
+  "ja": "ライボルト",
+  "types": [
+   "电"
+  ],
+  "gen": 3
+ },
+ "343": {
+  "dex": "0343",
+  "slug": "baltoy",
+  "zh": "天秤偶",
+  "en": "Baltoy",
+  "ja": "ヤジロン",
+  "types": [
+   "地面",
+   "超能"
+  ],
+  "gen": 3
+ },
+ "353": {
+  "dex": "0353",
+  "slug": "shuppet",
+  "zh": "怨影娃娃",
+  "en": "Shuppet",
+  "ja": "カゲボウズ",
+  "types": [
+   "幽灵"
+  ],
+  "gen": 3
+ },
+ "354": {
+  "dex": "0354",
+  "slug": "banette",
+  "zh": "诅咒娃娃",
+  "en": "Banette",
+  "ja": "ジュペッタ",
+  "types": [
+   "幽灵"
+  ],
+  "gen": 3
+ },
+ "355": {
+  "dex": "0355",
+  "slug": "duskull",
+  "zh": "夜巡灵",
+  "en": "Duskull",
+  "ja": "ヨマワル",
+  "types": [
+   "幽灵"
+  ],
+  "gen": 3
+ },
+ "362": {
+  "dex": "0362",
+  "slug": "glalie",
+  "zh": "冰鬼护",
+  "en": "Glalie",
+  "ja": "オニゴーリ",
+  "types": [
+   "冰"
+  ],
+  "gen": 3
+ },
+ "374": {
+  "dex": "0374",
+  "slug": "beldum",
+  "zh": "铁哑铃",
+  "en": "Beldum",
+  "ja": "ダンバル",
+  "types": [
+   "钢",
+   "超能"
+  ],
+  "gen": 3
+ },
+ "375": {
+  "dex": "0375",
+  "slug": "metang",
+  "zh": "金属怪",
+  "en": "Metang",
+  "ja": "メタング",
+  "types": [
+   "钢",
+   "超能"
+  ],
+  "gen": 3
+ },
+ "377": {
+  "dex": "0377",
+  "slug": "regirock",
+  "zh": "雷吉洛克",
+  "en": "Regirock",
+  "ja": "レジロック",
+  "types": [
+   "岩石"
+  ],
+  "gen": 3
+ },
+ "409": {
+  "dex": "0409",
+  "slug": "rampardos",
+  "zh": "战槌龙",
+  "en": "Rampardos",
+  "ja": "ラムパルド",
+  "types": [
+   "岩石"
+  ],
+  "gen": 4
+ },
+ "411": {
+  "dex": "0411",
+  "slug": "bastiodon",
+  "zh": "护城龙",
+  "en": "Bastiodon",
+  "ja": "トリデプス",
+  "types": [
+   "岩石",
+   "钢"
+  ],
+  "gen": 4
+ },
+ "423": {
+  "dex": "0423",
+  "slug": "gastrodon",
+  "zh": "海兔兽",
+  "en": "Gastrodon",
+  "ja": "トリトドン",
+  "types": [
+   "水",
+   "地面"
+  ],
+  "gen": 4
+ },
+ "429": {
+  "dex": "0429",
+  "slug": "mismagius",
+  "zh": "梦妖魔",
+  "en": "Mismagius",
+  "ja": "ムウマージ",
+  "types": [
+   "幽灵"
+  ],
+  "gen": 4
+ },
+ "436": {
+  "dex": "0436",
+  "slug": "bronzor",
+  "zh": "铜镜怪",
+  "en": "Bronzor",
+  "ja": "ドーミラー",
+  "types": [
+   "钢",
+   "超能"
+  ],
+  "gen": 4
+ },
+ "437": {
+  "dex": "0437",
+  "slug": "bronzong",
+  "zh": "青铜钟",
+  "en": "Bronzong",
+  "ja": "ドータクン",
+  "types": [
+   "钢",
+   "超能"
+  ],
+  "gen": 4
+ },
+ "442": {
+  "dex": "0442",
+  "slug": "spiritomb",
+  "zh": "花岩怪",
+  "en": "Spiritomb",
+  "ja": "ミカルゲ",
+  "types": [
+   "幽灵",
+   "恶"
+  ],
+  "gen": 4
+ },
+ "454": {
+  "dex": "0454",
+  "slug": "toxicroak",
+  "zh": "毒骷蛙",
+  "en": "Toxicroak",
+  "ja": "ドクロッグ",
+  "types": [
+   "毒",
+   "格斗"
+  ],
+  "gen": 4
+ },
+ "465": {
+  "dex": "0465",
+  "slug": "tangrowth",
+  "zh": "巨蔓藤",
+  "en": "Tangrowth",
+  "ja": "モジャンボ",
+  "types": [
+   "草"
+  ],
+  "gen": 4
+ },
+ "466": {
+  "dex": "0466",
+  "slug": "electivire",
+  "zh": "电击魔兽",
+  "en": "Electivire",
+  "ja": "エレキブル",
+  "types": [
+   "电"
+  ],
+  "gen": 4
+ },
+ "476": {
+  "dex": "0476",
+  "slug": "probopass",
+  "zh": "大朝北鼻",
+  "en": "Probopass",
+  "ja": "ダイノーズ",
+  "types": [
+   "岩石",
+   "钢"
+  ],
+  "gen": 4
+ },
+ "486": {
+  "dex": "0486",
+  "slug": "regigigas",
+  "zh": "雷吉奇卡斯",
+  "en": "Regigigas",
+  "ja": "レジギガス",
+  "types": [
+   "一般"
+  ],
+  "gen": 4
+ },
+ "491": {
+  "dex": "0491",
+  "slug": "darkrai",
+  "zh": "达克莱伊",
+  "en": "Darkrai",
+  "ja": "ダークライ",
+  "types": [
+   "恶"
+  ],
+  "gen": 4
+ },
+ "526": {
+  "dex": "0526",
+  "slug": "gigalith",
+  "zh": "庞岩怪",
+  "en": "Gigalith",
+  "ja": "ギガイアス",
+  "types": [
+   "岩石"
+  ],
+  "gen": 5
+ },
+ "530": {
+  "dex": "0530",
+  "slug": "excadrill",
+  "zh": "龙头地鼠",
+  "en": "Excadrill",
+  "ja": "ドリュウズ",
+  "types": [
+   "地面",
+   "钢"
+  ],
+  "gen": 5
+ },
+ "537": {
+  "dex": "0537",
+  "slug": "seismitoad",
+  "zh": "蟾蜍王",
+  "en": "Seismitoad",
+  "ja": "ガマゲロゲ",
+  "types": [
+   "水",
+   "地面"
+  ],
+  "gen": 5
+ },
+ "538": {
+  "dex": "0538",
+  "slug": "throh",
+  "zh": "投摔鬼",
+  "en": "Throh",
+  "ja": "ナゲキ",
+  "types": [
+   "格斗"
+  ],
+  "gen": 5
+ },
+ "554": {
+  "dex": "0554",
+  "slug": "darumaka",
+  "zh": "火红不倒翁",
+  "en": "Darumaka",
+  "ja": "ダルマッカ",
+  "types": [
+   "火"
+  ],
+  "gen": 5
+ },
+ "557": {
+  "dex": "0557",
+  "slug": "dwebble",
+  "zh": "石居蟹",
+  "en": "Dwebble",
+  "ja": "イシズマイ",
+  "types": [
+   "虫",
+   "岩石"
+  ],
+  "gen": 5
+ },
+ "565": {
+  "dex": "0565",
+  "slug": "carracosta",
+  "zh": "肋骨海龟",
+  "en": "Carracosta",
+  "ja": "アバゴーラ",
+  "types": [
+   "水",
+   "岩石"
+  ],
+  "gen": 5
+ },
+ "591": {
+  "dex": "0591",
+  "slug": "amoonguss",
+  "zh": "败露球菇",
+  "en": "Amoonguss",
+  "ja": "モロバレル",
+  "types": [
+   "草",
+   "毒"
+  ],
+  "gen": 5
+ },
+ "618": {
+  "dex": "0618",
+  "slug": "stunfisk",
+  "zh": "泥巴鱼",
+  "en": "Stunfisk",
+  "ja": "マッギョ",
+  "types": [
+   "地面",
+   "电"
+  ],
+  "gen": 5
+ },
+ "622": {
+  "dex": "0622",
+  "slug": "golett",
+  "zh": "泥偶小人",
+  "en": "Golett",
+  "ja": "ゴビット",
+  "types": [
+   "地面",
+   "幽灵"
+  ],
+  "gen": 5
+ },
+ "627": {
+  "dex": "0627",
+  "slug": "rufflet",
+  "zh": "毛头小鹰",
+  "en": "Rufflet",
+  "ja": "ワシボン",
+  "types": [
+   "一般",
+   "飞行"
+  ],
+  "gen": 5
+ },
+ "632": {
+  "dex": "0632",
+  "slug": "durant",
+  "zh": "铁蚁",
+  "en": "Durant",
+  "ja": "アイアント",
+  "types": [
+   "虫",
+   "钢"
+  ],
+  "gen": 5
+ },
+ "646": {
+  "dex": "0646",
+  "slug": "kyurem",
+  "zh": "酋雷姆",
+  "en": "Kyurem",
+  "ja": "キュレム",
+  "types": [
+   "龙",
+   "冰"
+  ],
+  "gen": 5
+ },
+ "695": {
+  "dex": "0695",
+  "slug": "heliolisk",
+  "zh": "光电伞蜥",
+  "en": "Heliolisk",
+  "ja": "エレザード",
+  "types": [
+   "电",
+   "一般"
+  ],
+  "gen": 6
+ },
+ "699": {
+  "dex": "0699",
+  "slug": "aurorus",
+  "zh": "冰雪巨龙",
+  "en": "Aurorus",
+  "ja": "アマルルガ",
+  "types": [
+   "岩石",
+   "冰"
+  ],
+  "gen": 6
+ },
+ "704": {
+  "dex": "0704",
+  "slug": "goomy",
+  "zh": "黏黏宝",
+  "en": "Goomy",
+  "ja": "ヌメラ",
+  "types": [
+   "龙"
+  ],
+  "gen": 6
+ },
+ "710": {
+  "dex": "0710",
+  "slug": "pumpkaboo",
+  "zh": "南瓜精",
+  "en": "Pumpkaboo",
+  "ja": "バケッチャ",
+  "types": [
+   "幽灵",
+   "草"
+  ],
+  "gen": 6
+ },
+ "712": {
+  "dex": "0712",
+  "slug": "bergmite",
+  "zh": "冰宝",
+  "en": "Bergmite",
+  "ja": "カチコール",
+  "types": [
+   "冰"
+  ],
+  "gen": 6
+ },
+ "713": {
+  "dex": "0713",
+  "slug": "avalugg",
+  "zh": "冰岩怪",
+  "en": "Avalugg",
+  "ja": "クレベース",
+  "types": [
+   "冰"
+  ],
+  "gen": 6
+ },
+ "714": {
+  "dex": "0714",
+  "slug": "noibat",
+  "zh": "嗡蝠",
+  "en": "Noibat",
+  "ja": "オンバット",
+  "types": [
+   "飞行",
+   "龙"
+  ],
+  "gen": 6
+ },
+ "719": {
+  "dex": "0719",
+  "slug": "diancie",
+  "zh": "蒂安希",
+  "en": "Diancie",
+  "ja": "ディアンシー",
+  "types": [
+   "岩石",
+   "妖精"
+  ],
+  "gen": 6
+ },
+ "738": {
+  "dex": "0738",
+  "slug": "vikavolt",
+  "zh": "锹农炮虫",
+  "en": "Vikavolt",
+  "ja": "クワガノン",
+  "types": [
+   "虫",
+   "电"
+  ],
+  "gen": 7
+ },
+ "748": {
+  "dex": "0748",
+  "slug": "toxapex",
+  "zh": "超坏星",
+  "en": "Toxapex",
+  "ja": "ドヒドイデ",
+  "types": [
+   "毒",
+   "水"
+  ],
+  "gen": 7
+ },
+ "751": {
+  "dex": "0751",
+  "slug": "dewpider",
+  "zh": "滴蛛",
+  "en": "Dewpider",
+  "ja": "シズクモ",
+  "types": [
+   "水",
+   "虫"
+  ],
+  "gen": 7
+ },
+ "778": {
+  "dex": "0778",
+  "slug": "mimikyu",
+  "zh": "谜拟丘",
+  "en": "Mimikyu",
+  "ja": "ミミッキュ",
+  "types": [
+   "幽灵",
+   "妖精"
+  ],
+  "gen": 7
+ },
+ "779": {
+  "dex": "0779",
+  "slug": "bruxish",
+  "zh": "磨牙彩皮鱼",
+  "en": "Bruxish",
+  "ja": "ハギギシリ",
+  "types": [
+   "水",
+   "超能"
+  ],
+  "gen": 7
+ },
+ "807": {
+  "dex": "0807",
+  "slug": "zeraora",
+  "zh": "捷拉奥拉",
+  "en": "Zeraora",
+  "ja": "ゼラオラ",
+  "types": [
+   "电"
+  ],
+  "gen": 7
+ },
+ "821": {
+  "dex": "0821",
+  "slug": "rookidee",
+  "zh": "稚山雀",
+  "en": "Rookidee",
+  "ja": "ココガラ",
+  "types": [
+   "飞行"
+  ],
+  "gen": 8
+ },
+ "823": {
+  "dex": "0823",
+  "slug": "corviknight",
+  "zh": "钢铠鸦",
+  "en": "Corviknight",
+  "ja": "アーマーガア",
+  "types": [
+   "飞行",
+   "钢"
+  ],
+  "gen": 8
+ },
+ "838": {
+  "dex": "0838",
+  "slug": "carkol",
+  "zh": "大炭车",
+  "en": "Carkol",
+  "ja": "トロッゴン",
+  "types": [
+   "岩石",
+   "火"
+  ],
+  "gen": 8
+ },
+ "843": {
+  "dex": "0843",
+  "slug": "silicobra",
+  "zh": "沙包蛇",
+  "en": "Silicobra",
+  "ja": "スナヘビ",
+  "types": [
+   "地面"
+  ],
+  "gen": 8
+ },
+ "844": {
+  "dex": "0844",
+  "slug": "sandaconda",
+  "zh": "沙螺蟒",
+  "en": "Sandaconda",
+  "ja": "サダイジャ",
+  "types": [
+   "地面"
+  ],
+  "gen": 8
+ },
+ "850": {
+  "dex": "0850",
+  "slug": "sizzlipede",
+  "zh": "烧火蚣",
+  "en": "Sizzlipede",
+  "ja": "ヤクデ",
+  "types": [
+   "火",
+   "虫"
+  ],
+  "gen": 8
+ },
+ "851": {
+  "dex": "0851",
+  "slug": "centiskorch",
+  "zh": "焚焰蚣",
+  "en": "Centiskorch",
+  "ja": "マルヤクデ",
+  "types": [
+   "火",
+   "虫"
+  ],
+  "gen": 8
+ },
+ "867": {
+  "dex": "0867",
+  "slug": "runerigus",
+  "zh": "迭失板",
+  "en": "Runerigus",
+  "ja": "デスバーン",
+  "types": [
+   "地面",
+   "幽灵"
+  ],
+  "gen": 8
+ },
+ "870": {
+  "dex": "0870",
+  "slug": "falinks",
+  "zh": "列阵兵",
+  "en": "Falinks",
+  "ja": "タイレーツ",
+  "types": [
+   "格斗"
+  ],
+  "gen": 8
+ },
+ "871": {
+  "dex": "0871",
+  "slug": "pincurchin",
+  "zh": "啪嚓海胆",
+  "en": "Pincurchin",
+  "ja": "バチンウニ",
+  "types": [
+   "电"
+  ],
+  "gen": 8
+ },
+ "874": {
+  "dex": "0874",
+  "slug": "stonjourner",
+  "zh": "巨石丁",
+  "en": "Stonjourner",
+  "ja": "イシヘンジン",
+  "types": [
+   "岩石"
+  ],
+  "gen": 8
+ },
+ "932": {
+  "dex": "0932",
+  "slug": "nacli",
+  "zh": "盐石宝",
+  "en": "Nacli",
+  "ja": "コジオ",
+  "types": [
+   "岩石"
+  ],
+  "gen": 9
+ },
+ "933": {
+  "dex": "0933",
+  "slug": "naclstack",
+  "zh": "盐石垒",
+  "en": "Naclstack",
+  "ja": "ジオヅム",
+  "types": [
+   "岩石"
+  ],
+  "gen": 9
+ }
+}

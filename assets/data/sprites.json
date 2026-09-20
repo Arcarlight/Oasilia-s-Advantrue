@@ -144,6 +144,35 @@
    }
   }
  },
+ "raichu": {
+  "dex": "0026",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
  "sandshrew": {
   "dex": "0027",
   "anims": {
@@ -256,6 +285,35 @@
     "cols": 5,
     "rows": 8,
     "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "vileplume": {
+  "dex": "0045",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
     "src": "animdata"
    }
   }
@@ -608,6 +666,35 @@
    }
   }
  },
+ "grimer": {
+  "dex": "0088",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "shellder": {
   "dex": "0090",
   "anims": {
@@ -666,6 +753,93 @@
    }
   }
  },
+ "gastly": {
+  "dex": "0092",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "gengar": {
+  "dex": "0094",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "onix": {
+  "dex": "0095",
+  "anims": {
+   "Attack": {
+    "fw": 128,
+    "fh": 152,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 80,
+    "fh": 88,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 96,
+    "fh": 104,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "kingler": {
   "dex": "0099",
   "anims": {
@@ -691,6 +865,64 @@
     "cols": 2,
     "rows": 8,
     "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "electrode": {
+  "dex": "0101",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "cubone": {
+  "dex": "0104",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
     "src": "animdata"
    }
   }
@@ -840,6 +1072,35 @@
    }
   }
  },
+ "ledian": {
+  "dex": "0166",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
+    "src": "animdata"
+   }
+  }
+ },
  "mareep": {
   "dex": "0179",
   "anims": {
@@ -894,6 +1155,64 @@
     "cols": 7,
     "rows": 8,
     "frames": 56,
+    "src": "animdata"
+   }
+  }
+ },
+ "quagsire": {
+  "dex": "0195",
+  "anims": {
+   "Attack": {
+    "fw": 88,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56,
+    "src": "animdata"
+   }
+  }
+ },
+ "unown": {
+  "dex": "0201",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
     "src": "animdata"
    }
   }
@@ -1010,6 +1329,35 @@
     "cols": 6,
     "rows": 8,
     "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "slugma": {
+  "dex": "0218",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
     "src": "animdata"
    }
   }
@@ -1159,6 +1507,35 @@
    }
   }
  },
+ "elekid": {
+  "dex": "0239",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "larvitar": {
   "dex": "0246",
   "anims": {
@@ -1304,6 +1681,64 @@
    }
   }
  },
+ "marshtomp": {
+  "dex": "0259",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "beautifly": {
+  "dex": "0267",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 16,
+    "rows": 8,
+    "frames": 128,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "taillow": {
   "dex": "0276",
   "anims": {
@@ -1326,6 +1761,35 @@
    "Idle": {
     "fw": 32,
     "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "shroomish": {
+  "dex": "0285",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
     "cols": 5,
     "rows": 8,
     "frames": 40,
@@ -1362,6 +1826,35 @@
    }
   }
  },
+ "nincada": {
+  "dex": "0290",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
  "sableye": {
   "dex": "0302",
   "anims": {
@@ -1387,6 +1880,35 @@
     "cols": 2,
     "rows": 8,
     "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "mawile": {
+  "dex": "0303",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 56,
+    "fh": 48,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
     "src": "animdata"
    }
   }
@@ -1474,6 +1996,64 @@
     "cols": 6,
     "rows": 8,
     "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "electrike": {
+  "dex": "0309",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   }
+  }
+ },
+ "manectric": {
+  "dex": "0310",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 88,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
     "src": "animdata"
    }
   }
@@ -1834,6 +2414,35 @@
    }
   }
  },
+ "baltoy": {
+  "dex": "0343",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 17,
+    "rows": 8,
+    "frames": 136,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
  "claydol": {
   "dex": "0344",
   "anims": {
@@ -1859,6 +2468,122 @@
     "cols": 2,
     "rows": 8,
     "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "shuppet": {
+  "dex": "0353",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 48,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "banette": {
+  "dex": "0354",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72,
+    "src": "animdata"
+   }
+  }
+ },
+ "duskull": {
+  "dex": "0355",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "glalie": {
+  "dex": "0362",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
     "src": "animdata"
    }
   }
@@ -1892,6 +2617,64 @@
    }
   }
  },
+ "beldum": {
+  "dex": "0374",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 17,
+    "rows": 8,
+    "frames": 136,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "metang": {
+  "dex": "0375",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
  "metagross": {
   "dex": "0376",
   "anims": {
@@ -1917,6 +2700,35 @@
     "cols": 2,
     "rows": 8,
     "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "regirock": {
+  "dex": "0377",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56,
     "src": "animdata"
    }
   }
@@ -1950,6 +2762,64 @@
    }
   }
  },
+ "rampardos": {
+  "dex": "0409",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "bastiodon": {
+  "dex": "0411",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "shellos": {
   "dex": "0422",
   "anims": {
@@ -1972,6 +2842,35 @@
    "Idle": {
     "fw": 24,
     "fh": 24,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24,
+    "src": "animdata"
+   }
+  }
+ },
+ "gastrodon": {
+  "dex": "0423",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
     "cols": 3,
     "rows": 8,
     "frames": 24,
@@ -2004,6 +2903,122 @@
     "cols": 7,
     "rows": 8,
     "frames": 56,
+    "src": "animdata"
+   }
+  }
+ },
+ "mismagius": {
+  "dex": "0429",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "bronzor": {
+  "dex": "0436",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 48,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   }
+  }
+ },
+ "bronzong": {
+  "dex": "0437",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "spiritomb": {
+  "dex": "0442",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 20,
+    "rows": 8,
+    "frames": 160,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24,
     "src": "animdata"
    }
   }
@@ -2153,6 +3168,35 @@
    }
   }
  },
+ "toxicroak": {
+  "dex": "0454",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
  "carnivine": {
   "dex": "0455",
   "anims": {
@@ -2182,6 +3226,64 @@
    }
   }
  },
+ "tangrowth": {
+  "dex": "0465",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "electivire": {
+  "dex": "0466",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56,
+    "src": "animdata"
+   }
+  }
+ },
  "gliscor": {
   "dex": "0472",
   "anims": {
@@ -2207,6 +3309,93 @@
     "cols": 4,
     "rows": 8,
     "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "probopass": {
+  "dex": "0476",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "regigigas": {
+  "dex": "0486",
+  "anims": {
+   "Attack": {
+    "fw": 96,
+    "fh": 96,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 88,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "darkrai": {
+  "dex": "0491",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 104,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 96,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 80,
+    "cols": 7,
+    "rows": 8,
+    "frames": 56,
     "src": "animdata"
    }
   }
@@ -2269,6 +3458,35 @@
    }
   }
  },
+ "gigalith": {
+  "dex": "0526",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72,
+    "src": "animdata"
+   }
+  }
+ },
  "woobat": {
   "dex": "0527",
   "anims": {
@@ -2326,6 +3544,68 @@
     "src": "animdata"
    }
   }
+ },
+ "excadrill": {
+  "dex": "0530",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "seismitoad": {
+  "dex": "0537",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   }
+  }
+ },
+ "throh": {
+  "dex": "0538",
+  "anims": {}
  },
  "scolipede": {
   "dex": "0545",
@@ -2385,6 +3665,35 @@
    }
   }
  },
+ "darumaka": {
+  "dex": "0554",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
  "maractus": {
   "dex": "0556",
   "anims": {
@@ -2410,6 +3719,35 @@
     "cols": 5,
     "rows": 8,
     "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "dwebble": {
+  "dex": "0557",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
     "src": "animdata"
    }
   }
@@ -2471,6 +3809,10 @@
     "src": "animdata"
    }
   }
+ },
+ "carracosta": {
+  "dex": "0565",
+  "anims": {}
  },
  "archeops": {
   "dex": "0567",
@@ -2559,6 +3901,10 @@
    }
   }
  },
+ "amoonguss": {
+  "dex": "0591",
+  "anims": {}
+ },
  "ferroseed": {
   "dex": "0597",
   "anims": {
@@ -2646,6 +3992,19 @@
    }
   }
  },
+ "stunfisk": {
+  "dex": "0618",
+  "anims": {
+   "Idle": {
+    "fw": 24,
+    "fh": 16,
+    "cols": 1,
+    "rows": 8,
+    "frames": 8,
+    "src": "animdata"
+   }
+  }
+ },
  "druddigon": {
   "dex": "0621",
   "anims": {
@@ -2675,6 +4034,64 @@
    }
   }
  },
+ "golett": {
+  "dex": "0622",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "rufflet": {
+  "dex": "0627",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 48,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
  "braviary": {
   "dex": "0628",
   "anims": {
@@ -2700,6 +4117,64 @@
     "cols": 4,
     "rows": 8,
     "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "durant": {
+  "dex": "0632",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "kyurem": {
+  "dex": "0646",
+  "anims": {
+   "Attack": {
+    "fw": 104,
+    "fh": 144,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 96,
+    "fh": 112,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
     "src": "animdata"
    }
   }
@@ -2762,6 +4237,35 @@
    }
   }
  },
+ "heliolisk": {
+  "dex": "0695",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   }
+  }
+ },
  "tyrantrum": {
   "dex": "0697",
   "anims": {
@@ -2784,6 +4288,35 @@
    "Idle": {
     "fw": 56,
     "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   }
+  }
+ },
+ "aurorus": {
+  "dex": "0699",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 104,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 112,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 80,
     "cols": 14,
     "rows": 8,
     "frames": 112,
@@ -2849,6 +4382,35 @@
    }
   }
  },
+ "goomy": {
+  "dex": "0704",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24,
+    "src": "animdata"
+   }
+  }
+ },
  "trevenant": {
   "dex": "0709",
   "anims": {
@@ -2871,6 +4433,122 @@
    "Idle": {
     "fw": 40,
     "fh": 56,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   }
+  }
+ },
+ "pumpkaboo": {
+  "dex": "0710",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "bergmite": {
+  "dex": "0712",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "avalugg": {
+  "dex": "0713",
+  "anims": {
+   "Attack": {
+    "fw": 88,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 56,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "noibat": {
+  "dex": "0714",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 88,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 72,
     "cols": 10,
     "rows": 8,
     "frames": 80,
@@ -2907,6 +4585,35 @@
    }
   }
  },
+ "diancie": {
+  "dex": "0719",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 32,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
  "grubbin": {
   "dex": "0736",
   "anims": {
@@ -2932,6 +4639,35 @@
     "cols": 4,
     "rows": 8,
     "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "vikavolt": {
+  "dex": "0738",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 80,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
     "src": "animdata"
    }
   }
@@ -3023,6 +4759,35 @@
    }
   }
  },
+ "toxapex": {
+  "dex": "0748",
+  "anims": {
+   "Attack": {
+    "fw": 88,
+    "fh": 88,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "mudbray": {
   "dex": "0749",
   "anims": {
@@ -3048,6 +4813,35 @@
     "cols": 14,
     "rows": 8,
     "frames": 112,
+    "src": "animdata"
+   }
+  }
+ },
+ "dewpider": {
+  "dex": "0751",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 56,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
     "src": "animdata"
    }
   }
@@ -3226,8 +5020,414 @@
    }
   }
  },
+ "mimikyu": {
+  "dex": "0778",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "bruxish": {
+  "dex": "0779",
+  "anims": {
+   "Attack": {
+    "fw": 80,
+    "fh": 88,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 8,
+    "rows": 8,
+    "frames": 64,
+    "src": "animdata"
+   }
+  }
+ },
+ "zeraora": {
+  "dex": "0807",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 6,
+    "rows": 8,
+    "frames": 48,
+    "src": "animdata"
+   }
+  }
+ },
+ "rookidee": {
+  "dex": "0821",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 72,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "corviknight": {
+  "dex": "0823",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 80,
+    "cols": 15,
+    "rows": 8,
+    "frames": 120,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
  "rolycoly": {
   "dex": "0837",
   "anims": {}
+ },
+ "carkol": {
+  "dex": "0838",
+  "anims": {}
+ },
+ "silicobra": {
+  "dex": "0843",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 64,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "sandaconda": {
+  "dex": "0844",
+  "anims": {
+   "Attack": {
+    "fw": 96,
+    "fh": 80,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "sizzlipede": {
+  "dex": "0850",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 13,
+    "rows": 8,
+    "frames": 104,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 32,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   }
+  }
+ },
+ "centiskorch": {
+  "dex": "0851",
+  "anims": {
+   "Attack": {
+    "fw": 96,
+    "fh": 88,
+    "cols": 11,
+    "rows": 8,
+    "frames": 88,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "runerigus": {
+  "dex": "0867",
+  "anims": {
+   "Attack": {
+    "fw": 104,
+    "fh": 80,
+    "cols": 12,
+    "rows": 8,
+    "frames": 96,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 56,
+    "fh": 72,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 64,
+    "fh": 48,
+    "cols": 3,
+    "rows": 8,
+    "frames": 24,
+    "src": "animdata"
+   }
+  }
+ },
+ "falinks": {
+  "dex": "0870",
+  "anims": {}
+ },
+ "pincurchin": {
+  "dex": "0871",
+  "anims": {
+   "Attack": {
+    "fw": 56,
+    "fh": 64,
+    "cols": 14,
+    "rows": 8,
+    "frames": 112,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 24,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "stonjourner": {
+  "dex": "0874",
+  "anims": {
+   "Attack": {
+    "fw": 88,
+    "fh": 128,
+    "cols": 9,
+    "rows": 8,
+    "frames": 72,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 40,
+    "fh": 88,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
+ },
+ "nacli": {
+  "dex": "0932",
+  "anims": {
+   "Attack": {
+    "fw": 64,
+    "fh": 64,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 24,
+    "fh": 32,
+    "cols": 5,
+    "rows": 8,
+    "frames": 40,
+    "src": "animdata"
+   }
+  }
+ },
+ "naclstack": {
+  "dex": "0933",
+  "anims": {
+   "Attack": {
+    "fw": 72,
+    "fh": 72,
+    "cols": 10,
+    "rows": 8,
+    "frames": 80,
+    "src": "animdata"
+   },
+   "Hurt": {
+    "fw": 40,
+    "fh": 56,
+    "cols": 2,
+    "rows": 8,
+    "frames": 16,
+    "src": "animdata"
+   },
+   "Idle": {
+    "fw": 32,
+    "fh": 40,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   }
+  }
  }
 }

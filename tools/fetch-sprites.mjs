@@ -44,22 +44,32 @@ const dl = async (url, dst) => {
 
 let ok = 0; let skip = 0; let fail = 0;
 const targets = Object.entries(species).filter(([slug]) => !only.length || only.includes(slug));
-console.log(`要处理 ${targets.length} 只`);
-for (const [slug, s] of targets) {
-  const dex = String(s.dex);
-  const spriteDir = path.join(ROOT, 'assets/pokemon', slug);
-  const portraitDir = path.join(ROOT, 'assets/portraits', slug);
-  await fs.mkdir(spriteDir, { recursive: true });
-  await fs.mkdir(portraitDir, { recursive: true });
-  for (const a of ANIMS) {
-    const r = await dl(`${BASE}/sprite/${dex}/${a}-Anim.png`, path.join(spriteDir, `${a}.png`));
-    if (r === 'ok') ok += 1; else if (r === 'skip') skip += 1; else fail += 1;
+console.log(`要处理 ${targets.length} 只（并发 6）`);
+
+/**
+ * 并发抓：一只 19 个文件（3 张精灵表 + 16 张头像），70 多只就是 1300 多个请求，
+ * 串行要跑很久。每个物种内部仍然按顺序（别把同一个目录写乱），物种之间并发。
+ */
+const queue = [...targets];
+const worker = async () => {
+  while (queue.length) {
+    const [slug, s] = queue.shift();
+    const dex = String(s.dex);
+    const spriteDir = path.join(ROOT, 'assets/pokemon', slug);
+    const portraitDir = path.join(ROOT, 'assets/portraits', slug);
+    await fs.mkdir(spriteDir, { recursive: true });
+    await fs.mkdir(portraitDir, { recursive: true });
+    for (const a of ANIMS) {
+      const r = await dl(`${BASE}/sprite/${dex}/${a}-Anim.png`, path.join(spriteDir, `${a}.png`));
+      if (r === 'ok') ok += 1; else if (r === 'skip') skip += 1; else fail += 1;
+    }
+    // 表情不全没关系：portraits.js 会退回静帧 / 占位，不会裂图
+    for (const e of EMOTIONS) {
+      const r = await dl(`${BASE}/portrait/${dex}/${e}.png`, path.join(portraitDir, `${e}.png`));
+      if (r === 'ok') ok += 1; else if (r === 'skip') skip += 1; else fail += 1;
+    }
+    console.log(`  ${slug.padEnd(12)} 完成`);
   }
-  // 表情不全没关系：portraits.js 会退回静帧 / 占位，不会裂图
-  for (const e of EMOTIONS) {
-    const r = await dl(`${BASE}/portrait/${dex}/${e}.png`, path.join(portraitDir, `${e}.png`));
-    if (r === 'ok') ok += 1; else if (r === 'skip') skip += 1; else fail += 1;
-  }
-  console.log(`  ${slug.padEnd(12)} 完成`);
-}
+};
+await Promise.all(Array.from({ length: 6 }, worker));
 console.log(`素材：下载 ${ok}｜已有 ${skip}｜失败 ${fail}`);

@@ -2063,7 +2063,7 @@ export const ENEMIES = [
   {
     "id": "cofagrigus",
     "slug": "cofagrigus",
-    "name": "死神棺",
+    "name": "迭失棺",
     "en": "Cofagrigus",
     "dex": "0563",
     "types": [
@@ -2181,7 +2181,7 @@ export const ENEMIES = [
   {
     "id": "cofagrigus_ruins",
     "slug": "cofagrigus",
-    "name": "死神棺",
+    "name": "迭失棺",
     "en": "Cofagrigus",
     "dex": "0563",
     "types": [
@@ -2497,7 +2497,7 @@ export const ENEMIES = [
   {
     "id": "emolga_storm",
     "slug": "emolga",
-    "name": "导电飞鼠",
+    "name": "电飞鼠",
     "en": "Emolga",
     "dex": "0587",
     "types": [
@@ -2948,7 +2948,7 @@ export const ENEMIES = [
   {
     "id": "cofagrigus_pharaoh",
     "slug": "cofagrigus",
-    "name": "死神棺",
+    "name": "迭失棺",
     "en": "Cofagrigus",
     "dex": "0563",
     "types": [
