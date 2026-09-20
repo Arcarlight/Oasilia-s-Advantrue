@@ -194,7 +194,9 @@
     /**
      * ④ 用户要求的三件事（详情页改造）：
      *   · 左边是**一整块图**：立绘当主体放大，行走图压右下角、小图标压左下角；
-     *   · 右边是名字/编号/称号/属性 + 三条简短介绍 + 一条分割线 + 计数条（最右端奖牌）；
+     *   · 右上 = 名字/编号/称号/属性 + 三条简短介绍（撑到和图一样高）；
+     *   · 分割线（上半场的下边线）以下是一条横跨整个图鉴的横栏：
+     *     计数条（最右端奖牌）+「它会用的卡牌 / 它可能会这么说 / 出场台词」；
      *   · 行走图**跟着鼠标转向** —— 朝向 = 精灵图的某一**行**，所以断言「换位置之后 dirRow 变了」。
      */
     log('⑤ 详情页：图块 / 排版 / 奖牌');
@@ -263,9 +265,50 @@
       // 「简短介绍」三条 + 分割线 + 计数条
       ok(qa('.dex-intro-row', detail).length === 3, '右列有三条简短介绍',
         qa('.dex-intro-cap', detail).map((n) => n.textContent).join(' · '));
-      ok(!!q('.dex-record-row', detail), '简短介绍下面是一条分割线 + 计数条');
-      ok(qa('.dex-stats .dex-stat', detail).length >= 5, '右侧有战绩方块（挑战 / 击败 / 失败 / 胜率 / 招式）',
+      ok(!!q('.dex-record-row', detail), '分割线下面是计数条（挑战 / 击败 / 失败 / 胜率 / 招式 + 奖牌）');
+      ok(qa('.dex-stats .dex-stat', detail).length >= 5, '下方有战绩方块（挑战 / 击败 / 失败 / 胜率 / 招式）',
         qa('.dex-stat span', detail).map((n) => n.textContent).join(' · '));
+      /**
+       * 版式（用户要求，第三版）：**分割线以下必须横跨整个图鉴**。
+       *
+       * 第一版把卡牌 / 台词全塞在右列里，右列比图高得多，于是行走图下面一大片空白。
+       * 现在量四个数：① 图的下沿贴不贴分割线；② 三条介绍的下沿对不对齐图；
+       * ③ 下方那一栏是不是从最左边开始、和上半场一样宽；④ 字号确实调大了。
+       */
+      {
+        const topBox = q('.dex-detail-top', detail);
+        const artBox = q('.dex-art-compose', detail);
+        const introBox = q('.dex-intro', detail);
+        const band = q('.dex-detail-bottom', detail);
+        ok(!!topBox && !!band && !!artBox && !!introBox, '上下两场都在（.dex-detail-top / .dex-detail-bottom）');
+        if (topBox && band && artBox && introBox) {
+          const rt = topBox.getBoundingClientRect();
+          const ra = artBox.getBoundingClientRect();
+          const ri = introBox.getBoundingClientRect();
+          const rb = band.getBoundingClientRect();
+          // 分割线画在 .dex-detail-top 的下边线上，padding-bottom 是图与线之间留的那点空隙
+          const line = rt.bottom;
+          const pad = parseFloat(getComputedStyle(topBox).paddingBottom) || 0;
+          const artGap = line - pad - ra.bottom;
+          ok(artGap >= -2 && artGap <= 24, '图的下沿就贴在分割线上（行走图下面不再空着一大块）',
+            `图高 ${Math.round(ra.height)}px，图底到分割线 ${Math.round(artGap)}px`);
+          ok(Math.abs(line - pad - ri.bottom) <= 8, '三条简短介绍撑到和图一样高（下沿落在分割线上）',
+            `介绍下沿 ${Math.round(ri.bottom)}，图下沿 ${Math.round(ra.bottom)}，分割线 ${Math.round(line - pad)}`);
+          ok(Math.abs(rb.left - rt.left) <= 2 && Math.abs(rb.width - rt.width) <= 2,
+            '分割线以下的文本横跨整个图鉴（不再吊在右列里）',
+            `横栏 ${Math.round(rb.left)}→${Math.round(rb.left + rb.width)}（${Math.round(rb.width)}px）`
+            + ` vs 上半场 ${Math.round(rt.left)}→${Math.round(rt.left + rt.width)}（${Math.round(rt.width)}px）`);
+          ok(rb.left < ra.right, '……所以行走图正下方也铺着内容（横栏从上半场最左边开始）',
+            `横栏左沿 ${Math.round(rb.left)} < 图右沿 ${Math.round(ra.right)}`);
+          ok(rb.top >= line - 1, '横栏在分割线下面，不会压到图和介绍',
+            `横栏顶 ${Math.round(rb.top)} vs 分割线 ${Math.round(line)}`);
+          ok(!!q('.dex-detail-bottom .dex-moves', detail) && !!q('.dex-detail-bottom .dex-stats', detail)
+            && !!q('.dex-detail-bottom .dex-lines', detail),
+            '战绩 / 卡牌 / 出场台词都搬到了横栏里');
+          const fs = parseFloat(getComputedStyle(q('.dex-intro-text', detail)).fontSize) || 0;
+          ok(fs >= 14, '「简短介绍」的字号调大了一档（第一版 13px）', `${fs}px`);
+        }
+      }
       // 口吻台词：**打赢过才看得到**（这一只是 slain）
       ok(!!q('.dex-voice .dex-voice-line', detail), '打赢过的宝可梦会「说一句话」',
         q('.dex-voice .dex-voice-line', detail)?.textContent);
@@ -288,7 +331,7 @@
       click(known2);
       await wait(350);
       const d2 = topModal();
-      ok(qa('.dex-medal.medal-silver', d2).length === 1, '打赢 15 次 → 行走图右上角出现银牌',
+      ok(qa('.dex-medal.medal-silver', d2).length === 1, '打赢 15 次 → 计数条最右端出现银牌',
         `${qa('.dex-medal', d2).map((n) => n.className).join(' ') || '（没有奖牌）'}`
         + ` ｜ 战绩 ${qa('.dex-stat b', d2).map((n) => n.textContent).join('/')}（挑战/击败/失败/胜率/招式）`);
       ok(qa('.dex-medal-step.done', d2).length === 2, '进度条点亮 2 段（5 / 15）',
@@ -322,6 +365,7 @@
         `标题「${q('.modal-head h3', locked)?.textContent ?? '-'}」`
         + ` locked=${!!q('.dex-locked', locked)} lines=${!!q('.dex-lines', locked)}`
         + ` moves=${!!q('.dex-moves', locked)} voice=${!!q('.dex-voice', locked)} intro=${qa('.dex-intro-row', locked).length}`);
+      ok(!q('.dex-detail-bottom', locked), '剪影详情没有下半栏（没战绩没卡牌，不留一个空横栏）');
     }
     closeModals();
     await wait(150);

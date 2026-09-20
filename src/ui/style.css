@@ -3002,22 +3002,30 @@ input, textarea { cursor: text !important; }
    图鉴详情（用户给的排版）：
      ┌──────────────────┬───────────────────────────────┐
      │   ╔══════════╗   │ 名字 编号 称号 属性              │
-     │   ║  回合立绘  ║   │ 简短介绍 ×3                    │
-     │   ║  ┌──┐     ║   │ ───────────────────────       │
-     │   ╚══│行走图│══╝   │ [挑战][击败][失败][胜率][招式] 🥇 │
-     │  [小图标]          │                               │
-     ├──────────────────┴───────────────────────────────┤
-     │ 它可能会这么说 / 它会用的卡牌 / 出场台词             │
-     └──────────────────────────────────────────────────┘
+     │   ║  回合立绘  ║   │ 简短介绍                        │
+     │   ║  ┌──┐     ║   │ 怎么打                          │
+     │   ╚══│行走图│══╝   │ 面板                            │
+     │  [小图标]          │                                │
+     ├──────────────────┴───────────────────────────────┤ ← 分割线（正好在图和下方文本之间）
+     │ [挑战][击败][失败][胜率][招式] ── 击败奖牌进度 ── 🥇 │
+     │ 它会用的卡牌            │ 它可能会这么说 / 出场台词   │
+     └─────────────────────────┴────────────────────────┘
    左边是**一整块图**：立绘当主体、放大；行走图按正常尺寸压在它右下角、
    小图标压在左下角 —— 两张小图都和立绘**部分重叠**，三张图**不是一样大**。
+   分割线以下横跨整个图鉴宽度，所以行走图下面不会再留一大块空白。
    ============================================================ */
-.dex-detail { display: flex; flex-direction: column; gap: 14px; }
+.dex-detail { display: flex; flex-direction: column; gap: 16px; }
+/**
+ * 上半场：图 +（行首 + 三条简短介绍）。
+ * `align-items: stretch` 是关键：右列会**撑到和图一样高**（.dex-intro 吃掉剩下的空间），
+ * 于是三条介绍正好对齐行走图 / 立绘的高度，这一块的下边线就是那条
+ * 「正好分开『图 + 简短介绍』和下方文本」的分割线 —— 左下方不会再空出一大块。
+ */
 .dex-detail-top {
   display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-  gap: 30px; align-items: start;
-  padding-bottom: 12px;
-  box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
+  gap: 30px; align-items: stretch;
+  padding-bottom: 14px;
+  box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .28);
 }
 
 /* 三张图叠成一块：立绘是网格主体，另外两张按九宫格压在它的角上 */
@@ -3053,22 +3061,37 @@ input, textarea { cursor: text !important; }
 }
 
 /* ---- 右列：三条简短介绍（用户给的排版）---- */
-.dex-intro { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
-.dex-intro-row { display: flex; gap: 9px; align-items: baseline; }
-.dex-intro-cap {
-  flex: 0 0 auto; min-width: 56px;
-  font-size: 11.5px; opacity: .62; letter-spacing: .04em;
+/**
+ * `flex: 1 1 auto` + `justify-content: space-between`：这三条把右列剩下的高度**平分掉**，
+ * 所以它们的下沿永远压在分割线上、和左侧那三张图对齐（用户要求）。
+ * 字号也比第一版大了一档（13px → 14.5px），三条撑起来刚好和图差不多高。
+ */
+.dex-intro {
+  display: flex; flex-direction: column; justify-content: space-between;
+  flex: 1 1 auto; min-height: 0; gap: 8px; margin-top: 8px;
 }
-.dex-intro-text { font-size: 13px; line-height: 1.65; }
+.dex-intro-row { display: flex; gap: 10px; align-items: baseline; }
+.dex-intro-cap {
+  flex: 0 0 auto; min-width: 62px;
+  font-size: 12.5px; opacity: .66; letter-spacing: .04em;
+}
+.dex-intro-text { font-size: 14.5px; line-height: 1.7; }
 
-/* ---- 分割线 + 计数（最右端是奖牌）---- */
+/* ---- 分割线以下：横跨整个图鉴的一栏（用户要求「占满横栏」）---- */
+.dex-detail-bottom { display: flex; flex-direction: column; gap: 14px; }
+.dex-detail-cols {
+  display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 26px; align-items: start;
+}
+.dex-detail-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* ---- 计数（最右端是奖牌）---- */
+/* 上面那条分割线现在是 .dex-detail-top 的下边线，这里不再画第二条 */
 .dex-record-row {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  margin-top: 10px; padding-top: 11px;
-  box-shadow: inset 0 1px 0 rgba(232, 207, 162, .22);
 }
 .dex-record-row .dex-stats { flex: 0 0 auto; }
-.dex-record-row .dex-medal-row { flex: 1 1 160px; min-width: 140px; }
+.dex-record-row .dex-medal-row { flex: 1 1 220px; min-width: 160px; }
 .dex-medal-inline { position: static; width: 26px; height: 26px; flex: 0 0 auto; }
 
 /* ---- 击败奖牌（5 铜 / 15 银 / 25 金 / 50 紫金）---- */
@@ -3145,6 +3168,9 @@ input, textarea { cursor: text !important; }
 
 @media (max-width: 720px) {
   .dex-detail-top { grid-template-columns: 1fr; }
+  /* 窄屏：图在上、介绍在下，这时不需要「撑到一样高」，正常堆叠就好 */
+  .dex-intro { flex: 0 0 auto; justify-content: flex-start; }
+  .dex-detail-cols { grid-template-columns: 1fr; gap: 14px; }
   .dex-art-box, .dex-iconbox { min-height: 92px; }
 }
 

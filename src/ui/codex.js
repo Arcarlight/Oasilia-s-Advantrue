@@ -466,14 +466,23 @@ function showEnemyDetail(def, sets, meta) {
     artRow.append(el('div', { class: 'dex-turnart' }, [q()]));
   }
 
-  // ── 右侧：名称 / 编号 / 称号 / 属性 + 战绩 ──
+  // ── 上半场右列：名称 / 编号 / 称号 / 属性 + 三条简短介绍 ──
   /**
-   * 右侧那一列（用户给的排版）：
-   *   ① 名称 / 编号 / 称号 / 属性 一行；
-   *   ② 三条简短介绍（「它是什么」—— 一眼看懂这只怪的身份与打法）；
-   *   ③ 下面一条分割线，然后是战绩小方块；
-   *   ④ 最右端是击败奖牌（进度条）。
-   * 卡牌与出场台词放到**下面**去（.dex-detail-bottom），不再挤在右列里。
+   * 版式（用户给的排版，第三版）：
+   *
+   *   ┌ 图（立绘 + 行走图 + 小图标）┐│ 名称 / 编号 / 称号 / 属性
+   *   │                            ││ 简短介绍
+   *   │                            ││ 怎么打
+   *   └────────────────────────────┘│ 面板
+   *   ══════════════ 分割线（正好在图和图鉴下方文本之间）══════════════
+   *   ┌ 挑战 / 击败 / 失败 / 胜率 / 招式 ────── 击败奖牌进度 ── 🥇
+   *   │ 它会用的卡牌            │ 它可能会这么说 / 出场台词
+   *   └─────────────────────────┴────────────────────────────┘
+   *
+   * **左下方空一块**是第一版的问题：右列比图高，右列的卡牌、台词一路往下排，
+   * 左边那 210px 宽的图早早就结束，下面全是空白。
+   * 所以这一版把「分割线以下」的东西**全部**搬到横跨整个图鉴的 `.dex-detail-bottom`，
+   * 上半场只剩「图 +（行首 + 三条简短介绍）」，右列再靠 flex 撑到和图一样高。
    */
   const info = el('div', { class: 'dex-detail-info' });
   info.append(el('div', { class: 'detail-head' }, [
@@ -487,10 +496,22 @@ function showEnemyDetail(def, sets, meta) {
 
   if (known) {
     info.append(introRows(def));
+  } else {
+    info.append(el('p', {
+      class: 'dex-locked',
+      text: t('还没遇见过它。多走走、多打几场，遇见的宝可梦会自动记进图鉴。'),
+    }));
+  }
 
+  /** 分割线以下：横跨整个图鉴的一栏 */
+  const bottom = el('div', { class: 'dex-detail-bottom' });
+
+  if (known) {
     /**
-     * 奖牌**只在这里出现**（用户给的排版：计数条只有一条、上面画分割线、最右端是奖牌）。
+     * 战绩 + 击败奖牌。
+     * 奖牌**只在这里出现**（用户给的排版：计数条只有一条、最右端是奖牌）。
      * 第一版把它挂在行走图右上角，会和这一条重复成两个奖牌 —— 所以现在只有这一处。
+     * 上面那条分割线现在是 `.dex-detail-top` 的下边线，所以这里不再画第二条。
      */
     const medal = MEDALS[medalTier(wins)];
     const stat = (label, value, cls = '') => el('div', { class: `dex-stat ${cls}`.trim() }, [
@@ -511,7 +532,7 @@ function showEnemyDetail(def, sets, meta) {
         el('span', { class: 'dex-medal-num', text: String(m.at) }),
       ]));
     }
-    info.append(el('div', { class: 'dex-record-row' }, [
+    bottom.append(el('div', { class: 'dex-record-row' }, [
       el('div', { class: 'dex-stats' }, [
         stat(t('挑战'), battles),
         stat(t('击败'), wins),
@@ -528,14 +549,10 @@ function showEnemyDetail(def, sets, meta) {
         dataset: { tip: t('{name}：已经击败它 {n} 次。', { name: t(medal.name), n: wins }) },
       }) : null,
     ]));
-  }
 
-  if (!known) {
-    info.append(el('p', {
-      class: 'dex-locked',
-      text: t('还没遇见过它。多走走、多打几场，遇见的宝可梦会自动记进图鉴。'),
-    }));
-  } else {
+    /** 右侧那一小块：口吻台词 + 出场台词（横栏被分成「牌 / 话」两段） */
+    const side = el('div', { class: 'dex-detail-side' });
+
     /**
      * 模仿它的口吻说一句话（用户要求，**只有击败过才看得到**）。
      *
@@ -546,16 +563,22 @@ function showEnemyDetail(def, sets, meta) {
     const lines = (def.lines ?? []).filter(Boolean);
     if (state === 'slain' && lines.length) {
       const voiceline = lines[(wins - 1) % lines.length];
-      info.append(el('div', { class: 'detail-sec dex-voice' }, [
+      side.append(el('div', { class: 'detail-sec dex-voice' }, [
         el('h4', { text: t('它可能会这么说') }),
         el('p', { class: 'dex-voice-line', text: `「${voiceline}」` }),
         el('span', { class: 'dex-voice-note', text: t('第 {n} 次打赢它时，它就是这么说的。', { n: ((wins - 1) % lines.length) + 1 }) }),
       ]));
     } else if (lines.length) {
-      info.append(el('div', { class: 'detail-sec dex-voice locked' }, [
+      side.append(el('div', { class: 'detail-sec dex-voice locked' }, [
         el('h4', { text: t('它可能会这么说') }),
         el('p', { class: 'dex-voice-line', text: t('打赢它一次就能听到。') }),
       ]));
+    }
+
+    if (def.lines?.length) {
+      const lineBox = el('div', { class: 'dex-lines' });
+      for (const line of def.lines) lineBox.append(el('p', { text: line }));
+      side.append(el('div', { class: 'detail-sec' }, [el('h4', { text: t('出场台词') }), lineBox]));
     }
 
     /** 它手上的牌：开打时一定会有的「专属牌」+ 会从里面抓的「招式池」 */
@@ -576,16 +599,14 @@ function showEnemyDetail(def, sets, meta) {
       ]));
     }
     if (!signature.length && !pool.length) hand.append(el('p', { class: 'dex-empty', text: t('（这只没有登记招式）') }));
-    info.append(hand);
 
-    if (def.lines?.length) {
-      const lineBox = el('div', { class: 'dex-lines' });
-      for (const line of def.lines) lineBox.append(el('p', { text: line }));
-      info.append(el('div', { class: 'detail-sec' }, [el('h4', { text: t('出场台词') }), lineBox]));
-    }
+    bottom.append(el('div', { class: 'dex-detail-cols' }, [hand, side]));
   }
 
-  const body = el('div', { class: 'dex-detail' }, [el('div', { class: 'dex-detail-top' }, [artRow, info])]);
+  const body = el('div', { class: 'dex-detail' }, [
+    el('div', { class: 'dex-detail-top' }, [artRow, info]),
+    bottom.childNodes.length ? bottom : null,
+  ]);
   const m = modal({ title: t('图鉴详情 · {name}', { name: known ? def.name : t('？？？') }), wide: true, body });
   // 关掉时把 mousemove 解绑（弹窗里那只会跟着鼠标转，监听器不能留着）
   const origClose = m.close;
