@@ -56,3 +56,4 @@ assets/audio/bgm/*.mp3
 .git-commit-msg.txt
 .commit-msg-2.txt
 x.tmp
+commit-msg.tmp
