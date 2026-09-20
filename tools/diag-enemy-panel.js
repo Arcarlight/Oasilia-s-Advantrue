@@ -113,6 +113,12 @@
           const tb = titleEl.getBoundingClientRect();
           ok(titleEl.textContent === want, '称号文字与内容里的 bossTitle 一致', `「${titleEl.textContent}」`);
           ok(tb.top >= nb.bottom - 2, '称号写在**名字下面**', `名字底 ${Math.round(nb.bottom)} / 称号顶 ${Math.round(tb.top)}`);
+          // 字体与名字一样、且没有底带（用户点名的两条）
+          const ncs = getComputedStyle(nameEl);
+          const tcs = getComputedStyle(titleEl);
+          ok(tcs.fontFamily === ncs.fontFamily, '称号与名字是同一套字体',
+            `称号 ${tcs.fontFamily.split(',')[0]} vs 名字 ${ncs.fontFamily.split(',')[0]}`);
+          ok(tcs.backgroundImage === 'none', '称号没有底带（靠字自己的阴影）', tcs.backgroundImage);
           if (first && last) {
             const total = last.right - first.left;
             ok(Math.abs(total - nb.width) <= 1.5, '**称号总宽与名字相等**',

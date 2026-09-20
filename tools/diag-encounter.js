@@ -689,6 +689,19 @@
         ok(tb.top >= nb.bottom - 2, '称号写在**名字下面**（上边缘不低于名字的下边缘）',
           `名字底 ${Math.round(nb.bottom)} / 称号顶 ${Math.round(tb.top)}`);
         ok(tfs < nfs * 0.5, '称号的字号**明显小于**名字', `称号 ${tfs}px vs 名字 ${nfs}px`);
+        /**
+         * 用户点名的两条：**字体与名字一样**、**不要底带**，靠字自己的阴影压住霓虹灯。
+         */
+        const ncs = getComputedStyle(nameEl);
+        const tcs = getComputedStyle(titleEl);
+        ok(tcs.fontFamily === ncs.fontFamily,
+          '称号与名字是**同一套字体**（只是字号更小）',
+          `称号 ${tcs.fontFamily.split(',')[0]} vs 名字 ${ncs.fontFamily.split(',')[0]}`);
+        ok(tcs.backgroundImage === 'none' && (tcs.backgroundColor === 'rgba(0, 0, 0, 0)' || tcs.backgroundColor === 'transparent'),
+          '称号**没有底带**（不是拿一块半透明黑条垫的）',
+          `background-image: ${tcs.backgroundImage} / background-color: ${tcs.backgroundColor}`);
+        const shadows = (tcs.textShadow || 'none').split(/,(?![^(]*\))/);
+        ok(shadows.length >= 6, '称号自己带够厚的阴影（压在霓虹灯的灯管上还读得清）', `${shadows.length} 层`);
         // 总宽 = 首字左边缘 → 末字右边缘（撑开是 space-between，所以量的就是它自己的宽）
         const spans = [...titleEl.querySelectorAll('span')];
         const first = spans[0]?.getBoundingClientRect();
