@@ -958,7 +958,40 @@ if (BGM_FILES) {
 }
 
 // ---------- 汇总 ----------
-console.log('内容体检：');
+// ---------- 13. 更新日志与版本号对得上 ----------
+/**
+ * 起因（用户点出来的）：「你这些咋都不写更新日记了」——
+ * 连着几批新东西（首领称号、图鉴小图标、地图装饰物、卡牌音效）都忘了往游戏里的更新日志加一条。
+ *
+ * 机制上没法自动判断「这一批算不算要写一条」，但可以把**版本号**两处钉死：
+ * package.json 的 version 必须等于更新日志最新一条的 version ——
+ * 发版时改一处就必须改另一处，改的时候自然要回答「这一版给玩家加了什么」。
+ */
+{
+  const { CHANGELOG } = await import('../src/core/changelog-data.js');
+  const pkg = JSON.parse(await fs.readFile(path.join(ROOT, 'package.json'), 'utf8'));
+  if (!CHANGELOG?.length) {
+    err('更新日志一条都没有（src/core/changelog-data.js）');
+  } else {
+    for (const e of CHANGELOG) {
+      if (!/^\d+\.\d+$/.test(String(e.version))) err(`更新日志的版本号格式不对：${e.version}（要写成 1.9 这样）`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(e.date))) err(`更新日志的日期格式不对：v${e.version} ${e.date}（要写成 2026-09-20）`);
+      if (!e.items?.length) err(`更新日志 v${e.version} 一条内容都没有`);
+      for (const line of e.items ?? []) {
+        if (!/[\u4e00-\u9fa5]/.test(line)) err(`更新日志 v${e.version} 有一条不像中文原文：${line.slice(0, 24)}`);
+      }
+    }
+    const newest = CHANGELOG[0];
+    if (String(pkg.version) !== String(newest.version)) {
+      err(`package.json 的 version（${pkg.version}）和更新日志最新一条（v${newest.version}）对不上 ——`
+        + ' 发版时两处要一起改（加了内容就得给玩家写一条）');
+    } else {
+      note(`更新日志：最新 v${newest.version}（${newest.date}），共 ${CHANGELOG.length} 个版本，package.json 对得上`);
+    }
+  }
+}
+
+console.log('\n内容体检：');
 console.log(`  卡牌 ${CARDS.length} · 敌人 ${ENEMIES.length}（${Object.keys(TIERS).map((t) => t + ' ' + ENEMIES.filter((e) => e.tier === t).length).join(' / ')}）`);
 console.log(`  地图 ${stageCount} 章 · 事件 ${EVENTS.length} · 物种素材 ${speciesSlugs.size} 个 · 商人 ${MERCHANTS.length} 位`);
 console.log(`  卡牌稀有度：${Object.entries(byRarity).map(([k, v]) => `${RARITY[k]?.name ?? k} ${v}`).join(' · ')}`);

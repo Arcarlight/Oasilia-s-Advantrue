@@ -61,6 +61,15 @@ node tools/serve.mjs --no-open  # 不自动开浏览器
 > 所以音效与 BGM 会静默失效。BGM 一共 60 多 MB，内联进单文件会让它膨胀得离谱，所以没这么做。
 > **想听声音请用方式一。**
 
+### 交付一批改动时要做的四件事
+1. **给游戏里的更新日志加一条**（`src/core/changelog-data.js`，标题页「更新日志」按钮打开的就是它），
+   并把 `package.json` 的 `version` 改成同一条的版本号 —— `check-content.mjs` 会核对这两处是否一致，
+   所以版本号一动就必须去回答「这一版给玩家加了什么」。
+   （这条是用户点出来的：连着几批新东西都忘了写，界面上还停在 v1.5。）
+2. `node tools/subset-fonts.mjs` 重裁字体子集（内容文本一变，`check-content` 就会报「子集过期」）。
+3. 全链路跑一遍：`check-content --strict` / `check-copy` / 10 套回归 / `bundle` / `verify-bundle` / `smoke-check`。
+4. `node tools/bundle.mjs` 重新生成 `oasis-game.html`，提交推送后用 `node tools/compare-deployed.mjs` 核对线上。
+
 ### 改完源码后要重新打包
 
 ```powershell
