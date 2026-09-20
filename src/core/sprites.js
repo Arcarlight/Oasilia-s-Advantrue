@@ -208,12 +208,31 @@ export async function createAnim(slug, opts = {}) {
   const fitScale = autoScale ? autoScale / contentH() : 0;
   const useScale = autoScale ? fitScale : scale;
 
+  /**
+   * 画布的**内部分辨率**与 **CSS 显示尺寸**是两件事，这里必须分开算：
+   *   · 不裁剪（战斗 / 标题 / 结算这些）—— 缓冲区**就用帧的原始像素**（1:1），
+   *     放大交给 CSS 的 `image-rendering: pixelated`。一直是这么干的：1:1 缓冲区
+   *     整数倍放大最干净，也不会把内存按 scale² 涨上去。
+   *   · 裁剪（图鉴那几张并排的图）—— 缓冲区按「内容外接框 × 缩放」建，
+   *     因为 drawImage 的源是裁过的框，画上去就要按这个尺寸铺满。
+   *
+   * ⚠ 这里踩过一个坑（用户报的「战斗里玩家和敌人的行走图都变小了」）：
+   *   缓冲区一度**一律**写成「尺寸 × 缩放」，可是 paint() 在不裁剪那一支里仍然按
+   *   **帧的原始尺寸**画 —— 于是缓冲区比画上去的大 scale 倍，人只占自己格子的 1/scale，
+   *   看上去就是整体缩小了（格子尺寸没变，所以排版也不跳，特别难发现）。
+   *   所以对不裁剪这一支：缓冲区 = 帧尺寸、CSS = 帧尺寸 × 缩放，两者必须配套改。
+   */
+  const bufW = box ? Math.round(box.w * useScale) : info.fw;
+  const bufH = box ? Math.round(box.h * useScale) : info.fh;
+  const cssW = Math.round((box ? box.w : info.fw) * useScale);
+  const cssH = Math.round((box ? box.h : info.fh) * useScale);
+
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round((box ? box.w : info.fw) * useScale);
-  canvas.height = Math.round((box ? box.h : info.fh) * useScale);
+  canvas.width = bufW;
+  canvas.height = bufH;
   canvas.className = `anim ${className}`.trim();
-  canvas.style.width = `${canvas.width}px`;
-  canvas.style.height = `${canvas.height}px`;
+  canvas.style.width = `${cssW}px`;
+  canvas.style.height = `${cssH}px`;
   canvas.style.imageRendering = 'pixelated';
   if (flip) canvas.style.transform = 'scaleX(-1)';
 

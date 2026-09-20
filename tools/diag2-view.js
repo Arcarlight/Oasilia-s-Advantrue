@@ -125,6 +125,78 @@
     }
     log('  敌方精灵 顶部越界（精灵顶 < 行顶-1）= ' + (eSprite && eRow ? eSprite.y < eRow.y - 1 : '?'));
     log('  我方精灵 顶部越界（精灵顶 < 行顶-1）= ' + (pSprite && pRow ? pSprite.y < pRow.y - 1 : '?'));
+    /**
+     * 「画上去的内容有没有填满自己那一格」—— 用户报的「战斗里玩家和敌人的行走图都变小了」
+     * 就出在这里。
+     *
+     * 事故经过：`createAnim` 的画布**内部分辨率**一度被写成「帧尺寸 × 缩放」，
+     * 而 `paint()` 在**不裁剪**那一支里仍然按帧的原始尺寸画 —— 缓冲区比画上去的大 scale 倍，
+     * 人只占自己格子的 1/scale。格子尺寸没变，所以「宽高比」「有没有越界」这些检查全是绿的，
+     * 只有盯着画面才看得出来。
+     *
+     * 判据两条：
+     *   ① 内部分辨率必须 = 帧尺寸（不裁剪时缓冲区就是 1:1 像素，放大交给 CSS）；
+     *   ② 缓冲区里不透明内容的高度占比，必须接近精灵图**同一朝向行**的内容高度占比
+     *      （留 25% 余量：同一行里不同帧的幅度本来就不一样）。
+     *      内容被画成 1/scale 时这条会直接掉到 0.3 以下。
+     */
+    for (const [name, sel, slug] of [
+      ['敌方', '.fighter-enemy .fighter-body canvas', game.battle?.enemy?.slug],
+      ['我方', '.fighter-player .fighter-body canvas', game.data?.slug],
+    ]) {
+      const node = document.querySelector(sel);
+      if (!node || !slug) { log(`  ${name}精灵 内容占比 = 找不到 canvas / slug`); continue; }
+      const info = node.frameInfo;
+      const w = node.width; const h = node.height;
+      const ctx2 = node.getContext('2d', { willReadFrequently: true });
+      const d = ctx2.getImageData(0, 0, w, h).data;
+      const contentH = (data, cw, ch) => {
+        let a = -1; let b = -1;
+        for (let y = 0; y < ch; y++) {
+          let has = false;
+          for (let x = 0; x < cw; x++) if (data[(y * cw + x) * 4 + 3] > 8) { has = true; break; }
+          if (has) { if (a < 0) a = y; b = y; }
+        }
+        return b < 0 ? 0 : b - a + 1;
+      };
+      const gotRatio = contentH(d, w, h) / h;
+      // 精灵图同一行：逐帧量一遍，取最大的那个（canvas 停在哪一帧不确定）
+      const img = await new Promise((res) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        // 要用**这张 canvas 当前播的那个动画**的图去比：我方挨打时会临时换成 Hurt / Attack，
+        // 拿 Idle 的图去比会误报（第一次就是这么误报的）
+        im.src = `assets/pokemon/${slug}/${node.animName ?? 'Idle'}.png`;
+      });
+      let wantMax = 0;
+      let wantMin = 1;
+      if (img && info) {
+        const sheet = document.createElement('canvas');
+        sheet.width = info.fw; sheet.height = info.fh;
+        const sctx = sheet.getContext('2d', { willReadFrequently: true });
+        const row = node.dirRow ?? 0;
+        const cols = Math.max(1, Math.floor(img.naturalWidth / info.fw));
+        for (let c = 0; c < cols; c++) {
+          sctx.clearRect(0, 0, info.fw, info.fh);
+          sctx.drawImage(img, c * info.fw, row * info.fh, info.fw, info.fh, 0, 0, info.fw, info.fh);
+          const sd = sctx.getImageData(0, 0, info.fw, info.fh).data;
+          const r2 = contentH(sd, info.fw, info.fh) / info.fh;
+          if (r2 <= 0) continue;                 // 空帧不算（frameList 已经跳过它们）
+          wantMax = Math.max(wantMax, r2);
+          wantMin = Math.min(wantMin, r2);
+        }
+        if (!wantMax) wantMin = 0;
+      }
+      // canvas 停在这一行的某一帧上，所以画布占比应落在 [该行最小值, 该行最大值] 里（各留 10% 余量）。
+      // 用「最小值的 90%」当下界：内容被画成 1/scale 时会远远掉到它下面。
+      const fit = wantMax > 0 && gotRatio >= wantMin * 0.9 && gotRatio <= wantMax * 1.1;
+      const innerOk = info ? (w === info.fw && h === info.fh && !node.trimmed) : false;
+      log(`  ${name}精灵 内容占比 = 画布 ${gotRatio.toFixed(3)}（${contentH(d, w, h)}/${h}px）` +
+          ` vs 精灵图该行 ${wantMin.toFixed(3)}~${wantMax.toFixed(3)} → ${fit ? '填满了 ✓' : '被画小了 ✗'}`);
+      log(`  ${name}精灵 内部分辨率 = ${w}x${h}（帧 ${info ? info.fw + 'x' + info.fh : '?'}，trimmed=${!!node.trimmed}）` +
+          ` → ${innerOk ? '1:1 像素 ✓' : '和帧尺寸不一致 ✗'}`);
+    }
     log('  敌方精灵 底部越界 = ' + (eSprite && eRow ? eSprite.y + eSprite.h > eRow.y + eRow.h + 1 : '?'));
     log('  我方精灵 底部越界 = ' + (pSprite && pRow ? pSprite.y + pSprite.h > pRow.y + pRow.h + 1 : '?'));
     log('  顶栏 rect = ' + JSON.stringify(hudR) + ' 场地 rect = ' + JSON.stringify(fieldR));
