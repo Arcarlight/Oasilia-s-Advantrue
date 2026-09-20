@@ -301,8 +301,10 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>沙漠精灵 Oasis · 流沙卡牌冒险</title>
-<link rel="icon" href="assets/pokemon/flygon/Idle.png" />
+<title>欧亚西莉亚的大冒险 ～ Desert Spirit.</title>
+<!-- 标签页图标：和 index.html 必须是同一份（tools/check-copy.mjs 第 ⑦ 条会比对标题与图标，
+     两边走散就红）。单文件包与 assets/ 同目录，所以这个相对路径同样有效。 -->
+<link rel="icon" type="image/x-icon" href="assets/img/flygon_ico.ico" />
 <style>
 ${css}
 </style>

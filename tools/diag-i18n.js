@@ -49,6 +49,13 @@
     const tackleZh = CARDS.find((c) => c.id === 'tackle')?.name;
     ok(tackleZh === '撞击', '中文下卡名是原文', String(tackleZh));
     ok(STATUS_INFO.poison.name === '中毒', '中文下状态名是原文', STATUS_INFO.poison.name);
+    /**
+     * 标签页标题（用户点出来的：「网页标题到现在都没改」）。
+     * 它是**玩家看得见的一行字**，所以和界面文案一个标准：不许写死在 HTML 里不动 ——
+     * 切了日语 / 英语，标签页也得跟着换（`applyDocumentTitle`，见 src/ui/langswitch.js）。
+     */
+    const zhTab = document.title;
+    ok(zhTab.includes('欧亚西莉亚'), '中文下标签页标题是新版（不再是早期占位那版）', zhTab);
 
     log('② 点「日本語」');
     ok(clickLang('日本語'), '找到并点了「日本語」按钮');
@@ -57,6 +64,12 @@
     ok(currentLang() === 'ja', '语言状态变成 ja', currentLang());
     ok(document.documentElement.lang === 'ja', '<html lang> 跟着变（字体 / 断行 / 朗读都看它）', document.documentElement.lang);
     ok(jaTitle !== zhTitle, '标题页当场重画成日语', jaTitle);
+    ok(document.title !== zhTab && document.title.includes('オアシリア'),
+      '标签页标题跟着切成日语', `${zhTab} → ${document.title}`);
+    // 判据只用**简体专有字**：日语标题里「大冒険」这种汉字是正经日文，用「有没有汉字」查会误报
+    // （diag-music 里踩过同一个坑）
+    ok(!/[题图标乐击败敌鉴张奖级复录说写点类]/.test(document.title),
+      '日语标题里没有残留的简体中文', document.title);
     ok(CARDS.find((c) => c.id === 'tackle')?.name === 'たいあたり', '卡名**当场**变成译文（内容字段是原地改写的）', CARDS.find((c) => c.id === 'tackle')?.name);
     ok(STATUS_INFO.poison.name === 'どく', '状态名也当场变了（状态胶囊跟着走）', STATUS_INFO.poison.name);
     ok(JSON.parse(localStorage.getItem('oasis_desert_spirit_meta_v1') ?? '{}').lang === 'ja',
@@ -76,6 +89,7 @@
     changeLanguage('zh');
     await wait(400);
     ok(currentLang() === 'zh', '语言回到中文', currentLang());
+    ok(document.title === zhTab, '标签页标题逐字回到中文那一份', document.title);
     ok(CARDS.find((c) => c.id === 'tackle')?.name === '撞击', '卡名逐字回到中文', CARDS.find((c) => c.id === 'tackle')?.name);
     ok(STATUS_INFO.poison.name === '中毒', '状态名逐字回到中文', STATUS_INFO.poison.name);
     ok(STATUS_INFO.poison.desc.startsWith('回合开始流失'), '状态说明也回到原文（不是上一次的译文）', STATUS_INFO.poison.desc.slice(0, 14));

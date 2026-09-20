@@ -5,6 +5,7 @@ import { loadSpriteMeta } from './core/sprites.js';
 import { generateMap } from './data/mapgen.js';
 import { music } from './core/bgm.js';
 import { UI } from './ui/ui.js';
+import { applyDocumentTitle } from './ui/langswitch.js';
 import { audio } from './core/audio.js';
 import { toast } from './ui/dom.js';
 import { showDeck } from './ui/overlays.js';
@@ -13,6 +14,9 @@ import { setEncounterMode } from './ui/encounter.js';
 import { EVENTS } from './data/events.js';
 
 async function boot() {
+  // 标签页标题按**已存的语言**定下来（index.html 里那份是中文，给脚本没跑起来之前看）
+  applyDocumentTitle();
+
   const splash = document.createElement('div');
   splash.className = 'screen title-screen';
   splash.innerHTML = `

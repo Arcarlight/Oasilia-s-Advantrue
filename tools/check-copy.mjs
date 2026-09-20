@@ -156,7 +156,7 @@ console.log('\n⑥ 结算页里的章节数取自 stageCount()');
     hard.length ? `写死成 ${hard.join(' / ')}` : '');
 }
 
-console.log('\n⑦ HUD 的按钮和悬停文字：index.html 与单文件包模板不许走散');
+console.log('\n⑦ HUD 的按钮、网页标题与标签页图标：index.html 与单文件包模板不许走散');
 /**
  * 这条是踩出来的：`index.html` 里 `#btn-deck` 的悬停文字早就改成了
  * 「查看卡组（只读：排序 / 卡牌详情 / 图鉴）」—— 那句话里原本写着**早就删掉的
@@ -166,6 +166,10 @@ console.log('\n⑦ HUD 的按钮和悬停文字：index.html 与单文件包模�
  *
  * 判据：两边所有 `<button id="…" title="…">` 的 id → title 映射必须一致。
  * 新增 HUD 按钮时只改一处，这条就会红。
+ *
+ * 第二起（用户点出来的）：「网页标题到现在都没改」—— 顺带把 `<title>` 与
+ * `<link rel="icon">` 也钉在这里，而且**图标文件必须真的存在**：
+ * 换图标时只改一处、或者删了文件忘了改引用，都会红。
  */
 {
   const hudButtons = (text) => {
@@ -178,13 +182,31 @@ console.log('\n⑦ HUD 的按钮和悬停文字：index.html 与单文件包模�
     }
     return out;
   };
-  const dev = hudButtons(rd('index.html'));
-  const bundled = hudButtons(rd('tools/bundle.mjs'));
+  const devHtml = rd('index.html');
+  const bundleSrc = rd('tools/bundle.mjs');
+  const dev = hudButtons(devHtml);
+  const bundled = hudButtons(bundleSrc);
   const ids = [...new Set([...dev.keys(), ...bundled.keys()])].sort();
   const drift = ids.filter((id) => dev.get(id) !== bundled.get(id))
     .map((id) => `${id}：index.html「${dev.get(id) ?? '（没有）'}」vs bundle.mjs「${bundled.get(id) ?? '（没有）'}」`);
   ok(!drift.length, `index.html 与 tools/bundle.mjs 的 ${ids.length} 个按钮 id / 悬停文字完全一致`,
     drift.join(' ｜ ') || ids.join('、'));
+
+  // 标题：两处必须一模一样（标题里带语言，切语言时的第二份由 langswitch.js 现取）
+  const titleOf = (text) => /<title>([^<]*)<\/title>/.exec(text)?.[1] ?? '';
+  const devTitle = titleOf(devHtml);
+  const bndTitle = titleOf(bundleSrc);
+  ok(devTitle && devTitle === bndTitle, '两处的网页标题一字不差', `「${devTitle}」vs「${bndTitle}」`);
+  ok(!/Oasis · 流沙卡牌冒险/.test(devTitle), '标题不再是早期那一版占位文案', devTitle);
+
+  // 标签页图标：引用一致 + 文件真的在（.ico 而不是精灵图条）
+  const iconOf = (text) => /<link[^>]*rel="icon"[^>]*href="([^"]+)"/.exec(text)?.[1]
+    ?? /<link[^>]*href="([^"]+)"[^>]*rel="icon"/.exec(text)?.[1] ?? '';
+  const devIcon = iconOf(devHtml);
+  const bndIcon = iconOf(bundleSrc);
+  ok(devIcon && devIcon === bndIcon, '两处的标签页图标指向同一个文件', `${devIcon} vs ${bndIcon}`);
+  ok(/\.ico$/.test(devIcon), '图标用的是 .ico（不是拿精灵图的整张图条当图标）', devIcon);
+  ok(fs.existsSync(path.join(ROOT, devIcon)), '图标文件真的在', devIcon);
 }
 
 /**

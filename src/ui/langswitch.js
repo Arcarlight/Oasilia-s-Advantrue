@@ -4,8 +4,21 @@
 // 而 ui.js 又要 import screens.js —— 如果这个函数放在 ui.js 里就成环了。
 // 这里只依赖 i18n 机制和 window.__oasisUI（运行期才用到），谁都能安全地 import。
 
-import { setLang } from '../core/i18n.js';
+import { setLang, t } from '../core/i18n.js';
 import { refreshI18nTables } from '../core/i18n-tables.js';
+
+/**
+ * 把**标签页标题**换成当前语言的那一份。
+ *
+ * 起因（用户点出来的）：「网页标题到现在都没改」—— 前一个标题是早期占位，
+ * 而且它是**写死在 index.html 里的**，切了日语 / 英语标签页还是中文。
+ * 所以这里跟 `<html lang>` 一起改：静态那一份（index.html / 单文件包）给爬虫和
+ * 「JS 还没跑起来的那一瞬间」看，跑起来之后按语言走。
+ */
+export function applyDocumentTitle() {
+  const title = t('欧亚西莉亚的大冒险 ～ Desert Spirit.');
+  if (document.title !== title) document.title = title;
+}
 
 /**
  * 换语言。三步的顺序很重要：
@@ -26,6 +39,7 @@ export function changeLanguage(id) {
   if (!setLang(id)) return false;
   refreshI18nTables();
   document.documentElement.lang = id;
+  applyDocumentTitle();
 
   const ui = window.__oasisUI;
   const game = ui?.game;

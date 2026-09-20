@@ -33,6 +33,9 @@ const MIME = {
   '.webp': 'image/webp',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
+  // 标签页图标（assets/img/flygon_ico.ico）：不写这条会被当成 application/octet-stream，
+  // 有的浏览器就干脆不显示图标了
+  '.ico': 'image/x-icon',
   '.ogg': 'audio/ogg',
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',
