@@ -55,3 +55,4 @@ assets/audio/bgm/*.mp3
 # 提交信息临时文件（别跟着提交进去）
 .git-commit-msg.txt
 .commit-msg-2.txt
+x.tmp
