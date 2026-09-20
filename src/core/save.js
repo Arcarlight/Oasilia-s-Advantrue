@@ -40,6 +40,7 @@ export const save = {
     const fallback = {
       bestDistance: 0, bestStage: 0, runs: 0, wins: 0, kills: 0, unlocked: false,
       seenCards: [], seenEnemies: [], slainEnemies: [], history: [], heardBgm: [],
+      slainCount: {}, facedCount: {},
     };
     try {
       const raw = localStorage.getItem(META_KEY);
@@ -54,6 +55,10 @@ export const save = {
       if (!Array.isArray(meta.slainEnemies)) meta.slainEnemies = [];
       if (!Array.isArray(meta.history)) meta.history = [];
       if (!Array.isArray(meta.heardBgm)) meta.heardBgm = [];
+      // 击败**次数**（id -> 次数）：图鉴的奖牌（5 / 15 / 25 / 50 次）靠它。
+      // 老存档没有这份计数，此时图鉴按「slainEnemies 里有 = 打赢过 1 次」算（见 codex.js）。
+      if (!meta.slainCount || typeof meta.slainCount !== 'object') meta.slainCount = {};
+      if (!meta.facedCount || typeof meta.facedCount !== 'object') meta.facedCount = {};
       return meta;
     } catch {
       return fallback;
@@ -95,20 +100,31 @@ export const save = {
    * 为什么分成两个集合而不是一个「见过」：玩家想知道「这一只我到底打过没有」——
    * 一只怪「遇见了但被它打回家」和「打赢了」是两件事，混在一起图鉴就没有目标感了。
    * `slain` 时顺手也记进 seen（击败必然见过），免得调用方两个都传。
+   *
+   * 另外维护两份**计数**（图鉴的奖牌按次数发，布尔值发不出牌）：
+   *   facedCount  id -> 对上过几次（开打就 +1，不管输赢）
+   *   slainCount  id -> 赢过几次
    * 只在真的新增了才写盘。
    */
-  noteEnemies(ids = [], { slain = false } = {}) {
+  noteEnemies(ids = [], { slain = false, faced = false } = {}) {
     const meta = this.readMeta();
     const seen = new Set(meta.seenEnemies ?? []);
     const beaten = new Set(meta.slainEnemies ?? []);
+    const slainCount = { ...(meta.slainCount ?? {}) };
+    const facedCount = { ...(meta.facedCount ?? {}) };
     let added = 0;
     for (const id of [].concat(ids)) {
       if (!id) continue;
       if (!seen.has(id)) { seen.add(id); added += 1; }
-      if (slain && !beaten.has(id)) { beaten.add(id); added += 1; }
+      if (faced) { facedCount[id] = (facedCount[id] ?? 0) + 1; added += 1; }
+      if (slain) {
+        slainCount[id] = (slainCount[id] ?? 0) + 1;
+        added += 1;
+        if (!beaten.has(id)) beaten.add(id);
+      }
     }
     if (!added) return meta;
-    const next = { ...meta, seenEnemies: [...seen], slainEnemies: [...beaten] };
+    const next = { ...meta, seenEnemies: [...seen], slainEnemies: [...beaten], slainCount, facedCount };
     this.writeMeta(next);
     return next;
   },

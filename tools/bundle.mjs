@@ -325,7 +325,7 @@ ${spriteInline}
     <div class="hud-right">
       <div class="gold-pill"><span class="ico-money"></span><span id="hud-gold">0</span></div>
       <button class="btn btn-icon" id="btn-deck" title="查看卡组（只读：排序 / 卡牌详情 / 图鉴）"><span class="ico-cards"></span></button>
-      <button class="btn btn-icon" id="btn-codex" title="敌人图鉴（按 E）"><span class="ico-target"></span></button>
+      <button class="btn btn-icon" id="btn-codex" title="敌人图鉴（按 E）"><span class="ico-book"></span></button>
       <button class="btn btn-icon" id="btn-settings" title="设置"><span class="ico-gear"></span></button>
     </div>
   </header>

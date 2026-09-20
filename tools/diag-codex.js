@@ -167,9 +167,9 @@
     {
       const cells = qa('.dex-art-cell', detail);
       const caps = cells.map((c) => q('.dex-art-cap', c)?.textContent);
-      ok(cells.length === 3, '详情页并排三张图（小图标 / 回合立绘 / 战斗动图）', caps.join(' / '));
+      ok(cells.length === 3, '详情页并排三张图（行走图 / 回合立绘 / 小图标）', caps.join(' / '));
       const icon = q('.dex-art-cell .poke-icon', detail);
-      ok(!!icon, '第一格是小图标');
+      ok(!!icon, '其中一格是小图标');
       if (icon) {
         const cs = getComputedStyle(icon);
         ok(cs.animationName === 'poke-icon-play' && cs.animationIterationCount === 'infinite',
@@ -179,8 +179,8 @@
           '小图标的底图比它自己宽（说明是「一帧一帧横向排开」的动图条）',
           `底图 ${cs.backgroundSize} vs 显示宽 ${icon.clientWidth}px`);
       }
-      ok(!!q('.dex-art-cell .dex-turnart-img', detail), '第二格是回合立绘（gen9 正面图）');
-      ok(!!q('.dex-art-cell canvas', detail), '第三格是战斗动图（PMD 精灵的 canvas）');
+      ok(!!q('.dex-art-cell .dex-turnart-img', detail), '其中一格是回合立绘（gen9 正面图）');
+      ok(!!q('.dex-art-cell canvas', detail), '其中一格是行走图（PMD 精灵的 canvas）');
     }
     ok(qa('.dex-moves .dex-move', detail).length > 0, '详情里列了招式',
       `${qa('.dex-moves .dex-move', detail).length} 个胶囊`);
@@ -189,6 +189,113 @@
     ok(!!q('.dex-lines p', detail), '详情里有出场台词');
     ok(qa('.detail-chip', detail).length >= 4, '详情头部有编号 / 档位 / 地图 / 属性',
       qa('.detail-chip', detail).map((n) => n.textContent).join(' · '));
+
+    /**
+     * ④ 用户要求的三件事（详情页改造）：
+     *   · 行走图**跟着鼠标转向** —— 朝向 = 精灵图的某一**行**，所以断言「换位置之后 dirRow 变了」；
+     *   · 左上三张图 + 右边信息 + 下面卡牌与战绩 —— 断言排版结构（.dex-detail-top 是两列）；
+     *   · 击败奖牌（5 / 15 / 25 / 50）—— 断言档位映射与进度条。
+     */
+    log('⑤ 详情页：转向 / 排版 / 奖牌');
+    {
+      const walk = q('.dex-art-cell.dex-art-walk canvas', detail);
+      ok(!!walk, '第一格是行走图（canvas）');
+      if (walk) {
+        const r = walk.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        /**
+         * 鼠标位置 = 精灵图中心 + 偏移（偏移方向就是「鼠标在哪个方向」）。
+         */
+        const VEC = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]];
+        {
+          const { dirFromPoint } = await import('/src/ui/codex.js');
+          // 与下面循环用的是同一套输入（鼠标位置 = 中心 + 偏移）
+          const rows = VEC.map(([fx, fy]) => dirFromPoint(0, 0, fx * 100, fy * 100));
+          log(`    · 朝向映射表（鼠标在 下/右下/右/右上/上/左上/左/左下 → 行）：${rows.join(',')}`);
+        }
+        /**
+         * 八个方向逐个试：鼠标放到某个方向，行走图应该切到那个方向的**朝向行**。
+         *
+         * 两个例外都要算合法：① 这个物种没画满 8 个朝向（素材库里 6/214 只没画满），
+         * 此时 frameList() 会退回第一行有内容的；② 该行恰好是空的。
+         * 所以期望值 = 「这个物种支持的朝向里，离目标最近的那一个」。
+         */
+        const dirs = walk.contentDirs?.() ?? [];
+        const nearest = (want) => {
+          if (dirs.includes(want)) return want;
+          let best = want;
+          let bestD = 99;
+          for (const d of dirs) {
+            const diff = Math.min((d - want + 8) % 8, (want - d + 8) % 8);
+            if (diff < bestD) { bestD = diff; best = d; }
+          }
+          return best;
+        };
+        const NAMES = ['下', '右下', '右', '右上', '上', '左上', '左', '左下'];
+        let hit = 0;
+        for (let want = 0; want < 8; want++) {
+          const [fx, fy] = VEC[want];
+          document.dispatchEvent(new MouseEvent('mousemove', {
+            clientX: cx + fx * 300, clientY: cy + fy * 300, bubbles: true,
+          }));
+          await wait(30);
+          const want2 = nearest(want);
+          if (walk.dirRow === want2) hit++;
+          else {
+            const rr = walk.getBoundingClientRect();
+            const point = window.__dexPointer ?? {};
+            const { dirFromPoint } = await import('/src/ui/codex.js');
+            log(`    · 鼠标在${NAMES[want]} → dirRow=${walk.dirRow}，期望 ${want2}`
+              + `（canvas 中心 ${Math.round(rr.left + rr.width / 2)},${Math.round(rr.top + rr.height / 2)}`
+              + ` 指针 ${point.x},${point.y} 纯函数给 ${dirFromPoint(rr.left + rr.width / 2, rr.top + rr.height / 2, point.x, point.y)}）`);
+          }
+        }
+        ok(hit === 8, '八个方向逐个数：鼠标指向哪边，行走图就转哪边',
+          `命中 ${hit}/8（这个物种支持 ${dirs.join('/') || '?'} 行朝向）`);
+        ok((walk.frameCount ?? 0) > 0, '行走图有帧（没画满朝向时会退回第一行有内容的）', `${walk.frameCount} 帧`);
+        ok(dirs.length >= 4, '这个物种至少有 4 个朝向（不然转不出「看全身」的效果）', `${dirs.length} 个朝向`);
+      }
+      ok(!!q('.dex-detail-top', detail) && qa('.dex-detail-top > *', detail).length === 2,
+        '排版是「左上三张图 + 右侧信息」两列（不再是一张图一个框）');
+      ok(qa('.dex-art-row .dex-art-cell', detail).length === 3, '三张图都排在同一行里（行走图 / 回合立绘 / 小图标）');
+      ok(qa('.dex-stats .dex-stat', detail).length >= 5, '右侧有战绩方块（挑战 / 击败 / 失败 / 胜率 / 招式）',
+        qa('.dex-stat span', detail).map((n) => n.textContent).join(' · '));
+      // 口吻台词：**打赢过才看得到**（这一只是 slain）
+      ok(!!q('.dex-voice .dex-voice-line', detail), '打赢过的宝可梦会「说一句话」',
+        q('.dex-voice .dex-voice-line', detail)?.textContent);
+      ok(qa('.dex-medal-step', detail).length === 4, '奖牌进度条有 4 段（5 / 15 / 25 / 50）');
+      // 打赢 1 次：还没有奖牌，四段都没点亮
+      ok(qa('.dex-medal', detail).length === 0, '只赢过 1 次还没有奖牌');
+      ok(qa('.dex-medal-step.done', detail).length === 0, '进度条一段都没点亮');
+      // 手动把击败次数堆到 15：应该出现银牌
+      const metaNow = save.readMeta();
+      save.writeMeta({ ...metaNow, slainCount: { ...(metaNow.slainCount ?? {}), [slainId]: 15 } });
+      closeTop();
+      await wait(150);
+      ui.forceRerender();
+      await wait(200);
+      click(qa('.title-codex .title-codex-btn')[2]);
+      await wait(300);
+      modal = topModal();
+      const known2 = qa('.dex-card', modal).find((n) => n.classList.contains('slain'));
+      ok(!!known2, '（重开图鉴后）能再找到那只打赢过的');
+      click(known2);
+      await wait(350);
+      const d2 = topModal();
+      ok(qa('.dex-medal.medal-silver', d2).length === 1, '打赢 15 次 → 行走图右上角出现银牌',
+        `${qa('.dex-medal', d2).map((n) => n.className).join(' ') || '（没有奖牌）'}`
+        + ` ｜ 战绩 ${qa('.dex-stat b', d2).map((n) => n.textContent).join('/')}（挑战/击败/失败/胜率/招式）`);
+      ok(qa('.dex-medal-step.done', d2).length === 2, '进度条点亮 2 段（5 / 15）',
+        `${qa('.dex-medal-step.done', d2).length} 段`);
+      closeTop();
+      await wait(150);
+      ui.forceRerender();
+      await wait(200);
+      click(qa('.title-codex .title-codex-btn')[2]);
+      await wait(300);
+      modal = topModal();
+    }
     // 没见过的点开：只能看到「还没遇见」那句，不能泄露台词与招式
     closeTop();
     await wait(150);
@@ -396,6 +503,11 @@
       } else if (what === 'map') { game.newRun(20260214); game.phase = 'map'; ui.forceRerender(); }
       else if (what === 'battle') { game.newRun(20260214); game.startBattle('elite', 0, 'direct'); }
       else if (what === 'enemy-detail') {
+        // 截图时给那只刷 25 次击败，好把金牌和满格进度条一起拍进去
+        const m = save.readMeta();
+        const id = qa('.dex-card.slain')[0]?.dataset?.enemyId
+          ?? (m.slainEnemies ?? [])[0];
+        if (id) save.writeMeta({ ...m, slainCount: { ...(m.slainCount ?? {}), [id]: 25 } });
         click(entries[2]);
         await wait(200);
         click(qa('.dex-card.slain')[0]);

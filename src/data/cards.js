@@ -6292,11 +6292,11 @@ export const CARD_ART = {
     "fx": "magic_2"
   },
   "bulk_up": {
-    "ico": "ico-temperature_up",
+    "ico": "ico-arrow_up_red",
     "fx": "twirl_1"
   },
   "bulldoze": {
-    "ico": "ico-temperature_down",
+    "ico": "ico-arrow_down_blue",
     "fx": "dirt_1"
   },
   "bullet_punch": {
@@ -6412,7 +6412,7 @@ export const CARD_ART = {
     "fx": "slash_1"
   },
   "dragon_dance": {
-    "ico": "ico-temperature_up",
+    "ico": "ico-arrow_up_red",
     "fx": "twirl_1"
   },
   "dragon_darts": {
@@ -6508,7 +6508,7 @@ export const CARD_ART = {
     "fx": "light_1"
   },
   "focus_energy": {
-    "ico": "ico-temperature_up",
+    "ico": "ico-arrow_up_red",
     "fx": "magic_1"
   },
   "focus_punch": {
@@ -6624,7 +6624,7 @@ export const CARD_ART = {
     "fx": "flare_1"
   },
   "intimidate": {
-    "ico": "ico-temperature_down",
+    "ico": "ico-arrow_down_blue",
     "fx": "trace_1"
   },
   "iron_barbs": {
@@ -6728,7 +6728,7 @@ export const CARD_ART = {
     "fx": "dirt_1"
   },
   "mob_stare": {
-    "ico": "ico-temperature_down",
+    "ico": "ico-arrow_down_blue",
     "fx": "magic_1"
   },
   "moonblast": {

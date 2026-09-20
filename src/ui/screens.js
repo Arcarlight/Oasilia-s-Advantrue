@@ -178,7 +178,7 @@ async function renderTitle(game) {
   inner.append(el('div', { class: 'title-codex' }, [
     titleCodexBtn('ico-trophy', t('通关记录'), runCount() ? t('{n} 局', { n: runCount() }) : t('还没有'), () => showRecords()),
     titleCodexBtn('ico-cards', t('卡牌图鉴'), `${cardProgress.got}/${cardProgress.total}`, () => showCardCodex(game)),
-    titleCodexBtn('ico-target', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
+    titleCodexBtn('ico-book', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
     // 曲子库：和三个图鉴同一类（都是「收集进度」），只是收的是 BGM
     titleCodexBtn('ico-music', t('曲子库'), `${musicProgress.heard}/${musicProgress.total}`, () => showMusicRoom()),
   ]));
@@ -411,7 +411,7 @@ function renderMap(game) {
     ]),
     // 敌人图鉴在地图上也要能开：接下来打哪一格之前，先查查那张图上有什么怪
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showEnemyCodex(); } }, [
-      el('span', { class: 'ico-target' }), el('span', { text: t('敌人图鉴') }),
+      el('span', { class: 'ico-book' }), el('span', { text: t('敌人图鉴') }),
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showHelp(); } }, [
       el('span', { class: 'ico-question_mark' }), el('span', { text: t('说明') }),

@@ -317,14 +317,17 @@ button { font-family: inherit; }
 .ico-award { /* 奖杯：终结技 / 大招 / 胜利（与现有 Kenney 奖杯区分开） */ -webkit-mask-image: url(../../assets/img/icons/pack/award.svg); mask-image: url(../../assets/img/icons/pack/award.svg); }
 .ico-backpack { /* 背包：道具类 / 背包 */ -webkit-mask-image: url(../../assets/img/icons/pack/backpack.svg); mask-image: url(../../assets/img/icons/pack/backpack.svg); }
 
-/* --- 界面 --- */
-.ico-music { /* 音符：曲子库（听过的 BGM） */ -webkit-mask-image: url(../../assets/img/icons/pack/music.svg); mask-image: url(../../assets/img/icons/pack/music.svg); }
-
 /* --- 属性与状态 --- */
+.ico-arrow_up_red { /* 向上的箭头（染红）：增益 —— 自己变强 / 攻击提升。比温度计好认（用户要求） */ -webkit-mask-image: url(../../assets/img/icons/pack/arrow_up_red.svg); mask-image: url(../../assets/img/icons/pack/arrow_up_red.svg); }
+.ico-arrow_down_blue { /* 向下的箭头（染蓝）：削弱 —— 对手变弱 / 攻击下降。比温度计好认（用户要求） */ -webkit-mask-image: url(../../assets/img/icons/pack/arrow_down_blue.svg); mask-image: url(../../assets/img/icons/pack/arrow_down_blue.svg); }
 .ico-clover { /* 三叶草：幸运属性 */ -webkit-mask-image: url(../../assets/img/icons/pack/clover.svg); mask-image: url(../../assets/img/icons/pack/clover.svg); }
 .ico-heart_break_02 { /* 裂开的心：流血 / 持续掉血 */ -webkit-mask-image: url(../../assets/img/icons/pack/heart_break_02.svg); mask-image: url(../../assets/img/icons/pack/heart_break_02.svg); }
 .ico-action_points { /* 纯文本 AP：行动点 */ -webkit-mask-image: url(../../assets/img/icons/pack/action_points.svg); mask-image: url(../../assets/img/icons/pack/action_points.svg); }
 .ico-clock { /* 时钟：回合 / 计时 */ -webkit-mask-image: url(../../assets/img/icons/pack/clock.svg); mask-image: url(../../assets/img/icons/pack/clock.svg); }
+
+/* --- 界面 --- */
+.ico-book { /* 书本：图鉴（敌人图鉴的入口用书，比靶心更像「资料」） */ -webkit-mask-image: url(../../assets/img/icons/pack/book.svg); mask-image: url(../../assets/img/icons/pack/book.svg); }
+.ico-music { /* 音符：曲子库（听过的 BGM） */ -webkit-mask-image: url(../../assets/img/icons/pack/music.svg); mask-image: url(../../assets/img/icons/pack/music.svg); }
 
 /* --- 界面与地图 --- */
 .ico-hit_effect { /* 命中特效：战斗节点 */ -webkit-mask-image: url(../../assets/img/icons/pack/hit_effect.svg); mask-image: url(../../assets/img/icons/pack/hit_effect.svg); }
@@ -2384,7 +2387,10 @@ body[data-biome="crystal"] { --accent-2: #b8f4ff; --accent: #4fb8d8; --accent-de
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .35));
 }
 .card-act.ico-trash { background-color: #ff9d8a; }   /* 销毁用红一点，一眼区分 */
-.card-act.ico-temperature_down { background-color: #c9a8ff; }   /* 削弱对手：紫，和「抽牌 / 销毁」拉开 */
+/* 削弱 / 增益：**紫下箭头 / 红上箭头**（用户要求，取代温度计）。
+   颜色定在角标上，所以别在这里被 .card-act 的米黄底色盖回去 —— 靠 `.card-act.xxx` 的双类选择器赢。 */
+.card-act.ico-arrow_down_blue { background-color: #b98cff; }   /* 削弱对手：紫，和「抽牌 / 销毁」拉开 */
+.card-act.ico-arrow_up_red { background-color: #ff8f7a; }      /* 强化自己：红 */
 [data-tip] { cursor: help; }
 
 /* ============================================================
@@ -2993,26 +2999,110 @@ input, textarea { cursor: text !important; }
 }
 
 /* ============================================================
-   图鉴详情：三张图并排（小图标 / 回合立绘 / 战斗动图）
+   图鉴详情：左上三张图（行走图 / 回合立绘 / 小图标）+ 右侧信息与战绩
+   —— 用户要求「把框移除」，所以这里**不再给每张图套一个卡片框**，
+   图和字直接摆在同一块面板上，靠间距与一条分隔线分区。
    ============================================================ */
 .dex-detail { display: flex; flex-direction: column; gap: 14px; }
-.dex-art-row {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+.dex-detail-top {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 20px; align-items: start;
   padding-bottom: 12px;
   box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
 }
-.dex-art-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+/* 三张图横着排在左上（没有框：只留一点点底衬让人物从背景里浮出来） */
+.dex-art-row { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
+.dex-art-cell { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; }
 .dex-art-box {
-  width: 100%; height: 112px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: var(--r-md);
-  background: radial-gradient(70% 70% at 50% 40%, rgba(255, 255, 255, .1), rgba(0, 0, 0, .22));
-  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .18);
-  overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: center;
+  min-width: 76px; height: 124px;
 }
-.dex-art-cap { font-size: 11px; opacity: .65; }
-.dex-turnart-img { image-rendering: pixelated; max-width: 100%; }
-.dex-battleart canvas, .dex-anim { image-rendering: pixelated; max-height: 104px; width: auto; }
+.dex-art-cap { font-size: 11px; opacity: .6; }
+.dex-turnart-img { image-rendering: pixelated; max-width: 200px; max-height: 124px; }
+.dex-iconbox { display: flex; align-items: center; justify-content: center; height: 124px; }
+
+/* 行走图：跟着鼠标转（朝向 = 精灵图的一行），右上角挂击败奖牌 */
+.dex-walk { position: relative; display: flex; align-items: flex-end; justify-content: center; height: 124px; }
+/* 画布单独一层：它异步建好之后只清这一层，挂在 .dex-walk 上的奖牌不会被一起清掉 */
+.dex-walk-stage { display: flex; align-items: flex-end; justify-content: center; height: 124px; }
+.dex-walk canvas, .dex-battleart canvas, .dex-anim { image-rendering: pixelated; max-height: 124px; width: auto; }
+
+/* ---- 击败奖牌（5 铜 / 15 银 / 25 金 / 50 紫金）---- */
+.dex-medal {
+  position: absolute; top: 0; right: -4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .45);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .45);
+}
+.dex-medal::after {
+  content: ''; width: 17px; height: 17px; background-color: currentColor;
+  -webkit-mask-image: url(../../assets/img/icons/medal.png); mask-image: url(../../assets/img/icons/medal.png);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
+.medal-bronze { color: #cd8b53; }
+.medal-silver { color: #d7dde5; }
+.medal-gold { color: #ffcc5c; }
+.medal-platinum { color: #c9a8ff; }
+
+/* ---- 右侧：名称 / 编号 / 称号 / 属性 + 战绩 ---- */
+.dex-detail-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.dex-detail-head { display: flex; flex-direction: column; gap: 9px; }
+.dex-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.dex-stat {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 62px; padding: 6px 10px; border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .24);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+}
+.dex-stat b { font-family: var(--font-title); font-size: 17px; color: var(--accent-2); font-variant-numeric: tabular-nums; }
+.dex-stat span { font-size: 10.5px; opacity: .7; }
+
+/* ---- 奖牌进度条：4 段（5 / 15 / 25 / 50）---- */
+.dex-medal-row { display: flex; align-items: center; gap: 9px; }
+.dex-medal-cap { font-size: 11.5px; opacity: .65; flex: 0 0 auto; }
+.dex-medal-bar { display: flex; gap: 5px; flex: 1 1 auto; }
+.dex-medal-step {
+  position: relative; flex: 1 1 0; height: 15px;
+  display: flex; align-items: center; gap: 3px; padding: 0 5px;
+  border-radius: 999px; overflow: hidden;
+  background: rgba(0, 0, 0, .3);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+}
+.dex-medal-fill { position: absolute; left: 0; top: 0; bottom: 0; background: currentColor; opacity: .3; }
+.dex-medal-step.done { box-shadow: inset 0 0 0 1px currentColor; }
+.dex-medal-step.done .dex-medal-fill { opacity: .55; }
+.dex-medal-ico {
+  position: relative; width: 10px; height: 10px; background-color: currentColor; flex: 0 0 auto;
+  -webkit-mask-image: url(../../assets/img/icons/medal.png); mask-image: url(../../assets/img/icons/medal.png);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
+.dex-medal-num { position: relative; margin-left: auto; font-size: 10px; opacity: .8; font-variant-numeric: tabular-nums; }
+
+/* ---- 口吻台词 / 卡牌分组 ---- */
+.dex-voice-line { margin: 2px 0 0; font-size: 13.5px; line-height: 1.7; }
+.dex-voice.locked .dex-voice-line { opacity: .6; }
+.dex-voice-note { font-size: 11px; opacity: .55; }
+.dex-move-group { display: flex; align-items: flex-start; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.dex-move-cap { flex: 0 0 auto; font-size: 11.5px; opacity: .65; padding-top: 3px; }
+.dex-empty { font-size: 12px; opacity: .6; }
+/* 首领称号在信息行里单独挑出来（和遭遇演出那块霓虹灯是一回事，只是这里安静些） */
+.detail-chip.boss-title {
+  color: #ffd27a;
+  box-shadow: inset 0 0 0 1px rgba(255, 200, 110, .5);
+  background: rgba(255, 185, 92, .12);
+  letter-spacing: .04em;
+}
+
+@media (max-width: 720px) {
+  .dex-detail-top { grid-template-columns: 1fr; }
+  .dex-art-box, .dex-walk, .dex-iconbox { height: 100px; }
+}
 
 /* ============================================================
    专家模式：卡面上那一行数字（设置里开，默认关）

@@ -50,6 +50,11 @@ export function cardRoles(card) {
   /** 削弱对手也算一种「负面特性」，放在美术角标里（和抽牌 / 销毁同一排） */
   const weakensFoe = fx.some((e) => (e.kind === 'buff' && e.target === 'enemy' && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0))
     || (e.kind === 'status' && e.target !== 'self'));
+  /**
+   * 「强化自己」：本场战斗里自己的属性提升（健美 / 龙之舞 / 聚气 / 剑舞…）。
+   * 角标用**红色的上箭头**，和「削弱对手」的紫色下箭头成一对（用户要求）。
+   */
+  const buffsSelf = fx.some((e) => e.kind === 'buff' && self(e) && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0));
 
   const roles = [];
   const detail = (bits) => bits.filter(Boolean).join('\n');
@@ -147,7 +152,10 @@ export function cardEl(card, opts = {}) {
   const acts = [];
   const act = (has, cls, tip) => { if (has) acts.push(el('span', { class: `card-act ${cls}`, dataset: { tip } })); };
   act(card.effects.some((e) => e.kind === 'draw'), 'ico-cards', t('抽牌：从牌堆再抽一张。'));
-  act(roles.weakensFoe, 'ico-temperature_down', t('削弱对手：降它的属性 / 挂负面状态 —— 你后面每一张牌都更疼。'));
+  // 削弱 / 增益用**染色的上下箭头**（紫下箭头 / 红上箭头），不再用温度计 ——
+  // 温度计要停下来想一下「升的是谁」，箭头看一眼就懂（用户要求）。
+  act(roles.weakensFoe, 'ico-arrow_down_blue', t('削弱对手：降它的属性 / 挂负面状态 —— 你后面每一张牌都更疼。'));
+  act(roles.buffsSelf, 'ico-arrow_up_red', t('强化自己：本场战斗里自己的属性提升。'));
   act(card.exhaust, 'ico-trash', t('销毁：打出后进入销毁区，本场战斗不会再出现。'));
   act(card.effects.some((e) => e.kind === 'exhaustHand'), 'ico-trash', t('销毁手牌：把手里剩下的牌全部销毁。'));
   act(card.effects.some((e) => e.kind === 'discard'), 'ico-shuffle', t('弃牌：把牌弃进弃牌堆（牌堆抽空时会洗回来）。'));

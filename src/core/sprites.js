@@ -170,7 +170,8 @@ export async function createAnim(slug, opts = {}) {
   probe.width = info.fw;
   probe.height = info.fh;
   const pctx = probe.getContext('2d', { willReadFrequently: true });
-  const frames = frameList(info, img, pctx, dir);
+  // frames 用 let：setDir() 换朝向时会整条换掉（朝向 = 精灵图的一行）
+  let frames = frameList(info, img, pctx, dir);
 
   let i = 0;
   let last = 0;
@@ -221,6 +222,26 @@ export async function createAnim(slug, opts = {}) {
     }, s);
   };
 
+  /**
+   * 这个物种的这张图，**哪些朝向行真的有内容**（8 个朝向 = 8 行）。
+   *
+   * 素材库里绝大多数物种（208 / 214）画满了 8 个朝向，但确实有几只没画满 ——
+   * frameList() 会退回第一行有内容的，于是「鼠标在右下」可能落到「右上」那一行，
+   * 看起来就是转了个别的方向。图鉴那句话（「行走图跟着鼠标转」）要能被量，
+   * 所以把「这个物种支持哪些朝向」直接暴露出来，而不是让调用方去猜。
+   */
+  canvas.contentDirs = () => {
+    const out = [];
+    for (let r = 0; r < info.rows; r++) {
+      let has = false;
+      for (let c = 0; c < info.cols; c++) {
+        if (!isFrameBlank(img, pctx, c * info.fw, r * info.fh, info.fw, info.fh)) { has = true; break; }
+      }
+      if (has) out.push(r);
+    }
+    return out;
+  };
+
   canvas.destroy = () => {
     // 幂等：外部（战斗界面）会在换动作和收场时各调一次，重复调用不能把计数减穿
     if (canvas._destroyed) return;
@@ -229,6 +250,21 @@ export async function createAnim(slug, opts = {}) {
     stopped = true;
     stopLoop();
     cancelAnimationFrame(raf);
+  };
+  /**
+   * 换朝向行（DIR.RIGHT / DIR.LEFT / DIR.DOWN …），动画接着播。
+   *
+   * 图鉴详情页用它做「行走图跟着鼠标转」（用户要求）：8 个朝向就是精灵图的 8 行，
+   * 换行不用重新建 canvas、也不用重新取图 —— 只把帧序列换掉，再重画当前这一帧。
+   * 这个物种没画满 8 个朝向时 frameList() 会自动退回第一行有内容的，不会开出空画布。
+   */
+  canvas.setDir = (next) => {
+    if (next === canvas.dirRow) return false;
+    frames = frameList(info, img, pctx, next);
+    canvas.dirRow = next;
+    if (i >= frames.length) i = 0;
+    paint();
+    return true;
   };
   liveAnims += 1;
   canvas.frameCount = frames.length;

@@ -59,6 +59,9 @@ const jobs = [
   { dir: 'img/icons', to: 'pause.png', from: [path.join(GAME_ICONS, 'pause.png')] },
   { dir: 'img/icons', to: 'question.png', from: [path.join(GAME_ICONS, 'question.png')] },
   { dir: 'img/icons', to: 'star.png', from: [path.join(GAME_ICONS, 'star.png')] },
+  // 击败奖牌（图鉴里挂在那只宝可梦右上角）：铜 / 银 / 金 / 紫金都是这一张白色剪影 + CSS 染色，
+  // 和 .ico-* 的 mask 一样 —— 素材包里没有现成的四色奖牌。
+  { dir: 'img/icons', to: 'medal.png', from: [path.join(GAME_ICONS, 'medal1.png')] },
   { dir: 'img/icons', to: 'trophy.png', from: [path.join(GAME_ICONS, 'trophy.png')] },
   { dir: 'img/icons', to: 'warning.png', from: [path.join(GAME_ICONS, 'warning.png')] },
   { dir: 'img/icons', to: 'arrow_up.png', from: [path.join(GAME_ICONS, 'arrowUp.png')] },

@@ -203,6 +203,33 @@
       "group": "卡牌语义"
     },
     {
+      "name": "arrow_up_red",
+      "source": "pack:arrow-up",
+      "file": "icons/pack/arrow_up_red.svg",
+      "desc": "向上的箭头（染红）：增益 —— 自己变强 / 攻击提升。比温度计好认（用户要求）",
+      "component": "arrow-up",
+      "category": "8-ui",
+      "group": "属性与状态"
+    },
+    {
+      "name": "arrow_down_blue",
+      "source": "pack:arrow-down",
+      "file": "icons/pack/arrow_down_blue.svg",
+      "desc": "向下的箭头（染蓝）：削弱 —— 对手变弱 / 攻击下降。比温度计好认（用户要求）",
+      "component": "arrow-down",
+      "category": "8-ui",
+      "group": "属性与状态"
+    },
+    {
+      "name": "book",
+      "source": "pack:book",
+      "file": "icons/pack/book.svg",
+      "desc": "书本：图鉴（敌人图鉴的入口用书，比靶心更像「资料」）",
+      "component": "book",
+      "category": "2-items",
+      "group": "界面"
+    },
+    {
       "name": "music",
       "source": "pack:music",
       "file": "icons/pack/music.svg",

@@ -742,8 +742,10 @@ export class Game {
      *
      * 记在 startBattle 里而不是各条入口里：战斗有四个来源（地图节点、宝箱怪、首领、
      * 诊断脚本直接开一场），逐个记一定会漏一个。
+     * `faced: true` 同时 +1 挑战次数 —— 图鉴要显示「挑战 / 击败 / 失败」三个数，
+     * 光知道「见过没有」算不出来（失败 = 挑战 − 击败）。
      */
-    this.meta = save.noteEnemies([enemyDef.id]);
+    this.meta = save.noteEnemies([enemyDef.id], { faced: true });
     this.phase = Phase.BATTLE;
     this.changed();
     return this.battle;
