@@ -19,6 +19,7 @@ import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
 // 标题页的三块收藏 / 战绩页：卡牌图鉴、敌人图鉴、通关记录（游戏内也能开敌人图鉴）
 import { showCardCodex, showEnemyCodex, cardCodexProgress, enemyCodexProgress } from './codex.js';
 import { showRecords, runCount } from './records.js';
+import { showChangelog, CHANGELOG } from './changelog.js';
 import { renderHud } from './hud.js';
 
 /**
@@ -122,6 +123,11 @@ async function renderTitle(game) {
     ]),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showSettings(); } }, [
       el('span', { class: 'ico-gear' }), el('span', { text: t('设置') }),
+    ]),
+    // 更新日志：和「玩法说明 / 设置」同一类（都是「关于这个游戏」的信息），所以排在它们旁边
+    el('button', { class: 'btn btn-ghost', onClick: () => showChangelog() }, [
+      el('span', { class: 'ico-clock' }), el('span', { text: t('更新日志') }),
+      el('span', { class: 'btn-sub', text: `v${CHANGELOG[0]?.version ?? ''}` }),
     ]),
     el('button', {
       class: 'btn btn-ghost btn-sm',

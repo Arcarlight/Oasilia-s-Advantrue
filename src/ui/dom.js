@@ -2,6 +2,22 @@
 
 import { t } from '../core/i18n.js';
 
+/** 转义 HTML（`<` `>` `&`），用在要把纯文本塞进 innerHTML 的地方 */
+export function escapeHtml(text) {
+  return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * 把文案里的 `**重点**` 变成 `<b>重点</b>`（先转义再替换，别让文案里的尖括号变成标签）。
+ *
+ * 悬停说明（src/ui/tips.js）和更新日志都要这个 —— 以前 tips.js 里自己写了一遍，
+ * 更新日志漏了，于是界面上直接显示出一串 `**…**`（截图里一眼就看到了）。
+ * 现在只有这一份实现。
+ */
+export function richText(text) {
+  return escapeHtml(text).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+}
+
 /** 建 DOM：el('div', {class:'x', text:'hi'}, [child1, child2]) */
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);

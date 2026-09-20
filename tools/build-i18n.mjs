@@ -109,7 +109,7 @@ async function collectContentStrings() {
     if (Array.isArray(v)) { for (const s of v) addDeep(s, where); return; }
     if (v && typeof v === 'object') for (const s of Object.values(v)) addDeep(s, where);
   };
-  const { I18N_TABLES, I18N_WORD_TABLES = {} } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
+  const { I18N_TABLES, I18N_WORD_TABLES = {}, I18N_LISTS = {} } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
   const { CONTENT_FIELDS, entriesOf, optionTextNodes } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
 
   for (const [kind, list] of Object.entries(I18N_TABLES)) {
@@ -147,6 +147,19 @@ async function collectContentStrings() {
       if (typeof v === 'string') add(v, `ui:${kind}`);
     }
   }
+
+  /**
+   * 列表形状的文案（更新日志）：递归把里面的字符串全收进来。
+   * 这些文案在界面里是**渲染时才过 t()** 的裸字符串，静态扫 `t('…')` 扫不到；
+   * 不收的话它们永远不会进待翻清单（切到日语还是中文）。
+   */
+  const addAny = (v, where) => {
+    if (typeof v === 'string') { add(v, where); return; }
+    if (Array.isArray(v)) { for (const x of v) addAny(x, where); return; }
+    if (v && typeof v === 'object') for (const x of Object.values(v)) addAny(x, where);
+  };
+  for (const [kind, list] of Object.entries(I18N_LISTS)) addAny(list, `list:${kind}`);
+
   return { content: out, official };
 }
 
@@ -236,7 +249,12 @@ await fs.writeFile(path.join(IN_DIR, '_report.json'), `${JSON.stringify({
     }];
   })),
   // 还差哪些（原文照抄，方便直接搜 / 直接补）
-  missing: Object.fromEntries(LANGS.map((lg) => [lg, [...allZh].filter((zh) => !tables[lg][zh]).slice(0, 80)])),
+  //
+  // 注意：这里**不能截断**。以前写的是 `.slice(0, 80)`，于是「机器可读的待翻清单」只有 80 条 ——
+  // 加了一整批内容（新名单 185 条）之后，照这份清单去翻就只翻了前 80 条，
+  // 剩下的静默留在中文里（而且看报表还以为「清单就这么多」）。
+  // 报表是给工具链读的，就该是完整的；要给人看的话，控制台那段覆盖率足够。
+  missing: Object.fromEntries(LANGS.map((lg) => [lg, [...allZh].filter((zh) => !tables[lg][zh])])),
   orphans: orphansByLang,
   placeholders: placeholderMismatch,
 }, null, 2)}\n`, 'utf8');

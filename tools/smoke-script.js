@@ -107,7 +107,27 @@
       errors.push('codex: ' + e.message);
     }
 
-    // 7) 检查关键 DOM
+    // 7) 更新日志：标题页那个按钮点得开、有版本条目
+    try {
+      const btn = [...document.querySelectorAll('.title-menu .btn')].find((b) => b.textContent.includes('更新日志'));
+      log('标题页更新日志按钮 =', !!btn);
+      if (!btn) errors.push('标题页没有「更新日志」按钮');
+      else {
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(300);
+        const modal = [...document.querySelectorAll('.modal-backdrop')].pop();
+        const entries = modal ? modal.querySelectorAll('.cl-entry').length : 0;
+        const items = modal ? modal.querySelectorAll('.cl-items li').length : 0;
+        log('更新日志 ->', entries, '个版本，', items, '条');
+        if (!entries || !items) errors.push('更新日志打开是空的');
+        for (const b of (modal ? modal.querySelectorAll('.modal-head button') : [])) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(120);
+      }
+    } catch (e) {
+      errors.push('changelog: ' + e.message);
+    }
+
+    // 8) 检查关键 DOM
     const checks = {
       hudVisible: !document.getElementById('hud').classList.contains('hidden'),
       hasScreen: !!document.querySelector('.screen'),

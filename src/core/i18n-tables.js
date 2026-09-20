@@ -17,6 +17,7 @@ import { BIOMES, RARITY, BALANCE } from '../data/balance.js';
 import { NODE_TYPES } from '../data/mapgen.js';
 import { STATUS_INFO } from './battle.js';
 import { STAT_NAMES, STAT_SHORT, STAT_TIP, STAT_TIP_FOE } from './ui-words.js';
+import { CHANGELOG } from './changelog-data.js';
 
 /**
  * 需要跟着语言走的表。
@@ -43,6 +44,15 @@ export const I18N_TABLES = {
  * 表本体在 src/core/ui-words.js（纯数据模块，工具 import 得起来）。
  */
 export const I18N_WORD_TABLES = { statName: STAT_NAMES, statShort: STAT_SHORT, statTip: STAT_TIP, statTipFoe: STAT_TIP_FOE };
+
+/**
+ * 「**列表形状**的文案」：现在只有更新日志（版本 + 日期 + 若干条）。
+ *
+ * 为什么单独一类：`I18N_WORD_TABLES` 是扁平的 `键→值` 小词表，而更新日志是嵌套数组；
+ * 而它又跟小词表一样**静态扫 `t('…')` 扫不到**（文案是数组里的裸字符串，渲染时才过 t()）。
+ * tools/build-i18n.mjs 会把这里的字符串（递归）全部收进待翻清单。
+ */
+export const I18N_LISTS = { changelog: CHANGELOG };
 
 /** 把所有表的可见字段刷成当前语言；返回命中数（诊断拿它算覆盖率） */
 export function refreshI18nTables() {

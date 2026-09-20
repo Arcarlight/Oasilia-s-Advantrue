@@ -7,7 +7,7 @@
 //
 // 用法：给元素写 `dataset.tip`，文本里可以用 **重点** 标粗。
 
-import { el } from './dom.js';
+import { el, richText } from './dom.js';
 
 let bound = false;
 
@@ -25,10 +25,9 @@ export function initTips() {
     const text = host?.dataset?.tip;
     const layer = document.querySelector('.tip-layer');
     if (!text || !layer) return;
-    // 提示文本里允许写 **重点**：先转义 HTML，再把 **x** 变成 <b>x</b>。
+    // 提示文本里允许写 **重点**：先把 HTML 转义、再把 **x** 变成 <b>x</b>（dom.js 的 richText）。
     // （以前只有 textContent，于是「**最坏情况**」这几个星号原样显示出来了。）
-    const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    layer.innerHTML = esc.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    layer.innerHTML = richText(text);
     layer.classList.add('show');
     const r = host.getBoundingClientRect();
     const lr = layer.getBoundingClientRect();

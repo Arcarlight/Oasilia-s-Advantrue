@@ -212,6 +212,16 @@
         "地面"
       ]
     },
+    "golem": {
+      "dex": "0076",
+      "slug": "golem",
+      "name": "隆隆岩",
+      "en": "Golem",
+      "types": [
+        "岩石",
+        "地面"
+      ]
+    },
     "magnemite": {
       "dex": "0081",
       "slug": "magnemite",
@@ -346,6 +356,16 @@
         "飞行"
       ]
     },
+    "lapras": {
+      "dex": "0131",
+      "slug": "lapras",
+      "name": "拉普拉斯",
+      "en": "Lapras",
+      "types": [
+        "水",
+        "冰"
+      ]
+    },
     "aerodactyl": {
       "dex": "0142",
       "slug": "aerodactyl",
@@ -364,6 +384,16 @@
       "types": [
         "虫",
         "飞行"
+      ]
+    },
+    "ariados": {
+      "dex": "0168",
+      "slug": "ariados",
+      "name": "阿利多斯",
+      "en": "Ariados",
+      "types": [
+        "虫",
+        "毒"
       ]
     },
     "mareep": {
@@ -588,6 +618,16 @@
         "飞行"
       ]
     },
+    "masquerain": {
+      "dex": "0284",
+      "slug": "masquerain",
+      "name": "雨翅蛾",
+      "en": "Masquerain",
+      "types": [
+        "虫",
+        "飞行"
+      ]
+    },
     "shroomish": {
       "dex": "0285",
       "slug": "shroomish",
@@ -683,6 +723,15 @@
       "en": "Manectric",
       "types": [
         "电"
+      ]
+    },
+    "swalot": {
+      "dex": "0317",
+      "slug": "swalot",
+      "name": "吞食兽",
+      "en": "Swalot",
+      "types": [
+        "毒"
       ]
     },
     "numel": {
@@ -821,6 +870,16 @@
         "超能力"
       ]
     },
+    "armaldo": {
+      "dex": "0348",
+      "slug": "armaldo",
+      "name": "太古盔甲",
+      "en": "Armaldo",
+      "types": [
+        "岩石",
+        "虫"
+      ]
+    },
     "shuppet": {
       "dex": "0353",
       "slug": "shuppet",
@@ -855,6 +914,15 @@
       "en": "Glalie",
       "types": [
         "冰"
+      ]
+    },
+    "huntail": {
+      "dex": "0367",
+      "slug": "huntail",
+      "name": "猎斑鱼",
+      "en": "Huntail",
+      "types": [
+        "水"
       ]
     },
     "salamence": {
@@ -915,6 +983,25 @@
         "水"
       ]
     },
+    "staraptor": {
+      "dex": "0398",
+      "slug": "staraptor",
+      "name": "姆克鹰",
+      "en": "Staraptor",
+      "types": [
+        "一般",
+        "飞行"
+      ]
+    },
+    "luxray": {
+      "dex": "0405",
+      "slug": "luxray",
+      "name": "伦琴猫",
+      "en": "Luxray",
+      "types": [
+        "电"
+      ]
+    },
     "rampardos": {
       "dex": "0409",
       "slug": "rampardos",
@@ -951,6 +1038,16 @@
       "types": [
         "水",
         "地面"
+      ]
+    },
+    "drifblim": {
+      "dex": "0426",
+      "slug": "drifblim",
+      "name": "随风球",
+      "en": "Drifblim",
+      "types": [
+        "幽灵",
+        "飞行"
       ]
     },
     "buneary": {
@@ -1068,6 +1165,36 @@
         "草"
       ]
     },
+    "abomasnow": {
+      "dex": "0460",
+      "slug": "abomasnow",
+      "name": "暴雪王",
+      "en": "Abomasnow",
+      "types": [
+        "草",
+        "冰"
+      ]
+    },
+    "magnezone": {
+      "dex": "0462",
+      "slug": "magnezone",
+      "name": "自爆磁怪",
+      "en": "Magnezone",
+      "types": [
+        "电",
+        "钢"
+      ]
+    },
+    "rhyperior": {
+      "dex": "0464",
+      "slug": "rhyperior",
+      "name": "超甲狂犀",
+      "en": "Rhyperior",
+      "types": [
+        "地面",
+        "岩石"
+      ]
+    },
     "tangrowth": {
       "dex": "0465",
       "slug": "tangrowth",
@@ -1104,6 +1231,16 @@
       "types": [
         "岩石",
         "钢"
+      ]
+    },
+    "froslass": {
+      "dex": "0478",
+      "slug": "froslass",
+      "name": "雪妖女",
+      "en": "Froslass",
+      "types": [
+        "冰",
+        "幽灵"
       ]
     },
     "regigigas": {
@@ -1285,6 +1422,15 @@
         "飞行"
       ]
     },
+    "zoroark": {
+      "dex": "0571",
+      "slug": "zoroark",
+      "name": "索罗亚克",
+      "en": "Zoroark",
+      "types": [
+        "恶"
+      ]
+    },
     "emolga": {
       "dex": "0587",
       "slug": "emolga",
@@ -1424,11 +1570,31 @@
         "飞行"
       ]
     },
+    "talonflame": {
+      "dex": "0663",
+      "slug": "talonflame",
+      "name": "烈箭鹰",
+      "en": "Talonflame",
+      "types": [
+        "火",
+        "飞行"
+      ]
+    },
     "honedge": {
       "dex": "0679",
       "slug": "honedge",
       "name": "独剑鞘",
       "en": "Honedge",
+      "types": [
+        "钢",
+        "幽灵"
+      ]
+    },
+    "aegislash": {
+      "dex": "0681",
+      "slug": "aegislash",
+      "name": "坚盾剑怪",
+      "en": "Aegislash",
       "types": [
         "钢",
         "幽灵"
@@ -1462,6 +1628,16 @@
       "types": [
         "岩石",
         "冰"
+      ]
+    },
+    "hawlucha": {
+      "dex": "0701",
+      "slug": "hawlucha",
+      "name": "摔角鹰人",
+      "en": "Hawlucha",
+      "types": [
+        "格斗",
+        "飞行"
       ]
     },
     "dedenne": {
@@ -1627,6 +1803,15 @@
         "地面"
       ]
     },
+    "mudsdale": {
+      "dex": "0750",
+      "slug": "mudsdale",
+      "name": "重泥挽马",
+      "en": "Mudsdale",
+      "types": [
+        "地面"
+      ]
+    },
     "dewpider": {
       "dex": "0751",
       "slug": "dewpider",
@@ -1642,6 +1827,15 @@
       "slug": "fomantis",
       "name": "伪螳草",
       "en": "Fomantis",
+      "types": [
+        "草"
+      ]
+    },
+    "lurantis": {
+      "dex": "0754",
+      "slug": "lurantis",
+      "name": "兰螳花",
+      "en": "Lurantis",
       "types": [
         "草"
       ]
@@ -1713,6 +1907,16 @@
       "types": [
         "水",
         "超能"
+      ]
+    },
+    "dhelmise": {
+      "dex": "0781",
+      "slug": "dhelmise",
+      "name": "破破舵轮",
+      "en": "Dhelmise",
+      "types": [
+        "幽灵",
+        "草"
       ]
     },
     "zeraora": {

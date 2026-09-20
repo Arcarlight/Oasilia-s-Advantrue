@@ -679,605 +679,6 @@
       ]
     },
     {
-      "id": "swablu",
-      "slug": "swablu",
-      "tier": "mob",
-      "biome": "desert",
-      "deck": "kit_flying",
-      "lines": [
-        "它把你的头巾当成了云，落在上面。",
-        "它哼着歌，节奏很像沙漠蜻蜓的振翅声。"
-      ]
-    },
-    {
-      "id": "sandslash",
-      "slug": "sandslash",
-      "tier": "normal",
-      "biome": "desert",
-      "deck": "kit_ground",
-      "lines": [
-        "它的背刺在正午的阳光下反着白光。"
-      ]
-    },
-    {
-      "id": "cacturne",
-      "slug": "cacturne",
-      "tier": "normal",
-      "biome": "desert",
-      "deck": "kit_grass",
-      "lines": [
-        "它在白天一动不动，现在开始动了。"
-      ]
-    },
-    {
-      "id": "rhyhorn",
-      "slug": "rhyhorn",
-      "tier": "normal",
-      "biome": "desert",
-      "deck": "kit_ground",
-      "lines": [
-        "地面开始有规律地抖动。"
-      ]
-    },
-    {
-      "id": "gligar",
-      "slug": "gligar",
-      "tier": "normal",
-      "biome": "desert",
-      "deck": "kit_bleed",
-      "lines": [
-        "它从沙丘背面滑翔下来，尾巴上的钩子闪着光。"
-      ]
-    },
-    {
-      "id": "steelix",
-      "slug": "steelix",
-      "tier": "elite",
-      "biome": "desert",
-      "deck": "kit_steel_hi",
-      "lines": [
-        "沙面裂开，一条铁铸的身躯从中升起。"
-      ],
-      "signature": [
-        "sig_iron_tail_wall"
-      ]
-    },
-    {
-      "id": "tyranitar",
-      "slug": "tyranitar",
-      "tier": "boss",
-      "biome": "desert",
-      "deck": "kit_rock_hi",
-      "lines": [
-        "沙暴忽然停了。因为掀沙暴的那个东西来了。"
-      ],
-      "bossTitle": "流沙之主",
-      "signature": [
-        "sig_sand_fang"
-      ]
-    },
-    {
-      "id": "magcargo",
-      "slug": "magcargo",
-      "tier": "mob",
-      "biome": "canyon",
-      "deck": "kit_fire",
-      "lines": [
-        "岩壁上的石头在动，而且很烫。"
-      ]
-    },
-    {
-      "id": "machop",
-      "slug": "machop",
-      "tier": "mob",
-      "biome": "canyon",
-      "deck": "kit_fighting",
-      "lines": [
-        "它正在举一块比你大的石头，看到你之后举了两块。"
-      ]
-    },
-    {
-      "id": "carnivine",
-      "slug": "carnivine",
-      "tier": "normal",
-      "biome": "canyon",
-      "deck": "kit_grass",
-      "lines": [
-        "峡谷底部有一朵花，花开的方向一直对着你。"
-      ]
-    },
-    {
-      "id": "arbok",
-      "slug": "arbok",
-      "tier": "normal",
-      "biome": "canyon",
-      "deck": "kit_weaken",
-      "lines": [
-        "岩缝里传来鳞片摩擦石头的声音。"
-      ]
-    },
-    {
-      "id": "machoke",
-      "slug": "machoke",
-      "tier": "normal",
-      "biome": "canyon",
-      "deck": "kit_weaken",
-      "lines": [
-        "它把一条岩柱当成沙袋，正在打。"
-      ]
-    },
-    {
-      "id": "arcanine",
-      "slug": "arcanine",
-      "tier": "elite",
-      "biome": "canyon",
-      "deck": "kit_fire_hi",
-      "lines": [
-        "一道橙色的影子沿着峡谷壁跑了三个来回，然后停在你面前。"
-      ]
-    },
-    {
-      "id": "aerodactyl",
-      "slug": "aerodactyl",
-      "tier": "elite",
-      "biome": "canyon",
-      "deck": "kit_rock_hi",
-      "lines": [
-        "天空一暗。有什么东西挡住了太阳。"
-      ]
-    },
-    {
-      "id": "garchomp",
-      "slug": "garchomp",
-      "tier": "boss",
-      "biome": "canyon",
-      "deck": "kit_dragon_hi",
-      "lines": [
-        "它从峡谷另一头抬起眼睛看你。距离大概是四十米，但它已经在考虑要不要过来了。"
-      ],
-      "bossTitle": "峡谷的暴君",
-      "signature": [
-        "sig_dual_chomp"
-      ]
-    },
-    {
-      "id": "larvitar",
-      "slug": "larvitar",
-      "tier": "mob",
-      "biome": "night",
-      "deck": "kit_rock",
-      "lines": [
-        "沙里冒出一个脑袋，正在啃一块石头。"
-      ]
-    },
-    {
-      "id": "gabite",
-      "slug": "gabite",
-      "tier": "normal",
-      "biome": "night",
-      "deck": "kit_dragon",
-      "lines": [
-        "它的爪子在星尘里划出三道亮痕。"
-      ]
-    },
-    {
-      "id": "rhydon",
-      "slug": "rhydon",
-      "tier": "normal",
-      "biome": "night",
-      "deck": "kit_ground",
-      "lines": [
-        "大地像鼓一样响了一下。"
-      ]
-    },
-    {
-      "id": "salamence",
-      "slug": "salamence",
-      "tier": "elite",
-      "biome": "night",
-      "deck": "kit_dragon_hi",
-      "lines": [
-        "它想飞，但这里没有天空。它决定先解决掉你。"
-      ]
-    },
-    {
-      "id": "machamp",
-      "slug": "machamp",
-      "tier": "elite",
-      "biome": "night",
-      "deck": "kit_weaken_hi",
-      "lines": [
-        "四条手臂同时向你比划「过来」。"
-      ]
-    },
-    {
-      "id": "metagross",
-      "slug": "metagross",
-      "tier": "boss",
-      "biome": "night",
-      "deck": "kit_steel_hi",
-      "lines": [
-        "一颗星星从天上掉下来，没有砸出坑，而是站了起来。"
-      ],
-      "bossTitle": "坠落的星",
-      "signature": [
-        "sig_meteor_mash"
-      ]
-    },
-    {
-      "id": "zygarde",
-      "slug": "zygarde",
-      "tier": "boss",
-      "biome": "night",
-      "deck": "kit_dragon_hi",
-      "lines": [
-        "沙丘背面浮出一张由绿色细胞拼成的脸。「……你走得太远了，沙漠的孩子。」"
-      ],
-      "bossTitle": "生态的秩序",
-      "final": true,
-      "signature": [
-        "sig_land_wrath"
-      ]
-    },
-    {
-      "id": "paras",
-      "slug": "paras",
-      "tier": "mob",
-      "biome": "forest",
-      "deck": "kit_bug",
-      "lines": [
-        "落叶底下有两只眼睛在看你，背上还长着蘑菇。",
-        "它走过来的时候，蘑菇先动。"
-      ]
-    },
-    {
-      "id": "oddish",
-      "slug": "oddish",
-      "tier": "mob",
-      "biome": "forest",
-      "deck": "kit_grass",
-      "lines": [
-        "一丛叶子从土里拔出来，然后开始走。",
-        "它把叶子对着你，像是在闻。"
-      ]
-    },
-    {
-      "id": "weedle",
-      "slug": "weedle",
-      "tier": "mob",
-      "biome": "forest",
-      "deck": "kit_bug",
-      "lines": [
-        "树皮上有一条黄色的东西正在往上爬，爬到你面前停住了。",
-        "它头上的角对着你。"
-      ]
-    },
-    {
-      "id": "bellsprout",
-      "slug": "bellsprout",
-      "tier": "mob",
-      "biome": "forest",
-      "deck": "kit_grass",
-      "lines": [
-        "它把根从土里抽出来，晃了晃，像是在热身。",
-        "它的头一直在点，你分不清是点头还是准备咬。"
-      ]
-    },
-    {
-      "id": "parasect",
-      "slug": "parasect",
-      "tier": "normal",
-      "biome": "forest",
-      "deck": "kit_bug",
-      "lines": [
-        "那只蘑菇现在长得比它的身子还大，而且看起来才是真正在走路的那个。"
-      ]
-    },
-    {
-      "id": "gloom",
-      "slug": "gloom",
-      "tier": "normal",
-      "biome": "forest",
-      "deck": "kit_grass",
-      "lines": [
-        "空气里忽然有股说不上来的味道。你顺着味道找到了它。"
-      ]
-    },
-    {
-      "id": "beedrill",
-      "slug": "beedrill",
-      "tier": "normal",
-      "biome": "forest",
-      "deck": "kit_bug",
-      "lines": [
-        "嗡声是从上面来的。你抬头，看到三根针正对着你。"
-      ]
-    },
-    {
-      "id": "pinsir",
-      "slug": "pinsir",
-      "tier": "elite",
-      "biome": "forest",
-      "deck": "kit_bug_hi",
-      "lines": [
-        "两根角夹住了一棵小树，树断了。它转头看你，像是在问你有没有更硬的。"
-      ]
-    },
-    {
-      "id": "heracross",
-      "slug": "heracross",
-      "tier": "elite",
-      "biome": "forest",
-      "deck": "kit_bug_hi",
-      "lines": [
-        "它从树干里拔出一根角，树汁顺着角往下滴。它很有礼貌地等你准备好。"
-      ]
-    },
-    {
-      "id": "sceptile",
-      "slug": "sceptile",
-      "tier": "boss",
-      "biome": "forest",
-      "deck": "kit_grass_hi",
-      "bossTitle": "密林的守林人",
-      "lines": [
-        "树叶全部停止摇晃。有东西从树冠上下来，落地的声音很轻。「走出去。这里不欢迎沙子。」"
-      ],
-      "signature": [
-        "sig_leaf_blade"
-      ]
-    },
-    {
-      "id": "tentacool",
-      "slug": "tentacool",
-      "tier": "mob",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "浅水里飘着一颗红宝石，下面连着十几条透明的线。",
-        "它在水里一鼓一鼓的，像在呼吸，也像在等你下水。"
-      ]
-    },
-    {
-      "id": "shellder",
-      "slug": "shellder",
-      "tier": "mob",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "一块紫色的贝壳从盐壳底下顶出来，然后合上了。",
-        "贝壳缝里伸出一条舌头，很快又缩回去。"
-      ]
-    },
-    {
-      "id": "corphish",
-      "slug": "corphish",
-      "tier": "mob",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "它在浅滩里横着走，钳子举得比头高。",
-        "它把你的一片影子当成了对手，先夹了一下试试。"
-      ]
-    },
-    {
-      "id": "remoraid",
-      "slug": "remoraid",
-      "tier": "mob",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "一条铁炮鱼把水吸进嘴里，然后对着你吐了出来。",
-        "它瞄准的时候会歪一下头。"
-      ]
-    },
-    {
-      "id": "tentacruel",
-      "slug": "tentacruel",
-      "tier": "normal",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "整片浅水同时泛起红色。你意识到那不是水色。"
-      ]
-    },
-    {
-      "id": "cloyster",
-      "slug": "cloyster",
-      "tier": "normal",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "礁石上那朵「花」张开了，里面全是尖的。"
-      ]
-    },
-    {
-      "id": "crawdaunt",
-      "slug": "crawdaunt",
-      "tier": "normal",
-      "biome": "tide",
-      "deck": "kit_water",
-      "lines": [
-        "它把一只巨钳蟹的壳拆开，扔在一边，然后看向你。"
-      ]
-    },
-    {
-      "id": "kingler",
-      "slug": "kingler",
-      "tier": "elite",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "lines": [
-        "一只钳子砸在盐壳上，盐壳裂了一条缝。它比你高。"
-      ]
-    },
-    {
-      "id": "gyarados",
-      "slug": "gyarados",
-      "tier": "elite",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "lines": [
-        "水面被从下面顶开，一条蓝色的东西升起来，比你在沙丘上见过的任何东西都长。"
-      ],
-      "signature": [
-        "sig_rage_wave"
-      ]
-    },
-    {
-      "id": "kyogre",
-      "slug": "kyogre",
-      "tier": "boss",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "bossTitle": "盐海的心跳",
-      "lines": [
-        "潮水全部退了下去，露出底下睡了很久的东西。它睁开一只眼睛，海水就开始往回涨。"
-      ],
-      "signature": [
-        "sig_origin_pulse"
-      ]
-    },
-    {
-      "id": "geodude",
-      "slug": "geodude",
-      "tier": "mob",
-      "biome": "cliff",
-      "deck": "kit_rock",
-      "lines": [
-        "你差点一脚踩上去。它睁眼，很不高兴。",
-        "它把自己从岩壁上掰下来，跳到你面前。"
-      ]
-    },
-    {
-      "id": "pidgey",
-      "slug": "pidgey",
-      "tier": "mob",
-      "biome": "cliff",
-      "deck": "kit_flying",
-      "lines": [
-        "一只波波在你的头顶绕圈，一圈比一圈低。",
-        "它落在岩架上，用一只眼睛看你。"
-      ]
-    },
-    {
-      "id": "aron",
-      "slug": "aron",
-      "tier": "mob",
-      "biome": "cliff",
-      "deck": "kit_steel",
-      "lines": [
-        "一堆铁在动。是它在吃岩壁上的锈。",
-        "它撞过来的时候发出了金属声。"
-      ]
-    },
-    {
-      "id": "taillow",
-      "slug": "taillow",
-      "tier": "mob",
-      "biome": "cliff",
-      "deck": "kit_flying",
-      "lines": [
-        "它从风里冲下来，完全不减速。",
-        "它站在风口上，像是在等什么。"
-      ]
-    },
-    {
-      "id": "graveler",
-      "slug": "graveler",
-      "tier": "normal",
-      "biome": "cliff",
-      "deck": "kit_rock",
-      "lines": [
-        "一段岩壁站了起来，然后滚了下来——用滚的。"
-      ]
-    },
-    {
-      "id": "fearow",
-      "slug": "fearow",
-      "tier": "normal",
-      "biome": "cliff",
-      "deck": "kit_weaken",
-      "lines": [
-        "它在高空停住不动，然后收翅，直直地掉下来。"
-      ]
-    },
-    {
-      "id": "lairon",
-      "slug": "lairon",
-      "tier": "normal",
-      "biome": "cliff",
-      "deck": "kit_steel",
-      "lines": [
-        "它用头撞岩壁，岩壁让了。它转过头来找下一个目标。"
-      ]
-    },
-    {
-      "id": "skarmory",
-      "slug": "skarmory",
-      "tier": "elite",
-      "biome": "cliff",
-      "deck": "kit_steel_hi",
-      "lines": [
-        "风里有刀。你终于看清那把刀长着翅膀。"
-      ]
-    },
-    {
-      "id": "gliscor",
-      "slug": "gliscor",
-      "tier": "elite",
-      "biome": "cliff",
-      "deck": "kit_bleed_hi",
-      "lines": [
-        "崖壁上倒挂着一只天蝎王，比你见过的大三倍，尾巴上挂着碎石。"
-      ]
-    },
-    {
-      "id": "aggron",
-      "slug": "aggron",
-      "tier": "boss",
-      "biome": "cliff",
-      "deck": "kit_steel_hi",
-      "bossTitle": "峭壁的锤子",
-      "lines": [
-        "整段崖壁开始往下掉，因为有个东西正从里面走出来。它每一步都砸出一个坑。"
-      ],
-      "signature": [
-        "sig_heavy_slam"
-      ]
-    },
-    {
-      "id": "sandslash_night",
-      "slug": "sandslash",
-      "tier": "mob",
-      "biome": "night",
-      "deck": "kit_ground",
-      "lines": [
-        "夜里的背刺反着星光，像一排小小的路灯。",
-        "它从沙里只露出背，正在慢慢接近。"
-      ]
-    },
-    {
-      "id": "pupitar_night",
-      "slug": "pupitar",
-      "tier": "normal",
-      "biome": "night",
-      "deck": "kit_rock",
-      "lines": [
-        "沙里有个硬壳在震，里面的东西还没出来，但已经很生气了。"
-      ]
-    },
-    {
-      "id": "steelix_night",
-      "slug": "steelix",
-      "tier": "elite",
-      "biome": "night",
-      "deck": "kit_steel_hi",
-      "lines": [
-        "地底传来很长的一串响。等它出来的时候，你已经在它的影子里了。"
-      ]
-    },
-    {
       "id": "trapinch",
       "slug": "trapinch",
       "tier": "mob",
@@ -1322,14 +723,182 @@
       ]
     },
     {
-      "id": "mudbray",
-      "slug": "mudbray",
+      "id": "silicobra",
+      "slug": "silicobra",
       "tier": "mob",
+      "biome": "desert",
+      "deck": "kit_ghost",
+      "lines": [
+        "它从沙里竖起半截身子，像一根会动的绳子。",
+        "「绕过去吧，它好像挺得意。」"
+      ]
+    },
+    {
+      "id": "sandslash",
+      "slug": "sandslash",
+      "tier": "normal",
       "biome": "desert",
       "deck": "kit_ground",
       "lines": [
-        "它拖着一身干泥走过来，看起来不太高兴被打扰。",
-        "它喷了口气，脚下就多了一个小坑。"
+        "它的背刺在正午的阳光下反着白光。"
+      ]
+    },
+    {
+      "id": "cacturne",
+      "slug": "cacturne",
+      "tier": "normal",
+      "biome": "desert",
+      "deck": "kit_grass",
+      "lines": [
+        "它在白天一动不动，现在开始动了。"
+      ]
+    },
+    {
+      "id": "gligar",
+      "slug": "gligar",
+      "tier": "normal",
+      "biome": "desert",
+      "deck": "kit_bleed",
+      "lines": [
+        "它从沙丘背面滑翔下来，尾巴上的钩子闪着光。"
+      ]
+    },
+    {
+      "id": "sandaconda",
+      "slug": "sandaconda",
+      "tier": "normal",
+      "biome": "desert",
+      "deck": "kit_bleed",
+      "lines": [
+        "沙面忽然鼓起一条长长的脊，绕着沙丘转了一整圈。",
+        "「它把自己拧成了一盘。」"
+      ]
+    },
+    {
+      "id": "gabite",
+      "slug": "gabite",
+      "tier": "normal",
+      "biome": "desert",
+      "deck": "kit_dragon",
+      "lines": [
+        "它的爪子在星尘里划出三道亮痕。"
+      ]
+    },
+    {
+      "id": "hippowdon",
+      "slug": "hippowdon",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_ground_hi",
+      "lines": [
+        "沙丘自己站了起来。原来那不是沙丘。",
+        "它张开嘴，风里全是沙在磨牙的声音。"
+      ],
+      "signature": [
+        "sig_iron_tail_wall"
+      ]
+    },
+    {
+      "id": "excadrill",
+      "slug": "excadrill",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "沙里伸出两只钢爪，把整块地面掀了起来。",
+        "「这下面埋的东西，都是我的。」"
+      ],
+      "signature": [
+        "sig_sand_pit"
+      ]
+    },
+    {
+      "id": "steelix",
+      "slug": "steelix",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "沙面裂开，一条铁铸的身躯从中升起。"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "rhyperior",
+      "slug": "rhyperior",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "沙子被顶开一大片，那面像盾一样的肩膀先露了出来。"
+      ],
+      "signature": [
+        "sig_iron_tail_wall"
+      ]
+    },
+    {
+      "id": "mudsdale",
+      "slug": "mudsdale",
+      "tier": "elite",
+      "biome": "desert",
+      "deck": "kit_ground_hi",
+      "lines": [
+        "它每一步都在沙上踩出一个坑，坑里还冒着热气。"
+      ],
+      "signature": [
+        "sig_sand_pit"
+      ]
+    },
+    {
+      "id": "tyranitar",
+      "slug": "tyranitar",
+      "tier": "boss",
+      "biome": "desert",
+      "deck": "kit_rock_hi",
+      "lines": [
+        "沙暴忽然停了。因为掀沙暴的那个东西来了。"
+      ],
+      "bossTitle": "流沙之主",
+      "signature": [
+        "sig_sand_fang"
+      ]
+    },
+    {
+      "id": "aerodactyl",
+      "slug": "aerodactyl",
+      "tier": "boss",
+      "biome": "desert",
+      "deck": "kit_rock_hi",
+      "bossTitle": "沙丘上空的影子",
+      "lines": [
+        "沙丘顶上那个影子已经跟了你半天。它终于收起了翅膀。",
+        "「跑得挺快。可惜沙丘是我的。」"
+      ],
+      "signature": [
+        "sig_sky_dive"
+      ]
+    },
+    {
+      "id": "machop",
+      "slug": "machop",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_fighting",
+      "lines": [
+        "它正在举一块比你大的石头，看到你之后举了两块。"
+      ]
+    },
+    {
+      "id": "slugma",
+      "slug": "slugma",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_fighting",
+      "lines": [
+        "一摊亮橘色的东西贴着岩壁慢慢往下淌。",
+        "「别踩。踩了要疼很久。」"
       ]
     },
     {
@@ -1355,6 +924,28 @@
       ]
     },
     {
+      "id": "drilbur",
+      "slug": "drilbur",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_ground",
+      "lines": [
+        "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。",
+        "它一头扎进岩缝，再从你脚边冒出来。"
+      ]
+    },
+    {
+      "id": "darumaka",
+      "slug": "darumaka",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_ground",
+      "lines": [
+        "它原地晃来晃去，就是不肯倒。",
+        "「……你还挺坚持。」"
+      ]
+    },
+    {
       "id": "rockruff",
       "slug": "rockruff",
       "tier": "mob",
@@ -1363,6 +954,196 @@
       "lines": [
         "它在岩壁上蹭脖子，蹭出一串火星。",
         "它摇尾巴的时候扫到了石头，石头碎了。"
+      ]
+    },
+    {
+      "id": "sizzlipede",
+      "slug": "sizzlipede",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_fighting",
+      "lines": [
+        "岩缝里的红点连成一条线，正往你这边挪。"
+      ]
+    },
+    {
+      "id": "magcargo",
+      "slug": "magcargo",
+      "tier": "mob",
+      "biome": "canyon",
+      "deck": "kit_fire",
+      "lines": [
+        "岩壁上的石头在动，而且很烫。"
+      ]
+    },
+    {
+      "id": "arbok",
+      "slug": "arbok",
+      "tier": "normal",
+      "biome": "canyon",
+      "deck": "kit_weaken",
+      "lines": [
+        "岩缝里传来鳞片摩擦石头的声音。"
+      ]
+    },
+    {
+      "id": "machoke",
+      "slug": "machoke",
+      "tier": "normal",
+      "biome": "canyon",
+      "deck": "kit_weaken",
+      "lines": [
+        "它把一条岩柱当成沙袋，正在打。"
+      ]
+    },
+    {
+      "id": "carnivine",
+      "slug": "carnivine",
+      "tier": "normal",
+      "biome": "canyon",
+      "deck": "kit_grass",
+      "lines": [
+        "峡谷底部有一朵花，花开的方向一直对着你。"
+      ]
+    },
+    {
+      "id": "centiskorch",
+      "slug": "centiskorch",
+      "tier": "normal",
+      "biome": "canyon",
+      "deck": "kit_grass",
+      "lines": [
+        "它把身子盘在烧红的岩石上，像一条烧着的鞭子。",
+        "「离远点，我这会儿很烫。」"
+      ]
+    },
+    {
+      "id": "arcanine",
+      "slug": "arcanine",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "一道橙色的影子沿着峡谷壁跑了三个来回，然后停在你面前。"
+      ],
+      "signature": [
+        "sig_magma_erupt"
+      ]
+    },
+    {
+      "id": "camerupt",
+      "slug": "camerupt",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "岩壁上的红纹裂开了，里面是亮的。",
+        "它每喘一口气，脚边的石头就化一点。"
+      ],
+      "signature": [
+        "sig_white_smoke"
+      ]
+    },
+    {
+      "id": "torkoal",
+      "slug": "torkoal",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "一团白烟沿着谷底滚过来，烟里有壳。",
+        "它不动，但它周围的空气在抖。"
+      ],
+      "signature": [
+        "sig_magma_erupt"
+      ]
+    },
+    {
+      "id": "talonflame",
+      "slug": "talonflame",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_rock_hi",
+      "lines": [
+        "一颗火球从崖顶冲下来，在离你两步的地方刹住了。"
+      ],
+      "signature": [
+        "sig_white_smoke"
+      ]
+    },
+    {
+      "id": "golem",
+      "slug": "golem",
+      "tier": "elite",
+      "biome": "canyon",
+      "deck": "kit_fire_hi",
+      "lines": [
+        "一整面岩壁开始滚 —— 滚到一半才发现那是活的。"
+      ],
+      "signature": [
+        "sig_magma_erupt"
+      ]
+    },
+    {
+      "id": "garchomp",
+      "slug": "garchomp",
+      "tier": "boss",
+      "biome": "canyon",
+      "deck": "kit_dragon_hi",
+      "lines": [
+        "它从峡谷另一头抬起眼睛看你。距离大概是四十米，但它已经在考虑要不要过来了。"
+      ],
+      "bossTitle": "峡谷的暴君",
+      "signature": [
+        "sig_dual_chomp"
+      ]
+    },
+    {
+      "id": "gigalith",
+      "slug": "gigalith",
+      "tier": "boss",
+      "biome": "canyon",
+      "deck": "kit_ground_hi",
+      "lines": [
+        "峡谷最窄的那段被一块会呼吸的石头堵住了。",
+        "「让开？这里就是我的位置。」"
+      ],
+      "signature": [
+        "sig_horn_drill"
+      ],
+      "bossTitle": "活着的岩壁"
+    },
+    {
+      "id": "weedle",
+      "slug": "weedle",
+      "tier": "mob",
+      "biome": "forest",
+      "deck": "kit_bug",
+      "lines": [
+        "树皮上有一条黄色的东西正在往上爬，爬到你面前停住了。",
+        "它头上的角对着你。"
+      ]
+    },
+    {
+      "id": "oddish",
+      "slug": "oddish",
+      "tier": "mob",
+      "biome": "forest",
+      "deck": "kit_grass",
+      "lines": [
+        "一丛叶子从土里拔出来，然后开始走。",
+        "它把叶子对着你，像是在闻。"
+      ]
+    },
+    {
+      "id": "bellsprout",
+      "slug": "bellsprout",
+      "tier": "mob",
+      "biome": "forest",
+      "deck": "kit_grass",
+      "lines": [
+        "它把根从土里抽出来，晃了晃，像是在热身。",
+        "它的头一直在点，你分不清是点头还是准备咬。"
       ]
     },
     {
@@ -1388,6 +1169,17 @@
       ]
     },
     {
+      "id": "ferroseed",
+      "slug": "ferroseed",
+      "tier": "mob",
+      "biome": "forest",
+      "deck": "kit_grass",
+      "lines": [
+        "一颗带刺的铁球从坡上滚下来，撞到你的腿，很有礼貌地停住了。",
+        "它插在土里，刺上挂着别的宝可梦的毛。"
+      ]
+    },
+    {
       "id": "grubbin",
       "slug": "grubbin",
       "tier": "mob",
@@ -1410,14 +1202,184 @@
       ]
     },
     {
-      "id": "ferroseed",
-      "slug": "ferroseed",
-      "tier": "mob",
+      "id": "vileplume",
+      "slug": "vileplume",
+      "tier": "normal",
+      "biome": "forest",
+      "deck": "kit_bug",
+      "lines": [
+        "它头顶那朵花开得比你的头还大。",
+        "「……好像不太欢迎我。」"
+      ]
+    },
+    {
+      "id": "ledian",
+      "slug": "ledian",
+      "tier": "normal",
       "biome": "forest",
       "deck": "kit_grass",
       "lines": [
-        "一颗带刺的铁球从坡上滚下来，撞到你的腿，很有礼貌地停住了。",
-        "它插在土里，刺上挂着别的宝可梦的毛。"
+        "几颗星点在藤蔓间闪了一下，然后全都落到你面前。"
+      ]
+    },
+    {
+      "id": "beautifly",
+      "slug": "beautifly",
+      "tier": "normal",
+      "biome": "forest",
+      "deck": "kit_bug",
+      "lines": [
+        "它的翅膀在树影里晃出一片彩色的光，看不清它下一步要往哪飞。"
+      ]
+    },
+    {
+      "id": "durant",
+      "slug": "durant",
+      "tier": "normal",
+      "biome": "forest",
+      "deck": "kit_bug",
+      "lines": [
+        "一队亮闪闪的钢壳把地上的落果全搬走了。",
+        "「它们搬得比你还快。」"
+      ]
+    },
+    {
+      "id": "pinsir",
+      "slug": "pinsir",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "两根角夹住了一棵小树，树断了。它转头看你，像是在问你有没有更硬的。"
+      ],
+      "signature": [
+        "sig_bullet_slash"
+      ]
+    },
+    {
+      "id": "scizor",
+      "slug": "scizor",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "一片叶子从中间分成两半，切口是直的。",
+        "它抬起钳子，钳口上还挂着露水。"
+      ],
+      "signature": [
+        "sig_megahorn_charge"
+      ]
+    },
+    {
+      "id": "heracross",
+      "slug": "heracross",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "它从树干里拔出一根角，树汁顺着角往下滴。它很有礼貌地等你准备好。"
+      ],
+      "signature": [
+        "sig_bullet_slash"
+      ]
+    },
+    {
+      "id": "lurantis",
+      "slug": "lurantis",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_poison_hi",
+      "lines": [
+        "它举着两片叶子站得笔直，像在等你先动手。"
+      ],
+      "signature": [
+        "sig_megahorn_charge"
+      ]
+    },
+    {
+      "id": "ariados",
+      "slug": "ariados",
+      "tier": "elite",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "树影里垂下来一根丝，丝上挂着一排眼睛。"
+      ],
+      "signature": [
+        "sig_bullet_slash"
+      ]
+    },
+    {
+      "id": "sceptile",
+      "slug": "sceptile",
+      "tier": "boss",
+      "biome": "forest",
+      "deck": "kit_grass_hi",
+      "bossTitle": "密林的守林人",
+      "lines": [
+        "树叶全部停止摇晃。有东西从树冠上下来，落地的声音很轻。「走出去。这里不欢迎沙子。」"
+      ],
+      "signature": [
+        "sig_leaf_blade"
+      ]
+    },
+    {
+      "id": "tangrowth",
+      "slug": "tangrowth",
+      "tier": "boss",
+      "biome": "forest",
+      "deck": "kit_bug_hi",
+      "lines": [
+        "整片林子的藤忽然一起收紧了。",
+        "「……原来这片林子是有主人的。」"
+      ],
+      "signature": [
+        "sig_double_claw"
+      ],
+      "bossTitle": "密林的长者"
+    },
+    {
+      "id": "tentacool",
+      "slug": "tentacool",
+      "tier": "mob",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "浅水里飘着一颗红宝石，下面连着十几条透明的线。",
+        "它在水里一鼓一鼓的，像在呼吸，也像在等你下水。"
+      ]
+    },
+    {
+      "id": "shellder",
+      "slug": "shellder",
+      "tier": "mob",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "一块紫色的贝壳从盐壳底下顶出来，然后合上了。",
+        "贝壳缝里伸出一条舌头，很快又缩回去。"
+      ]
+    },
+    {
+      "id": "remoraid",
+      "slug": "remoraid",
+      "tier": "mob",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "一条铁炮鱼把水吸进嘴里，然后对着你吐了出来。",
+        "它瞄准的时候会歪一下头。"
+      ]
+    },
+    {
+      "id": "corphish",
+      "slug": "corphish",
+      "tier": "mob",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "它在浅滩里横着走，钳子举得比头高。",
+        "它把你的一片影子当成了对手，先夹了一下试试。"
       ]
     },
     {
@@ -1447,7 +1409,7 @@
       "slug": "mareanie",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_poison_hi",
+      "deck": "kit_poison",
       "lines": [
         "礁石上那朵花在动，而且带着毒刺。",
         "它伸出一条触手试探你，被你躲开之后又伸出两条。"
@@ -1465,14 +1427,173 @@
       ]
     },
     {
-      "id": "fletchling",
-      "slug": "fletchling",
+      "id": "tentacruel",
+      "slug": "tentacruel",
+      "tier": "normal",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "整片浅水同时泛起红色。你意识到那不是水色。"
+      ]
+    },
+    {
+      "id": "crawdaunt",
+      "slug": "crawdaunt",
+      "tier": "normal",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "它把一只巨钳蟹的壳拆开，扔在一边，然后看向你。"
+      ]
+    },
+    {
+      "id": "gastrodon",
+      "slug": "gastrodon",
+      "tier": "normal",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "滩上那摊软软的东西站起来了一半。",
+        "「……你确定它有正面吗？」"
+      ]
+    },
+    {
+      "id": "bruxish",
+      "slug": "bruxish",
+      "tier": "normal",
+      "biome": "tide",
+      "deck": "kit_water",
+      "lines": [
+        "它把嘴里的牙磨给你看了一下，颜色亮得晃眼。"
+      ]
+    },
+    {
+      "id": "kingler",
+      "slug": "kingler",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "一只钳子砸在盐壳上，盐壳裂了一条缝。它比你高。"
+      ],
+      "signature": [
+        "sig_rage_wave"
+      ]
+    },
+    {
+      "id": "mantine",
+      "slug": "mantine",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "一只翅膀贴着水面滑过去，没有溅起水花。",
+        "它绕回来的时候，你才看清那对翅膀有多宽。"
+      ],
+      "signature": [
+        "sig_dragon_water"
+      ]
+    },
+    {
+      "id": "kingdra",
+      "slug": "kingdra",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "退潮之后，盐壳底下还有一汪水，水里有一个影子在转。",
+        "它抬起头，整片盐海的水都跟着晃了一下。"
+      ],
+      "signature": [
+        "sig_tide_ride"
+      ]
+    },
+    {
+      "id": "huntail",
+      "slug": "huntail",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "浅水里那道影子绕着你转了一圈，又钻回沙底。"
+      ],
+      "signature": [
+        "sig_rage_wave"
+      ]
+    },
+    {
+      "id": "lapras",
+      "slug": "lapras",
+      "tier": "elite",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "它从水里浮起来，背上驮着一小片湿掉的贝壳滩。"
+      ],
+      "signature": [
+        "sig_dragon_water"
+      ]
+    },
+    {
+      "id": "kyogre",
+      "slug": "kyogre",
+      "tier": "boss",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "bossTitle": "盐海的心跳",
+      "lines": [
+        "潮水全部退了下去，露出底下睡了很久的东西。它睁开一只眼睛，海水就开始往回涨。"
+      ],
+      "signature": [
+        "sig_origin_pulse"
+      ]
+    },
+    {
+      "id": "toxapex",
+      "slug": "toxapex",
+      "tier": "boss",
+      "biome": "tide",
+      "deck": "kit_water_hi",
+      "lines": [
+        "浅滩的水忽然全红了 —— 那些圆乎乎的东西是它伸出来的。",
+        "「踩进来的，就别想出去了。」"
+      ],
+      "signature": [
+        "sig_tidal_rage"
+      ],
+      "bossTitle": "盐海的刺丛"
+    },
+    {
+      "id": "pidgey",
+      "slug": "pidgey",
       "tier": "mob",
       "biome": "cliff",
       "deck": "kit_flying",
       "lines": [
-        "一只小箭雀在风口上挂着不动，尾巴上的红羽毛很显眼。",
-        "它冲你叫了两声，声音比它自己大。"
+        "一只波波在你的头顶绕圈，一圈比一圈低。",
+        "它落在岩架上，用一只眼睛看你。"
+      ]
+    },
+    {
+      "id": "taillow",
+      "slug": "taillow",
+      "tier": "mob",
+      "biome": "cliff",
+      "deck": "kit_flying",
+      "lines": [
+        "它从风里冲下来，完全不减速。",
+        "它站在风口上，像是在等什么。"
+      ]
+    },
+    {
+      "id": "aron",
+      "slug": "aron",
+      "tier": "mob",
+      "biome": "cliff",
+      "deck": "kit_steel",
+      "lines": [
+        "一堆铁在动。是它在吃岩壁上的锈。",
+        "它撞过来的时候发出了金属声。"
       ]
     },
     {
@@ -1487,6 +1608,28 @@
       ]
     },
     {
+      "id": "rufflet",
+      "slug": "rufflet",
+      "tier": "mob",
+      "biome": "cliff",
+      "deck": "kit_flying",
+      "lines": [
+        "它站在崖边学飞，风一吹就往后退半步。",
+        "「……加油。」"
+      ]
+    },
+    {
+      "id": "fletchling",
+      "slug": "fletchling",
+      "tier": "mob",
+      "biome": "cliff",
+      "deck": "kit_flying",
+      "lines": [
+        "一只小箭雀在风口上挂着不动，尾巴上的红羽毛很显眼。",
+        "它冲你叫了两声，声音比它自己大。"
+      ]
+    },
+    {
       "id": "minior",
       "slug": "minior",
       "tier": "mob",
@@ -1498,170 +1641,81 @@
       ]
     },
     {
-      "id": "buneary",
-      "slug": "buneary",
+      "id": "rookidee",
+      "slug": "rookidee",
       "tier": "mob",
       "biome": "cliff",
       "deck": "kit_normal",
       "lines": [
-        "一只毛球在碎石堆里滚，滚到你面前停住了。",
-        "它把一只耳朵卷起来又放开，像在量你有多高。"
+        "一小团黑色的东西在风里站得笔直。",
+        "「风再大也没动。」"
       ]
     },
     {
-      "id": "litwick",
-      "slug": "litwick",
-      "tier": "mob",
-      "biome": "night",
-      "deck": "kit_ghost",
+      "id": "fearow",
+      "slug": "fearow",
+      "tier": "normal",
+      "biome": "cliff",
+      "deck": "kit_weaken",
       "lines": [
-        "沙丘上有一盏灯在慢慢靠近，火光很温柔。",
-        "你注意到自己被照出来的影子，比那盏灯长得多。"
+        "它在高空停住不动，然后收翅，直直地掉下来。"
       ]
     },
     {
-      "id": "yamask",
-      "slug": "yamask",
-      "tier": "mob",
-      "biome": "night",
-      "deck": "kit_debuff",
+      "id": "graveler",
+      "slug": "graveler",
+      "tier": "normal",
+      "biome": "cliff",
+      "deck": "kit_rock",
       "lines": [
-        "沙里露出半张面具，面具在哭。",
-        "它举着面具看你，像是在确认你是不是它等的那个人。"
+        "一段岩壁站了起来，然后滚了下来——用滚的。"
       ]
     },
     {
-      "id": "honedge",
-      "slug": "honedge",
-      "tier": "mob",
-      "biome": "night",
+      "id": "lairon",
+      "slug": "lairon",
+      "tier": "normal",
+      "biome": "cliff",
       "deck": "kit_steel",
       "lines": [
-        "一把剑插在沙里，剑柄上的布条在无风的时候动了一下。",
-        "你还没伸手，它自己先动了。"
+        "它用头撞岩壁，岩壁让了。它转过头来找下一个目标。"
       ]
     },
     {
-      "id": "drilbur",
-      "slug": "drilbur",
-      "tier": "mob",
-      "biome": "canyon",
-      "deck": "kit_ground",
+      "id": "swablu",
+      "slug": "swablu",
+      "tier": "normal",
+      "biome": "cliff",
+      "deck": "kit_flying",
       "lines": [
-        "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。",
-        "它一头扎进岩缝，再从你脚边冒出来。"
+        "它顶着风停在半空，身上的绒被吹成一个团。",
+        "它落到岩尖上，把翅膀上的水抖成一小片雾。"
       ]
     },
     {
-      "id": "hippowdon",
-      "slug": "hippowdon",
+      "id": "skarmory",
+      "slug": "skarmory",
       "tier": "elite",
-      "biome": "desert",
-      "deck": "kit_ground_hi",
+      "biome": "cliff",
+      "deck": "kit_steel_hi",
       "lines": [
-        "沙丘自己站了起来。原来那不是沙丘。",
-        "它张开嘴，风里全是沙在磨牙的声音。"
+        "风里有刀。你终于看清那把刀长着翅膀。"
       ],
       "signature": [
-        "sig_sand_pit"
+        "sig_brave_bird"
       ]
     },
     {
-      "id": "claydol",
-      "slug": "claydol",
+      "id": "gliscor",
+      "slug": "gliscor",
       "tier": "elite",
-      "biome": "desert",
-      "deck": "kit_ground_hi",
+      "biome": "cliff",
+      "deck": "kit_bleed_hi",
       "lines": [
-        "半埋在沙里的陶偶睁开了身上的红点。",
-        "它悬在半空，像是很久以前有人把它留在这里看着什么。"
+        "崖壁上倒挂着一只天蝎王，比你见过的大三倍，尾巴上挂着碎石。"
       ],
       "signature": [
-        "sig_ancient_beam"
-      ]
-    },
-    {
-      "id": "camerupt",
-      "slug": "camerupt",
-      "tier": "elite",
-      "biome": "canyon",
-      "deck": "kit_fire_hi",
-      "lines": [
-        "岩壁上的红纹裂开了，里面是亮的。",
-        "它每喘一口气，脚边的石头就化一点。"
-      ],
-      "signature": [
-        "sig_magma_erupt"
-      ]
-    },
-    {
-      "id": "torkoal",
-      "slug": "torkoal",
-      "tier": "elite",
-      "biome": "canyon",
-      "deck": "kit_fire_hi",
-      "lines": [
-        "一团白烟沿着谷底滚过来，烟里有壳。",
-        "它不动，但它周围的空气在抖。"
-      ],
-      "signature": [
-        "sig_white_smoke"
-      ]
-    },
-    {
-      "id": "scizor",
-      "slug": "scizor",
-      "tier": "elite",
-      "biome": "forest",
-      "deck": "kit_bug_hi",
-      "lines": [
-        "一片叶子从中间分成两半，切口是直的。",
-        "它抬起钳子，钳口上还挂着露水。"
-      ],
-      "signature": [
-        "sig_bullet_slash"
-      ]
-    },
-    {
-      "id": "scolipede",
-      "slug": "scolipede",
-      "tier": "elite",
-      "biome": "forest",
-      "deck": "kit_poison_hi",
-      "lines": [
-        "地面的落叶像被什么东西从下面顶起来。",
-        "一节一节地，它从腐叶里把自己拔出来。"
-      ],
-      "signature": [
-        "sig_megahorn_charge"
-      ]
-    },
-    {
-      "id": "kingdra",
-      "slug": "kingdra",
-      "tier": "elite",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "lines": [
-        "退潮之后，盐壳底下还有一汪水，水里有一个影子在转。",
-        "它抬起头，整片盐海的水都跟着晃了一下。"
-      ],
-      "signature": [
-        "sig_dragon_water"
-      ]
-    },
-    {
-      "id": "mantine",
-      "slug": "mantine",
-      "tier": "elite",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "lines": [
-        "一只翅膀贴着水面滑过去，没有溅起水花。",
-        "它绕回来的时候，你才看清那对翅膀有多宽。"
-      ],
-      "signature": [
-        "sig_tide_ride"
+        "sig_rock_slide_wing"
       ]
     },
     {
@@ -1679,17 +1733,199 @@
       ]
     },
     {
-      "id": "archeops",
-      "slug": "archeops",
+      "id": "staraptor",
+      "slug": "staraptor",
       "tier": "elite",
       "biome": "cliff",
       "deck": "kit_rock_hi",
       "lines": [
-        "岩缝里卡着一副骨架，骨架动了一下。",
-        "它飞得歪歪扭扭，但每一下都很快。"
+        "风停了半秒 —— 因为它正好挡在你和太阳之间。"
       ],
       "signature": [
         "sig_rock_slide_wing"
+      ]
+    },
+    {
+      "id": "hawlucha",
+      "slug": "hawlucha",
+      "tier": "elite",
+      "biome": "cliff",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "它从崖上一跃而下，落地时摆了个姿势。",
+        "「……帅吧。」"
+      ],
+      "signature": [
+        "sig_brave_bird"
+      ]
+    },
+    {
+      "id": "aggron",
+      "slug": "aggron",
+      "tier": "boss",
+      "biome": "cliff",
+      "deck": "kit_steel_hi",
+      "bossTitle": "峭壁的锤子",
+      "lines": [
+        "整段崖壁开始往下掉，因为有个东西正从里面走出来。它每一步都砸出一个坑。"
+      ],
+      "signature": [
+        "sig_heavy_slam"
+      ]
+    },
+    {
+      "id": "corviknight",
+      "slug": "corviknight",
+      "tier": "boss",
+      "biome": "cliff",
+      "deck": "kit_flying_hi",
+      "lines": [
+        "风里那副铠甲一直悬在同一块岩石上方，看样子已经等了你很久。",
+        "「这片天归我。你要过去，先过我这关。」"
+      ],
+      "signature": [
+        "sig_war_banner"
+      ],
+      "bossTitle": "风上的铁骑士"
+    },
+    {
+      "id": "gastly",
+      "slug": "gastly",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_rock",
+      "lines": [
+        "沙里冒出一团带笑的紫烟。",
+        "「嘿嘿……」"
+      ]
+    },
+    {
+      "id": "shuppet",
+      "slug": "shuppet",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_ground",
+      "lines": [
+        "它挂在你身后，学你走路的样子。"
+      ]
+    },
+    {
+      "id": "duskull",
+      "slug": "duskull",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_ghost",
+      "lines": [
+        "一个红点在墓碑之间飘来飘去，好像在数什么。"
+      ]
+    },
+    {
+      "id": "yamask",
+      "slug": "yamask",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_debuff",
+      "lines": [
+        "沙里露出半张面具，面具在哭。",
+        "它举着面具看你，像是在确认你是不是它等的那个人。"
+      ]
+    },
+    {
+      "id": "litwick",
+      "slug": "litwick",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_ghost",
+      "lines": [
+        "沙丘上有一盏灯在慢慢靠近，火光很温柔。",
+        "你注意到自己被照出来的影子，比那盏灯长得多。"
+      ]
+    },
+    {
+      "id": "honedge",
+      "slug": "honedge",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_steel",
+      "lines": [
+        "一把剑插在沙里，剑柄上的布条在无风的时候动了一下。",
+        "你还没伸手，它自己先动了。"
+      ]
+    },
+    {
+      "id": "pumpkaboo",
+      "slug": "pumpkaboo",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_ground",
+      "lines": [
+        "沙地上放着一盏灯，灯后面有东西在笑。"
+      ]
+    },
+    {
+      "id": "mimikyu",
+      "slug": "mimikyu",
+      "tier": "mob",
+      "biome": "night",
+      "deck": "kit_ghost",
+      "lines": [
+        "它披着一块画得歪歪扭扭的布，在你面前站得笔直。",
+        "「……看一眼就好。」"
+      ]
+    },
+    {
+      "id": "banette",
+      "slug": "banette",
+      "tier": "normal",
+      "biome": "night",
+      "deck": "kit_dragon",
+      "lines": [
+        "被丢下的旧东西，在沙里坐了起来。"
+      ]
+    },
+    {
+      "id": "mismagius",
+      "slug": "mismagius",
+      "tier": "normal",
+      "biome": "night",
+      "deck": "kit_ground",
+      "lines": [
+        "它念了一句什么，墓原上的风就停了。"
+      ]
+    },
+    {
+      "id": "spiritomb",
+      "slug": "spiritomb",
+      "tier": "normal",
+      "biome": "night",
+      "deck": "kit_rock",
+      "lines": [
+        "一块石头上的裂纹全睁开了眼睛。"
+      ]
+    },
+    {
+      "id": "cofagrigus",
+      "slug": "cofagrigus",
+      "tier": "normal",
+      "biome": "night",
+      "deck": "kit_debuff",
+      "lines": [
+        "柱基上放着一口石棺，棺盖是合着的 —— 但棺缝里在漏沙。",
+        "棺盖自己滑开了一条缝，缝里伸出来的东西不像手。"
+      ]
+    },
+    {
+      "id": "gengar",
+      "slug": "gengar",
+      "tier": "elite",
+      "biome": "night",
+      "deck": "kit_ghost_hi",
+      "lines": [
+        "影子先到了，笑声后到。",
+        "「又有人走夜路？」"
+      ],
+      "signature": [
+        "sig_soul_flame"
       ]
     },
     {
@@ -1703,69 +1939,126 @@
         "走近了才看出，那盏灯在飘，而且它在等你走近。"
       ],
       "signature": [
+        "sig_curse_mummy"
+      ]
+    },
+    {
+      "id": "runerigus",
+      "slug": "runerigus",
+      "tier": "elite",
+      "biome": "night",
+      "deck": "kit_dragon_hi",
+      "lines": [
+        "沙里翻出一块刻满字的石板，那些字正在动。"
+      ],
+      "signature": [
         "sig_soul_flame"
       ]
     },
     {
-      "id": "cofagrigus",
-      "slug": "cofagrigus",
+      "id": "drifblim",
+      "slug": "drifblim",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_debuff_hi",
+      "deck": "kit_weaken_hi",
       "lines": [
-        "一具石棺立在沙里，棺盖是开着的。",
-        "棺里伸出来的不是手，是别的什么。"
+        "一团影子慢慢升到墓原上空，把你脚下的沙也带起来一点。"
       ],
       "signature": [
         "sig_curse_mummy"
       ]
     },
     {
-      "id": "geodude_ruins",
+      "id": "dhelmise",
+      "slug": "dhelmise",
+      "tier": "elite",
+      "biome": "night",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "沙里竖着一截旧锚，锚上缠着的那些东西正在看你。"
+      ],
+      "signature": [
+        "sig_soul_flame"
+      ]
+    },
+    {
+      "id": "darkrai",
+      "slug": "darkrai",
+      "tier": "boss",
+      "biome": "night",
+      "deck": "kit_ghost_hi",
+      "lines": [
+        "沙子开始自己往你身上爬 —— 这里的东西讨厌醒着的人。",
+        "「睡吧。你要的答案在梦里。」"
+      ],
+      "signature": [
+        "sig_meteor_mash"
+      ],
+      "bossTitle": "夜砂里的梦"
+    },
+    {
+      "id": "zygarde",
+      "slug": "zygarde",
+      "tier": "boss",
+      "biome": "night",
+      "deck": "kit_dragon_hi",
+      "lines": [
+        "沙丘背面浮出一张由绿色细胞拼成的脸。「……你走得太远了，沙漠的孩子。」"
+      ],
+      "bossTitle": "生态的秩序",
+      "final": true,
+      "signature": [
+        "sig_land_wrath"
+      ]
+    },
+    {
+      "id": "zoroark",
+      "slug": "zoroark",
+      "tier": "boss",
+      "biome": "night",
+      "deck": "kit_steel_hi",
+      "lines": [
+        "沙地上出现了第二个你，它比你更早地摆好了架势。",
+        "「你猜哪个是真的？」"
+      ],
+      "signature": [
+        "sig_soul_lantern"
+      ],
+      "bossTitle": "墓原的假面"
+    },
+    {
+      "id": "geodude",
       "slug": "geodude",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_rock",
       "lines": [
-        "它半埋在一根断柱底下，你差点把它当成柱子的底座。",
-        "它把身上的沙抖下来，抖出一小片灰。"
+        "你差点一脚踩上去。它睁眼，很不高兴。",
+        "它把自己从岩壁上掰下来，跳到你面前。"
       ]
     },
     {
-      "id": "yamask_ruins",
-      "slug": "yamask",
+      "id": "cubone",
+      "slug": "cubone",
       "tier": "mob",
       "biome": "ruins",
       "deck": "kit_ruins",
       "lines": [
-        "墙上的图忽然少了一块，那块图正举在它手里。",
-        "它把面具转过来对着你，面具上的眼睛是干的。"
+        "它抱着一个旧头骨，看了你一会儿，什么也没说。"
       ]
     },
     {
-      "id": "sandslash_ruins",
-      "slug": "sandslash",
+      "id": "unown",
+      "slug": "unown",
       "tier": "mob",
       "biome": "ruins",
       "deck": "kit_ruins",
       "lines": [
-        "它从柱廊的影子里走出来，背刺上挂着一层细沙。",
-        "它的爪子在人写字的地方停了一下，然后继续往前走。"
+        "墙上的刻痕排成一个你不知道的字，然后那个字飘了下来。"
       ]
     },
     {
-      "id": "lunatone_ruins",
-      "slug": "lunatone",
-      "tier": "mob",
-      "biome": "ruins",
-      "deck": "kit_ruins",
-      "lines": [
-        "一根柱子的顶上浮着一块石头，它一直在慢慢转。",
-        "它转过来的时候，柱廊里所有的影子都跟着挪了一下。"
-      ]
-    },
-    {
-      "id": "sableye_ruins",
+      "id": "sableye",
       "slug": "sableye",
       "tier": "mob",
       "biome": "ruins",
@@ -1776,76 +2069,91 @@
       ]
     },
     {
-      "id": "sandygast_ruins",
-      "slug": "sandygast",
+      "id": "lunatone",
+      "slug": "lunatone",
       "tier": "mob",
       "biome": "ruins",
       "deck": "kit_ruins",
       "lines": [
-        "柱基旁边有一小堆沙，堆顶张开了半个口。",
-        "风把沙吹散了一层，沙堆底下还是沙堆。"
+        "一根柱子的顶上浮着一块石头，它一直在慢慢转。",
+        "它转过来的时候，柱廊里所有的影子都跟着挪了一下。"
       ]
     },
     {
-      "id": "claydol_ruins",
-      "slug": "claydol",
-      "tier": "normal",
-      "biome": "ruins",
-      "deck": "kit_ruins_hi",
-      "lines": [
-        "石柱之间浮起一个陶偶，红点对着你逐个亮起。",
-        "它把碎掉的柱子一块块吸到身边，围成了一圈。"
-      ]
-    },
-    {
-      "id": "cofagrigus_ruins",
-      "slug": "cofagrigus",
-      "tier": "normal",
-      "biome": "ruins",
-      "deck": "kit_debuff_hi",
-      "lines": [
-        "柱基上放着一口石棺，棺盖是合着的 —— 但棺缝里在漏沙。",
-        "棺盖自己滑开了一条缝，缝里伸出来的东西不像手。"
-      ]
-    },
-    {
-      "id": "graveler_ruins",
-      "slug": "graveler",
-      "tier": "normal",
+      "id": "baltoy",
+      "slug": "baltoy",
+      "tier": "mob",
       "biome": "ruins",
       "deck": "kit_ruins",
       "lines": [
-        "一整段断柱站了起来，抖掉沙，露出四只手臂。",
-        "它滚过来的时候，把地上那行刻字碾平了。"
+        "沙里转出来一个泥做的小人，转得很有节奏。"
       ]
     },
     {
-      "id": "steelix_ruins",
-      "slug": "steelix",
-      "tier": "elite",
+      "id": "bronzor",
+      "slug": "bronzor",
+      "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins_hi",
+      "deck": "kit_ruins",
       "lines": [
-        "你脚下的沙开始往下漏，漏出来的是一条铁铸的身躯。",
-        "它从遗迹底下穿过去，把一排柱子抬高了半寸。"
-      ],
-      "signature": [
-        "sig_ancient_beam"
+        "一面长满绿锈的旧镜面慢慢转向你。"
       ]
     },
     {
-      "id": "solrock_ruins",
-      "slug": "solrock",
-      "tier": "elite",
+      "id": "golett",
+      "slug": "golett",
+      "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_ruins",
+      "lines": [
+        "一个泥做的拳头从沙里举起来，像是在打招呼。"
+      ]
+    },
+    {
+      "id": "solrock",
+      "slug": "solrock",
+      "tier": "normal",
+      "biome": "ruins",
+      "deck": "kit_crystal",
       "lines": [
         "整座遗迹忽然亮起来，因为柱顶那块石头转到了正对太阳的角度。",
         "它把光聚成一条线，线落在你脚边，冒了一点烟。"
       ]
     },
     {
-      "id": "metagross_ruins",
+      "id": "claydol",
+      "slug": "claydol",
+      "tier": "normal",
+      "biome": "ruins",
+      "deck": "kit_ruins",
+      "lines": [
+        "石柱之间浮起一个陶偶，红点对着你逐个亮起。",
+        "它把碎掉的柱子一块块吸到身边，围成了一圈。"
+      ]
+    },
+    {
+      "id": "bastiodon",
+      "slug": "bastiodon",
+      "tier": "normal",
+      "biome": "ruins",
+      "deck": "kit_ruins",
+      "lines": [
+        "它把那张大脸往下一放，整条路就堵死了。",
+        "「今天不通行。」"
+      ]
+    },
+    {
+      "id": "bronzong",
+      "slug": "bronzong",
+      "tier": "normal",
+      "biome": "ruins",
+      "deck": "kit_ruins",
+      "lines": [
+        "钟没被敲就响了，响得沙子都在跳。"
+      ]
+    },
+    {
+      "id": "metagross",
       "slug": "metagross",
       "tier": "elite",
       "biome": "ruins",
@@ -1853,25 +2161,149 @@
       "lines": [
         "四根柱子同时浮了起来，柱子中间夹着一个铁青色的东西。",
         "它不看你，它在看整座遗迹，像是在清点什么。"
+      ],
+      "signature": [
+        "sig_ancient_beam"
       ]
     },
     {
-      "id": "tyranitar_ruins",
-      "slug": "tyranitar",
+      "id": "regirock",
+      "slug": "regirock",
+      "tier": "elite",
+      "biome": "ruins",
+      "deck": "kit_crystal_hi",
+      "lines": [
+        "石堆拼成了一个形状，形状睁开了眼。"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "rampardos",
+      "slug": "rampardos",
+      "tier": "elite",
+      "biome": "ruins",
+      "deck": "kit_ruins_hi",
+      "lines": [
+        "它低下头，对着石墙开始加速。",
+        "「……它是不是看不见我们？」"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "aegislash",
+      "slug": "aegislash",
+      "tier": "elite",
+      "biome": "ruins",
+      "deck": "kit_ruins_hi",
+      "lines": [
+        "墙边那把旧剑自己转了个身，剑柄上的花纹睁开了眼。"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "armaldo",
+      "slug": "armaldo",
+      "tier": "elite",
+      "biome": "ruins",
+      "deck": "kit_crystal_hi",
+      "lines": [
+        "它从沙里推开两块石板站起来，又把石板叠好放回原处。",
+        "「……还挺讲究。」"
+      ],
+      "signature": [
+        "sig_ancient_beam"
+      ]
+    },
+    {
+      "id": "regigigas",
+      "slug": "regigigas",
       "tier": "boss",
       "biome": "ruins",
       "deck": "kit_ruins_hi",
-      "bossTitle": "遗迹的守门人",
       "lines": [
-        "风停了。柱廊尽头有个东西站起来，把整片沙都带了起来。",
-        "「这里的东西，一件都不准带走。」"
+        "整片遗迹的柱子同时往一个方向倒 —— 因为那个东西站起来了。",
+        "「搬山的，是我。」"
       ],
       "signature": [
         "sig_pharaoh_curse"
+      ],
+      "bossTitle": "遗迹的巨人"
+    },
+    {
+      "id": "tyrantrum",
+      "slug": "tyrantrum",
+      "tier": "boss",
+      "biome": "ruins",
+      "deck": "kit_dragon_hi",
+      "bossTitle": "结晶的暴君",
+      "lines": [
+        "最亮的那块水晶后面有东西站起来了，它一动，整片洞壁的光就全往它身上收。",
+        "「……亮着的地方，都是我的。」"
+      ],
+      "signature": [
+        "sig_tomb_curse"
       ]
     },
     {
-      "id": "foongus_fungal",
+      "id": "paras",
+      "slug": "paras",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_bug",
+      "lines": [
+        "落叶底下有两只眼睛在看你，背上还长着蘑菇。",
+        "它走过来的时候，蘑菇先动。"
+      ]
+    },
+    {
+      "id": "grimer",
+      "slug": "grimer",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_fungal",
+      "lines": [
+        "一摊紫色的东西从水里浮起来，很礼貌地让开了半步。",
+        "「……谢谢？」"
+      ]
+    },
+    {
+      "id": "shroomish",
+      "slug": "shroomish",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_fungal",
+      "lines": [
+        "它蹲在树下生闷气，脚边的草全蔫了。"
+      ]
+    },
+    {
+      "id": "nincada",
+      "slug": "nincada",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_fungal",
+      "lines": [
+        "泥里钻出一层薄薄的壳，壳下面什么都没有。"
+      ]
+    },
+    {
+      "id": "dewpider",
+      "slug": "dewpider",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_fungal",
+      "lines": [
+        "它顶着一个水泡在草叶上走，水泡里还有另一双眼睛在看你。"
+      ]
+    },
+    {
+      "id": "foongus",
       "slug": "foongus",
       "tier": "mob",
       "biome": "fungal",
@@ -1882,7 +2314,17 @@
       ]
     },
     {
-      "id": "morelull_fungal",
+      "id": "goomy",
+      "slug": "goomy",
+      "tier": "mob",
+      "biome": "fungal",
+      "deck": "kit_fungal",
+      "lines": [
+        "一摊会呼吸的黏液慢慢挪过来，身后留下一道亮痕。"
+      ]
+    },
+    {
+      "id": "morelull",
       "slug": "morelull",
       "tier": "mob",
       "biome": "fungal",
@@ -1893,40 +2335,48 @@
       ]
     },
     {
-      "id": "paras_fungal",
-      "slug": "paras",
-      "tier": "mob",
+      "id": "parasect",
+      "slug": "parasect",
+      "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_bug",
       "lines": [
-        "落叶下面的那两只眼睛，背上顶着一朵比别人都大的菌盖。",
-        "它走一步，菌盖就往下滴一点发光的汁。"
+        "那只蘑菇现在长得比它的身子还大，而且看起来才是真正在走路的那个。"
       ]
     },
     {
-      "id": "fomantis_fungal",
-      "slug": "fomantis",
-      "tier": "mob",
+      "id": "marshtomp",
+      "slug": "marshtomp",
+      "tier": "normal",
       "biome": "fungal",
       "deck": "kit_fungal",
       "lines": [
-        "一株草举着两把刀，刀口上沾着孢子。",
-        "它先在菌盖上擦了擦刀，再对着你。"
+        "它从泥水里站起来，甩了你一身泥。"
       ]
     },
     {
-      "id": "grubbin_fungal",
-      "slug": "grubbin",
-      "tier": "mob",
+      "id": "toxicroak",
+      "slug": "toxicroak",
+      "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_poison",
       "lines": [
-        "湿泥里伸出一对大颚，颚上还挂着菌丝。",
-        "它在啃一根倒下的树干，树干里全是菌。"
+        "它收着下巴看你，喉咙上那块囊一鼓一鼓。"
       ]
     },
     {
-      "id": "beedrill_fungal",
+      "id": "scolipede",
+      "slug": "scolipede",
+      "tier": "normal",
+      "biome": "fungal",
+      "deck": "kit_poison",
+      "lines": [
+        "湿泥像被什么东西从下面一节一节顶起来。",
+        "它从泥里把自己拔出来，每一节都在往下滴东西。"
+      ]
+    },
+    {
+      "id": "beedrill",
       "slug": "beedrill",
       "tier": "elite",
       "biome": "fungal",
@@ -1937,73 +2387,61 @@
       ]
     },
     {
-      "id": "weedle_fungal",
-      "slug": "weedle",
-      "tier": "mob",
-      "biome": "fungal",
-      "deck": "kit_fungal",
-      "lines": [
-        "树干上有一条黄色的东西在往上爬，爬到菌盖底下停住了。",
-        "它头上的角对着你，角尖上挂着一滴发光的汁。"
-      ]
-    },
-    {
-      "id": "parasect_fungal",
-      "slug": "parasect",
-      "tier": "normal",
-      "biome": "fungal",
-      "deck": "kit_fungal_hi",
-      "lines": [
-        "那朵菌盖现在比它整个身体都大，而且明显是菌盖在决定往哪走。",
-        "它停下来的时候，周围的孢子全部朝它飘过去。"
-      ]
-    },
-    {
-      "id": "gloom_fungal",
-      "slug": "gloom",
-      "tier": "normal",
-      "biome": "fungal",
-      "deck": "kit_fungal",
-      "lines": [
-        "湿地的味道忽然浓了三倍，你顺着味道找到了它。",
-        "它嘴角挂着一点黏黏的东西，正在往下滴。"
-      ]
-    },
-    {
-      "id": "scolipede_fungal",
-      "slug": "scolipede",
-      "tier": "normal",
+      "id": "quagsire",
+      "slug": "quagsire",
+      "tier": "elite",
       "biome": "fungal",
       "deck": "kit_poison_hi",
       "lines": [
-        "湿泥像被什么东西从下面一节一节顶起来。",
-        "它从泥里把自己拔出来，每一节都在往下滴东西。"
+        "整片浅水底下都是它，你只看得到两只眼睛。"
       ]
     },
     {
-      "id": "breloom_fungal",
+      "id": "seismitoad",
+      "slug": "seismitoad",
+      "tier": "elite",
+      "biome": "fungal",
+      "deck": "kit_poison_hi",
+      "lines": [
+        "湿地里那些鼓包忽然一起转过来，全都对着你。"
+      ]
+    },
+    {
+      "id": "swalot",
+      "slug": "swalot",
+      "tier": "elite",
+      "biome": "fungal",
+      "deck": "kit_fungal_hi",
+      "lines": [
+        "一摊紫色的东西慢慢张开了嘴，嘴比它自己还大。"
+      ]
+    },
+    {
+      "id": "masquerain",
+      "slug": "masquerain",
+      "tier": "elite",
+      "biome": "fungal",
+      "deck": "kit_fungal_hi",
+      "lines": [
+        "它头顶那对花纹忽然全睁开了，湿地里一下安静下来。"
+      ]
+    },
+    {
+      "id": "breloom",
       "slug": "breloom",
-      "tier": "elite",
+      "tier": "boss",
       "biome": "fungal",
       "deck": "kit_fungal_hi",
       "lines": [
-        "菌盖下面的身体比看起来结实得多，它一路走过来，泥都被踩实了。",
-        "它甩了甩尾巴上的孢子，摆了一个很像起手的架势。"
+        "菌盖底下那两只手臂一直垂着，直到你踩进它的圈。"
+      ],
+      "bossTitle": "菌林的拳王",
+      "signature": [
+        "sig_root_bind"
       ]
     },
     {
-      "id": "mareanie_fungal",
-      "slug": "mareanie",
-      "tier": "elite",
-      "biome": "fungal",
-      "deck": "kit_poison_hi",
-      "lines": [
-        "水洼里那团东西长满了菌丝，触手一动，菌丝就跟着飘。",
-        "它把触手伸进泥里，泥面立刻冒了一层泡。"
-      ]
-    },
-    {
-      "id": "trevenant_fungal",
+      "id": "trevenant",
       "slug": "trevenant",
       "tier": "boss",
       "biome": "fungal",
@@ -2013,11 +2451,11 @@
         "整片菌林同时静了下来。最粗的那棵树转过身，树皮上全是眼睛一样的菌斑。「踩到我孩子了。」"
       ],
       "signature": [
-        "sig_root_bind"
+        "sig_spore_fist"
       ]
     },
     {
-      "id": "magnemite_storm",
+      "id": "magnemite",
       "slug": "magnemite",
       "tier": "mob",
       "biome": "storm",
@@ -2028,7 +2466,7 @@
       ]
     },
     {
-      "id": "mareep_storm",
+      "id": "mareep",
       "slug": "mareep",
       "tier": "mob",
       "biome": "storm",
@@ -2039,7 +2477,27 @@
       ]
     },
     {
-      "id": "emolga_storm",
+      "id": "elekid",
+      "slug": "elekid",
+      "tier": "mob",
+      "biome": "storm",
+      "deck": "kit_electric",
+      "lines": [
+        "它在雷声里晃着两根线，插头一直对着你转。"
+      ]
+    },
+    {
+      "id": "electrike",
+      "slug": "electrike",
+      "tier": "mob",
+      "biome": "storm",
+      "deck": "kit_electric",
+      "lines": [
+        "它身上的毛全竖着，雷每响一次就往前冲一步。"
+      ]
+    },
+    {
+      "id": "emolga",
       "slug": "emolga",
       "tier": "mob",
       "biome": "storm",
@@ -2050,18 +2508,7 @@
       ]
     },
     {
-      "id": "togedemaru_storm",
-      "slug": "togedemaru",
-      "tier": "mob",
-      "biome": "storm",
-      "deck": "kit_electric",
-      "lines": [
-        "一颗带刺的圆球滚过来，刺上全是细小的火花。",
-        "它一缩，刺全立起来，火花串成了一圈。"
-      ]
-    },
-    {
-      "id": "dedenne_storm",
+      "id": "dedenne",
       "slug": "dedenne",
       "tier": "mob",
       "biome": "storm",
@@ -2072,84 +2519,122 @@
       ]
     },
     {
-      "id": "swablu_storm",
-      "slug": "swablu",
+      "id": "togedemaru",
+      "slug": "togedemaru",
+      "tier": "mob",
+      "biome": "storm",
+      "deck": "kit_electric",
+      "lines": [
+        "一颗带刺的圆球滚过来，刺上全是细小的火花。",
+        "它一缩，刺全立起来，火花串成了一圈。"
+      ]
+    },
+    {
+      "id": "pincurchin",
+      "slug": "pincurchin",
+      "tier": "mob",
+      "biome": "storm",
+      "deck": "kit_electric",
+      "lines": [
+        "石头上那团黑色的刺亮了一下。"
+      ]
+    },
+    {
+      "id": "raichu",
+      "slug": "raichu",
       "tier": "normal",
       "biome": "storm",
       "deck": "kit_flying",
       "lines": [
-        "它顶着风停在半空，身上的绒被吹成一个团。",
-        "它落到岩尖上，把翅膀上的水抖成一小片雾。"
+        "它把尾巴往地上一插，脚下的地面就亮了。"
       ]
     },
     {
-      "id": "fearow_storm",
-      "slug": "fearow",
+      "id": "electrode",
+      "slug": "electrode",
       "tier": "normal",
       "biome": "storm",
       "deck": "kit_weaken",
       "lines": [
-        "它借着风一路直冲上来，落地的声音比雷还早。",
-        "它把长喙对着你，像是已经量过你有多高。"
+        "台地上滚过来一个圆球，边滚边笑。",
+        "「……那东西在笑。」"
       ]
     },
     {
-      "id": "woobat_storm",
-      "slug": "woobat",
+      "id": "manectric",
+      "slug": "manectric",
       "tier": "normal",
       "biome": "storm",
       "deck": "kit_ghost",
       "lines": [
-        "岩洞口的回声一次比一次近，你终于看清是它在听。",
-        "它倒挂着，耳朵对着雷声，也对着你。"
+        "它站的那块地一直在冒火花。"
       ]
     },
     {
-      "id": "remoraid_storm",
-      "slug": "remoraid",
-      "tier": "elite",
+      "id": "heliolisk",
+      "slug": "heliolisk",
+      "tier": "normal",
       "biome": "storm",
-      "deck": "kit_electric_hi",
+      "deck": "kit_flying",
       "lines": [
-        "台地上的水洼里有一条铁炮鱼，它把水吸满了，一直在等雷。",
-        "雷落下来的那一瞬间，它开火了。"
+        "它把脖子上那片东西撑开，雨在它身上分成了两半。"
       ]
     },
     {
-      "id": "gyarados_storm",
+      "id": "gyarados",
       "slug": "gyarados",
       "tier": "elite",
       "biome": "storm",
       "deck": "kit_water_hi",
       "lines": [
-        "云底下的水里升起一条蓝色的身影，它比云还高一点。",
-        "它抬起头，台地上所有水洼一起震了一下。"
+        "水面被从下面顶开，一条蓝色的东西升起来，比你在沙丘上见过的任何东西都长。"
+      ],
+      "signature": [
+        "sig_rage_wave"
       ]
     },
     {
-      "id": "kingdra_storm",
-      "slug": "kingdra",
+      "id": "electivire",
+      "slug": "electivire",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_water_hi",
+      "deck": "kit_electric_hi",
       "lines": [
-        "积水的中央有个漩涡在转，转得比风雨还稳。",
-        "它抬起头，台地上空的云跟着转了一下。"
+        "它把两条尾巴一碰，整个台地暗了一瞬。"
       ]
     },
     {
-      "id": "braviary_storm",
-      "slug": "braviary",
+      "id": "vikavolt",
+      "slug": "vikavolt",
       "tier": "elite",
       "biome": "storm",
       "deck": "kit_flying_hi",
       "lines": [
-        "风把它托在台地最高处，它没有扇翅膀。",
-        "雷在它背后炸开，它连头都没回。"
+        "它悬在半空，那道炮口一直对着你。"
       ]
     },
     {
-      "id": "ampharos_storm",
+      "id": "luxray",
+      "slug": "luxray",
+      "tier": "elite",
+      "biome": "storm",
+      "deck": "kit_flying_hi",
+      "lines": [
+        "台地上的雨全是斜的 —— 因为中间那东西一直在放电。"
+      ]
+    },
+    {
+      "id": "magnezone",
+      "slug": "magnezone",
+      "tier": "elite",
+      "biome": "storm",
+      "deck": "kit_electric_hi",
+      "lines": [
+        "它悬在半空慢慢转，把周围的雷都吸了过去。"
+      ]
+    },
+    {
+      "id": "ampharos",
       "slug": "ampharos",
       "tier": "boss",
       "biome": "storm",
@@ -2164,51 +2649,52 @@
       ]
     },
     {
-      "id": "carbink_crystal",
-      "slug": "carbink",
+      "id": "zeraora",
+      "slug": "zeraora",
+      "tier": "boss",
+      "biome": "storm",
+      "deck": "kit_electric_hi",
+      "lines": [
+        "雷还没落下来，先落在了一双脚上。",
+        "「跑得比我快的人，我还没见过。」"
+      ],
+      "signature": [
+        "sig_spark_ball"
+      ],
+      "bossTitle": "雷暴的脚程"
+    },
+    {
+      "id": "onix",
+      "slug": "onix",
       "tier": "mob",
       "biome": "crystal",
       "deck": "kit_crystal",
       "lines": [
-        "水晶后面滚出来一枚会眨眼的石头。",
-        "它身上嵌满了碎晶，走一步响一下。"
+        "洞顶那些石柱，原来不是石柱。"
       ]
     },
     {
-      "id": "geodude_crystal",
-      "slug": "geodude",
+      "id": "beldum",
+      "slug": "beldum",
       "tier": "mob",
       "biome": "crystal",
       "deck": "kit_crystal",
       "lines": [
-        "洞壁上一块「水晶」动了一下，原来是个睡着的家伙。",
-        "它把自己从晶簇里掰出来，掉了一地碎晶。"
+        "一个铁块飘起来，用一只眼睛盯着你。"
       ]
     },
     {
-      "id": "lunatone_crystal",
-      "slug": "lunatone",
+      "id": "dwebble",
+      "slug": "dwebble",
       "tier": "mob",
       "biome": "crystal",
       "deck": "kit_crystal",
       "lines": [
-        "洞顶垂下来一块石头，它是倒着长的。",
-        "洞壁的亮跟着它转了半圈。"
+        "一块小石头自己在走，石头底下露出几条细细的腿。"
       ]
     },
     {
-      "id": "solrock_crystal",
-      "slug": "solrock",
-      "tier": "mob",
-      "biome": "crystal",
-      "deck": "kit_crystal",
-      "lines": [
-        "洞窟深处那块最亮的水晶忽然移开了。",
-        "它把光聚成一条线，扫过整面洞壁，最后停在你身上。"
-      ]
-    },
-    {
-      "id": "druddigon_crystal",
+      "id": "druddigon",
       "slug": "druddigon",
       "tier": "mob",
       "biome": "crystal",
@@ -2219,240 +2705,180 @@
       ]
     },
     {
-      "id": "honedge_crystal",
-      "slug": "honedge",
+      "id": "carbink",
+      "slug": "carbink",
+      "tier": "mob",
+      "biome": "crystal",
+      "deck": "kit_crystal",
+      "lines": [
+        "水晶后面滚出来一枚会眨眼的石头。",
+        "它身上嵌满了碎晶，走一步响一下。"
+      ]
+    },
+    {
+      "id": "bergmite",
+      "slug": "bergmite",
+      "tier": "mob",
+      "biome": "crystal",
+      "deck": "kit_crystal",
+      "lines": [
+        "冰里那团东西翻了个身，把整块冰一起挪了。"
+      ]
+    },
+    {
+      "id": "noibat",
+      "slug": "noibat",
+      "tier": "mob",
+      "biome": "crystal",
+      "deck": "kit_crystal",
+      "lines": [
+        "洞顶挂着一小团黑，你走近它就醒了。"
+      ]
+    },
+    {
+      "id": "nacli",
+      "slug": "nacli",
+      "tier": "mob",
+      "biome": "crystal",
+      "deck": "kit_crystal",
+      "lines": [
+        "晶壁上结着一粒粒发亮的东西，其中一粒在眨眼。"
+      ]
+    },
+    {
+      "id": "mawile",
+      "slug": "mawile",
       "tier": "normal",
       "biome": "crystal",
       "deck": "kit_steel",
       "lines": [
-        "水晶簇里插着一把剑，剑柄上的布条在无风的时候飘了一下。",
-        "你还没靠近，剑自己从晶簇里拔了出来。"
+        "它回头对你笑了一下，然后它身后那张嘴也笑了。"
       ]
     },
     {
-      "id": "steelix_crystal",
-      "slug": "steelix",
+      "id": "metang",
+      "slug": "metang",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_crystal",
       "lines": [
-        "整面洞壁在动，你这才发现那面墙其实是一段身子。",
-        "它从晶层里抽出来，晶簇像碎冰一样往下掉。"
-      ],
-      "signature": [
-        "sig_iron_tail_wall"
+        "两个铁块叠在一起，成了更大的一只。"
       ]
     },
     {
-      "id": "claydol_crystal",
-      "slug": "claydol",
+      "id": "avalugg",
+      "slug": "avalugg",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_crystal",
       "lines": [
-        "水晶中间封着一个陶偶，封它的那块晶正在裂。",
-        "它悬在半空，红点一颗颗亮起来，洞壁跟着亮了一整圈。"
+        "一大块冰趴在洞底，仔细看是活的。"
       ]
     },
     {
-      "id": "gliscor_crystal",
-      "slug": "gliscor",
-      "tier": "elite",
+      "id": "naclstack",
+      "slug": "naclstack",
+      "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_bleed_hi",
+      "deck": "kit_steel",
       "lines": [
-        "一块倒挂的水晶动了，它挂在那里，尾巴上勾着一片碎晶。",
-        "它从洞顶滑下来，一路上刮掉了三根晶柱。"
+        "刚才那粒东西长大了，还叫来了同伴。"
       ]
     },
     {
-      "id": "metagross_crystal",
-      "slug": "metagross",
+      "id": "glalie",
+      "slug": "glalie",
       "tier": "elite",
       "biome": "crystal",
       "deck": "kit_crystal_hi",
       "lines": [
-        "洞窟最宽的地方，四只脚压出四个坑，它一直站在那里。",
-        "它转过来看你的时候，整片水晶都跟着俯了一下。"
+        "洞里的冰面上浮出一张脸，转过来正对着你。"
       ],
       "signature": [
         "sig_meteor_mash"
       ]
     },
     {
-      "id": "chandelure_crystal",
-      "slug": "chandelure",
+      "id": "probopass",
+      "slug": "probopass",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_ghost_hi",
+      "deck": "kit_bleed_hi",
       "lines": [
-        "洞顶垂着的「水晶」中有一盏在飘，而且它的光是暖的。",
-        "它从晶簇之间穿过去，水晶一点都没碰到。"
+        "那撮铁砂一直在转，最后全部指向你。"
       ],
       "signature": [
         "sig_soul_flame"
       ]
     },
     {
-      "id": "tyrantrum_crystal",
-      "slug": "tyrantrum",
+      "id": "aurorus",
+      "slug": "aurorus",
+      "tier": "elite",
+      "biome": "crystal",
+      "deck": "kit_ghost_hi",
+      "lines": [
+        "整面冰壁亮了 —— 光是从那副骨架里透出来的。"
+      ],
+      "signature": [
+        "sig_meteor_mash"
+      ]
+    },
+    {
+      "id": "abomasnow",
+      "slug": "abomasnow",
+      "tier": "elite",
+      "biome": "crystal",
+      "deck": "kit_bleed_hi",
+      "lines": [
+        "洞里的冰壁上开始飘雪 —— 那棵树是自己走过来的。"
+      ],
+      "signature": [
+        "sig_soul_flame"
+      ]
+    },
+    {
+      "id": "froslass",
+      "slug": "froslass",
+      "tier": "elite",
+      "biome": "crystal",
+      "deck": "kit_crystal_hi",
+      "lines": [
+        "冰面下那张脸一直跟着你移动，你停它也停。"
+      ],
+      "signature": [
+        "sig_meteor_mash"
+      ]
+    },
+    {
+      "id": "kyurem",
+      "slug": "kyurem",
       "tier": "boss",
       "biome": "crystal",
       "deck": "kit_dragon_hi",
-      "bossTitle": "结晶的暴君",
       "lines": [
-        "最亮的那块水晶后面有东西站起来了，它一动，整片洞壁的光就全往它身上收。",
-        "「……亮着的地方，都是我的。」"
+        "洞的最深处没有回声，因为那里的冷把声音也冻住了。",
+        "「……冷吗。我也冷。」"
       ],
       "signature": [
         "sig_crystal_jaw"
-      ]
-    },
-    {
-      "id": "aerodactyl_alpha",
-      "slug": "aerodactyl",
-      "tier": "boss",
-      "biome": "desert",
-      "deck": "kit_rock_hi",
-      "bossTitle": "沙丘上空的影子",
-      "lines": [
-        "沙丘顶上那个影子已经跟了你半天。它终于收起了翅膀。",
-        "「跑得挺快。可惜沙丘是我的。」"
       ],
-      "signature": [
-        "sig_sky_dive"
-      ]
+      "bossTitle": "洞底的空壳"
     },
     {
-      "id": "rhydon_warden",
-      "slug": "rhydon",
-      "tier": "boss",
-      "biome": "canyon",
-      "deck": "kit_ground_hi",
-      "bossTitle": "赤岩的凿子",
-      "lines": [
-        "整条峡谷响了一下。它站在谷口，角上还挂着刚凿下来的岩片。",
-        "它把岩壁又凿深了一寸，然后转向你。"
-      ],
-      "signature": [
-        "sig_horn_drill"
-      ]
-    },
-    {
-      "id": "scizor_warden",
-      "slug": "scizor",
-      "tier": "boss",
-      "biome": "forest",
-      "deck": "kit_bug_hi",
-      "bossTitle": "林中的剪刀",
-      "lines": [
-        "两排树同时倒向两边，切口是直的。它停在路中间等你。",
-        "它把钳子举起来，钳口上的光比露水冷。"
-      ],
-      "signature": [
-        "sig_double_claw"
-      ]
-    },
-    {
-      "id": "gyarados_warden",
-      "slug": "gyarados",
-      "tier": "boss",
-      "biome": "tide",
-      "deck": "kit_water_hi",
-      "bossTitle": "盐海的怒潮",
-      "lines": [
-        "退潮退到一半停住了 —— 不是潮停了，是水被什么东西抬住了。",
-        "它立起来，盐壳从它身上一片片往下掉。"
-      ],
-      "signature": [
-        "sig_tidal_rage"
-      ]
-    },
-    {
-      "id": "braviary_warden",
-      "slug": "braviary",
-      "tier": "boss",
-      "biome": "cliff",
-      "deck": "kit_flying_hi",
-      "bossTitle": "峭壁的战旗",
-      "lines": [
-        "崖口上插着一面「旗」。风吹了很久，它一动没动。",
-        "你走近了才看清，那面旗一直在看你。"
-      ],
-      "signature": [
-        "sig_war_banner"
-      ]
-    },
-    {
-      "id": "chandelure_warden",
-      "slug": "chandelure",
-      "tier": "boss",
-      "biome": "night",
-      "deck": "kit_ghost_hi",
-      "bossTitle": "引路的灯",
-      "lines": [
-        "远处那盏灯一路把你引到这儿，然后停住了 —— 它一直没打算让你走出去。",
-        "「跟了这么久，不差最后一段。」"
-      ],
-      "signature": [
-        "sig_soul_lantern"
-      ]
-    },
-    {
-      "id": "cofagrigus_pharaoh",
-      "slug": "cofagrigus",
-      "tier": "boss",
-      "biome": "ruins",
-      "deck": "kit_debuff_hi",
-      "lines": [
-        "棺盖上的金漆还没掉完。它坐起来的时候，整条柱廊的沙子一起往下滑。"
-      ],
-      "bossTitle": "沉睡的法老",
-      "signature": [
-        "sig_tomb_curse"
-      ]
-    },
-    {
-      "id": "breloom_alpha",
-      "slug": "breloom",
-      "tier": "boss",
-      "biome": "fungal",
-      "deck": "kit_fungal_hi",
-      "lines": [
-        "菌盖底下那两只手臂一直垂着，直到你踩进它的圈。"
-      ],
-      "bossTitle": "菌林的拳王",
-      "signature": [
-        "sig_spore_fist"
-      ]
-    },
-    {
-      "id": "togedemaru_alpha",
-      "slug": "togedemaru",
-      "tier": "boss",
-      "biome": "storm",
-      "deck": "kit_electric_hi",
-      "lines": [
-        "它把自己缩成一团，背上的针一根根竖起来 —— 云也跟着亮了。"
-      ],
-      "bossTitle": "雷台的刺球",
-      "signature": [
-        "sig_spark_ball"
-      ]
-    },
-    {
-      "id": "druddigon_alpha",
-      "slug": "druddigon",
+      "id": "diancie",
+      "slug": "diancie",
       "tier": "boss",
       "biome": "crystal",
-      "deck": "kit_dragon",
+      "deck": "kit_dragon_hi",
       "lines": [
-        "水晶里那团红色动了一下。它一直是醒着的，只是在等你走近。"
+        "最中间那块晶体自己转动起来，转出一圈光。",
+        "「想要我头上的东西？先问过这面墙。」"
       ],
-      "bossTitle": "水晶的獠牙",
       "signature": [
         "sig_crystal_fang"
-      ]
+      ],
+      "bossTitle": "结晶的公主"
     }
   ]
 }

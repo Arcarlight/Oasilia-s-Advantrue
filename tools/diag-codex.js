@@ -360,7 +360,10 @@
       if (what === 'enemy') click(entries[2]);
       else if (what === 'card') click(entries[1]);
       else if (what === 'records') click(entries[0]);
-      else if (what === 'map') { game.newRun(20260214); game.phase = 'map'; ui.forceRerender(); }
+      else if (what === 'changelog') {
+        const btn = qa('.title-menu .btn').find((b) => b.textContent.includes('更新日志'));
+        click(btn);
+      } else if (what === 'map') { game.newRun(20260214); game.phase = 'map'; ui.forceRerender(); }
       else if (what === 'battle') { game.newRun(20260214); game.startBattle('elite', 0, 'direct'); }
       else if (what === 'enemy-detail') {
         click(entries[2]);
