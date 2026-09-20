@@ -237,6 +237,15 @@
         };
         const NAMES = ['下', '右下', '右', '右上', '上', '左上', '左', '左下'];
         let hit = 0;
+        /**
+         * 顺便把**每个朝向下这张图有多大**记下来。
+         *
+         * 为什么会有人觉得它「一会儿大一会儿小」：这张图是**按高度**定尺寸的
+         * （autoScale = 104，内容外接框高度撑到 104px），而各朝向的外接框宽高比不一样 ——
+         * 正面最窄、侧身最宽。所以转身时**高度不变、宽度会变**（用户看到的「变大」）。
+         * 这里把八个方向都量一遍，写成数字，免得以后再靠肉眼猜。
+         */
+        const sizes = [];
         for (let want = 0; want < 8; want++) {
           const [fx, fy] = VEC[want];
           document.dispatchEvent(new MouseEvent('mousemove', {
@@ -253,7 +262,16 @@
               + `（canvas 中心 ${Math.round(rr.left + rr.width / 2)},${Math.round(rr.top + rr.height / 2)}`
               + ` 指针 ${point.x},${point.y} 纯函数给 ${dirFromPoint(rr.left + rr.width / 2, rr.top + rr.height / 2, point.x, point.y)}）`);
           }
+          const r2 = walk.getBoundingClientRect();
+          sizes.push({ dir: NAMES[want], row: walk.dirRow, w: Math.round(r2.width), h: Math.round(r2.height) });
         }
+        log(`    · 八个朝向下的大小：${sizes.map((s) => `${s.dir} ${s.w}×${s.h}`).join(' ｜ ')}`);
+        const hs = new Set(sizes.map((s) => s.h));
+        const ws = sizes.map((s) => s.w);
+        ok(hs.size === 1, '八个朝向下高度完全一致（按高度定尺寸，所以转身不会变高）', `高度 ${[...hs].join('/')}px`);
+        ok(Math.max(...ws) / Math.min(...ws) < 2,
+          '八个朝向下宽度差别不到一倍（正面最窄、侧身最宽）',
+          `宽 ${Math.min(...ws)}~${Math.max(...ws)}px，高 ${[...hs][0]}px`);
         ok(hit === 8, '八个方向逐个数：鼠标指向哪边，行走图就转哪边',
           `命中 ${hit}/8（这个物种支持 ${dirs.join('/') || '?'} 行朝向）`);
         ok((walk.frameCount ?? 0) > 0, '行走图有帧（没画满朝向时会退回第一行有内容的）', `${walk.frameCount} 帧`);
