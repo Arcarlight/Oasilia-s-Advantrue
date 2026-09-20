@@ -227,28 +227,41 @@
         return [...document.querySelectorAll('.modal-backdrop')].pop();
       };
       const top = await open(0);
-      const walk = top?.querySelector('.dex-art-cell.dex-art-walk canvas');
-      ok(!!walk, '详情页有行走图');
-      if (walk) {
+      const walk = top?.querySelector('.dex-walk canvas');
+      const turn = top?.querySelector('.dex-turnart-img');
+      ok(!!walk && !!turn, '详情页有行走图与回合立绘');
+      if (walk && turn) {
         const r = walk.getBoundingClientRect();
         const want = walk.frameInfo ? walk.frameInfo.fw / walk.frameInfo.fh : 1;
         const got = r.width / r.height;
         ok(Math.abs(got - want) < 0.02, '行走图按素材比例显示（没有被 CSS 拉伸）',
           `frame ${walk.frameInfo?.fw}x${walk.frameInfo?.fh}（比 ${want.toFixed(3)}）vs 显示 ${r.width.toFixed(0)}x${r.height.toFixed(0)}（比 ${got.toFixed(3)}）`);
-        const boxes = [...top.querySelectorAll('.dex-art-box')].map((b) => b.getBoundingClientRect());
-        const hs = boxes.map((b) => Math.round(b.height));
-        ok(new Set(hs).size === 1, '三张图占的格子一样高（一行对齐）', hs.join(' / '));
-        // 三张图的**视觉底边**也要对齐（否则说明图在格子里没贴底）
-        const bottoms = [...top.querySelectorAll('.dex-art-cell')].map((c) => {
-          const media = c.querySelector('canvas, img, .poke-icon');
-          return media ? Math.round(media.getBoundingClientRect().bottom) : -1;
-        });
-        ok(new Set(bottoms).size === 1, '三张图的底边在同一水平线上', bottoms.join(' / '));
-        const heights = [...top.querySelectorAll('.dex-art-cell')].map((c) => {
-          const media = c.querySelector('canvas, img, .poke-icon');
-          return media ? Math.round(media.getBoundingClientRect().height) : -1;
-        });
-        log(`    · 三张图的显示高度：${heights.join(' / ')}（行走图 120 是目标值）`);
+
+        const t = turn.getBoundingClientRect();
+        const icon = top.querySelector('.dex-iconbox .poke-icon')?.getBoundingClientRect();
+        ok(r.height < t.height, '行走图比立绘**小**（立绘是主体，不是三张一样大）',
+          `行走图 ${Math.round(r.height)}px vs 立绘 ${Math.round(t.height)}px`);
+        // 行走图压在立绘右下角：水平方向在立绘中线右边、竖直方向在立绘中线下面，且有重叠
+        ok(r.left + r.width / 2 > t.left + t.width / 2 && r.top + r.height / 2 > t.top + t.height / 2,
+          '行走图压在立绘的**右下角**',
+          `行走图中心 (${Math.round(r.left + r.width / 2)},${Math.round(r.top + r.height / 2)}) vs 立绘中心 (${Math.round(t.left + t.width / 2)},${Math.round(t.top + t.height / 2)})`);
+        const overlapX = Math.min(r.right, t.right) - Math.max(r.left, t.left);
+        const overlapY = Math.min(r.bottom, t.bottom) - Math.max(r.top, t.top);
+        ok(overlapX > 0 && overlapY > 0, '行走图和立绘**部分重叠**（不是并排对齐）',
+          `重叠 ${Math.round(overlapX)}×${Math.round(overlapY)}px`);
+        if (icon) {
+          ok(icon.width < t.width * 0.6, '小图标的尺寸**没有**跟着放大',
+            `小图标 ${Math.round(icon.width)}px vs 立绘 ${Math.round(t.width)}px`);
+          ok(icon.left + icon.width / 2 < t.left + t.width / 2 && icon.top + icon.height / 2 > t.top + t.height / 2,
+            '小图标压在立绘的**左下角**');
+          const ox = Math.min(icon.right, t.right) - Math.max(icon.left, t.left);
+          ok(ox > 0, '小图标和立绘也重叠', `重叠 ${Math.round(ox)}px`);
+        }
+        // 图那一块与右列之间要留出间距（不能贴在一起）
+        const box = top.querySelector('.dex-art-compose')?.getBoundingClientRect();
+        const col = top.querySelector('.dex-detail-info')?.getBoundingClientRect();
+        if (box && col) ok(col.left - box.right >= 12, '图那一块和右边文字之间留了间距',
+          `${Math.round(col.left - box.right)}px`);
       }
       for (const b of document.querySelectorAll('.modal-head button')) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await wait(200);

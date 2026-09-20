@@ -3000,39 +3000,57 @@ input, textarea { cursor: text !important; }
 
 /* ============================================================
    图鉴详情（用户给的排版）：
-     ┌──────────────┬───────────────────────────────┐
-     │ 行走图 立绘 小图标 │ 名字 编号 称号 属性              │
-     │              │ 简短介绍 / 怎么打 / 面板          │
-     │              │ ─────────────────────────      │
-     │              │ 计数条（最右端是奖牌）             │
-     ├──────────────┴───────────────────────────────┤
-     │ 卡牌、出场台词…                                 │
-     └──────────────────────────────────────────────┘
-   三张图**不再一张一个框**，也不再给它们固定高度 —— 高度由精灵图本身决定，
-   行走图在 sprites.js 里按内容裁边（trim），所以它和另外两张一样高。
+     ┌──────────────────┬───────────────────────────────┐
+     │   ╔══════════╗   │ 名字 编号 称号 属性              │
+     │   ║  回合立绘  ║   │ 简短介绍 ×3                    │
+     │   ║  ┌──┐     ║   │ ───────────────────────       │
+     │   ╚══│行走图│══╝   │ [挑战][击败][失败][胜率][招式] 🥇 │
+     │  [小图标]          │                               │
+     ├──────────────────┴───────────────────────────────┤
+     │ 它可能会这么说 / 它会用的卡牌 / 出场台词             │
+     └──────────────────────────────────────────────────┘
+   左边是**一整块图**：立绘当主体、放大；行走图按正常尺寸压在它右下角、
+   小图标压在左下角 —— 两张小图都和立绘**部分重叠**，三张图**不是一样大**。
    ============================================================ */
 .dex-detail { display: flex; flex-direction: column; gap: 14px; }
 .dex-detail-top {
   display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-  gap: 22px; align-items: start;
+  gap: 30px; align-items: start;
   padding-bottom: 12px;
   box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
 }
-.dex-art-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-.dex-art-cell { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; }
-.dex-art-box {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 120px; height: 120px;
-}
-.dex-art-cap { font-size: 11px; opacity: .6; white-space: nowrap; }
-.dex-turnart { display: flex; align-items: center; justify-content: center; height: 120px; }
-.dex-turnart-img { image-rendering: pixelated; max-height: 120px; width: auto; }
-.dex-iconbox { display: flex; align-items: center; justify-content: center; height: 120px; }
 
-/* 行走图：跟着鼠标转（朝向 = 精灵图的一行）。高度由 canvas 自己决定，别用 CSS 拉伸它 */
-.dex-walk { position: relative; display: flex; align-items: center; justify-content: center; }
-.dex-walk-stage { display: flex; align-items: center; justify-content: center; }
+/* 三张图叠成一块：立绘是网格主体，另外两张按九宫格压在它的角上 */
+.dex-art-compose {
+  position: relative;
+  display: grid;
+  grid-template-areas: 'stack';
+  align-items: end;
+  min-width: 210px;
+}
+.dex-art-compose > * { grid-area: stack; }
+.dex-turnart {
+  display: flex; align-items: flex-end; justify-content: center;
+  min-height: 172px;
+}
+.dex-turnart-img { image-rendering: pixelated; height: 172px; width: auto; }
+
+/* 行走图：**正常尺寸**（立绘的六成高，不跟着放大），压在立绘右下角、和它重叠 */
+.dex-walk {
+  position: relative;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  transform: translate(18px, 10px);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .55));
+}
+.dex-walk-stage { display: flex; align-items: flex-end; justify-content: flex-end; }
 .dex-walk canvas, .dex-battleart canvas, .dex-anim { image-rendering: pixelated; width: auto; height: auto; }
+
+/* 小图标：压在立绘左下角，尺寸不放大 */
+.dex-iconbox {
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  transform: translate(-2px, 4px);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .55));
+}
 
 /* ---- 右列：三条简短介绍（用户给的排版）---- */
 .dex-intro { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }

@@ -388,19 +388,43 @@ function showEnemyDetail(def, sets, meta) {
   const battles = Math.max(wins, countSeen(metaAll, def.id));
   const losses = Math.max(0, battles - wins);
 
-  const artRow = el('div', { class: 'dex-art-row' });
-  const artCell = (label, node, cls = '') => el('div', { class: `dex-art-cell ${cls}`.trim() }, [
-    el('div', { class: 'dex-art-box' }, [node]),
-    el('div', { class: 'dex-art-cap', text: label }),
-  ]);
+  /**
+   * 左边那一整块图（.dex-art-compose）：立绘当主体、行走图压右下、小图标压左下。
+   * **先建好容器**（不是 null）：下面的 `if (known)` / `else` 两个分支都往它里面 append，
+   * 第一版只在一个分支里建，没见过的剪影点开就抛「Cannot read properties of null (reading 'append')」——
+   * 界面上看起来只是「点了没反应」。
+   */
+  const artRow = el('div', { class: 'dex-art-compose' });
 
   if (known) {
-    // ── 行走图：按鼠标方向转（用户要求）。朝向变了就换精灵图的朝向行，动画接着播 ──
-    const walkBox = el('div', { class: 'dex-walk' });
+    /**
+     * 左边那**一整块**（用户给的排版，第二版）：
+     *   回合立绘放大当主体；行走图按正常尺寸压在**立绘的右下角**（和立绘部分重叠）；
+     *   小图标压在**立绘的左下角**（也重叠，尺寸不放大）。
+     * 三张图**不是一样大**：立绘是主体，另外两张是压在它角上的小图。
+     * 标签改成悬停说明 —— 三张图叠成一幅画之后，再排三个标签会把画面挤乱。
+     */
+    const turnBox = el('div', { class: 'dex-turnart', dataset: { tip: t('回合切换时「由大变小」的那张立绘') } });
+    {
+      const art = turnArt(def.slug, 'front');
+      if (art) {
+        const img = document.createElement('img');
+        img.src = art.url;
+        img.alt = def.name;
+        img.className = 'dex-turnart-img';
+        img.draggable = false;
+        turnBox.append(img);
+      } else {
+        turnBox.append(el('span', { class: 'dex-unknown', text: '?' }));
+      }
+    }
+    artRow.append(turnBox);
+
+    const walkBox = el('div', { class: 'dex-walk', dataset: { tip: t('行走图：鼠标指向哪边它就转向哪边') } });
     /**
      * 精灵图是**异步**取回来的，而它建好之后要替换掉占位内容 ——
-     * 这里不能直接 clear(walkBox)：奖牌已经先挂在 walkBox 上了，
-     * `clear` 会把奖牌一起清掉（第一版就是这么翻车的：15 次银牌死活不出现）。
+     * 这里不能直接 clear(walkBox)：walkBox 上还挂着别的东西，
+     * `clear` 会把它们一起清掉（第一版就是这么翻车的：15 次银牌死活不出现）。
      * 所以画布单独放一个子节点，只清那一个。
      */
     const walkStage = el('div', { class: 'dex-walk-stage' });
@@ -408,9 +432,8 @@ function showEnemyDetail(def, sets, meta) {
     let walkCanvas = null;
     createAnim(def.slug, {
       anim: 'Idle', fps: 7, dir: DIR.DOWN, className: 'dex-anim',
-      // 目标显示高度与另外两张图对齐；trim 把帧里的透明留白裁掉，
-      // 不然「格子大、人小」会让行走图看着又小又扁（用户两次反馈过）
-      autoScale: 120, trim: true,
+      // 正常尺寸（立绘的六成），不跟着立绘放大；trim 裁掉帧里的透明留白，人才能填满这一格
+      autoScale: 104, trim: true,
     })
       .then((canvas) => {
         walkCanvas = canvas;
@@ -432,39 +455,15 @@ function showEnemyDetail(def, sets, meta) {
     const onMove = (ev) => { window.__dexPointer = { x: ev.clientX, y: ev.clientY }; aimAtPointer(ev); };
     document.addEventListener('mousemove', onMove);
     artRow.__onClose = () => document.removeEventListener('mousemove', onMove);
+    artRow.append(walkBox);
 
-    /**
-     * 奖牌**不再挂在这里**（用户给的排版：奖牌在右列计数条的最右端，只有那一条）。
-     * 这一格只负责行走图本身；奖牌的位置见 .dex-record-row > .dex-medal-inline。
-     */
-    artRow.append(artCell(t('行走图'), walkBox, 'dex-art-walk'));
-
-    const turnBox = el('div', { class: 'dex-turnart' });
-    {
-      const art = turnArt(def.slug, 'front');
-      if (art) {
-        const img = document.createElement('img');
-        img.src = art.url;
-        img.alt = def.name;
-        img.className = 'dex-turnart-img';
-        img.draggable = false;
-        img.style.height = '100%';
-        img.style.width = 'auto';
-        turnBox.append(img);
-      } else {
-        turnBox.append(el('span', { class: 'dex-unknown', text: '?' }));
-      }
-    }
-    artRow.append(artCell(t('回合立绘'), turnBox));
-
-    const iconBox = el('div', { class: 'dex-iconbox' });
-    // 小图标也拉到和三张图一样高（120px）：三个尺寸不齐会显得页面歪
-    const icon = createIcon(def.slug, { size: 120, fps: ICONS.detailFps, alt: def.name });
+    const iconBox = el('div', { class: 'dex-iconbox', dataset: { tip: t('小图标：会动的那个小头像') } });
+    const icon = createIcon(def.slug, { size: 48, fps: ICONS.detailFps, alt: def.name });
     iconBox.append(icon ?? el('span', { class: 'dex-unknown', text: '?' }));
-    artRow.append(artCell(t('小图标'), iconBox));
+    artRow.append(iconBox);
   } else {
     const q = () => el('span', { class: 'dex-unknown big', text: '?' });
-    artRow.append(artCell(t('行走图'), q()), artCell(t('回合立绘'), q()), artCell(t('小图标'), q()));
+    artRow.append(el('div', { class: 'dex-turnart' }, [q()]));
   }
 
   // ── 右侧：名称 / 编号 / 称号 / 属性 + 战绩 ──

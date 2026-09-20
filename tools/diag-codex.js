@@ -161,15 +161,18 @@
     const detail = topModal();
     ok(!!q('.dex-detail-info', detail), '点开见过的宝可梦有详情页');
     /**
-     * 详情页要同时给出**三张图**（用户要求）：小图标（动图）/ 回合立绘 / 战斗动图。
-     * 「动图」这件事不能只看有没有元素 —— 要查它真的挂着逐帧动画（CSS animation-name）。
+     * 详情页左边是**一整块图**（用户给的排版）：立绘当主体放大、行走图压右下角、小图标压左下角。
+     * 「小图标会动」这件事不能只看有没有元素 —— 要查它真的挂着逐帧动画（CSS animation-name）。
      */
     {
-      const cells = qa('.dex-art-cell', detail);
-      const caps = cells.map((c) => q('.dex-art-cap', c)?.textContent);
-      ok(cells.length === 3, '详情页并排三张图（行走图 / 回合立绘 / 小图标）', caps.join(' / '));
-      const icon = q('.dex-art-cell .poke-icon', detail);
-      ok(!!icon, '其中一格是小图标');
+      const box = q('.dex-art-compose', detail);
+      ok(!!box, '详情页左边是一整块图（.dex-art-compose）');
+      const turn = q('.dex-art-compose .dex-turnart-img', detail);
+      const walk = q('.dex-art-compose .dex-walk canvas', detail);
+      const icon = q('.dex-art-compose .dex-iconbox .poke-icon', detail);
+      ok(!!turn, '图块里有回合立绘（gen9 正面图）');
+      ok(!!walk, '图块里有行走图（PMD 精灵的 canvas，压右下角）');
+      ok(!!icon, '图块里有小图标（压左下角）');
       if (icon) {
         const cs = getComputedStyle(icon);
         ok(cs.animationName === 'poke-icon-play' && cs.animationIterationCount === 'infinite',
@@ -179,8 +182,6 @@
           '小图标的底图比它自己宽（说明是「一帧一帧横向排开」的动图条）',
           `底图 ${cs.backgroundSize} vs 显示宽 ${icon.clientWidth}px`);
       }
-      ok(!!q('.dex-art-cell .dex-turnart-img', detail), '其中一格是回合立绘（gen9 正面图）');
-      ok(!!q('.dex-art-cell canvas', detail), '其中一格是行走图（PMD 精灵的 canvas）');
     }
     ok(qa('.dex-moves .dex-move', detail).length > 0, '详情里列了招式',
       `${qa('.dex-moves .dex-move', detail).length} 个胶囊`);
@@ -192,14 +193,14 @@
 
     /**
      * ④ 用户要求的三件事（详情页改造）：
-     *   · 行走图**跟着鼠标转向** —— 朝向 = 精灵图的某一**行**，所以断言「换位置之后 dirRow 变了」；
-     *   · 左上三张图 + 右边信息 + 下面卡牌与战绩 —— 断言排版结构（.dex-detail-top 是两列）；
-     *   · 击败奖牌（5 / 15 / 25 / 50）—— 断言档位映射与进度条。
+     *   · 左边是**一整块图**：立绘当主体放大，行走图压右下角、小图标压左下角；
+     *   · 右边是名字/编号/称号/属性 + 三条简短介绍 + 一条分割线 + 计数条（最右端奖牌）；
+     *   · 行走图**跟着鼠标转向** —— 朝向 = 精灵图的某一**行**，所以断言「换位置之后 dirRow 变了」。
      */
-    log('⑤ 详情页：转向 / 排版 / 奖牌');
+    log('⑤ 详情页：图块 / 排版 / 奖牌');
     {
-      const walk = q('.dex-art-cell.dex-art-walk canvas', detail);
-      ok(!!walk, '第一格是行走图（canvas）');
+      const walk = q('.dex-art-compose .dex-walk canvas', detail);
+      ok(!!walk, '图块里有行走图（canvas）');
       if (walk) {
         const r = walk.getBoundingClientRect();
         const cx = r.left + r.width / 2;
@@ -257,8 +258,12 @@
         ok(dirs.length >= 4, '这个物种至少有 4 个朝向（不然转不出「看全身」的效果）', `${dirs.length} 个朝向`);
       }
       ok(!!q('.dex-detail-top', detail) && qa('.dex-detail-top > *', detail).length === 2,
-        '排版是「左上三张图 + 右侧信息」两列（不再是一张图一个框）');
-      ok(qa('.dex-art-row .dex-art-cell', detail).length === 3, '三张图都排在同一行里（行走图 / 回合立绘 / 小图标）');
+        '排版是「左边一整块图 + 右侧信息」两列');
+      ok(qa('.dex-art-compose > *', detail).length === 3, '图块里叠着三张图（立绘 / 行走图 / 小图标）');
+      // 「简短介绍」三条 + 分割线 + 计数条
+      ok(qa('.dex-intro-row', detail).length === 3, '右列有三条简短介绍',
+        qa('.dex-intro-cap', detail).map((n) => n.textContent).join(' · '));
+      ok(!!q('.dex-record-row', detail), '简短介绍下面是一条分割线 + 计数条');
       ok(qa('.dex-stats .dex-stat', detail).length >= 5, '右侧有战绩方块（挑战 / 击败 / 失败 / 胜率 / 招式）',
         qa('.dex-stat span', detail).map((n) => n.textContent).join(' · '));
       // 口吻台词：**打赢过才看得到**（这一只是 slain）
@@ -297,14 +302,27 @@
       modal = topModal();
     }
     // 没见过的点开：只能看到「还没遇见」那句，不能泄露台词与招式
-    closeTop();
-    await wait(150);
-    const unknown = qa('.dex-card', modal).find((n) => n.classList.contains('new'));
-    click(unknown);
-    await wait(250);
-    const locked = topModal();
-    ok(!!q('.dex-locked', locked) && !q('.dex-lines', locked) && !q('.dex-moves', locked),
-      '剪影点开只有「还没遇见」，不泄露台词和招式');
+    // （图鉴还是开着的：上面刚 `modal = topModal()` 重开过一次，别再关掉它）
+    {
+      const codex = topModal();
+      const unknown = qa('.dex-card', codex).find((n) => n.classList.contains('new'));
+      ok(!!unknown, '（图鉴里）能找到一只没见过的剪影格');
+      // 点之前先把报错抓下来：如果 showEnemyDetail 抛了异常，弹窗根本不会出现，
+      // 而界面上看起来只是「点了没反应」—— 这里必须看到原因。
+      const errs = [];
+      const onErr = (e) => errs.push(e.message ?? String(e));
+      window.addEventListener('error', onErr);
+      click(unknown);
+      await wait(300);
+      const locked = topModal();
+      if (locked === codex) log(`    · 点了没反应，期间捕获到 ${errs.length} 条报错：${errs.slice(0, 2).join(' ｜ ') || '（没有 error 事件）'}`);
+      window.removeEventListener('error', onErr);
+      ok(!!q('.dex-locked', locked) && !q('.dex-lines', locked) && !q('.dex-moves', locked),
+        '剪影点开只有「还没遇见」，不泄露台词和招式',
+        `标题「${q('.modal-head h3', locked)?.textContent ?? '-'}」`
+        + ` locked=${!!q('.dex-locked', locked)} lines=${!!q('.dex-lines', locked)}`
+        + ` moves=${!!q('.dex-moves', locked)} voice=${!!q('.dex-voice', locked)} intro=${qa('.dex-intro-row', locked).length}`);
+    }
     closeModals();
     await wait(150);
     click(entries2[1]);
