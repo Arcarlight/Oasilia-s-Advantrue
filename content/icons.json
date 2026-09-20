@@ -203,6 +203,15 @@
       "group": "卡牌语义"
     },
     {
+      "name": "music",
+      "source": "pack:music",
+      "file": "icons/pack/music.svg",
+      "desc": "音符：曲子库（听过的 BGM）",
+      "component": "music",
+      "category": "9-media",
+      "group": "界面"
+    },
+    {
       "name": "target",
       "source": "pack:target",
       "file": "icons/pack/target.svg",

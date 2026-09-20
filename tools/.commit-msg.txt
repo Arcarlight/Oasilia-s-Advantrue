@@ -1,0 +1,31 @@
+曲子库（听过的才解锁）+ 十张地图的 BGM 全部补齐
+
+用户报的：「好像有复用 BGM 的情况」，并要求「主界面加一个音乐室，只显示听过的，
+其余的用 ？？？表示，并移除设置里的音乐试听」。
+
+BGM：
+- 接入第二个素材站「龍的交響楽」(d-symphony.com)：新增 15 首（DS-145o 砂漠の街、
+  DS-036o、DS-059o、DS-097o、DS-101o、DS-102o、DS-072o、DS-141o、DS-113o、
+  DS-127o、DS-150o、DS-111o、DS-151o、DS-022o、DS-057o），按站点要求署名。
+- 复用全部消掉：以前 desert 借通用曲（map_desert = map.ogg），第 7~10 张图
+  各借 canyon/forest/cliff/night，现在 10 张地图的图 / 战斗 / 强敌三组各自独立，
+  终章首领也换成专属曲（41 首 / 三组各 10 首两两不同，diag-music 第 ⑤ 节在量）。
+- 下载脚本换成 tools/fetch-bgm.mjs（两家一张选曲表，自动抓 ogg 地址、校验循环点、
+  刷新 manifest）；旧的 fetch-bgm.ps1 与三个探查脚本删掉，另加 fetch-dsymphony.mjs 挑曲。
+- 循环点改成下载时校验、写进生成表 BGM_LOOPS：注释换算出的循环段末尾必须落回文件末尾，
+  否则丢掉。battle_storm.ogg 的注释声称有 941 秒音乐（文件 124.7 秒），照它填会让后半段
+  永远听不到且不报错 —— tools/verify-bgm-loops.mjs 是这条规矩的守门人（40/40 通过）。
+
+曲子库：
+- 标题页第 4 个入口（src/ui/music-room.js）：41 首全占位，没听过的曲名与出处显示 ？？？、
+  不给试听按钮；听过的能试听（再点是重放），关掉时 BGM 还给当前场景。
+- 解锁状态存跨局存档 meta.heardBgm，写入点在 music.play()（存的是 key，不是曲名）。
+- 移除设置里的「切换 BGM（试听）」下拉框（它一次列全 41 个曲名），改成一句提示。
+
+顺带：
+- 新图标 music（Game-Icon-Pack）；build-content 支持 icon-semantics-draft 的
+  category_overrides（手工加的 pack 图标要有人告诉它分类目录）。
+- 更新日志 v1.11 + package.json 1.11；字体子集重裁；ja/en 补齐 100%。
+
+验证：check-content --strict ✓ · check-copy 7/7 ✓ · check-icons ✓ · 11 套回归 ✓ ·
+verify-bgm-loops 40/40 ✓ · diag-music 26 条全过 ✓ · diag-codex ✓ · VERIFY_OK · SMOKE_OK。

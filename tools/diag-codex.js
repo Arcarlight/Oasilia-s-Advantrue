@@ -59,13 +59,15 @@
       return;
     }
 
-    // ---------- ① 标题页上的三个入口 ----------
+    // ---------- ① 标题页上的四个入口 ----------
     log('① 标题页入口');
     const entries = qa('.title-codex .title-codex-btn');
-    ok(entries.length === 3, '标题页有 3 个入口（记录 / 卡牌图鉴 / 敌人图鉴）', `实际 ${entries.length}`);
+    ok(entries.length === 4, '标题页有 4 个入口（记录 / 卡牌图鉴 / 敌人图鉴 / 曲子库）', `实际 ${entries.length}`);
     const labels = entries.map((b) => q('.title-codex-label', b)?.textContent);
     ok(labels[0]?.includes('通关记录') && labels[1]?.includes('卡牌图鉴') && labels[2]?.includes('敌人图鉴'),
-      '三个入口分别是 通关记录 / 卡牌图鉴 / 敌人图鉴', labels.join(' / '));
+      '前三个入口分别是 通关记录 / 卡牌图鉴 / 敌人图鉴', labels.join(' / '));
+    // 曲子库是后加的（第 4 个）：它自己的自检在 tools/diag-music.js，这里只确认入口在
+    ok(labels[3] === '曲子库', '第 4 个入口是曲子库', labels.join(' / '));
     ok(q('.title-codex-sub', entries[1])?.textContent === `0/${CARDS.length}`,
       '卡牌图鉴入口上带着进度（新档是 0）', q('.title-codex-sub', entries[1])?.textContent);
     ok(q('.title-codex-sub', entries[2])?.textContent === `0/${ENEMIES.length}`,

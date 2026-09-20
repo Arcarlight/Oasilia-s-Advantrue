@@ -49,6 +49,11 @@ export class UI {
      * 不重画的话，关掉设置面板后屏幕上的牌还是旧样子（和切语言同一个道理）。
      */
     onExpertChange(() => this.forceRerender());
+    /**
+     * 曲子库关掉时要把 BGM 还给当前场景（不然在音乐室试听完了，回到地图还在放那首）。
+     * 钩子挂在这里而不是让音乐室 import ui.js —— 那会绕成 ui -> screens -> music-room -> ui 的环。
+     */
+    audio.onSceneBgm = () => this.forceRerender();
     this.bindGlobal();
   }
   bindGlobal() {

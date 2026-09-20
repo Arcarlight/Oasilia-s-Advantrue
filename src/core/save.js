@@ -39,7 +39,7 @@ export const save = {
   readMeta() {
     const fallback = {
       bestDistance: 0, bestStage: 0, runs: 0, wins: 0, kills: 0, unlocked: false,
-      seenCards: [], seenEnemies: [], slainEnemies: [], history: [],
+      seenCards: [], seenEnemies: [], slainEnemies: [], history: [], heardBgm: [],
     };
     try {
       const raw = localStorage.getItem(META_KEY);
@@ -53,6 +53,7 @@ export const save = {
       if (!Array.isArray(meta.seenEnemies)) meta.seenEnemies = [];
       if (!Array.isArray(meta.slainEnemies)) meta.slainEnemies = [];
       if (!Array.isArray(meta.history)) meta.history = [];
+      if (!Array.isArray(meta.heardBgm)) meta.heardBgm = [];
       return meta;
     } catch {
       return fallback;
@@ -132,6 +133,31 @@ export const save = {
   clearHistory() {
     const meta = this.readMeta();
     const next = { ...meta, history: [] };
+    this.writeMeta(next);
+    return next;
+  },
+
+  /**
+   * 记下「听过哪几首 BGM」，曲子库（音乐室）靠它把没听过的藏起来。
+   *
+   * 存的是 **BGM 的 key**（`map_forest` 这种），不是曲名 —— 曲名会跟着语言改写。
+   * 只在真的新增时写盘：一首曲子第一次响的那一刻才写一次，之后每次切歌都不动 localStorage。
+   */
+  noteBgm(key) {
+    if (!key) return null;
+    const meta = this.readMeta();
+    const heard = new Set(meta.heardBgm ?? []);
+    if (heard.has(key)) return null;
+    heard.add(key);
+    const next = { ...meta, heardBgm: [...heard] };
+    this.writeMeta(next);
+    return next;
+  },
+
+  /** 清空曲子库（只影响「听过」的记录，图鉴与战绩不动） */
+  clearHeardBgm() {
+    const meta = this.readMeta();
+    const next = { ...meta, heardBgm: [] };
     this.writeMeta(next);
     return next;
   },

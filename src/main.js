@@ -173,6 +173,10 @@ async function boot() {
     // 查「按地图切 BGM」有没有生效
     import('../tools/diag-bgm.js').catch((e) => console.error('BGM 诊断加载失败', e));
   }
+  if (params.get('dgmusic')) {
+    // 曲子库诊断：?dgmusic=1 自检「没听过的显示 ？？？」；?dgmusic=shot 留屏截图
+    import('../tools/diag-music.js').catch((e) => console.error('曲子库诊断加载失败', e));
+  }
   if (params.get('dgfx') === '1') {
     // 查战斗简单特效（闪光 / 爆发 / 冲击）有没有真的播出来
     import('../tools/diag-fx.js').catch((e) => console.error('特效诊断加载失败', e));

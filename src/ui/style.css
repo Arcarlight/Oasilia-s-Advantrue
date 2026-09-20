@@ -317,6 +317,9 @@ button { font-family: inherit; }
 .ico-award { /* 奖杯：终结技 / 大招 / 胜利（与现有 Kenney 奖杯区分开） */ -webkit-mask-image: url(../../assets/img/icons/pack/award.svg); mask-image: url(../../assets/img/icons/pack/award.svg); }
 .ico-backpack { /* 背包：道具类 / 背包 */ -webkit-mask-image: url(../../assets/img/icons/pack/backpack.svg); mask-image: url(../../assets/img/icons/pack/backpack.svg); }
 
+/* --- 界面 --- */
+.ico-music { /* 音符：曲子库（听过的 BGM） */ -webkit-mask-image: url(../../assets/img/icons/pack/music.svg); mask-image: url(../../assets/img/icons/pack/music.svg); }
+
 /* --- 属性与状态 --- */
 .ico-clover { /* 三叶草：幸运属性 */ -webkit-mask-image: url(../../assets/img/icons/pack/clover.svg); mask-image: url(../../assets/img/icons/pack/clover.svg); }
 .ico-heart_break_02 { /* 裂开的心：流血 / 持续掉血 */ -webkit-mask-image: url(../../assets/img/icons/pack/heart_break_02.svg); mask-image: url(../../assets/img/icons/pack/heart_break_02.svg); }
@@ -2119,6 +2122,9 @@ input[type="range"] { width: 160px; accent-color: var(--accent); }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 0; border-bottom: 1px dashed rgba(232, 207, 162, .18); }
 .setting-row:last-child { border-bottom: 0; }
 .setting-row label { font-weight: 600; }
+/* 右侧的说明文字（当前曲目、素材出处）：窄屏折行，别把设置页撑破 */
+.setting-value { font-size: 12px; opacity: .75; text-align: right; max-width: 62%; line-height: 1.6; }
+.setting-hint { font-size: 11.5px; opacity: .62; font-weight: 400; }
 
 /* ============================================================
    飘字层
@@ -2894,6 +2900,55 @@ input, textarea { cursor: text !important; }
 .rec-note { font-size: 11.5px; opacity: .6; }
 .rec-deck-title { margin: 16px 0 8px; font-family: var(--font-title); color: var(--accent-2); }
 .rec-detail { display: flex; gap: 20px; align-items: flex-start; }
+
+/* ============================================================
+   曲子库（音乐室）：听过的才亮出来，没听过的显示 ？？？
+   ============================================================ */
+.mr { display: flex; flex-direction: column; gap: 14px; }
+.mr-lead { margin: 0; font-size: 13px; opacity: .82; line-height: 1.7; }
+.mr-group-title {
+  margin: 0 0 7px; font-family: var(--font-title); font-size: 14px; color: var(--accent-2);
+  letter-spacing: .04em; padding-bottom: 5px;
+  box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
+}
+.mr-list { display: flex; flex-direction: column; gap: 6px; }
+
+.mr-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 11px; border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .05);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+}
+/* 没听过的那首：压暗 + 斜体问号，一眼看出是「还锁着」而不是「加载失败」 */
+.mr-row.locked {
+  background: rgba(0, 0, 0, .22);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .1);
+  color: rgba(247, 236, 214, .42);
+}
+.mr-row.playing {
+  background: rgba(255, 210, 120, .12);
+  box-shadow: inset 0 0 0 1px rgba(255, 200, 110, .45);
+}
+.mr-scene { flex: 0 0 auto; min-width: 190px; font-size: 13px; }
+.mr-title { flex: 1 1 auto; min-width: 0; font-size: 12.5px; opacity: .78; }
+.mr-row.playing .mr-scene { color: #ffd27a; font-weight: 600; }
+.mr-actions { flex: 0 0 auto; }
+.mr-lock { font-size: 11.5px; opacity: .55; }
+.mr-credits {
+  margin-top: 6px; padding: 11px 13px; border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .24);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .14);
+  font-size: 12px; line-height: 1.75;
+}
+.mr-credits h4 { margin: 0 0 6px; font-family: var(--font-title); font-size: 13.5px; }
+.mr-credits ul { margin: 0; padding-left: 18px; }
+.mr-credits li { margin-bottom: 7px; }
+.mr-license { opacity: .72; }
+.mr-note { margin: 4px 0 0; font-size: 11.5px; opacity: .62; }
+@media (max-width: 560px) {
+  .mr-scene { min-width: 0; }
+  .mr-row { flex-wrap: wrap; }
+}
 
 /* ============================================================
    更新日志（标题页入口）

@@ -19,6 +19,7 @@ import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
 // 标题页的三块收藏 / 战绩页：卡牌图鉴、敌人图鉴、通关记录（游戏内也能开敌人图鉴）
 import { showCardCodex, showEnemyCodex, cardCodexProgress, enemyCodexProgress } from './codex.js';
 import { showRecords, runCount } from './records.js';
+import { showMusicRoom, musicRoomProgress } from './music-room.js';
 import { showChangelog, CHANGELOG } from './changelog.js';
 import { renderHud } from './hud.js';
 // 地图上的装饰物按「本局种子 + 章节」撒，用的是引擎那把可复现的随机数
@@ -173,10 +174,13 @@ async function renderTitle(game) {
    */
   const cardProgress = cardCodexProgress([]);   // 标题页没有 run，「这一局带着的」自然算空
   const enemyProgress = enemyCodexProgress();
+  const musicProgress = musicRoomProgress();
   inner.append(el('div', { class: 'title-codex' }, [
     titleCodexBtn('ico-trophy', t('通关记录'), runCount() ? t('{n} 局', { n: runCount() }) : t('还没有'), () => showRecords()),
     titleCodexBtn('ico-cards', t('卡牌图鉴'), `${cardProgress.got}/${cardProgress.total}`, () => showCardCodex(game)),
     titleCodexBtn('ico-target', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
+    // 曲子库：和三个图鉴同一类（都是「收集进度」），只是收的是 BGM
+    titleCodexBtn('ico-music', t('曲子库'), `${musicProgress.heard}/${musicProgress.total}`, () => showMusicRoom()),
   ]));
 
   /**
@@ -198,7 +202,7 @@ async function renderTitle(game) {
 
   inner.append(el('div', {
     class: 'title-foot',
-    html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」。<br>字体：<b>小杉圆体</b>（Apache-2.0）、<b>はなぞめフォント</b>、<b>YOzFont</b>（OFL）等。<br>这是一个非商业的同人练习作品。'),
+    html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」与「<b>龍的交響楽</b>」。<br>字体：<b>小杉圆体</b>（Apache-2.0）、<b>はなぞめフォント</b>、<b>YOzFont</b>（OFL）等。<br>这是一个非商业的同人练习作品。'),
   }));
 
   /**

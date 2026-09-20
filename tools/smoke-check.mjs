@@ -95,7 +95,7 @@ const SCRIPT = `
       }
     }
 
-    // 6) 通关记录 / 图鉴：标题页那三个入口点得开、有内容
+    // 6) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容
     //    （不该只活在专门的诊断脚本里 —— 冒烟是每次改完都会跑的那一道）
     try {
       g.phase = 'title';
@@ -103,15 +103,15 @@ const SCRIPT = `
       await wait(400);
       const entries = [...document.querySelectorAll('.title-codex .title-codex-btn')];
       log('标题页收藏入口 =', entries.length);
-      if (entries.length !== 3) errors.push('标题页的收藏入口不是 3 个，而是 ' + entries.length);
-      for (const [i, name] of ['通关记录', '卡牌图鉴', '敌人图鉴'].entries()) {
+      if (entries.length !== 4) errors.push('标题页的收藏入口不是 4 个，而是 ' + entries.length);
+      for (const [i, name] of ['通关记录', '卡牌图鉴', '敌人图鉴', '曲子库'].entries()) {
         const btn = entries[i];
         if (!btn) { errors.push('标题页少了入口：' + name); continue; }
         btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await wait(350);
         const modal = [...document.querySelectorAll('.modal-backdrop')].pop();
         const title = modal && modal.querySelector('.modal-head h3') ? modal.querySelector('.modal-head h3').textContent : '';
-        const items = modal ? modal.querySelectorAll('.card, .dex-card, .rec-row, .rec-empty, .dex-locked').length : 0;
+        const items = modal ? modal.querySelectorAll('.card, .dex-card, .rec-row, .rec-empty, .dex-locked, .mr-row').length : 0;
         log('入口', name, '->', title, '内容块 =', items);
         if (!modal || !items) errors.push(name + ' 打开是空的');
         for (const b of (modal ? modal.querySelectorAll('.modal-head button') : [])) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));

@@ -50,11 +50,16 @@ async function loadAll() {
   // fetch-bgm.ps1 抓下来的「上游 mp3 名 -> ogg(L) 下载地址」对照表，用来在构建期
   // 就发现选曲表里写错的 mp3 文件名（没有这个文件也能构建，只是不做这项校验）
   const oggMap = await readJson(path.join(ROOT, 'tools', 'bgm-ogg-map.json')).catch(() => null);
+  // fetch-bgm.mjs 落盘的 BGM 清单：每首的字节数、解码时长、以及**校验过的**循环点
+  // （文件里的 LOOPSTART/LOOPLENGTH 注释不可全信：上游换过文件、注释没跟着换，
+  // battle_storm.ogg 就声称自己有 941 秒音乐。校验不过的那条在清单里被丢掉，
+  // 生成到 BGM_LOOPS 里就是「没有循环段 -> 整首循环」）。
+  const bgmManifest = await readJson(path.join(ROOT, 'assets', 'audio', 'bgm', 'manifest.json')).catch(() => null);
   // t1 侦察留下的选型快照与图标目录：用来校验 content/icons.json 里的 pack:<component_name>
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, icons, iconCatalog, iconDraft, merchants };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants };
 }
 
 // ============================================================
@@ -315,15 +320,37 @@ function validateBiomes(data, enemyList) {
   }
 }
 
-function validateBgm(bgm, biomeKeys, oggMap) {
+function validateBgm(bgm, biomeKeys, oggMap, manifest) {
   const tracks = bgm?.tracks ?? {};
+  const sources = bgm?.sources ?? {};
   if (!tracks.title) warn('content/bgm.json 里没有 title 曲目');
+  for (const [id, s] of Object.entries(sources)) {
+    for (const k of ['name', 'site', 'url', 'license']) if (!s[k]) err(`content/bgm.json 的 sources.${id} 缺 ${k}（署名文案是授权要求，别省）`);
+  }
   for (const [key, t] of Object.entries(tracks)) {
-    // file 是「上游 mp3 的文件名」：fetch-bgm.ps1 拿它在 tools/bgm-ogg-map.json 里
-    // 查对应的 ogg(L) 下载地址，落盘成 assets/audio/bgm/<key>.ogg
-    if (!t.file || !/\.mp3$/.test(t.file)) err(`BGM ${key} 的 file 必须是上游 mp3 文件名（.mp3 结尾）`);
-    else if (oggMap && !oggMap[t.file]) warn(`BGM ${key} 的 ${t.file} 在 tools/bgm-ogg-map.json 里查不到，fetch-bgm.ps1 会重新抓一遍站点（也可能上游改名了）`);
+    // source 决定这个 key 从哪来：ontama 的 file 是上游 mp3 名（要查 ogg url 对照表），
+    // dsymphony 的 file 直接就是 msc/ 下的 ogg 文件名。
+    const src = t.source ?? 'ontama';
+    if (!sources[src]) err(`BGM ${key} 的 source=${src} 不在 sources 里`);
+    if (!t.file) err(`BGM ${key} 缺 file`);
+    else if (src === 'ontama') {
+      if (!/\.mp3$/.test(t.file)) err(`BGM ${key}（ontama）的 file 必须是上游 mp3 名（.mp3 结尾）`);
+      else if (oggMap && !oggMap[t.file]) warn(`BGM ${key} 的 ${t.file} 在 tools/bgm-ogg-map.json 里查不到，fetch-bgm.mjs 会重新抓一遍站点（也可能上游改名了）`);
+    } else if (!/\.ogg$/.test(t.file)) {
+      err(`BGM ${key}（${src}）的 file 必须是上游 ogg 文件名（.ogg 结尾）`);
+    }
     if (!t.name) warn(`BGM ${key} 没有 name`);
+    if (!bgm.roomOrder?.includes(t.room)) err(`BGM ${key} 的 room=${t.room} 不在 roomOrder 里（音乐室会漏掉这首）`);
+    // 清单里有这一首、但字节数对不上 -> 换了曲子忘了重新下载
+    const m = manifest?.tracks?.[key];
+    if (manifest && !m) warn(`BGM ${key} 还没有下载（assets/audio/bgm 的清单里没有它），跑 node tools/fetch-bgm.mjs`);
+    else if (m && (m.desc !== t.desc || m.upstream !== t.file)) {
+      warn(`BGM ${key} 的选曲表改了但音频还是旧的（清单里是 ${m.upstream} / ${m.desc}），跑 node tools/fetch-bgm.mjs`);
+    }
+  }
+  // 音乐室按 room 分组，空组会让界面上出现一个没有内容的标题
+  for (const r of bgm.roomOrder ?? []) {
+    if (!Object.values(tracks).some((t) => t.room === r)) warn(`音乐室的 room「${r}」里一首曲子都没有`);
   }
   for (const b of biomeKeys) {
     if (!tracks['map_' + b]) warn(`地图 ${b} 没有专属地图曲（map_${b}）`);
@@ -588,19 +615,50 @@ function emitBiomes(stageOrder, biomes, rarity) {
   ].join('\n');
 }
 
-function emitBgm(bgm) {
+function emitBgm(bgm, manifest) {
   const files = {};
   const names = {};
+  const loops = {};
+  const rooms = {};
   for (const [key, t] of Object.entries(bgm.tracks)) {
-    // ogg(L) 版落在 assets/audio/bgm/<key>.ogg（fetch-bgm.ps1 就是这么命名的），
-    // 名字统一成 <key>.ogg：上游压缩包里的文件名是日文标题，不能直接拿来当路径
+    // 落盘的文件统一叫 assets/audio/bgm/<key>.ogg：上游的文件名是日文标题 / DS-145o
+    // 这种编号，不能直接拿来当路径
     files[key] = `${key}.ogg`;
     names[key] = t.desc ? `${t.desc} · ${t.name}` : t.name;
+    rooms[key] = t.room ?? 'misc';
+    /**
+     * 循环段：值来自 assets/audio/bgm/manifest.json（fetch-bgm.mjs 下载时校验过——
+     * 注释里的循环点换算成秒必须落回文件末尾，否则丢掉）。写进生成表之后，
+     * 运行时就不必自己从 ogg 里解析注释，而且能区分「没有循环注释」和「注释不可信」
+     * 这两种情况：两者都是「整首循环」。
+     */
+    const m = manifest?.tracks?.[key];
+    if (m && m.loopStart != null) loops[key] = { start: m.loopStart, length: m.loopLength, rate: m.loopRate ?? 44100 };
+    else loops[key] = null;
   }
+  const sources = Object.fromEntries(Object.entries(bgm.sources ?? {}).map(([id, s]) => [id, {
+    name: s.name, site: s.site, url: s.url, license: s.license,
+  }]));
+  const byRoom = Object.fromEntries(Object.entries(bgm.tracks).map(([k, t]) => [k, t.source ?? 'ontama']));
   return [
     'export const BGM_FILES = ' + J(files) + ';',
     '',
     'export const BGM_NAMES = ' + J(names) + ';',
+    '',
+    '/** key -> { start, length, rate }（采样数 / 采样率），null = 没有可用的循环点，整首循环 */',
+    'export const BGM_LOOPS = ' + J(loops) + ';',
+    '',
+    '/** key -> 音乐室里的分组（content/bgm.json 的 room） */',
+    'export const BGM_ROOMS = ' + J(rooms) + ';',
+    '',
+    '/** key -> 素材来源 id（content/bgm.json 的 source） */',
+    'export const BGM_SOURCES = ' + J(byRoom) + ';',
+    '',
+    '/** 音乐室分组顺序 */',
+    'export const BGM_ROOM_ORDER = ' + J(bgm.roomOrder ?? ['title', 'map', 'battle', 'elite', 'boss', 'misc']) + ';',
+    '',
+    '/** 素材来源与授权（署名要求就写在这里，音乐室与设置页直接读它） */',
+    'export const BGM_CREDITS = ' + J(sources) + ';',
   ].join('\n');
 }
 
@@ -671,6 +729,12 @@ for (const t of data.iconDraft?.table ?? []) {
     if (c?.component_name) iconCategory.set(c.component_name, c.category);
   }
 }
+// 草表之外手工加的 pack 图标：分类目录写在 icon-semantics-draft.json 的
+// category_overrides 里（tools/icon-catalog.json 只作可追溯信息，不能指望它每一行都带目录）
+for (const [component, category] of Object.entries(data.iconDraft?.category_overrides ?? {})) {
+  if (component.startsWith('_') || !category) continue;
+  if (!iconCategory.has(component)) iconCategory.set(component, category);
+}
 const icons = await resolveIcons(data.icons, iconCategory);
 const iconNameSet = new Set(icons.map((i) => i.name));
 
@@ -678,7 +742,7 @@ const cardIds = validateCards(data.cards, iconNameSet);
 validateSpecies(data.species, data.enemies.enemies);
 validateEnemies(data.enemies, cardIds, Object.keys(data.biomes.biomes));
 validateBiomes(data.biomes, data.enemies.enemies);
-validateBgm(data.bgm, data.biomes.stageOrder, data.oggMap);
+validateBgm(data.bgm, data.biomes.stageOrder, data.oggMap, data.bgmManifest);
 validateMerchants(data.merchants, new Set(Object.keys(data.species.species)), Object.keys(data.biomes.biomes), Object.keys(data.cards.items));
 validateEvents(data.events, cardIds, Object.keys(data.cards.items), Object.keys(data.biomes.biomes), new Set(Object.keys(specials ?? {})));
 
@@ -696,7 +760,7 @@ if (!CHECK_ONLY) {
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');
   if (await writeBlock('src/data/events.js', 'EVENTS', emitEvents(data.events))) changed.push('src/data/events.js');
   if (await writeBlock('src/data/merchants.js', 'MERCHANTS', emitMerchants(data.merchants))) changed.push('src/data/merchants.js');
-  if (await writeBlock('src/core/bgm.js', 'BGM', emitBgm(data.bgm))) changed.push('src/core/bgm.js');
+  if (await writeBlock('src/core/bgm.js', 'BGM', emitBgm(data.bgm, data.bgmManifest))) changed.push('src/core/bgm.js');
   if (await writeBlock('src/ui/style.css', 'ICONS', emitIcons(icons), 'css')) changed.push('src/ui/style.css');
 
   // 物种表也生成一份给素材脚本用（PowerShell 直接读 JSON）

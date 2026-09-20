@@ -41,10 +41,9 @@ verify-bundle.html
 # 用户反馈的「赤面龙、电龙的行走图有问题」就是这么来的）。
 # 111 份合计 795 KB，和已提交的 sprites.json 是一体的：要提交一起提交。
 
-# BGM 的旧版 mp3（68 MB）：游戏引用的 23 首全部是 ogg(L) 无缝循环版，
-# 这些 mp3 一个都没人引用（`content/bgm.json` + `src/core/bgm.js` 都是 ogg）。
-# 本地留着无所谓，但没必要塞进仓库 / 让访客的站点多 68 MB。
-# 想彻底清掉：& tools/fetch-bgm.ps1 -RemoveMp3
+# BGM 一律用 .ogg（上游的 ogg(L) 版带无缝循环注释，mp3 版接缝处有编码器补的静音）。
+# 旧版留下的 mp3 已经删干净了，这条留着防止哪天又下回来 —— 那种文件没人引用，
+# 却会让站点多出几十 MB。check-content 也会把 .mp3 直接当错误报。
 assets/audio/bgm/*.mp3
 
 # 多智能体协作的中间状态

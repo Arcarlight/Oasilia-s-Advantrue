@@ -474,8 +474,10 @@ if (BGM_FILES) {
       if (head !== 'OggS') err(`BGM ${key} 不是合法的 ogg 流（文件头是 ${JSON.stringify(head)}）：${file}`);
     }
   }
+  // 旧的 mp3 版（切到 ogg 之前留下的）已经删掉了；万一又冒出来，直接当错误报 ——
+  // 留着只会让人以为「BGM 有两套素材」，而代码里 BGM_FILES 只有 .ogg 一份
   const stale = (await fs.readdir(bgmDir).catch(() => [])).filter((f) => f.endsWith('.mp3'));
-  if (stale.length) note(`assets/audio/bgm 里还留着 ${stale.length} 个已不再引用的 .mp3（不影响运行；想清掉就跑 & tools/fetch-bgm.ps1 -RemoveMp3）`);
+  if (stale.length) err(`assets/audio/bgm 里出现了 ${stale.length} 个 .mp3（${stale.slice(0, 4).join(', ')}…）：曲子一律用 .ogg，删掉它们`);
   for (const key of STAGE_BIOME) {
     if (!BGM_FILES['map_' + key]) warn(`地图 ${key} 没有专属地图音乐（map_${key}），会退回默认曲`);
     if (!BGM_FILES['battle_' + key]) warn(`地图 ${key} 没有专属战斗音乐（battle_${key}），会退回默认曲`);

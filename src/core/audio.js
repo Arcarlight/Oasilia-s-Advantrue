@@ -175,6 +175,19 @@ export const audio = {
     music.stop();
   },
 
+  /**
+   * 「回到当前场景该放的那首曲子」的钩子，由 ui.js 在初始化时挂上来。
+   *
+   * 为什么不直接调 ui.render()：ui.js -> screens.js -> music-room.js 已经是一条链，
+   * 音乐室再反向 import ui.js 就成了环（ESM 能跑，但谁先初始化会变成运气问题）。
+   * 音乐室关掉时调它，重新走一遍 render 里那段「按 phase 选曲」的逻辑 ——
+   * 否则在地图上开音乐室试听、关掉之后，地图上还在放那首试听的曲子。
+   */
+  onSceneBgm: null,
+  resumeSceneBgm() {
+    try { this.onSceneBgm?.(); } catch { /* 钩子出错不该让弹窗关不掉 */ }
+  },
+
   async load(name) {
     this.init();
     if (!ctx) return null;

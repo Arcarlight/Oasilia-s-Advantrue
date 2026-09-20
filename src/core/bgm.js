@@ -1,25 +1,39 @@
 // BGM 管理：按场景切歌、无缝循环、切换时交叉淡出淡入。
 //
-// 曲目来自「音楽の卵」(https://ontama-m.com/)，授权是
-// 「个人 / 法人均可免费使用、无需报告、无需署名、可商用」。
-// 【选曲表不在这里】—— BGM_FILES / BGM_NAMES 由 content/bgm.json 生成（见下面的
-// GENERATED 区块）：加一首曲子就改那个 JSON，然后跑
-//   & tools/fetch-bgm.ps1        （下载缺的 ogg）
+// 曲目来自两个免费素材站（各自按自己的规矩署名，见下面 GENERATED 区块的 BGM_CREDITS）：
+//   「音楽の卵」(https://ontama-m.com/)        —— 个人 / 法人均可免费使用、无需报告、可商用
+//   「龍的交響楽」(http://d-symphony.com/)     —— 免费（含商用）、无需报告，要求名单里标注站名
+// 【选曲表不在这里】—— BGM_FILES / BGM_NAMES / BGM_LOOPS / BGM_CREDITS 都由
+// content/bgm.json 生成（见下面的 GENERATED 区块）：加一首曲子就改那个 JSON，然后跑
+//   node tools/fetch-bgm.mjs     （下载缺的 ogg，并校验循环点）
 //   node tools/build-content.mjs （生成到下面这个区块）
 //
-// 为什么是 ogg：上游每个曲目都提供了 mp3 和 ogg 两版，其中 **ogg(L)** 是把音频
-// 剪成「切れ目のない自然ループ」（无缝自然循环）的版本，mp3 版则有编码器补的静音
-// 帧，循环接缝处能听出来。所以素材一律用 ogg(L)。
+// 为什么是 ogg：音楽の卵 每个曲目都提供 mp3 和 ogg 两版，其中 **ogg(L)** 是把音频剪成
+// 「切れ目のない自然ループ」（无缝自然循环）的版本，mp3 版则有编码器补的静音帧，
+// 循环接缝处能听出来；龍的交響楽 的素材页也是直接给 ogg。所以素材一律用 ogg。
 //
 // 怎么放才真的无缝：<audio loop> 在多数浏览器上循环时会漏掉一帧（解码器边界），
 // 所以这里优先走 WebAudio —— 把整首 ogg 解成 AudioBuffer，用 loop=true 的
 // BufferSourceNode 播放，循环点是采样精确的，接缝完全听不出来；音量/淡入淡出也
 // 改成 GainNode 上的自动化曲线，不再靠 setTimeout 逐帧改 volume。
+// 循环点用文件自带的 LOOPSTART/LOOPLENGTH（两家都带），下载时校验过、写在生成表
+// BGM_LOOPS 里：前奏只放一次，之后跳回循环头。
 // 没有 WebAudio、或者解码失败（例如 Safari 不支持 Vorbis）时，退回 <audio> 元素
 // 那套老路子（仍然挂着 loop）。file:// 下浏览器会拦掉本地音频请求，此时静默降级
 // 为无声，不影响游戏本体。
 
+import { save } from './save.js';
+
 const BASE = 'assets/audio/bgm/';
+
+/**
+ * 「这一首听过了」记进跨局存档：曲子库（src/ui/music-room.js）靠它把没听过的藏起来。
+ * 记在这里而不是各个场景里：每一条播放路径最后都会经过 music.play()，
+ * 少写一处的后果是那首曲子永远解锁不了。
+ */
+function markHeard(key) {
+  try { save.noteBgm(key); } catch { /* 存档写不进去也不该影响放歌 */ }
+}
 
 // #region GENERATED-BGM
 export const BGM_FILES = {
@@ -31,6 +45,10 @@ export const BGM_FILES = {
   "map_tide": "map_tide.ogg",
   "map_cliff": "map_cliff.ogg",
   "map_night": "map_night.ogg",
+  "map_ruins": "map_ruins.ogg",
+  "map_fungal": "map_fungal.ogg",
+  "map_storm": "map_storm.ogg",
+  "map_crystal": "map_crystal.ogg",
   "battle": "battle.ogg",
   "battle_desert": "battle_desert.ogg",
   "battle_canyon": "battle_canyon.ogg",
@@ -38,6 +56,10 @@ export const BGM_FILES = {
   "battle_tide": "battle_tide.ogg",
   "battle_cliff": "battle_cliff.ogg",
   "battle_night": "battle_night.ogg",
+  "battle_ruins": "battle_ruins.ogg",
+  "battle_fungal": "battle_fungal.ogg",
+  "battle_storm": "battle_storm.ogg",
+  "battle_crystal": "battle_crystal.ogg",
   "elite": "elite.ogg",
   "elite_desert": "elite_desert.ogg",
   "elite_canyon": "elite_canyon.ogg",
@@ -45,6 +67,10 @@ export const BGM_FILES = {
   "elite_tide": "elite_tide.ogg",
   "elite_cliff": "elite_cliff.ogg",
   "elite_night": "elite_night.ogg",
+  "elite_ruins": "elite_ruins.ogg",
+  "elite_fungal": "elite_fungal.ogg",
+  "elite_storm": "elite_storm.ogg",
+  "elite_crystal": "elite_crystal.ogg",
   "boss": "boss.ogg",
   "boss_final": "boss_final.ogg",
   "victory": "victory.ogg",
@@ -57,19 +83,27 @@ export const BGM_FILES = {
 export const BGM_NAMES = {
   "title": "标题 · 旅途开始 · 旅のはじめ",
   "map": "地图兜底曲 · 風吹く草原",
-  "map_desert": "第一章 流沙之海 · 風吹く草原",
+  "map_desert": "第一章 流沙之海 · 烈日と黄塵のヴェール",
   "map_canyon": "第二章 赤岩峡谷 · 谷を越えて",
   "map_forest": "第三章 藤蔓密林 · 薄暗い森",
   "map_tide": "第四章 潮汐盐海 · 太陽と潮風の街",
   "map_cliff": "第五章 风蚀峭壁 · 頂上目指して",
   "map_night": "第六章 夜砂墓原 · 闇の洞窟",
+  "map_ruins": "第七章 沉沙遗迹 · 永遠なる輝きのもとに",
+  "map_fungal": "第八章 菌菇湿地 · 木霊の踊り",
+  "map_storm": "第九章 雷暴台地 · 霊峰は荘厳に",
+  "map_crystal": "第十章 水晶洞窟 · 朽ち果てた紋章",
   "battle": "战斗兜底曲 · 攻防一体",
-  "battle_desert": "流沙之海的战斗 · 攻防一体",
+  "battle_desert": "流沙之海的战斗 · Sand Labyrinth",
   "battle_canyon": "赤岩峡谷的战斗 · 取っ組み合い",
   "battle_forest": "藤蔓密林的战斗 · さぐり合い",
   "battle_tide": "潮汐盐海的战斗 · ヒット＆アウェイ",
   "battle_cliff": "风蚀峭壁的战斗 · 風車",
   "battle_night": "夜砂墓原的战斗 · 闇を打ち払う",
+  "battle_ruins": "沉沙遗迹的战斗 · 龍飛鳳舞",
+  "battle_fungal": "菌菇湿地的战斗 · Crimson Ridge",
+  "battle_storm": "雷暴台地的战斗 · 蒼天疾駆",
+  "battle_crystal": "水晶洞窟的战斗 · 深淵を行く",
   "elite": "强敌兜底曲 · クロス陣形",
   "elite_desert": "流沙之海的强敌 · 立ち向かう者達",
   "elite_canyon": "赤岩峡谷的强敌 · 灼熱の奥へ",
@@ -77,13 +111,334 @@ export const BGM_NAMES = {
   "elite_tide": "潮汐盐海的强敌 · 飛竜の背に乗って",
   "elite_cliff": "风蚀峭壁的强敌 · 風を追いかけて",
   "elite_night": "夜砂墓原的强敌 · 執行人",
+  "elite_ruins": "沉沙遗迹的强敌 · 白虎豪勇",
+  "elite_fungal": "菌菇湿地的强敌 · 鉄と炎の律動",
+  "elite_storm": "雷暴台地的强敌 · 轟く鉄の巨神",
+  "elite_crystal": "水晶洞窟的强敌 · Freezing Edge",
   "boss": "章节首领 · 襲来",
-  "boss_final": "最终首领（终章） · 畳の上の死闘",
+  "boss_final": "最终首领（终章） · 巨竜血闘",
   "victory": "战斗胜利 / 通关 · 勝利のうた",
   "defeat": "失败 · ぜんめつ",
   "event": "未知事件 / 宝箱 · 傘貸し",
   "shop": "商店 · おかしな行商人",
   "rest": "营地 · 泉のほとりで"
+};
+
+/** key -> { start, length, rate }（采样数 / 采样率），null = 没有可用的循环点，整首循环 */
+export const BGM_LOOPS = {
+  "title": {
+    "start": 196488,
+    "length": 4920833,
+    "rate": 44100
+  },
+  "map": {
+    "start": 84398,
+    "length": 2566384,
+    "rate": 44100
+  },
+  "map_desert": {
+    "start": 84398,
+    "length": 2566384,
+    "rate": 44100
+  },
+  "map_canyon": {
+    "start": 160659,
+    "length": 2725901,
+    "rate": 44100
+  },
+  "map_forest": {
+    "start": 66308,
+    "length": 3440837,
+    "rate": 44100
+  },
+  "map_tide": {
+    "start": 140414,
+    "length": 2850121,
+    "rate": 44100
+  },
+  "map_cliff": {
+    "start": 109984,
+    "length": 4615384,
+    "rate": 44100
+  },
+  "map_night": {
+    "start": 166813,
+    "length": 3435737,
+    "rate": 44100
+  },
+  "map_ruins": {
+    "start": 481504,
+    "length": 5029420,
+    "rate": 44100
+  },
+  "map_fungal": {
+    "start": 403760,
+    "length": 3693369,
+    "rate": 44100
+  },
+  "map_storm": {
+    "start": 479017,
+    "length": 4927039,
+    "rate": 44100
+  },
+  "map_crystal": {
+    "start": 0,
+    "length": 3138450,
+    "rate": 44100
+  },
+  "battle": {
+    "start": 167685,
+    "length": 3875853,
+    "rate": 44100
+  },
+  "battle_desert": {
+    "start": 167685,
+    "length": 3875853,
+    "rate": 44100
+  },
+  "battle_canyon": {
+    "start": 138195,
+    "length": 2694237,
+    "rate": 44100
+  },
+  "battle_forest": {
+    "start": 141037,
+    "length": 2681924,
+    "rate": 44100
+  },
+  "battle_tide": {
+    "start": 298595,
+    "length": 2385020,
+    "rate": 44100
+  },
+  "battle_cliff": {
+    "start": 159331,
+    "length": 2506451,
+    "rate": 44100
+  },
+  "battle_night": {
+    "start": 195451,
+    "length": 2540590,
+    "rate": 44100
+  },
+  "battle_ruins": null,
+  "battle_fungal": {
+    "start": 169756,
+    "length": 2101924,
+    "rate": 44100
+  },
+  "battle_storm": null,
+  "battle_crystal": {
+    "start": 0,
+    "length": 4381072,
+    "rate": 44100
+  },
+  "elite": {
+    "start": 157800,
+    "length": 3922538,
+    "rate": 44100
+  },
+  "elite_desert": {
+    "start": 103162,
+    "length": 3969380,
+    "rate": 44100
+  },
+  "elite_canyon": {
+    "start": 70273,
+    "length": 4535816,
+    "rate": 44100
+  },
+  "elite_forest": {
+    "start": 132282,
+    "length": 2721477,
+    "rate": 44100
+  },
+  "elite_tide": {
+    "start": 293702,
+    "length": 2645903,
+    "rate": 44100
+  },
+  "elite_cliff": {
+    "start": 2645946,
+    "length": 2490397,
+    "rate": 44100
+  },
+  "elite_night": {
+    "start": 2651,
+    "length": 2415353,
+    "rate": 44100
+  },
+  "elite_ruins": {
+    "start": 380637,
+    "length": 4390180,
+    "rate": 44100
+  },
+  "elite_fungal": {
+    "start": 608698,
+    "length": 3074248,
+    "rate": 44100
+  },
+  "elite_storm": {
+    "start": 196338,
+    "length": 5291356,
+    "rate": 44100
+  },
+  "elite_crystal": {
+    "start": 367452,
+    "length": 4483540,
+    "rate": 44100
+  },
+  "boss": {
+    "start": 157945,
+    "length": 3048936,
+    "rate": 44100
+  },
+  "boss_final": {
+    "start": 256811,
+    "length": 2309508,
+    "rate": 44100
+  },
+  "victory": {
+    "start": 873715,
+    "length": 643426,
+    "rate": 44100
+  },
+  "defeat": {
+    "start": 198996,
+    "length": 1061367,
+    "rate": 44100
+  },
+  "event": {
+    "start": 134251,
+    "length": 2117017,
+    "rate": 44100
+  },
+  "shop": {
+    "start": 1400910,
+    "length": 1556880,
+    "rate": 44100
+  },
+  "rest": {
+    "start": 247381,
+    "length": 3478560,
+    "rate": 44100
+  }
+};
+
+/** key -> 音乐室里的分组（content/bgm.json 的 room） */
+export const BGM_ROOMS = {
+  "title": "title",
+  "map": "map",
+  "map_desert": "map",
+  "map_canyon": "map",
+  "map_forest": "map",
+  "map_tide": "map",
+  "map_cliff": "map",
+  "map_night": "map",
+  "map_ruins": "map",
+  "map_fungal": "map",
+  "map_storm": "map",
+  "map_crystal": "map",
+  "battle": "battle",
+  "battle_desert": "battle",
+  "battle_canyon": "battle",
+  "battle_forest": "battle",
+  "battle_tide": "battle",
+  "battle_cliff": "battle",
+  "battle_night": "battle",
+  "battle_ruins": "battle",
+  "battle_fungal": "battle",
+  "battle_storm": "battle",
+  "battle_crystal": "battle",
+  "elite": "elite",
+  "elite_desert": "elite",
+  "elite_canyon": "elite",
+  "elite_forest": "elite",
+  "elite_tide": "elite",
+  "elite_cliff": "elite",
+  "elite_night": "elite",
+  "elite_ruins": "elite",
+  "elite_fungal": "elite",
+  "elite_storm": "elite",
+  "elite_crystal": "elite",
+  "boss": "boss",
+  "boss_final": "boss",
+  "victory": "misc",
+  "defeat": "misc",
+  "event": "misc",
+  "shop": "misc",
+  "rest": "misc"
+};
+
+/** key -> 素材来源 id（content/bgm.json 的 source） */
+export const BGM_SOURCES = {
+  "title": "ontama",
+  "map": "ontama",
+  "map_desert": "dsymphony",
+  "map_canyon": "ontama",
+  "map_forest": "ontama",
+  "map_tide": "ontama",
+  "map_cliff": "ontama",
+  "map_night": "ontama",
+  "map_ruins": "dsymphony",
+  "map_fungal": "dsymphony",
+  "map_storm": "dsymphony",
+  "map_crystal": "dsymphony",
+  "battle": "ontama",
+  "battle_desert": "dsymphony",
+  "battle_canyon": "ontama",
+  "battle_forest": "ontama",
+  "battle_tide": "ontama",
+  "battle_cliff": "ontama",
+  "battle_night": "ontama",
+  "battle_ruins": "dsymphony",
+  "battle_fungal": "dsymphony",
+  "battle_storm": "dsymphony",
+  "battle_crystal": "dsymphony",
+  "elite": "ontama",
+  "elite_desert": "ontama",
+  "elite_canyon": "ontama",
+  "elite_forest": "ontama",
+  "elite_tide": "ontama",
+  "elite_cliff": "ontama",
+  "elite_night": "ontama",
+  "elite_ruins": "dsymphony",
+  "elite_fungal": "dsymphony",
+  "elite_storm": "dsymphony",
+  "elite_crystal": "dsymphony",
+  "boss": "ontama",
+  "boss_final": "dsymphony",
+  "victory": "ontama",
+  "defeat": "ontama",
+  "event": "ontama",
+  "shop": "ontama",
+  "rest": "ontama"
+};
+
+/** 音乐室分组顺序 */
+export const BGM_ROOM_ORDER = [
+  "title",
+  "map",
+  "battle",
+  "elite",
+  "boss",
+  "misc"
+];
+
+/** 素材来源与授权（署名要求就写在这里，音乐室与设置页直接读它） */
+export const BGM_CREDITS = {
+  "ontama": {
+    "name": "音楽の卵",
+    "site": "ontama-m.com",
+    "url": "https://ontama-m.com/ongaku.html",
+    "license": "个人 / 法人均可免费使用、无需报告、无需署名、可商用（署名非必须，游戏里仍然标注了出处）"
+  },
+  "dsymphony": {
+    "name": "龍的交響楽",
+    "site": "d-symphony.com",
+    "url": "http://d-symphony.com/",
+    "license": "免费使用（非营利 / 营利均可）、无需报告与许可，唯一要求是在制作人员名单等处标注「龍的交響楽」或链接 http://d-symphony.com/"
+  }
 };
 // #endregion GENERATED-BGM
 
@@ -119,20 +474,25 @@ function fadeInCurve(target, n = 64) {
 }
 
 /**
- * 从 ogg 的 Vorbis 注释块里读循环点。
+ * 从 ogg 的 Vorbis 注释块里读循环点（**兜底**路径，正常走生成表 BGM_LOOPS）。
  *
- * 音楽の卵 的 ogg(L) 全都带 `LOOPSTART=` / `LOOPLENGTH=` 注释（RPG Maker / WOLF 那套约定，
- * 单位是**采样数**）：文件其实是「前奏 + 循环段」，例如 battle.ogg 是
- * 3.8 秒前奏 + 87.9 秒循环（合起来正好等于文件总长）。
- * 直接 loop 整个 buffer 会把前奏每圈重放一遍 —— 听感上就是「循环点不对」。
- * WebAudio 的 loopStart/loopEnd 天然是「从头播，到 loopEnd 跳回 loopStart」，
- * 所以把这两个值填进去，前奏就只放一次。
+ * 两个来源的 ogg 都带 `LOOPSTART=` / `LOOPLENGTH=` 注释（RPG Maker 那套约定，单位是
+ * **采样数**）：文件其实是「前奏 + 循环段」，例如 battle.ogg 是 3.8 秒前奏 + 87.9 秒
+ * 循环（合起来正好等于文件总长）。直接 loop 整个 buffer 会把前奏每圈重放一遍 ——
+ * 听感上就是「循环点不对」。
+ *
+ * 正常路径不用这个函数：下载时（tools/fetch-bgm.mjs）就把注释读出来、拿解码长度
+ * 验一遍，写进 BGM_LOOPS。**验不过的那条在表里是 null**，这里就不能再去信文件里的
+ * 注释（上游换过文件但没换注释，battle_storm.ogg 就声称自己有 941 秒音乐）。
+ * 只有表里根本没有这个 key 时（例如有人手工塞了一个 ogg 进来）才现读一遍。
  */
 function readLoopMeta(ab) {
   try {
-    // 注释块在文件开头（这 23 个文件的标记都在 150~250 字节处），扫前 64KB 足够
+    // 注释块在文件开头（这些文件的标记都在 150~250 字节处），扫前 64KB 足够
     const u8 = new Uint8Array(ab, 0, Math.min(ab.byteLength, 65536));
     const s = new TextDecoder('latin1').decode(u8);
+    // 两条注释不一定相邻、也不一定按顺序（battle_storm.ogg 把 LOOPLENGTH 写在前面），
+    // 所以各自单独匹配
     const st = /LOOPSTART=(\d+)/.exec(s);
     const ln = /LOOPLENGTH=(\d+)/.exec(s);
     if (!st || !ln) return null;
@@ -143,6 +503,15 @@ function readLoopMeta(ab) {
   } catch {
     return null;
   }
+}
+
+/** 这首曲子的循环参数：优先用生成表（已校验），表里没有才现读注释 */
+function loopSpanFor(key, ab) {
+  if (key in BGM_LOOPS) {
+    const t = BGM_LOOPS[key];
+    return t && t.start != null && t.length > 0 ? { start: t.start, length: t.length, rate: t.rate } : null;
+  }
+  return readLoopMeta(ab);
 }
 
 export const music = {
@@ -212,10 +581,10 @@ export const music = {
           return r.arrayBuffer();
         })
         .then((ab) => {
-          // 注释里的循环点要趁解码前读（decodeAudioData 会把 buffer 摘走）
-          const meta = readLoopMeta(ab);
+          // 循环点要趁解码前取（万一要现读注释，decodeAudioData 会把 buffer 摘走）
+          const meta = loopSpanFor(key, ab);
           if (meta) this._loopMeta.set(key, meta);
-          else if (this.debug) console.warn('[music] 这首没有 LOOPSTART/LOOPLENGTH 注释，只能整首循环：', key);
+          else if (this.debug) console.log('[music] 这首没有可用的循环点，整首循环：', key);
           return ab;
         })
         .catch((e) => {
@@ -317,6 +686,8 @@ export const music = {
     this._mutedKey = null;
     this._seq++;
     const seq = this._seq;
+    // 真的开始放了才算「听过」（曲子被换掉 / 放不出来都不算），音乐室据此解锁
+    markHeard(key);
     if (this.debug) console.log('[music] 切歌 ->', key, '(' + BGM_FILES[key] + ')');
 
     if (this._ctx) {
@@ -344,8 +715,8 @@ export const music = {
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.loop = true;                              // ← 循环点是采样精确的
-    // 循环段来自 ogg 注释里的 LOOPSTART/LOOPLENGTH：前奏只放一次，到循环尾跳回循环头。
-    // 不填这两个值就是「整首循环」，前奏会每圈重放一遍（听感就是循环点不对）。
+    // 循环段来自 BGM_LOOPS（下载时从 ogg 注释里读出来、并用解码长度校验过）：
+    // 前奏只放一次，到循环尾跳回循环头。表里是 null 就是「整首循环」。
     const meta = this._loopMeta.get(key);
     let loopText = '整首循环';
     if (meta && meta.length > 0) {
@@ -354,11 +725,13 @@ export const music = {
       // **重采样到 AudioContext 的采样率**（Windows 上常是 48000）。
       // 拿 buf.sampleRate 去换算的话，循环点会整体提前 8.8% —— 结尾被砍掉近 10 秒再跳回去，
       // 听起来就是「循环点还是不对」（这个坑踩过一次）。
-      // 这里不写死：哪个采样率能让「循环段末尾 = 文件末尾」对上，就用哪个。
+      // 表里带了下载时用的那个采样率，但仍然不写死：哪个能让「循环段末尾 = 文件末尾」
+      // 对上就用哪个。
       const total = meta.start + meta.length;
-      const byDefault = Math.abs(total / 44100 - buf.duration);
+      const nominal = meta.rate || 44100;
+      const byDefault = Math.abs(total / nominal - buf.duration);
       const byBuffer = Math.abs(total / buf.sampleRate - buf.duration);
-      const rate = byDefault <= byBuffer ? 44100 : buf.sampleRate;
+      const rate = byDefault <= byBuffer ? nominal : buf.sampleRate;
       const ls = meta.start / rate;
       const le = total / rate;
       if (le > ls && le <= buf.duration + 0.6) {

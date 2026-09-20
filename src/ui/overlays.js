@@ -13,7 +13,7 @@ import { CARD_BY_ID, CARDS, ITEMS } from '../data/cards.js';
 // 说明页里「一共几章」也从地图生成器现问，别再手写（曾经写成「三章」，而实际是 6 章）
 import { stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
-import { BGM_NAMES } from '../core/bgm.js';
+import { BGM_NAMES, BGM_CREDITS } from '../core/bgm.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
 import { changeLanguage } from './langswitch.js';
 import { expertEnabled, setExpertEnabled } from '../core/expert.js';
@@ -345,7 +345,7 @@ export function showHelp() {
         el('li', { text: t('宝可梦精灵图与表情头像来自 PMDCollab/SpriteCollab（各作者署名见仓库 credits.txt）。') }),
         el('li', { text: t('回合切换立绘来自 Generation 9 Pack（正面 / 背面图）。') }),
         el('li', { text: t('界面图标、面板、音效、粒子来自 Kenney 素材包与 Game-Icon-Pack（都是 CC0）。') }),
-        el('li', { text: t('BGM 来自「音楽の卵」(ontama-m.com)：个人/法人均可免费使用、无需报告、无需署名、可商用。') }),
+        el('li', { text: t('BGM 来自「音楽の卵」(ontama-m.com) 与「龍的交響楽」(d-symphony.com)：两家都允许免费使用（含商用）、无需报告；后者唯一的要求是在名单里标注「龍的交響楽」—— 标题页的「曲子库」里列出了每首曲子的出处与链接。') }),
         el('li', { text: t('宝可梦译名以 52poke 神奇宝贝百科为准。') }),
         el('li', { text: t('非商业同人练习作品。') }),
       ]),
@@ -359,7 +359,6 @@ export function showHelp() {
 // ============================================================
 export function showSettings() {
   const body = el('div', {});
-  const nowPlaying = el('span', { style: { opacity: '.7', fontSize: '12px' }, text: t('（未播放）') });
   const musicState = () => {
     const key = music.nowPlaying();
     return key ? t('正在播放：{name}', { name: BGM_NAMES[key] ?? key }) : t('（未播放）');
@@ -398,11 +397,12 @@ export function showSettings() {
       }),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', {}, [t('当前曲目'), el('br'), nowPlaying]),
-      el('button', {
-        class: 'btn btn-sm',
-        onClick: () => { nowPlaying.textContent = musicState(); },
-      }, [t('刷新')]),
+      el('label', {}, [
+        t('当前曲目'),
+        el('br'),
+        el('span', { class: 'setting-hint', text: t('想听别的曲子？标题页的「曲子库」里，听过的都能点着试听。') }),
+      ]),
+      el('span', { class: 'setting-value', id: 'setting-now-playing', text: musicState() }),
     ]),
     el('div', { class: 'setting-row' }, [
       el('label', { text: t('声音开关（音效 + BGM）') }),
@@ -411,7 +411,7 @@ export function showSettings() {
         onClick: (e) => {
           const on = audio.toggle();
           e.currentTarget.textContent = on ? t('已开启') : t('已静音');
-          nowPlaying.textContent = musicState();
+          body.querySelector('#setting-now-playing').textContent = musicState();
         },
       }, [audio.enabled ? t('已开启') : t('已静音')]),
     ]),
@@ -453,13 +453,6 @@ export function showSettings() {
       }))),
     ]),
     el('div', { class: 'setting-row' }, [
-      el('label', { text: t('切换 BGM（试听）') }),
-      el('select', {
-        style: { minHeight: '36px', borderRadius: '8px', padding: '4px 8px', background: '#241610', color: '#f7ecd6', border: '1px solid rgba(232,207,162,.3)' },
-        onChange: (e) => { audio.playBgm(e.target.value, { restart: true }); nowPlaying.textContent = musicState(); },
-      }, Object.entries(BGM_NAMES).map(([k, name]) => el('option', { value: k, text: `${name}（${k}）` }))),
-    ]),
-    el('div', { class: 'setting-row' }, [
       el('label', { text: t('导出存档') }),
       el('button', {
         class: 'btn btn-sm',
@@ -478,14 +471,23 @@ export function showSettings() {
         onClick: () => { save.clearRun(); toast(t('存档已清空。'), 'good'); },
       }, [t('删除进度')]),
     ]),
+    /**
+     * 这里以前还有一个「切换 BGM（试听）」下拉框：它把 41 首曲子的名字
+     * （连上游的日文原名）全列了出来 —— 一进设置就被剧透干净，而且和
+     * 「玩过什么就收什么」的思路正相反。现在挪去标题页的**曲子库**了：
+     * 听过的才显示名字、才能试听。
+     */
     el('div', { class: 'setting-row' }, [
       el('label', { text: t('BGM 出处') }),
-      el('span', { style: { fontSize: '12px', opacity: '.75', textAlign: 'right' }, text: t('音楽の卵 (ontama-m.com)：免费使用、无需报告、可商用') }),
+      el('span', {
+        class: 'setting-value',
+        text: t('免费素材：{a}（{aSite}）与 {b}（{bSite}）—— 前者个人/法人均可免费使用、无需报告、可商用；后者同样免费，只要求在名单里标注「{b}」。出处与链接在标题页的「曲子库」里。', {
+          a: BGM_CREDITS.ontama?.name ?? 'ontama', aSite: BGM_CREDITS.ontama?.site ?? '',
+          b: BGM_CREDITS.dsymphony?.name ?? 'd-symphony', bSite: BGM_CREDITS.dsymphony?.site ?? '',
+        }),
+      }),
     ]),
   );
-
-  // 打开时顺手刷新一下当前曲目
-  setTimeout(() => { nowPlaying.textContent = musicState(); }, 0);
 
   return modal({ title: t('设置'), body });
 }

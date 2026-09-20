@@ -16,6 +16,10 @@
     "all_candidates_bytes_base64": 184588,
     "note": "base64 内联大约是原始字节 ×1.37（data:image/svg+xml;base64, 前缀另计）"
   },
+  "category_overrides": {
+    "_why": "t1 的选型草表只收了 57 个概念、171 个候选；后来手工加进 content/icons.json 的 pack 图标不在这里面，也没有分类目录就拼不出下载地址（build-content 会给这个 component_name 补上目录）。值 = 图标包 svg/no-padding/<分类>/ 下的那一层目录名。",
+    "music": "9-media"
+  },
   "table": [
     {
       "group": "卡牌语义",

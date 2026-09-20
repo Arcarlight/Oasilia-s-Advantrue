@@ -588,7 +588,7 @@ node tools/bundle.mjs           # ④ 重新打包单文件
 | 事件 | `content/events/<地图>.json` | 用 `src/core/eventfx.js` 顶部那张 DSL 速查表；文本里的 `{token}` 必须由同选项的效果产出 |
 | 图标 | `content/icons.json` 加一条 `{name, source, file, desc, group}` | `source` 写 `pack:<上游组件名>` 或 `local:<assets/img 下的相对路径>`；pack 的先跑 `& tools/fetch-iconpack.ps1` 下素材，然后 `node tools/build-content.mjs` 会把它写进 `src/ui/style.css` 的 GENERATED-ICONS 区块（详见下方「图标是怎么来的」） |
 | 商人 | `content/merchants.json` | `slug` 必须是 `species.json` 里的物种（要拿它的头像当脸）、`emotion` 用 `portraits.js` 的小写表情键；每张地图至少要有一位，`node tools/check-content.mjs` 会核对脸图在不在 |
-| BGM | `content/bgm.json` | `& tools/fetch-bgm.ps1` 下载 ogg(L) 无缝循环版（缺文件会退回通用曲，不会整条静音） |
+| BGM | `content/bgm.json` | `node tools/fetch-bgm.mjs` 下载 ogg（两家素材站，自动抓 ogg 地址、校验循环点；缺文件会退回通用曲，不会整条静音） |
 | 新物种素材 | `content/species.json` | `node tools/fetch-sprites.mjs`（按物种表补齐，已存在的跳过；GitHub 连不上时走代理 `NODE_USE_ENV_PROXY=1 HTTPS_PROXY=…`），再 `node tools/build-sprite-meta.mjs`；回合立绘另外 `node tools/import-gen9.mjs` |
 
 写内容之前**先读 `content/SPEC.md`** —— 卡牌 / 敌人 / 事件三种数据的字段表、引擎支持的全部效果、费用曲线、世界观硬规矩都在那里。
@@ -612,10 +612,10 @@ node tools/bundle.mjs           # ④ 重新打包单文件
 | 宝可梦表情头像 | PMDCollab/SpriteCollab（`portrait/`） | 由 `tools/fetch-portraits.ps1` 下载，每个物种 16 种表情 |
 | 回合切换立绘（正 / 背面） | **Generation 9 Pack v3.3.7**（用户提供的 rar） | 由 `tools/import-gen9.mjs` 从 `Graphics/Pokemon/{Front,Back}` 里挑出本作的 96 只，裁到包围盒后存成 `assets/gen9/`（192 张共 257 KB）；**原始 rar 不进仓库**（`.gitignore` 里挡了 `*.rar`）。遭遇演出也用这套立绘 |
 | 界面图标 / 桌游图标 / 面板 / 粒子 | 工作区里的 Kenney 素材包 | 由 `tools/copy-kenney.mjs` 挑选复制，CC0 |
-| 卡牌与界面图标（101 个） | [Nieobie/Game-Icon-Pack](https://github.com/Nieobie/game-icon-pack)（另有 Kenney 那批） | 由 `tools/fetch-iconpack.ps1` 下载，**CC0 1.0**（815 个圆角图标，见下方「图标是怎么来的」） |
+| 卡牌与界面图标（102 个） | [Nieobie/Game-Icon-Pack](https://github.com/Nieobie/game-icon-pack)（另有 Kenney 那批） | 由 `tools/fetch-iconpack.ps1` 下载，**CC0 1.0**（815 个圆角图标，见下方「图标是怎么来的」） |
 | 界面提示音 | Kenney 素材包 | `assets/audio/sfx/` |
 | 战斗与事件音效 | [PANICPUMPKIN](https://www.pansound.com/panicpumpkin/music/se.html) | 由 `tools/fetch-sfx-pansound.ps1` 下载，31 个 wav |
-| BGM（23 首，ogg(L) 无缝循环版） | [音楽の卵 (ontama-m.com)](https://ontama-m.com/) | 由 `tools/fetch-bgm.ps1` 下载，见下方曲目表 |
+| BGM（41 首，ogg + 无缝循环） | [音楽の卵 (ontama-m.com)](https://ontama-m.com/) 与 [龍的交響楽 (d-symphony.com)](http://d-symphony.com/) | 由 `tools/fetch-bgm.mjs` 下载，见下方曲目表 |
 | 字体 | SGHr（正文）/ 文源宋体粗（卡名·商店名）/ 851Lakeus 手写（旁白·对白）/ LXGW Neo XiHei Plus（兜底） | `assets/fonts/`，前三套是用户提供的原始字体裁出来的子集（`tools/subset-fonts.mjs`） |
 | 数值与招式命名 | 52poke 神奇宝贝百科 | 如「地震」威力 100、「羽栖」「龙爪」等 |
 
@@ -792,45 +792,74 @@ PMD 精灵图**不是**「一行 = 一个动画」，而是官方文档说的：
 
 ### BGM 曲目表
 
-「音楽の卵」的[利用规约](https://ontama-m.com/ongaku.html)：**个人 / 法人均可免费使用、无需使用报告、无需署名、可商用**。
-我们仍然在此署名 —— 站点是全手工做的原创曲，值得写一笔。
+两家的规矩都在站点上写着，**两家都只需要署名、不必报告**：
 
-**每张地图的地图和战斗各有一首**（选曲表在 `content/bgm.json`，改完跑 `& tools/fetch-bgm.ps1` 再 `node tools/build-content.mjs`）：
+- [音楽の卵](https://ontama-m.com/ongaku.html)：个人 / 法人均可免费使用、无需使用报告、无需署名、可商用。
+- [龍的交響楽](http://d-symphony.com/)：[利用規約](http://d-symphony.com/index.html#rule) 只有一条要求 ——
+  **在制作人员名单等处标注「龍的交響楽」或链接 `http://d-symphony.com/`**；非营利 / 营利均可，无需报告、无需许可。
+  本站素材页的 ogg 是直接用「右键另存为」下的，链接形如 `https://d-symphony.com/msc/DS-145o.ogg`。
 
-| 场景 | 曲名 | 分类 |
+游戏里两处都署了名：标题页的**曲子库**（每首曲子的出处与链接）和玩法说明的「关于素材」一节。
+
+**41 首，一首曲子只服务一个场景**（选曲表在 `content/bgm.json`，改完跑 `node tools/fetch-bgm.mjs` 再 `node tools/build-content.mjs`）。
+「DS-」开头的是龍的交響楽，其余是音楽の卵：
+
+| 场景 | 曲名 | 出处 |
 | --- | --- | --- |
-| 标题 | 旅のはじめ | RPG｜外・ダンジョン |
-| 第一章 流沙之海（地图 / 战斗） | 風吹く草原 / 攻防一体 | RPG｜外 / RPG｜戦闘 |
-| 第二章 赤岩峡谷（地图 / 战斗） | 谷を越えて / 取っ組み合い | RPG｜外 / RPG｜戦闘 |
-| 第三章 藤蔓密林（地图 / 战斗） | 薄暗い森 / さぐり合い | RPG｜外 / RPG｜戦闘 |
-| 第四章 潮汐盐海（地图 / 战斗） | 太陽と潮風の街 / ヒット＆アウェイ | RPG｜町 / RPG｜戦闘 |
-| 第五章 风蚀峭壁（地图 / 战斗） | 頂上目指して / 風車 | RPG｜外 / RPG｜戦闘 |
-| 第六章 夜砂墓原（地图 / 战斗） | 闇の洞窟 / 闇を打ち払う | RPG｜外 / RPG｜戦闘 |
-| 强敌（各章通用） | クロス陣形 | RPG｜戦闘・敵 |
-| 章节首领 | 襲来 | RPG｜戦闘・敵 |
-| 最终首领（终章） | 畳の上の死闘 | RPG｜戦闘・敵 |
-| 胜利 / 失败 | 勝利のうた / ぜんめつ | RPG｜戦闘・敵 |
-| 事件 / 宝箱 | 傘貸し | RPG｜イベント・その他 |
-| 商店 | おかしな行商人 | RPG｜イベント・その他 |
-| 营地 | 泉のほとりで | RPG｜町・村・日常 |
+| 标题 | 旅のはじめ | ontama |
+| 第一章 流沙之海（地图 / 战斗 / 强敌） | 烈日と黄塵のヴェール / Sand Labyrinth / 立ち向かう者達 | **DS-145o** / **DS-036o** / ontama |
+| 第二章 赤岩峡谷 | 谷を越えて / 取っ組み合い / 灼熱の奥へ | ontama |
+| 第三章 藤蔓密林 | 薄暗い森 / さぐり合い / 魔物の気配 | ontama |
+| 第四章 潮汐盐海 | 太陽と潮風の街 / ヒット＆アウェイ / 飛竜の背に乗って | ontama |
+| 第五章 风蚀峭壁 | 頂上目指して / 風車 / 風を追いかけて | ontama |
+| 第六章 夜砂墓原 | 闇の洞窟 / 闇を打ち払う / 執行人 | ontama |
+| 第七章 沉沙遗迹 | 永遠なる輝きのもとに / 龍飛鳳舞 / 白虎豪勇 | **DS-022o** / **DS-057o** / **DS-127o** |
+| 第八章 菌菇湿地 | 木霊の踊り / Crimson Ridge / 鉄と炎の律動 | **DS-101o** / **DS-059o** / **DS-150o** |
+| 第九章 雷暴台地 | 霊峰は荘厳に / 蒼天疾駆 / 轟く鉄の巨神 | **DS-141o** / **DS-102o** / **DS-111o** |
+| 第十章 水晶洞窟 | 朽ち果てた紋章 / 深淵を行く / Freezing Edge | **DS-113o** / **DS-072o** / **DS-097o** |
+| 章节首领 / 最终首领 | 襲来 / 巨竜血闘 | ontama / **DS-151o** |
+| 通用兜底曲（地图 / 战斗 / 强敌） | 風吹く草原 / 攻防一体 / クロス陣形 | ontama |
+| 胜利 / 失败 | 勝利のうた / ぜんめつ | ontama |
+| 事件 / 宝箱 | 傘貸し | ontama |
+| 商店 | おかしな行商人 | ontama |
+| 营地 | 泉のほとりで | ontama |
 
 某一首 BGM 缺失时不会把整条 BGM 通道弄哑：`music.play()` 会退回通用曲（`battle_forest` → `battle`），
 只有连兜底曲都放不出来（`file://` 直接双击的情况）才会静默降级。
 
-重新下载：
+重新下载（幂等：已存在且大于 20KB 的跳过）：
 
 ```powershell
-& tools/fetch-bgm.ps1              # 读 content/bgm.json，下载 ogg(L) 版，跳过已存在的文件
-& tools/fetch-bgm.ps1 -Force       # 全部重下
-& tools/fetch-bgm.ps1 -RemoveMp3   # 顺手删掉旧版留下的 <key>.mp3
+$env:NODE_USE_ENV_PROXY=1; $env:HTTPS_PROXY='http://127.0.0.1:7897'   # 直连不稳时走代理
+node tools/fetch-bgm.mjs            # 读 content/bgm.json，下载缺的 ogg，并刷新 manifest
+node tools/fetch-bgm.mjs --force    # 全部重下
+node tools/fetch-bgm.mjs --resolve  # 只重抓音楽の卵的「mp3 名 → ogg 地址」对照表
+node tools/fetch-bgm.mjs --check    # 只报告缺哪些，什么都不下
+node tools/verify-bgm-loops.mjs     # 逐首对账：循环段末尾必须落在文件末尾（40/40 通过）
 ```
 
-> 注：下载脚本用 PowerShell 而不是 Node —— 这个沙箱里 Node 的 https 请求很不稳定（会卡住），
-> PowerShell 的 `Invoke-WebRequest` 反而稳定。
+> 注：这个脚本抓音楽の卵的分类页时只读 href，所以能整页解码成文本；
+> 龍的交響楽 那边连抓都不用抓 —— 文件名就是地址（`link` 直接从素材页上抄）。
+
+#### 曲子库：听过才解锁
+
+标题页第 4 个入口是**曲子库**（`src/ui/music-room.js`）。规则来自用户要求：
+
+- 41 首**全部占位显示**，但**没在游戏里真的听到过的那首只显示「？？？」** ——
+  曲名、出处的日文原名都藏起来，右边写「还没听到」，也**不给试听按钮**（有按钮才可能被点到）。
+- 听过的行亮出来，点「试听」就切到那首曲子（再点一次是「重放」）；关掉整页时 BGM 还给当前场景。
+- 解锁状态记在跨局存档的 `meta.heardBgm` 里，存的是 **BGM 的 key**（`map_forest` 这种）而不是曲名 ——
+  曲名会跟着语言改写，存下来就冻在当时的语言里（和通关记录同一个道理）。
+- 写入点在 `src/core/bgm.js` 的 `music.play()`（每一条播放路径最后都过它），
+  所以「打过的架 / 走过的地方」自然就被收进来了。
+
+设置面板里以前那个「**切换 BGM（试听）**」下拉框撤掉了：它把 41 首曲子的名字（连日文原名）一次列全，
+一进设置就被剧透干净 —— 现在那里只留一句提示，指路曲子库。
+（`tools/check-copy.mjs` 不会拦这种事，所以 `tools/diag-music.js` 专门量了一条「设置里再没有列出曲名的下拉框」。）
 
 #### 为什么是 ogg，以及怎么做到「真的无缝」
 
-上游每首曲子都提供 **mp3** 和 **ogg** 两版，而 ogg 又分三种（站点原话）：
+音楽の卵 每首曲子都提供 **mp3** 和 **ogg** 两版，而 ogg 又分三种（站点原话）：
 
 | 版本 | 含义 |
 | --- | --- |
@@ -840,11 +869,10 @@ PMD 精灵图**不是**「一行 = 一个动画」，而是官方文档说的：
 
 mp3 版其实不是循环素材，而是**试听用的完整版**：实测 23 首里每一首的时长都差不多是 ogg(L) 的两倍
 （平均 130.0s vs 70.5s），而且结尾都有约 **2 秒**的静音（平均尾部静音 2004ms）——
-拿它当 BGM 循环，就是每圈都空两秒。ogg(L) 则是上游剪好的无缝素材：平均尾部静音 **0ms**、
-平均头部静音 18.7ms，接缝处的采样跳变都小于 3 倍平均步长（也就是末采样接回首采样是连续的）。
-换成 ogg 之后体积还从 68MB 降到 31MB。
+拿它当 BGM 循环，就是每圈都空两秒。ogg(L) 则是上游剪好的无缝素材。
+换成 ogg 之后体积还从 68MB 降到 31MB（现在两个来源合计 70MB / 41 首）。
 
-`tools/verify-bgm-files.mjs` 会把两种格式的这几项指标一起量出来对照（现在 23/23 通过）。
+`tools/verify-bgm-files.mjs` 会把两种格式的这几项指标一起量出来对照。
 
 素材换掉只是一半，**播放侧**也得跟得上：
 
@@ -857,34 +885,36 @@ mp3 版其实不是循环素材，而是**试听用的完整版**：实测 23 �
   所以解码期间旧曲子一直在响，不会出现空档。
 - 解码后的 `AudioBuffer` 一首大约 60 MB，所以只留最近 3 首（LRU 淘汰），
   没解码的压缩数据最多留 6 首；`preload()` 在 WebAudio 通道下只预取压缩数据、不预先解码。
-- **循环点是读文件自带的**：这些 ogg(L) 每个都带 `LOOPSTART=` / `LOOPLENGTH=` 注释（RPG Maker / WOLF 那套约定，单位是**采样数**），
-  文件结构其实是「前奏 + 循环段」（例如 title.ogg = 4.09 秒前奏 + 102.5 秒循环，加起来正好是文件总长）。
-  `bgm.js` 解码前先把这两个值读出来塞进 WebAudio 的 `loopStart/loopEnd` —— 前奏只放一次、到循环尾跳回循环头。
+- **循环点是读文件自带的**：这些 ogg 每个都带 `LOOPSTART=` / `LOOPLENGTH=` 注释（RPG Maker / WOLF 那套约定，单位是**采样数**），
+  文件结构其实是「前奏 + 循环段」（例如 title.ogg = 4.46 秒前奏 + 111.58 秒循环，加起来正好是文件总长）。
+  `bgm.js` 把这两个值塞进 WebAudio 的 `loopStart/loopEnd` —— 前奏只放一次、到循环尾跳回循环头。
   **如果只写 `loop=true` 不填循环点，等于整首循环，前奏会每圈重放一遍**（听感就是「循环点不对」，实测被听出来了）。
+- 这两个值不再现读，而是**下载时就校验好、写进生成表 `BGM_LOOPS`**：
+  `fetch-bgm.mjs` 用 ffmpeg 量出每首的解码长度，注释换算出来的循环段末尾必须落回文件末尾（±0.6s），
+  否则当成**过期注释**丢掉、记成「整首循环」。为什么非要这样：上游换过曲子但注释没跟着换 ——
+  `battle_storm.ogg` 声称自己有 **941 秒**音乐（文件只有 124.7 秒），照注释填 `loopEnd` 会让这首曲子
+  在中间就跳回开头，后半段永远听不到，而且**任何界面都不会报错**。
+  `tools/verify-bgm-loops.mjs` 就是这条规矩的守门人（40 首有循环注释的逐首对账，1 首没有注释的明说「整首循环」）。
 - 没有 WebAudio、或者这首解码失败（例如 Safari 不支持 Vorbis）时，**自动退回 `<audio>` 元素**
   那套老路（仍然挂着 `loop`），所以不会出现「换了格式就整条 BGM 哑掉」。
   （注意：`<audio>` 元素不支持循环点，兜底通道只能整首循环。）
 
-选曲表里写的是**上游 mp3 文件名**（用来查下载地址），真正落盘和代码引用的是
-`assets/audio/bgm/<key>.ogg`：上游把 ogg 打包成 zip，里面的文件名是日文标题
-（`ontama_rpg_koubouittai_ogg/攻防一体.ogg`），拿它当路径不现实，所以统一改名成 `<key>.ogg`。
+**为什么 10 张地图的曲子不再复用**（用户报的问题：「好像有复用 BGM 的情况」）：
+以前 desert 是借通用曲（`map_desert` = `map.ogg`），第 7~10 张图也各自借一张
+（ruins→canyon、fungal→forest、storm→cliff、crystal→night），所以换一张地图听起来没换；
+现在 10 张图的图 / 战斗 / 强敌三组各自独立（`tools/diag-music.js` 的第 ⑤ 节就是在量这件事：
+三组各 10 首，两两不同，兜底曲也不再被任何地图共用）。
 
-zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命名的，`cross.mp3` →
-`ontama_rpg_kurosujinkei_ogg.zip`），所以 `fetch-bgm.ps1` 会**抓一遍站点的分类页**，
-把「mp3 名 → ogg 地址」的对照存进 `tools/bgm-ogg-map.json`（603 条）；
-加新曲时它只重新抓一遍，平时直接用缓存。
+选曲表里 `file` 写的是什么、落盘成什么：
+- 音楽の卵：`file` 是**上游 mp3 文件名**（用来查下载地址）。上游把 ogg 打包成 zip，里面的文件名是日文标题
+  （`ontama_rpg_koubouittai_ogg/攻防一体.ogg`），拿它当路径不现实，所以统一改名成 `assets/audio/bgm/<key>.ogg`。
+  zip 的地址也没法从 mp3 名字推出来（按日文标题的读音命名，`cross.mp3` → `ontama_rpg_kurosujinkei_ogg.zip`），
+  所以脚本会**抓一遍站点的分类页**，把「mp3 名 → ogg 地址」的对照存进 `tools/bgm-ogg-map.json`（603 条）。
+- 龍的交響楽：`file` 直接就是素材页上的文件名（`DS-145o.ogg`），地址 = `https://d-symphony.com/msc/<file>`。
 
-### 关于 d-symphony（龍的交響楽）
-
-用户提到 [d-symphony.com](https://d-symphony.com/) 的「Freezing Edge」可以当通常战斗曲。
-我查了站点：**它的主页、素材页、联系页都没有任何利用规约 / 授权说明**
-（素材页只有一句「右键另存为」的操作说明）。因为授权不明，我没有把这个素材接进游戏。
-
-现在通常战斗曲用的是音楽の卵的「攻防一体」（授权明确可商用）。
-如果你确认了 d-symphony 的使用条件，替换很简单：
-把素材转成 ogg 放到 `assets/audio/bgm/battle.ogg`（key 名要对应），或者改 `content/bgm.json`
-里的选曲后跑 `node tools/build-content.mjs`；再 `node tools/bundle.mjs`。
-`tools/find-dsymphony-track.mjs` 就是当初用来定位那个文件链接的脚本。
+每次下载还会把「字节数 / 解码时长 / 校验过的循环点」写进 `assets/audio/bgm/manifest.json`
+（`build-content.mjs` 读它生成 `BGM_LOOPS`，也会用它发现「选曲表改了但音频还是旧的」）。
+**音频文件一律按原样存盘**，不做重编码、不剪接（授权允许编辑，但没必要动）。
 
 ---
 
@@ -907,12 +937,15 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `fetch-offsets.ps1` | 下载 PMD 的 Offsets 图（用来判定精灵图每一行的朝向） |
 | `analyze-directions.mjs` | 用 Offsets 图分析精灵图行序 / 朝向 |
 | `inspect-sprite-rows.mjs` | 把精灵图按行切开拼成对照表，肉眼核对朝向 |
-| `fetch-bgm.ps1` | 从音楽の卵下载 BGM：读 `content/bgm.json`，自动抓站点分类页查出每首的 **ogg(L)**（无缝循环版）地址并缓存到 `tools/bgm-ogg-map.json`（`-Force` 重下 / `-Resolve` 只更新对照表 / `-Mp3` 下旧版 mp3 / `-RemoveMp3` 清理旧版残留） |
+| `fetch-bgm.mjs` | ★ **BGM 下载**：读 `content/bgm.json`，从两家素材站拉 ogg（音楽の卵：抓分类页查出 ogg(L) 地址并缓存到 `tools/bgm-ogg-map.json`；龍的交響楽：文件名就是地址），校验循环注释与解码长度是否对得上，刷新 `assets/audio/bgm/manifest.json`（`--force` 重下 / `--resolve` 只更新对照表 / `--check` 只报告） |
+| `verify-bgm-loops.mjs` | ★ **循环点对账**：逐首解码量出真实长度，核对生成表 `BGM_LOOPS` 里的循环段末尾是否落在文件末尾（发现 `battle_storm.ogg` 的注释声称有 941 秒音乐，就是它报出来的） |
 | `list-ontama-tracks.mjs` | 列出音楽の卵各分类的曲目与 mp3 直链（挑曲用） |
+| `fetch-dsymphony.mjs` | 列出龍的交響楽某个素材页（`mt_00.html` 全曲 / `mt_14` 战斗 / `mt_16` 街 …）里所有带 ogg 下载按钮的曲目与文件名，并打印利用规约要点（挑曲用；挑完把 `DS-<编号>o.ogg` 填进 `content/bgm.json`） |
 | `verify-music.mjs` | 验证 BGM 播放链路：走的是 WebAudio 无缝循环还是退回 `<audio>`，含 `loop=true`、淡入音量、交叉淡出、离线渲染证明循环处无空白帧（18 条断言） |
 | `verify-bgm-files.mjs` | 逐个解码校验 BGM，并量首尾静音 / 接缝跳变，把 ogg(L) 与旧 mp3 放一起对照 |
+| `diag-music.js` | 曲子库诊断（`?dgmusic=1`，截图用 `?dgmusic=shot`）：标题页 4 个入口、没听过的行只显示 ？？？（不泄漏曲名/出处）、锁着的行没有试听按钮、听过之后能试听并真的切歌、关掉后 BGM 还给当前场景、设置里不再有曲名下拉框、10 张地图三组曲子两两不同（21 条断言） |
 | `probe-audio.mjs` | 探测 `file://` 下本地音频是否可加载（结论：全部被拦） |
-| `smoke-check.mjs` | 浏览器冒烟测试（走 http，自动打一场 + 切场景验 BGM + 遍历界面 + **点开标题页那三个收藏入口**、检查 HUD 上的图鉴按钮） |
+| `smoke-check.mjs` | 浏览器冒烟测试（走 http，自动打一场 + 切场景验 BGM + 遍历界面 + **点开标题页那四个收藏入口**、检查 HUD 上的图鉴按钮） |
 | `diagnose-page.mjs` + `diagnose-script.js` | 诊断：逐事件核对血条数值、头像是否渲染、事件页能否关闭、日志位置 |
 | `diag2.mjs` + `diag2-script.js` | 诊断：战斗日志有没有重复行、伤害是不是**分次**扣、敌方出牌有没有显示、演出时长（`?dg2=1`；第三个参数传 `rt` 走真实时间，音频类诊断必须这么跑） |
 | `diag2-view.js` | 量「敌方出牌展示区」的矩形，检查它有没有压住怪兽/角色卡/日志（`?dgview=1`） |
