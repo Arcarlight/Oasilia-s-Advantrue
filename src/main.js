@@ -273,6 +273,10 @@ async function boot() {
     // 卡牌音效诊断：发牌 / 出牌到底响没响、响得够不够（量峰值 dBFS）
     import('../tools/diag-cardsound.js').catch((e) => console.error('卡牌音效诊断加载失败', e));
   }
+  if (params.has('dgexpert')) {
+    // 专家模式诊断（?dgexpert=1 自检；?dgexpert=shot 把专家模式打开、摆一场战斗给截图用）
+    import('../tools/diag-expert.js').catch((e) => console.error('专家模式诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {

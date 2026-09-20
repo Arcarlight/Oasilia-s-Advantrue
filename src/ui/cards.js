@@ -3,8 +3,9 @@
 import { el } from './dom.js';
 import { t } from '../core/i18n.js';
 import { audio } from '../core/audio.js';
-import { RARITY } from '../data/balance.js';
-import { cardTextEl, richHTML, resolveCardText } from './cardtext.js';
+import { BALANCE, RARITY } from '../data/balance.js';
+import { cardTextEl, richHTML, resolveCardText, cardTextContext, expertStats } from './cardtext.js';
+import { expertEnabled } from '../core/expert.js';
 // 卡牌美术（图标 mask 类名 + 背景特效图）的唯一数据源是 content/cards.json 的 ico/fx：
 // build-content.mjs 把它生成成 src/data/cards.js 的 CARD_ART。这里以前手抄了一份，
 // 于是「改了 content/cards.json 却看不到界面变化」——现在直接吃生成的那份，一份都不留。
@@ -158,6 +159,32 @@ export function cardEl(card, opts = {}) {
     // 以前是一整块同色纯文本，扫一眼看不出哪张牌打得疼、给什么状态。
     cardTextEl(card),
   ]));
+
+  /**
+   * 专家模式：把这张牌背后的数字直接标在卡面上（用户在设置里开，默认关）。
+   * 放的是**算出来的**值（当前攻防下的伤害 / 护盾），不是文案里的占位数字 ——
+   * 描述里那句「造成 13 点伤害」是同一份推导，所以两边不会打架。
+   */
+  if (expertEnabled()) {
+    const s = expertStats(card);
+    const chips = [];
+    const add = (label, tip) => chips.push(el('span', { class: 'card-expert-chip', dataset: { tip } }, [label]));
+    if (s.power > 0) add(t('威力 {n}%', { n: s.power }), t('卡面印的威力（攻击力百分比），和你的属性无关。'));
+    if (s.damage > 0) {
+      add(s.hits > 1 ? t('伤害 {per}×{hits}={total}', { per: s.per, hits: s.hits, total: s.damage }) : t('伤害 {n}', { n: s.damage }),
+        t('按当前攻击 {atk} 与对手防御 {def} 结算出来的实际伤害。\n伤害 = 攻击 × 威力% × {K} ÷ ({K} + 对手防御)。', { atk: cardTextContext().atk, def: cardTextContext().def, K: BALANCE.armorK }));
+    }
+    if (s.shield > 0) {
+      add(t('护盾 {n}', { n: s.shield }),
+        t('实际护盾（吃你自己的防御 {def}）：{formula}', { def: s.selfDef, formula: t('基数 × (1 + 防御 ÷ 12)') }));
+    }
+    if (s.draw > 0) add(t('抽牌 {n}', { n: s.draw }), t('打出后额外抽几张。'));
+    if (s.ap > 0) add(t('回 AP {n}', { n: s.ap }), t('打出后返还的行动点。'));
+    if (s.stacks > 0) add(t('状态 {n} 层', { n: s.stacks }), t('这张牌给对手（或自己）挂上的状态层数合计。'));
+    if (s.damage > 0 && s.cost > 0) add(t('每 AP {n}', { n: s.perAp }), t('每 1 点行动点打出多少伤害 —— 比较两张牌贵不贵看这个。'));
+    if (chips.length) node.classList.add('expert');
+    if (chips.length) node.append(el('div', { class: 'card-expert' }, chips));
+  }
 
   /**
    * 底栏：左边「稀有度宝石 + 类型 + 角色标记」，右边是调用方给的角标（×N / 未获得 …）。

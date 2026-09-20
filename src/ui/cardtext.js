@@ -42,12 +42,14 @@ const DEF_PER_SHIELD = 12;
  *   · 战斗外是**本章典型敌人**的防御（估算，卡面上标了「约」）
  * 全站只有这一份推导，卡面 / 详情 / 商店 / 排序读的都是它。
  */
-const CTX = { atk: BALANCE.player.atk, def: 0 };
+const CTX = { atk: BALANCE.player.atk, def: 0, selfDef: BALANCE.player.def };
 
 /** 设置卡面伤害的估算上下文（UI 每次渲染前刷新一次） */
 export function setCardTextContext(ctx = {}) {
   if (Number.isFinite(ctx.atk)) CTX.atk = ctx.atk;
   if (Number.isFinite(ctx.def)) CTX.def = ctx.def;
+  // 自己的防御：**专家模式**要用它算护盾的实际值（护盾吃自己的防御，伤害吃对手的防御）
+  if (Number.isFinite(ctx.selfDef)) CTX.selfDef = ctx.selfDef;
 }
 export function cardTextContext() { return { ...CTX }; }
 
@@ -424,6 +426,37 @@ export function cardPowerTotal(card) {
 /** 当前上下文下这一张牌大概打多少（详情页 / 卡面角标用） */
 export function cardDamageTotal(card, ctx = {}) {
   return damageParts(card, ctx)?.total ?? 0;
+}
+
+/**
+ * **专家模式**那一行要的数字（用户要求：打开后能看到威力 / 防御影响的详细数值）。
+ *
+ * 全部走这里已有的推导：伤害用 damageParts（它调的是引擎的 computeHit），
+ * 护盾用引擎那条「基数 ×(1 + 防御 ÷ 12)」的同一个系数 —— 不在这里另抄一份公式，
+ * 否则迟早出现「卡面写 26、打出来 17」这种对不上的事。
+ */
+export function expertStats(card) {
+  const dmg = damageParts(card);
+  const selfDef = CTX.selfDef ?? 0;
+  let shield = 0; let draw = 0; let ap = 0; let stacks = 0;
+  for (const e of card?.effects ?? []) {
+    if (e.kind === 'shield') {
+      shield += Math.round((e.amount ?? 0) * (e.scaleWithDef ? 1 + selfDef / DEF_PER_SHIELD : 1));
+    } else if (e.kind === 'draw') draw += e.n ?? 1;
+    else if (e.kind === 'ap') ap += e.n ?? 1;
+    else if (e.kind === 'status') stacks += e.stacks ?? 1;
+  }
+  const cost = card?.ap ?? 0;
+  return {
+    power: cardPowerTotal(card),
+    per: dmg?.per ?? 0,
+    hits: dmg?.hits ?? 1,
+    damage: dmg?.total ?? 0,
+    shield, draw, ap, stacks,
+    cost,
+    perAp: Math.round((dmg?.total ?? 0) / Math.max(1, cost)),
+    selfDef,
+  };
 }
 
 const RARITY_ORDER = { common: 0, uncommon: 1, rare: 2, epic: 3 };

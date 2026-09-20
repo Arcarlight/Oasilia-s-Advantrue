@@ -16,6 +16,7 @@ import { save } from '../core/save.js';
 import { BGM_NAMES } from '../core/bgm.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
 import { changeLanguage } from './langswitch.js';
+import { expertEnabled, setExpertEnabled } from '../core/expert.js';
 import { renderHud } from './hud.js';
 // 卡牌详情与图鉴网格都在别处（src/ui/carddetail.js / codex.js）——
 // 标题页的卡牌图鉴也要用同一个详情页，放这里就会和它成环。
@@ -414,9 +415,29 @@ export function showSettings() {
         },
       }, [audio.enabled ? t('已开启') : t('已静音')]),
     ]),
+    /**
+     * 专家模式：卡面上直接标出「威力 / 实际伤害 / 护盾（吃自己的防御）/ 抽牌 / 每 AP 多少伤害」。
+     * 默认关闭 —— 这些数字对新手是噪音，对算牌的人是刚需（用户要求）。
+     * 开关存 localStorage（本机偏好，和音量 / 战斗速度一类），改完通知订阅者重画界面，
+     * 否则关掉设置面板之后屏幕上的卡面还是旧的。
+     */
+    el('div', { class: 'setting-row' }, [
+      el('label', {}, [
+        t('专家模式：卡面显示详细数值'),
+        el('br'),
+        el('span', { class: 'setting-hint', text: t('打开后卡面上会多一行小字：威力%、实际伤害、护盾（含防御加成）、抽牌、每点 AP 的效率。') }),
+      ]),
+      el('button', {
+        class: 'btn btn-sm',
+        onClick: (e) => {
+          const on = setExpertEnabled(!expertEnabled());
+          e.currentTarget.textContent = on ? t('已开启') : t('已关闭');
+          toast(on ? t('专家模式已开启：卡面会显示详细数值。') : t('专家模式已关闭。'), 'good');
+        },
+      }, [expertEnabled() ? t('已开启') : t('已关闭')]),
+    ]),
     el('div', { class: 'setting-row' }, [
       el('label', { text: t('战斗演出速度') }),
-      // 注意：<select> 上写 value 属性是没用的（属性不会选中 option），
       // 必须给对应的 option 加 selected，否则界面显示的选择和实际速度会对不上。
       el('select', {
         style: { minHeight: '36px', borderRadius: '8px', padding: '4px 8px', background: '#241610', color: '#f7ecd6', border: '1px solid rgba(232,207,162,.3)' },

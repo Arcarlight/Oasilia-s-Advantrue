@@ -12,6 +12,7 @@ import {
 import { audio } from '../core/audio.js';
 import { bgmKeyFor } from '../core/bgm.js';
 import { initLang, currentLang } from '../core/i18n.js';
+import { onExpertChange } from '../core/expert.js';
 import { refreshI18nTables } from '../core/i18n-tables.js';
 import { BALANCE, BIOMES, BIOME_BGM } from '../data/balance.js';
 import { enemyDefFor } from '../data/enemies.js';
@@ -43,6 +44,11 @@ export class UI {
     refreshI18nTables();
     document.documentElement.lang = currentLang();
     game.onChange = () => this.render();
+    /**
+     * 专家模式开关一变就重画：卡面那一行数字是在 cardEl 里按开关现拼的，
+     * 不重画的话，关掉设置面板后屏幕上的牌还是旧样子（和切语言同一个道理）。
+     */
+    onExpertChange(() => this.forceRerender());
     this.bindGlobal();
   }
   bindGlobal() {

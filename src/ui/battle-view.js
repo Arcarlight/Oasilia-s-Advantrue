@@ -1363,7 +1363,7 @@ export class BattleScreen {
     const hand = b.hand('player');
     // 卡面文案里的 {d} 是实时算的，所以画手牌之前先把上下文对齐到当前这只敌人
     // （战斗外的界面由 ui.js 统一设置，这里是战斗中更准的一份）
-    setCardTextContext({ atk: effectiveAtk(b.player), def: effectiveDef(b.enemy) });
+    setCardTextContext({ atk: effectiveAtk(b.player), def: effectiveDef(b.enemy), selfDef: effectiveDef(b.player) });
     // 找出「这次新抽到的牌」：给它们放「从屏幕下方滑上来」的入场动画。
     // 用 uid 对比（每场战斗内唯一），所以打牌后重画手牌不会让老牌又动一次。
     const seen = this._handSeen ?? (this._handSeen = new Set());

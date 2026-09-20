@@ -2960,6 +2960,27 @@ input, textarea { cursor: text !important; }
 .dex-battleart canvas, .dex-anim { image-rendering: pixelated; max-height: 104px; width: auto; }
 
 /* ============================================================
+   专家模式：卡面上那一行数字（设置里开，默认关）
+   描述少留一行（--card-clamp 减 1），所以卡面高度不变、排版不会跳。
+   ============================================================ */
+.card.expert { --card-clamp: calc(var(--card-clamp) - 1); }
+.card-expert {
+  display: flex; flex-wrap: wrap; gap: 3px;
+  margin-top: 3px;
+}
+.card-expert-chip {
+  font-size: 9.5px; line-height: 1.5;
+  padding: 0 4px; border-radius: 4px;
+  background: rgba(74, 53, 36, .14);
+  color: var(--card-ink, #4a3524);
+  box-shadow: inset 0 0 0 1px rgba(74, 53, 36, .18);
+  font-variant-numeric: tabular-nums;
+}
+.card-lg .card-expert-chip { font-size: 11px; padding: 1px 6px; }
+/* 出牌展示区里那张卡是等比缩放的，这一行也跟着缩（--u 由 layoutPlayZone 写） */
+.played-card .card-expert-chip { font-size: calc(10px * var(--u, 1)); }
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width: 900px) {
