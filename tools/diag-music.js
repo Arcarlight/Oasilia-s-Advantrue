@@ -53,11 +53,17 @@
     // ---------- ① 标题页入口 ----------
     log('① 标题页入口');
     const entries = qa('.title-codex .title-codex-btn');
-    ok(entries.length === 4, '标题页有 4 个入口（记录 / 卡牌 / 敌人 / 曲子库）', `实际 ${entries.length}`);
+    /**
+     * ⚠ 入口数量会随版本变（道具图鉴那一版加到了 5 个）。所以这里**按名字找**索引，
+     * 不写死第几个 —— 第一版写死了 `entries[3]`，加了道具图鉴之后这一整节全红
+     * （而且后面十几条断言是**因为点错了入口**才红的，看着像曲子库坏了）。
+     */
     const labels = entries.map((b) => q('.title-codex-label', b)?.textContent);
-    ok(labels[3] === '曲子库', '第 4 个入口是「曲子库」', labels.join(' / '));
-    ok(q('.title-codex-sub', entries[3])?.textContent === `0/${KEYS.length}`,
-      '入口上带着进度（新档 0 首）', q('.title-codex-sub', entries[3])?.textContent);
+    const musicIdx = labels.indexOf('曲子库');
+    ok(entries.length >= 5, '标题页的收藏入口都在（含后面加的图鉴）', `实际 ${entries.length}：${labels.join(' / ')}`);
+    ok(musicIdx >= 0, '其中一个是「曲子库」', labels.join(' / '));
+    ok(q('.title-codex-sub', entries[musicIdx])?.textContent === `0/${KEYS.length}`,
+      '曲子库入口上带着进度（新档 0 首）', q('.title-codex-sub', entries[musicIdx])?.textContent);
 
     // 截图模式：把曲子库摆出来就收工（截图脚本用虚拟时间，跑不了下面那串 await）
     if (params.get('dgmusic') === 'shot') {
@@ -66,7 +72,7 @@
       ui.current = null;
       ui.forceRerender();
       await wait(400);
-      click(qa('.title-codex .title-codex-btn')[3]);
+      click(qa('.title-codex .title-codex-btn')[musicIdx]);
       await wait(400);
       log(`（截图模式：曲子库，${qa('.mr-row').length} 行，其中锁着 ${qa('.mr-row.locked').length} 行）`);
       log('MUSIC_DONE');
@@ -75,7 +81,7 @@
 
     // ---------- ② 一首都没听过：全是 ？？？ ----------
     log('② 没听过 = ？？？');
-    click(entries[3]);
+    click(entries[musicIdx]);
     await wait(300);
     let modal = topModal();
     ok(!!modal, '点「曲子库」会打开一页');
@@ -114,7 +120,7 @@
     ui.current = null;
     ui.forceRerender();
     await wait(400);
-    click(qa('.title-codex .title-codex-btn')[3]);
+    click(qa('.title-codex .title-codex-btn')[musicIdx]);
     await wait(300);
     modal = topModal();
     const unlocked = qa('.mr-row:not(.locked)', modal);
@@ -122,7 +128,7 @@
     const rowText = unlocked[0]?.textContent ?? '';
     ok(rowText.includes(BGM_NAMES.map_forest.split(' · ')[1]), '亮出来的那行写着曲名（场景 · 上游原名）', rowText.trim().slice(0, 40));
     ok(!!btnByText('试听', unlocked[0]), '亮出来的那行有「试听」按钮');
-    ok(q('.title-codex-sub', qa('.title-codex .title-codex-btn')[3])?.textContent === `1/${KEYS.length}`,
+    ok(q('.title-codex-sub', qa('.title-codex .title-codex-btn')[musicIdx])?.textContent === `1/${KEYS.length}`,
       '关掉之后标题页上的进度也变成 1', '(试听前)');
 
     // 点试听：真的切到那首曲子（music.current 就是播放中的 key）。
@@ -208,7 +214,7 @@
       ui.current = null;
       ui.forceRerender();
       await wait(500);
-      click(qa('.title-codex .title-codex-btn')[3]);
+      click(qa('.title-codex .title-codex-btn')[musicIdx]);
       await wait(400);
       const m2 = topModal();
       const text = m2?.textContent ?? '';
