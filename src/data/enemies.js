@@ -4374,7 +4374,7 @@ export function enemyDefFor(tier, stage) {
 }
 
 /** 计算实际数值：查 balance.js 的战力表 + 章内深度 + 玩家战力对齐 */
-export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null) {
+export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null, mul = null) {
   const tier = TIERS[enemy.tier];
   const hpTable = BALANCE.enemyHp[enemy.tier] ?? BALANCE.enemyHp.normal;
   const atkTable = BALANCE.enemyAtk[enemy.tier] ?? BALANCE.enemyAtk.normal;
@@ -4385,8 +4385,15 @@ export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null) {
   const depthAtk = 1 + nodeIndex * BALANCE.nodeAtkStep;
   const pf = powerFactor(playerStats, s);
 
-  const hp = Math.max(10, Math.round(hpTable[s] * depthHp * pf));
-  const atk = Math.max(2, Math.round(atkTable[s] * depthAtk * (0.85 + 0.15 * pf)));
+  /**
+   * 额外倍率：**只有无尽模式会传**（见 game.js 的 endlessEnemyMul）。
+   * 默认 null → 1，所以本体那些数值一个数都不会动（用户说过本体平衡是基准）。
+   */
+  const hpMul = mul?.hp ?? 1;
+  const atkMul = mul?.atk ?? 1;
+
+  const hp = Math.max(10, Math.round(hpTable[s] * depthHp * pf * hpMul));
+  const atk = Math.max(2, Math.round(atkTable[s] * depthAtk * (0.85 + 0.15 * pf) * atkMul));
   const def = enemyDefFor(enemy.tier, stage);
   const agi = Math.round(tier.agi[0] + Math.random() * (tier.agi[1] - tier.agi[0]) + stage * 1.5);
 

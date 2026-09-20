@@ -5,7 +5,7 @@ import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, RARITY, REWARD_WEIGHTS, apFr
 import { CARD_BY_ID, STARTER_DECK, rollCard, rollCards, CARDS } from '../data/cards.js';
 import { ITEMS, ITEM_ART, STARTER_ITEMS } from '../data/items.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
-import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount } from '../data/mapgen.js';
+import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount, endlessRowBonus, endlessBranchBonus } from '../data/mapgen.js';
 import { eventsFor } from '../data/events.js';
 import { pickMerchant, MERCHANTS } from '../data/merchants.js';
 import { makeRng } from './rng.js';
@@ -87,7 +87,15 @@ export class Game {
 
   // ================= 基础工具 =================
 
-  newRun(seed) {
+  /**
+   * 开一局。
+   * @param {number} [seed]
+   * @param {{endless?:boolean}} [opts] `endless: true` = 无尽模式（标题页那个单独入口）。
+   *   无尽局从第 1 章起就是另一个模式：地图分叉 +1、敌人略微加压，过了正片复利变强，
+   *   而且**永远不会有结局页** —— 目标只有「看能走到第几章」。
+   */
+  newRun(seed, opts = {}) {
+    const endless = !!opts.endless;
     if (seed != null) this.rng = makeRng(seed);
     const p = BALANCE.player;
     this.usedEvents = [];
@@ -120,6 +128,14 @@ export class Game {
        */
       metEnemies: [],
       stage: 0,
+      /**
+       * **无尽模式**：标题页那个单独入口开出来的局（`newRun(seed, { endless: true })`）。
+       * 用户明确要求「无尽模式不要和普通模式合并，而是有另一个入口」——
+       * 所以它是开局就定下来的一个标记，而不是「普通模式打到第 7 章自动变成无尽」。
+       * 无尽局：地图更宽（分叉 +1）、敌人从第 1 章起就略微加压、过了正片复利变强，
+       * 永远不会出现结局页；目标只有「走到第几章」。
+       */
+      endless,
       map: null,
       nodeId: null,
       route: [],
@@ -148,7 +164,8 @@ export class Game {
       used.add(pick);
     }
     this.data.biomes = biomes;
-    this.data.map = generateMap(0, this.rng, biomes[0]);
+    // 无尽模式：地图更宽（分叉 +1）从第 1 章就生效 —— 这是这个模式的手感
+    this.data.map = generateMap(0, this.rng, biomes[0], endless ? { branchBonus: endlessBranchBonus(0), rowBonus: endlessRowBonus(0) } : {});
     this.phase = Phase.MAP;
     // 开局道具（content/items.json 的 starter）：走 giveItem，所以「拿不下」也不会静默丢掉
     for (const [id, n] of Object.entries(STARTER_ITEMS ?? {})) this.giveItem(id, n);
@@ -480,13 +497,22 @@ export class Game {
   /** 章节推进 */
   nextStage() {
     const d = this.data;
+    const campaign = stageCount();
     d.stage += 1;
-    if (d.stage >= stageCount()) {
+    /**
+     * 走到正片尽头（第 6 章的首领之后）：
+     *   · **普通模式** → 结局页，并且**解锁无尽模式**（用户指定的解锁条件）；
+     *   · **无尽模式** → 继续往下走（第 7、8、9… 章），敌人按 BALANCE.endless 复利变强。
+     *     无尽模式是**另一个入口**（标题页单独一个按钮），不是普通模式打完成这样 ——
+     *     这一点用户专门强调过。
+     */
+    if (!d.endless && d.stage >= campaign) {
       this.phase = Phase.VICTORY;
       this.meta = save.patchMeta({
         wins: (this.meta.wins ?? 0) + 1,
         unlocked: true,
-        bestStage: stageCount(),
+        bestStage: campaign,
+        endlessUnlocked: true,
       });
       // 通关也记一条（注意 d.stage 这时已经越界了，runSummary 里会夹回章节总数）
       this.meta = save.recordRun(this.runSummary(true));
@@ -494,7 +520,9 @@ export class Game {
       this.changed();
       return;
     }
-    const bonus = BALANCE.stageClearGold[d.stage - 1] ?? 40;
+    // 通关金币：正片那张表用完之后（无尽模式的第 7 章起）按 goldBase + 每章递增
+    const goldTable = BALANCE.stageClearGold[d.stage - 1];
+    const bonus = goldTable ?? ((BALANCE.endless?.goldBase ?? 40) + Math.max(0, d.stage - campaign + 1) * (BALANCE.endless?.goldPerChapter ?? 20));
     d.gold += bonus;
     // 打完首领完全恢复：下一章的敌人强度是按满血设计的
     const healLines = [];
@@ -502,18 +530,54 @@ export class Game {
       const healed = this.heal(d.maxHp);
       if (healed > 0) healLines.push(t('HP 完全恢复（+{n}）', { n: healed }));
     }
-    // 这一章走哪张地图：开局时抽好的序列说了算（`d.biomes`，见 newRun）
-    d.map = generateMap(d.stage, this.rng, d.biomes?.[d.stage]);
+    /**
+     * 这一章走哪张地图：开局抽好的序列说了算（`d.biomes`，见 newRun）。
+     * 无尽模式会**超出那个序列**，所以按需往后补 —— 从十张图里随机挑，
+     * 尽量不重复最近三章走过的那几张（一路换风景才有「又走远了」的感觉）。
+     */
+    if (d.endless && Array.isArray(d.biomes)) {
+      while (d.biomes.length <= d.stage) {
+        const recent = new Set(d.biomes.slice(-3));
+        const pool = Object.keys(BIOME_SLOTS).filter((k) => !recent.has(k));
+        d.biomes.push(this.rng.pick(pool.length ? pool : Object.keys(BIOME_SLOTS)));
+      }
+    }
+    d.map = generateMap(d.stage, this.rng, d.biomes?.[d.stage],
+      d.endless ? { branchBonus: endlessBranchBonus(d.stage), rowBonus: endlessRowBonus(d.stage) } : {});
     d.nodeId = null;
     d.floor = 0;
     this.phase = Phase.MAP;
+    const over = d.endless && d.stage >= campaign;
     this.message = {
       title: t('进入 {biome}', { biome: BIOMES[d.map.biome].name }),
-      text: `${t(BIOMES[d.map.biome].desc)}\n\n${t('章节通关奖励：金币 +{gold}', { gold: bonus })}${healLines.length ? '，' + healLines.join('，') : ''}`,
+      text: `${t(BIOMES[d.map.biome].desc)}\n\n${t('章节通关奖励：金币 +{gold}', { gold: bonus })}${healLines.length ? '，' + healLines.join('，') : ''}`
+        + (over ? `\n${t('无尽模式：已经走过 {n} 章，看你能走到第几章。', { n: d.stage })}` : ''),
       tone: 'good',
     };
     this.save();
     this.changed();
+  }
+
+  /** 这一局是不是无尽模式（标题页那个单独入口开出来的局） */
+  isEndless() {
+    return !!this.data?.endless;
+  }
+
+  /**
+   * 无尽模式的敌人倍率：**正片那 6 章也略有加压**（这样它从第 1 章起就是「另一个模式」，
+   * 而不是「普通模式打完成无尽」），过了正片之后复利叠加。
+   * 返回的倍率由 startBattle 传给 scaleEnemy —— 敌人数值表本身**不动**
+   * （用户说过本体平衡是基准）。
+   */
+  endlessEnemyMul(stage = this.data?.stage ?? 0) {
+    if (!this.isEndless()) return { hp: 1, atk: 1 };
+    const e = BALANCE.endless ?? {};
+    const campaign = stageCount();
+    const early = Math.min(stage, campaign);                    // 正片部分：温和加压
+    const over = Math.max(0, stage - campaign);                 // 之后：复利
+    const hp = (1 + (e.hpEarlyPerChapter ?? 0.05) * early) * Math.pow(1 + (e.hpPerChapter ?? 0.18), over);
+    const atk = (1 + (e.atkEarlyPerChapter ?? 0.03) * early) * Math.pow(1 + (e.atkPerChapter ?? 0.1), over);
+    return { hp, atk };
   }
 
   /**
@@ -528,6 +592,8 @@ export class Game {
     return {
       at: Date.now(),
       win: !!win,
+      /** 这一局是不是无尽模式（记录页会给它打一个标记：「无尽 · 第 N 章」） */
+      endless: !!d.endless,
       seed: d.seed ?? null,
       // 通关时 d.stage 已经加到越界（等于章节总数），所以夹回来
       stage: Math.min(d.stage + 1, stageCount()),
@@ -834,7 +900,7 @@ export class Game {
 
     const scaled = scaleEnemy(enemyDef, stage, nodeIdx, {
       atk: d.atk, def: d.def, maxHp: d.maxHp, agi: d.agi,
-    });
+    }, this.endlessEnemyMul(stage));
     // 敌人卡组：从招式池里抽 9 张，并限制「单场平均威力」，
     // 免得同一回合抽到三张大地震把玩家直接秒掉（平衡细节见 tools/check-balance.mjs）
     const deck = this.buildEnemyDeck(enemyDef.deck ?? ['tackle'], kind, scaled, enemyDef.signature ?? []);
@@ -899,6 +965,8 @@ export class Game {
         // （通关记录页要用「最远打到第几章」，顺手在这里补上）
         bestStage: Math.max(this.meta.bestStage ?? 0, d.stage + 1),
       });
+      // 无尽模式：记下「走到过第几章」（标题页与结算页显示它 —— 这个模式的成绩就是距离）
+      if (d.endless) this.meta = save.noteEndlessBest(d.stage + 1);
       // 这一局照样进通关记录（「止步第 N 章」）—— 记录里只有通关的话，多数玩家的列表是空的
       this.meta = save.recordRun(this.runSummary(false));
       save.clearRun();

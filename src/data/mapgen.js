@@ -35,18 +35,52 @@ export function nodeName(type, biome) {
 /** 章节顺序写在 content/biomes.json 的 stageOrder 里，这里不再重复一份 */
 
 /**
+ * 这一章的分叉加成（路有多宽）。
+ *
+ * 用户要求：「本体的地图也可以稍微越往后增加越多路径，到第三关之后则会逐渐回归」
+ *   → 正片按 BALANCE.map.branchBonusByStage 走（第 3 章最宽，之后收回）。
+ * 超出正片（无尽模式）：固定给 BALANCE.endless.branchBonus 的加成 —— 无尽模式「地图有更多分叉」。
+ */
+export function branchBonusFor(stage) {
+  const table = BALANCE.map.branchBonusByStage ?? [];
+  if (stage < table.length) return table[stage] ?? 0;
+  return BALANCE.endless?.branchBonus ?? 0;
+}
+
+/**
+ * **无尽模式**这一章的分叉加成：正片那张计划表 + 无尽额外的 +1。
+ *
+ * ⚠ 这一条是测试抓出来的：第一版在无尽局里只传了 rowBonus，
+ * 分叉还是走 `branchBonusFor(stage)`（= 正片计划表），于是**无尽模式第 1~6 章根本不比正片宽** ——
+ * 「地图有更多分叉」这条用户要求实际上没落地。
+ */
+export function endlessBranchBonus(stage) {
+  return (BALANCE.map.branchBonusByStage?.[stage] ?? 0) + (BALANCE.endless?.branchBonus ?? 0);
+}
+
+/** 无尽模式里这一章比正片长几行（每 2 章 +1 行，最多 +maxRowsBonus） */export function endlessRowBonus(stage) {
+  const e = BALANCE.endless ?? {};
+  const over = stage - (BALANCE.map.branchBonusByStage?.length ?? 6);
+  if (over < 0) return 0;
+  return Math.min(e.maxRowsBonus ?? 3, Math.floor((over + 1) / (e.rowsPerTwoChapters ? 2 : 99)) + (over >= 0 ? 1 : 0));
+}
+
+/**
  * 生成一张章节地图。
  * @param {number} stage 0-based 章节序号
  * @param {Function} rng
  * @param {string} [biomeKey] 这一章用哪张地图 —— 开局时抽好的序列（`game.data.biomes`）说了算。
  *   不传就退回默认顺序 STAGE_BIOME（诊断脚本、老存档都还能跑）。
+ * @param {{branchBonus?:number, rowBonus?:number}} [opts] 覆盖分叉 / 行数加成
+ *   （无尽模式与诊断脚本用；不传就按章节自动算）
  */
-export function generateMap(stage, rng, biomeKey = null) {
+export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   const biome = BIOMES[biomeKey] ?? BIOMES[STAGE_BIOME[stage] ?? 'night'];
   // 每张地图的性格（行数 / 节点权重 / 保底数量）写在 content/biomes.json 的 shape 里：
   // 密林事件多、盐海商店多、峭壁精英多、终章又长又狠。缺配置就用全局默认。
   const shape = biome.shape ?? {};
-  const rows = shape.rows ?? BALANCE.map.rowsPerStage;
+  const branchBonus = opts.branchBonus ?? branchBonusFor(stage);
+  const rows = (shape.rows ?? BALANCE.map.rowsPerStage) + (opts.rowBonus ?? 0);
   const weights = shape.nodeWeights ?? { battle: 52, elite: 9, event: 18, chest: 13, shop: 8 };
   const guarantee = shape.guarantee ?? { chest: 2, shop: 1, rest: 1 };
 
@@ -54,9 +88,11 @@ export function generateMap(stage, rng, biomeKey = null) {
   const nodes = [];
   const grid = [];
   const W = 3;
+  const minB = Math.max(1, BALANCE.map.minBranches + branchBonus);
+  const maxB = Math.max(minB, BALANCE.map.maxBranches + branchBonus);
 
   for (let r = 0; r < rows; r++) {
-    const cols = r === rows - 1 ? 1 : rng.int(BALANCE.map.minBranches, BALANCE.map.maxBranches);
+    const cols = r === rows - 1 ? 1 : rng.int(minB, maxB);
     const row = [];
     for (let c = 0; c < cols; c++) {
       const id = `s${stage}r${r}n${c}`;
@@ -121,7 +157,7 @@ export function generateMap(stage, rng, biomeKey = null) {
   // 保底数量（每张地图自己定：宝箱 / 商店 / 营地）
   for (const [type, n] of Object.entries(guarantee)) ensureCount(nodes, type, n, rng);
 
-  return { stage, biome: biome.key, rows, nodes, gridIds: grid.map((row) => row.map((n) => n.id)) };
+  return { stage, biome: biome.key, rows, nodes, gridIds: grid.map((row) => row.map((n) => n.id)), branchBonus };
 }
 
 /** 保证某种节点至少出现 n 次 */

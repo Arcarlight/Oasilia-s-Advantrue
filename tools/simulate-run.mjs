@@ -19,6 +19,8 @@ const { Game } = await imp('src/core/game.js');
 const { CARD_BY_ID } = await imp('src/data/cards.js');
 const { stageCount } = await imp('src/data/mapgen.js');
 const ONLY_FIRST_STAGE = process.argv.includes('--stage1');
+/** --endless：模拟无尽模式（成绩是「走到第几章」，不是通关率） */
+const ENDLESS = process.argv.includes('--endless');
 
 const TOTAL = Number(process.argv[2] ?? 400);
 
@@ -85,7 +87,7 @@ const stats = { win: 0, dead: 0, floors: [], stages: [], death: new Map(), stage
 
 for (let i = 0; i < TOTAL; i++) {
   const game = new Game({ seed: 120000 + i * 271 });
-  game.newRun();
+  game.newRun(undefined, ENDLESS ? { endless: true } : {});
   let guard = 0;
   while (guard++ < 400) {
     if (game.phase === 'map') {
@@ -182,6 +184,28 @@ for (let i = 0; i < TOTAL; i++) {
 }
 
 const avg = (a) => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0).toFixed(2);
+/**
+ * `--endless`：模拟**无尽模式**（标题页那个单独入口）。
+ *
+ * 无尽模式没有胜负，唯一的成绩是「走到第几章」—— 所以这里报的是**章节分布**
+ * （中位数 / 最好的一次），而不是通关率。想对比正片就直接跑不带参数的这一条。
+ */
+if (ENDLESS) {
+  const chapters = stats.stages.map((s) => s + 1).sort((a, b) => a - b);
+  const median = chapters[Math.floor(chapters.length / 2)] ?? 0;
+  const best = chapters[chapters.length - 1] ?? 0;
+  const over6 = chapters.filter((c) => c > stageCount()).length;
+  console.log(`\n=== 无尽模式模拟（${TOTAL} 局；会喝药、会挑路线）===`);
+  console.log(`  走到第几章   中位数 ${median} · 平均 ${avg(chapters)} · 最远 ${best}`);
+  console.log(`  走过正片(>${stageCount()} 章) ${over6} 局（${((over6 / TOTAL) * 100).toFixed(1)}%）`);
+  const buckets = {};
+  for (const c of chapters) { const b = Math.min(20, c); buckets[b] = (buckets[b] ?? 0) + 1; }
+  console.log('  章节分布：' + Object.entries(buckets).sort((a, b) => a[0] - b[0])
+    .map(([k, v]) => `${k}${Number(k) >= 20 ? '+' : ''}章:${v}`).join(' '));
+  console.log('  死因：' + [...stats.death.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k}×${v}`).join('  '));
+  process.exit(0);
+}
+
 console.log(`\n=== 全流程模拟（${TOTAL} 局；会喝药、会挑路线）===`);
 console.log(`  通关率      ${((stats.win / TOTAL) * 100).toFixed(1)}%`);
 console.log(`  平均到第几章 ${avg(stats.stages.map((s) => s + 1))} / ${stageCount()}`);

@@ -172,6 +172,14 @@ function recordRow(entry) {
 
   return el('div', { class: `rec-row ${entry.win ? 'win' : 'down'}` }, [
     el('div', { class: 'rec-badge', text: entry.win ? t('通关') : t('止步') }),
+    /**
+     * 无尽模式那一局单独标一下：它没有「通关 / 止步」这回事 ——
+     * 成绩就是「走到第几章」（见 game.js 的 runSummary.endless）。
+     */
+    entry.endless ? el('div', {
+      class: 'rec-badge endless',
+      dataset: { tip: t('无尽模式：没有终点，走到哪算哪。') },
+    }, [t('无尽')]) : null,
     main,
     el('button', {
       class: 'btn btn-sm btn-ghost',

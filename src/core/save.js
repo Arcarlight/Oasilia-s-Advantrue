@@ -62,6 +62,13 @@ export const save = {
        * 就永久记下来。老存档补成空数组（图鉴会显示成「全都还没见过」，不会白屏）。
        */
       if (!Array.isArray(meta.seenItems)) meta.seenItems = [];
+      /**
+       * **无尽模式**（用户要的：通关第一次之后解锁的另一个入口）：
+       *   endlessUnlocked  通关过一次没有（解锁条件）
+       *   endlessBest      无尽模式走到过的最远章节（1-based；标题页与结算页显示它）
+       */
+      if (meta.endlessUnlocked !== true) meta.endlessUnlocked = !!meta.endlessUnlocked;
+      if (!Number.isFinite(meta.endlessBest)) meta.endlessBest = 0;
       // 击败**次数**（id -> 次数）：图鉴的奖牌（5 / 15 / 25 / 50 次）靠它。
       // 老存档没有这份计数，此时图鉴按「slainEnemies 里有 = 打赢过 1 次」算（见 codex.js）。
       if (!meta.slainCount || typeof meta.slainCount !== 'object') meta.slainCount = {};
@@ -116,6 +123,19 @@ export const save = {
     }
     if (!added) return meta;
     const next = { ...meta, seenItems: [...seen] };
+    this.writeMeta(next);
+    return next;
+  },
+
+  /**
+   * 无尽模式的成绩：`chapter` 是 1-based 的「走到了第几章」。
+   * 只在打破纪录时写盘；返回更新后的 meta（界面拿 `endlessBest` 显示）。
+   */
+  noteEndlessBest(chapter) {
+    const meta = this.readMeta();
+    const best = Math.max(meta.endlessBest ?? 0, Math.max(1, Math.round(chapter)));
+    if (best === (meta.endlessBest ?? 0)) return meta;
+    const next = { ...meta, endlessBest: best };
     this.writeMeta(next);
     return next;
   },

@@ -143,6 +143,34 @@ async function renderTitle(game) {
       class: hasSave ? 'btn btn-lg' : 'btn btn-primary btn-lg',
       onClick: () => { audio.ui('confirm'); game.newRun(); },
     }, [el('span', { class: 'ico-star' }), el('span', { text: t('开始新的冒险') })]),
+    /**
+     * **无尽模式：单独一个入口**（用户明确要求「不要和普通模式合并，而是有另一个入口」）。
+     *
+     * 规则：通关一次正片之后解锁。未解锁时按钮就在那儿但点不动，
+     * 并直接写明解锁条件 —— 藏起来的话，玩家永远不知道还有这个模式。
+     * 无尽局在引擎里是 `newRun(seed, { endless: true })`：地图分叉 +1、敌人略微加压、
+     * 过了第 6 章复利变强，永远不会出现结局页，目标只有「走到第几章」。
+     */
+    (() => {
+      const meta = save.readMeta();
+      const unlocked = !!meta.endlessUnlocked;
+      const best = meta.endlessBest ?? 0;
+      return el('button', {
+        class: `btn btn-lg endless-btn${unlocked ? '' : ' locked'}`,
+        disabled: !unlocked,
+        dataset: unlocked
+          ? { tip: t('无尽模式：地图岔路更多、敌人更强，一路走下去 —— 看你能走到第几章。') }
+          : { tip: t('通关一次正片之后解锁。') },
+        onClick: () => { audio.ui('confirm'); game.newRun(undefined, { endless: true }); },
+      }, [
+        el('span', { class: unlocked ? 'ico-infinity' : 'ico-lock' }),
+        el('span', { text: t('无尽模式') }),
+        el('span', {
+          class: 'btn-sub',
+          text: !unlocked ? t('通关后解锁') : (best > 0 ? t('最远 第 {n} 章', { n: best }) : t('还没走过')),
+        }),
+      ]);
+    })(),
     el('button', { class: 'btn btn-ghost', onClick: () => { audio.ui('open'); showHelp(); } }, [
       el('span', { class: 'ico-help' }), el('span', { text: t('玩法说明') }),
     ]),
@@ -1064,18 +1092,24 @@ function renderGameOver(game) {
   inner.append(el('div', { class: 'title-illo' }, [
     el('span', { class: 'ico-death', style: { width: '54px', height: '54px', color: '#e8cfa2' } }),
   ]));
-  inner.append(el('h1', { text: t('灰溜溜地回家了') }));
+  inner.append(el('h1', { text: game.isEndless() ? t('无尽之旅到此为止') : t('灰溜溜地回家了') }));
   inner.append(el('div', {
     class: 'title-quote',
     // 失败**不写成**「她倒下了 / 沙子盖住了一切」：这一局只是没打完，人好好的。
     // （这里以前还跟着第二段「风很快就把她的痕迹吹平了——但沙漠记住了她走过」，
     //   那是旧版「她死了」的挽歌，和上一段「回家洗澡、下次再来」自相矛盾，已删。）
-    text: t('{name} 在{biome}撑到第 {floor} 步，还是决定先回家。\n抖干净沙子、泡了个澡、把卡组重新洗了一遍——下次再来。', { name: d.name, biome: biome.name, floor: d.floor + 1 }),
+    text: game.isEndless()
+      // 无尽模式：这一局的成绩就是「走到第几章」，所以那句话换了说法
+      ? t('{name} 在{biome}走到了第 {stage} 章，第 {floor} 步 —— 无尽模式就是看能走多远。\n最好的一次是第 {best} 章。', {
+          name: d.name, biome: biome.name, stage: d.stage + 1, floor: d.floor + 1,
+          best: Math.max(meta.endlessBest ?? 0, d.stage + 1),
+        })
+      : t('{name} 在{biome}撑到第 {floor} 步，还是决定先回家。\n抖干净沙子、泡了个澡、把卡组重新洗了一遍——下次再来。', { name: d.name, biome: biome.name, floor: d.floor + 1 }),
   }));
 
   inner.append(el('div', { class: 'run-stats' }, [
     statBox(t('抵达步数'), d.floor + 1),
-    statBox(t('推进章节'), `${d.stage + 1} / ${stageCount()}`),
+    statBox(t('推进章节'), game.isEndless() ? t('第 {n} 章', { n: d.stage + 1 }) : `${d.stage + 1} / ${stageCount()}`),
     statBox(t('击败对手'), d.kills),
     statBox(t('战斗回合'), d.turnsThisRun),
     statBox(t('卡组张数'), d.deck.length),
@@ -1129,6 +1163,14 @@ function renderVictory(game) {
     class: 'title-quote',
     text: t('夜砂墓原的尽头不是墙，是一片什么都没有的平地。\n绿色细胞拼成的脸慢慢散开，落回沙里。\n「……好吧。你走得够远了，沙漠的孩子。」\n\n{name} 展开翅膀，第一次觉得风是干净的。', { name: d.name }),
   }));
+  /**
+   * 通关页顺带报一下解锁：**无尽模式**（用户要的「通关第一次后解锁」）。
+   * 放在这里而不是只放标题页 —— 玩家刚通关，正是告诉他「还有得玩」的时候。
+   */
+  inner.append(el('div', { class: 'unlock-banner' }, [
+    el('span', { class: 'ico-infinity', style: { width: '22px', height: '22px' } }),
+    el('span', { text: t('通关达成 —— 标题页多了一个「无尽模式」入口：岔路更多、敌人更强，看你能走到第几章。') }),
+  ]));
 
   inner.append(el('div', { class: 'run-stats' }, [
     statBox(t('推进章节'), t('{n} / {total} 通关', { n: stageCount(), total: stageCount() })),
