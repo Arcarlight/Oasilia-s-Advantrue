@@ -316,9 +316,34 @@ export async function playEncounter(opts = {}) {
     const tierName = TIERS[enemy.tier]?.name ?? '';
     const neon = el('div', { class: 'enc-neon', 'aria-hidden': 'true' },
       [0, 1, 2, 3].map((i) => el('span', { class: 'enc-neon-i', text: tierName, style: { '--i': String(i) } })));
+    /**
+     * 首领称号：写在**大号名字底下、小字号、总宽与名字相等**（用户要求）。
+     *
+     * 为什么拆成一个字一个 span 再用 `space-between` 撑开，而不是算字距：
+     * 名字的字号是 clamp(44px, 10.4vw, 158px)、宽度随字体落在什么时候而变，
+     * 用 `letter-spacing` 还得自己扣掉「最后一个字后面那份间距」才不会偏心；
+     * 拆字 + space-between 的首字左边缘对齐名字左边缘、末字右边缘对齐名字右边缘，
+     * **总宽天然等于名字宽度**，也顺便给出了均匀的字距。
+     * 称号比名字还长时（例如「沙丘上空的影子」配「化石翼龙」）撑不开 —— 那种情况就退回自然宽度居中。
+     */
+    const bossTitle = enemy.bossTitle ?? null;
+    const titleEl = bossTitle
+      ? el('div', { class: 'enc-boss-title' }, [...bossTitle].map((ch) => el('span', { text: ch })))
+      : null;
+    /**
+     * 称号是**和名字同一格**的另一个网格子项（不是塞进名字里）：
+     *   · 塞进 `.enc-name` 里的话，它的 `textContent` 就变成「名字 + 称号」了
+     *     —— 诊断脚本与读屏都靠「这个元素里就是名字」这一条；
+     *   · 用一层 wrapper 把两条包起来也不行：那会让网格项变成 wrapper，
+     *     名字就**不再与霓虹灯叠在同一格**（实测名牌整体上移、名字压不住霓虹灯了）。
+     * 所以：两条各自占 `1/1` 格、都靠右对齐，纵向位置由 JS 现量着补一个位移
+     * （`.enc-boss-title-row` 的 translateY），正好落在名字下面。
+     */
     const plate = el('div', { class: 'enc-plate' }, [
       neon,
       el('div', { class: 'enc-name', text: enemy.name ?? '' }),
+      // aria 挂在行上，读屏时不至于把名字和称号读成两段无关的字
+      titleEl ? el('div', { class: 'enc-boss-title-row', 'aria-label': bossTitle }, [titleEl]) : null,
     ]);
     const enemyWrap = el('div', { class: 'enc-fighter enc-enemy' }, [enemyBody]);
     const playerWrap = el('div', { class: 'enc-fighter enc-player' }, [playerBody]);
@@ -380,7 +405,16 @@ export async function playEncounter(opts = {}) {
      * 起点距离 = 名牌自己的宽度 + 它到屏幕右边的空隙（现量，字体换上来之后也不会偏）。
      */
     const nameEl = plate.querySelector('.enc-name');
+    const titleRow = plate.querySelector('.enc-boss-title-row');
     const neonLayers = [...neon.querySelectorAll('.enc-neon-i')];
+    /** 称号跟着名字的位移走，另外再补一个纵向位移让它在名字正下方 */
+    let titleDy = 0;
+    let lastLag = 0;
+    const applyTitleTransform = (lag) => {
+      if (!titleRow) return;
+      lastLag = lag;
+      titleRow.style.transform = `translateX(${Math.round(lag)}px) translateY(${Math.round(titleDy)}px)`;
+    };
     const plateGap = Math.max(0, Math.round(vw - plate.getBoundingClientRect().right));
     /** 第 i 份霓虹灯「把多留的距离收回去」的进度：越靠左（i 越大）收得越晚 */
     const layerP = (pp, i) => {
@@ -407,11 +441,44 @@ export async function playEncounter(opts = {}) {
       });
       if (!nameEl) return;
       const np = clamp01((pp - PLATE.NAME_AT) / (1 - PLATE.NAME_AT));
-      nameEl.style.transform = `translateX(${Math.round(away * PLATE.NAME_PULL * (1 - smoothstep(np)))}px)`;
+      const lag = Math.round(away * PLATE.NAME_PULL * (1 - smoothstep(np)));
+      nameEl.style.transform = `translateX(${lag}px)`;
+      // 称号跟着名字一起动：它是名字底下那一行，自己走一套位移就会和名字脱开
+      applyTitleTransform(lag);
     };
     plateTick(0);
 
     /**
+     * 把称号**撑到与名字等宽**、并挪到名字正下方（用户要求：「小字号写称号，总宽度和名字等同」）。
+     *
+     * 必须**现量**：名字是 CJK 字体渲染的、字号又是 clamp(...)，字体落定前后宽度会变，
+     * 窗口尺寸变了也会变 —— 所以字体就绪与 resize 各重量一次。
+     * 撑不开（称号比名字还长，例如「沙丘上空的影子」配「化石翼龙」）时不硬撑，退回自然宽度居中。
+     */
+    const fitTitle = () => {
+      if (!titleEl || !titleRow || !nameEl) return;
+      titleEl.style.width = '';
+      const nameW = nameEl.offsetWidth;
+      const titleW = titleEl.offsetWidth;
+      if (!nameW || !titleW) return;
+      if (titleW <= nameW) {
+        titleEl.style.width = `${nameW}px`;
+        titleEl.classList.remove('centered');
+      } else {
+        titleEl.classList.add('centered');
+      }
+      // 纵向：两条都在 1/1 格里居中，所以要先量出当前的落差再补掉，落到名字下面 4px
+      titleRow.style.transform = 'translateX(0px) translateY(0px)';
+      const nb = nameEl.getBoundingClientRect();
+      const tb = titleRow.getBoundingClientRect();
+      titleDy = (nb.bottom + 4) - tb.top;
+      applyTitleTransform(lastLag);
+    };
+    fitTitle();
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready.then(() => { fitTitle(); plateTick(0); }).catch(() => {});
+    }
+    window.addEventListener('resize', fitTitle);    /**
      * 划入：两只横向对穿；光带**从头到尾都是整幅视口宽**，整条从屏幕左边外面扫进来。
      *
      * 用户两轮下来的结论：「我希望光条没有拉长，进来就是最长的」。

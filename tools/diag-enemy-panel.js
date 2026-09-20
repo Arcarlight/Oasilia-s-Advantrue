@@ -95,6 +95,35 @@
     ok(text.includes(String(shownAtk)), '面板上显示的攻击力和引擎一致', `面板里有「${shownAtk}」`);
     ok(text.includes(String(battle.enemy.maxHp)), '面板上显示的血量和引擎一致', `${battle.enemy.maxHp}`);
 
+    /**
+     * 首领称号：**名字底下那一行小字，总宽与名字相等**（用户要求）。
+     * 非首领不该有这一行 —— 那是个反例，一起验掉。
+     */
+    {
+      const nameEl = document.querySelector('.fighter-enemy .fighter-name-text');
+      const titleEl = document.querySelector('.fighter-enemy .boss-title');
+      const want = battle.enemy.bossTitle ?? null;
+      if (want) {
+        ok(!!titleEl, '首领的信息卡上有称号那一行', titleEl?.textContent ?? '（没有）');
+        if (titleEl && nameEl) {
+          const spans = [...titleEl.querySelectorAll('span')];
+          const first = spans[0]?.getBoundingClientRect();
+          const last = spans[spans.length - 1]?.getBoundingClientRect();
+          const nb = nameEl.getBoundingClientRect();
+          const tb = titleEl.getBoundingClientRect();
+          ok(titleEl.textContent === want, '称号文字与内容里的 bossTitle 一致', `「${titleEl.textContent}」`);
+          ok(tb.top >= nb.bottom - 2, '称号写在**名字下面**', `名字底 ${Math.round(nb.bottom)} / 称号顶 ${Math.round(tb.top)}`);
+          if (first && last) {
+            const total = last.right - first.left;
+            ok(Math.abs(total - nb.width) <= 1.5, '**称号总宽与名字相等**',
+              `称号 ${total.toFixed(1)}px vs 名字 ${nb.width.toFixed(1)}px`);
+          }
+        }
+      } else {
+        ok(!titleEl, `${tier} 档的信息卡上没有多出称号那一行`);
+      }
+    }
+
     // 顺序硬约束：同一章里 杂兵 < 较强 < 精英 < 首领
     const order = ['mob', 'normal', 'elite', 'boss'];
     const row = order.map((t) => BALANCE.enemyAtk[t][stage]);

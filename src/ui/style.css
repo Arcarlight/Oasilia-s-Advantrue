@@ -1016,19 +1016,27 @@ button { font-family: inherit; }
 }
 .tier-elite { background: rgba(255, 140, 140, .25); color: #ffc2c2; }
 .tier-boss { background: rgba(255, 120, 180, .28); color: #ffc6e2; }
-/* 首领称号（「流沙之主」）：打在名字后面，金色小字 —— 和「ボス」角标一起说明
-   「这只不是路上的普通首领」。窗口矮时会连同 fighter-types 一起被 compact 收掉。 */
+/* 首领称号（「流沙之主」）：名字**底下那一行**小字，总宽由 JS 撑到与名字相等。
+   以前它跟在名字后面（一行里挤着名字 + 档位角标 + 称号），窄屏上会被省略号切掉。 */
+.boss-title-row { display: flex; justify-content: flex-start; margin-top: 1px; }
 .boss-title {
+  display: flex;
+  justify-content: space-between;
   font-size: 10px; font-weight: 700; letter-spacing: .02em;
   color: #ffd98a; text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 38%;
+  white-space: nowrap;
 }
+/* 称号比名字长时（撑不开）退回自然宽度居中 */
+.boss-title.centered { justify-content: center; }
+.boss-title.centered span { margin: 0 .05em; }
 .fighter-types { font-size: 10px; opacity: .7; margin-bottom: 4px; }
 
 /* 窗口很矮时（行高 < 128px，由 layoutBattle() 加这个类）把角色卡压缩：
    隐藏次要信息、缩小头像与内边距，保证信息卡不会溢出到自己那一行外面。 */
 .fighter.compact .fighter-types,
 .fighter.compact .stat-chips { display: none; }
+/* 窗口很矮时称号那一行也收掉：它是氛围信息，宁可让位给血条与攻防速 */
+.fighter.compact .boss-title-row { display: none; }
 .fighter.compact .fighter-card { min-width: 132px; max-width: 190px; padding: 3px 8px; }
 .fighter.compact .fighter-face { width: 30px; height: 30px; }
 .fighter.compact .fighter-face .portrait { width: 26px !important; height: 26px !important; }
@@ -2607,6 +2615,49 @@ input, textarea { cursor: text !important; }
     0 0 4px rgba(0, 0, 0, .9),
     0 0 10px rgba(0, 0, 0, .8),
     0 0 44px var(--accent, #f0a93c);
+}
+/* 名字 + 称号：**两条各自占 1/1 格**（和霓虹灯叠在同一格），都靠右对齐。
+   关键是不能把两条包进一层 wrapper —— 那样网格项就变成 wrapper，
+   名字不再与霓虹灯同格（实测名牌整体上移、名字压不住霓虹灯了）。
+   纵向落差由 encounter.js 现量着补（translateY），落在名字正下方。 */
+.enc-name { grid-area: 1 / 1; align-self: center; justify-self: end; z-index: 1; }
+/* 首领称号：名字底下那一行小字。
+   宽度由 encounter.js 现量着撑到与名字相等（拆成单字 + space-between），
+   所以这里只要排得开、跟着名字的位移走就行。 */
+.enc-boss-title-row {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: end;
+  z-index: 1;
+  /* 位移由 JS 每帧写（横向跟名字的滞后、纵向落在名字下面），所以不能有 transition */
+  will-change: transform;
+}
+.enc-boss-title {
+  display: flex;
+  justify-content: space-between;
+  /* 撑不开（称号比名字长）时加 .centered：退回自然宽度、居中 */
+  font-family: var(--font-hand);
+  font-size: clamp(16px, 1.9vw, 30px);
+  line-height: 1.25;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: #fff6e4;
+  opacity: .96;
+  /* 小字压在霓虹灯的灯管上，光靠投影不够 —— 垫一条两端渐隐的暗带，字才读得出来 */
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .62) 14%, rgba(0, 0, 0, .62) 86%, rgba(0, 0, 0, 0) 100%);
+  padding: 3px 6px;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, .95),
+    0 0 6px rgba(0, 0, 0, .9),
+    0 0 18px var(--accent, #f0a93c);
+}
+.enc-boss-title.centered { justify-content: center; }
+.enc-boss-title.centered span { margin: 0 .06em; }
+/* 上面那行字压在霓虹灯上，灯管的描边会透出来 —— 给称号垫一层暗底 */
+.enc-boss-title span {
+  display: inline-block;
+  /* 每一份自己扛一点暗影，拆字之后看不出接缝 */
+  background: none;
 }
 /* 名字压在霓虹灯**之上**：同一个格子，z-index 高的那个在上面。
    两者都**居右**（用户要求）—— 共享同一条右边缘，所以名字右对齐、霓虹灯基准那份也右对齐。 */

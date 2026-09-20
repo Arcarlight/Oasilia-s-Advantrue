@@ -84,7 +84,9 @@
       // 曾经因为「先 clear 再 await 再 append」把后渲染的地图压在底下过（同屏出现两屏）
       const stage = [...document.getElementById('stage').children].map((c) => c.className);
       ok(stage.length === 1, '舞台上只有一屏（没有把标题和地图叠在一起）', stage.join(' | ') || '（空）');
-      game.startBattle('elite', 0, 'map');
+      // ?tier=boss 用来看首领那一档（首领称号就写在名字底下那一行）
+      const tier = params.get('tier');
+      game.startBattle(tier === 'boss' ? 'boss' : 'elite', 0, 'map');
       await until(() => !!document.querySelector('.encounter'));
       await wait(500);
       // 把这一帧上「霓虹灯各份的滞后量」打出来，方便对着截图核对「拉开」到底有没有生效
@@ -656,6 +658,60 @@
     ok(live2 <= live1,
       '第二场遭遇演出没有留下游离的动画定时器',
       `第一场后 ${live1} 个，第二场后 ${live2} 个`);
+
+    // ---- 四、首领称号：名字底下那一行小字（宽度要与名字相等）----
+    /**
+     * 用户要求：「在进入战斗时在 boss 名字下用小字号写他们的称号（总宽度和名字等同）」。
+     * 这一段的判据就是这句话本身：称号**在名字下面**、字号**明显更小**、
+     * 而**总宽与名字相等**（拆成单字 + space-between 撑开，误差 ≤1px）。
+     * 顺便验反例：精英没有称号，那一行**不该**出现。
+     */
+    log('=== 四、首领称号 ===');
+    enc.setEncounterMode('map');
+    game.startBattle('boss', 0, 'map');
+    await until(() => !!document.querySelector('.encounter'), 10000);
+    await wait(500);
+    {
+      const root2 = document.querySelector('.encounter');
+      const nameEl = root2?.querySelector('.enc-name');
+      const titleRow = root2?.querySelector('.enc-boss-title-row');
+      const titleEl = root2?.querySelector('.enc-boss-title');
+      const want = game.battle?.enemy?.bossTitle ?? null;
+      ok(!!want, '这一场是首领，数据里带着称号', String(want));
+      ok(!!titleEl, '首领的演出里有称号那一行', titleEl?.textContent ?? '（没有）');
+      if (nameEl && titleEl) {
+        const nb = nameEl.getBoundingClientRect();
+        const tb = titleEl.getBoundingClientRect();
+        const nfs = parseFloat(getComputedStyle(nameEl).fontSize);
+        const tfs = parseFloat(getComputedStyle(titleEl).fontSize);
+        ok(titleEl.textContent === want, '称号文字与内容里的 bossTitle 一致',
+          `「${titleEl.textContent}」 vs 「${want}」`);
+        ok(tb.top >= nb.bottom - 2, '称号写在**名字下面**（上边缘不低于名字的下边缘）',
+          `名字底 ${Math.round(nb.bottom)} / 称号顶 ${Math.round(tb.top)}`);
+        ok(tfs < nfs * 0.5, '称号的字号**明显小于**名字', `称号 ${tfs}px vs 名字 ${nfs}px`);
+        // 总宽 = 首字左边缘 → 末字右边缘（撑开是 space-between，所以量的就是它自己的宽）
+        const spans = [...titleEl.querySelectorAll('span')];
+        const first = spans[0]?.getBoundingClientRect();
+        const last = spans[spans.length - 1]?.getBoundingClientRect();
+        if (first && last) {
+          const total = last.right - first.left;
+          ok(Math.abs(total - nb.width) <= 1.5,
+            '**称号的总宽与名字相等**（拆字 + space-between 撑开）',
+            `称号 ${total.toFixed(1)}px vs 名字 ${nb.width.toFixed(1)}px`);
+          ok(tb.left <= nb.left + 1.5 && tb.right >= nb.right - 1.5,
+            '称号两端与名字两端对齐', `称号 ${Math.round(tb.left)}~${Math.round(tb.right)} / 名字 ${Math.round(nb.left)}~${Math.round(nb.right)}`);
+        }
+      }
+    }
+    // 反例：精英没有称号
+    game.startBattle('elite', 0, 'map');
+    await until(() => !!document.querySelector('.encounter'), 10000);
+    await wait(300);
+    {
+      const root3 = document.querySelector('.encounter');
+      ok(!root3?.querySelector('.enc-boss-title'), '精英（没有称号）不会多出那一行');
+    }
+    await until(() => !document.querySelector('.encounter'), 10000).catch(() => {});
 
     if (fails.length) log(`ENC_ERRORS=[${fails.join(' | ')}]`);
     else log('遭遇演出自检：通过 ✓');

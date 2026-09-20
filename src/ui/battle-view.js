@@ -363,17 +363,30 @@ export class BattleScreen {
     this.enemyFace = el('div', { class: 'fighter-face' });
     this.playerFace = el('div', { class: 'fighter-face' });
 
+    /**
+     * 首领称号：写在**名字底下那一行**、小字号、**总宽与名字相等**（用户要求）。
+     *
+     * 之前它跟在名字后面（一行里挤着名字 + 档位角标 + 称号），窄屏上会被省略号切掉；
+     * 现在单独一行，拆成单字 + `space-between` 撑到与名字等宽 —— 和遭遇演出里那一行同一套做法。
+     * 名字宽度要**现量**（字号是固定值，但中文字体与档位角标都会占宽），
+     * 所以在 mount() 与窗口尺寸变化时各量一次（见 fitBossTitle）。
+     */
+    this.enemyNameEl = el('span', { class: 'fighter-name-text', text: b.enemy.name });
+    this.bossTitleRow = b.enemy.bossTitle
+      ? el('div', { class: 'boss-title-row' }, [
+          el('div', { class: 'boss-title' }, [...b.enemy.bossTitle].map((ch) => el('span', { text: ch }))),
+        ])
+      : null;
+
     this.enemyCard = el('div', { class: 'fighter-card' }, [
       el('div', { class: 'fighter-head' }, [
         this.enemyFace,
         el('div', { class: 'fighter-info' }, [
           el('div', { class: 'fighter-name' }, [
-            el('span', { text: b.enemy.name }),
+            this.enemyNameEl,
             el('span', { class: `tier tier-${b.enemy.tier}`, text: TIERS[b.enemy.tier]?.name ?? '' }),
-            // 首领称号：每个头领在内容里都写了 `bossTitle`（「流沙之主」「结晶的暴君」…），
-            // 以前界面上哪儿都不显示它 —— 现在打在名字后面，让「这只不是普通首领」看得见。
-            b.enemy.bossTitle ? el('span', { class: 'boss-title', text: b.enemy.bossTitle }) : null,
           ].filter(Boolean)),
+          this.bossTitleRow,
           el('div', { class: 'fighter-types', text: this.enemySubtitle() }),
         ]),
       ]),
@@ -478,10 +491,13 @@ export class BattleScreen {
 
     // 先量一次场地（精灵缩放与出牌区位置都靠它），窗口变化时再量
     this.layoutBattle();
+    // 首领称号那一行的宽度要跟名字对齐，也得现量（字体 / 档位角标都会占宽）
+    this.fitBossTitle();
     this.onResize = () => {
       clearTimeout(this._resizeTimer);
       this._resizeTimer = setTimeout(() => {
         this.layoutBattle();
+        this.fitBossTitle();
         // 手牌叠放量跟可用宽度有关，窗口一变就得重算
         this.fitHand(this.battle.hand('player').length);
       }, 120);
@@ -532,6 +548,28 @@ export class BattleScreen {
     if (!info) return base;
     const maxH = Math.max(56, (rowH ?? 320) - 18);   // 上下各留一点空隙
     return Math.max(0.7, Math.min(base, maxH / info.fh));
+  }
+
+  /**
+   * 首领称号那一行：把总宽撑到与名字相等（用户要求）。
+   *
+   * 拆成单字 + `space-between` 撑开，首字左边缘与末字右边缘正好贴住名字的两端 ——
+   * 比算 `letter-spacing` 稳（不用扣掉「最后一个字后面那份间距」）。
+   * 称号比名字还长时不硬撑，退回自然宽度居中。
+   */
+  fitBossTitle() {
+    const titleEl = this.bossTitleRow?.querySelector('.boss-title');
+    if (!titleEl || !this.enemyNameEl) return;
+    titleEl.style.width = '';
+    const nameW = this.enemyNameEl.offsetWidth;
+    const titleW = titleEl.offsetWidth;
+    if (!nameW || !titleW) return;
+    if (titleW <= nameW) {
+      titleEl.style.width = `${nameW}px`;
+      titleEl.classList.remove('centered');
+    } else {
+      titleEl.classList.add('centered');
+    }
   }
 
   /** 布局自适应：测量场地 → 定精灵缩放 → 摆出牌展示区。窗口变化时会重新跑一遍。 */
