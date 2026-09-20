@@ -42,12 +42,6 @@
     }
   },
   "movePools": {
-    "weak": [
-      "mob_scratch",
-      "tackle",
-      "mob_sand",
-      "mob_guard"
-    ],
     "basic": [
       "mob_scratch",
       "tackle",
@@ -56,27 +50,6 @@
       "mob_guard",
       "double_kick",
       "mob_stare"
-    ],
-    "strong": [
-      "bite",
-      "rock_throw",
-      "crunch",
-      "double_kick",
-      "mob_growl",
-      "mob_guard",
-      "fire_fang",
-      "harden"
-    ],
-    "elite": [
-      "dragon_breath",
-      "rock_slide",
-      "crunch",
-      "fire_fang",
-      "earthquake",
-      "dragon_claw",
-      "iron_defense",
-      "bulk_up",
-      "screech"
     ],
     "boss": [
       "earthquake",
@@ -89,26 +62,6 @@
       "bulk_up",
       "mist"
     ],
-    "forest_mid": [
-      "mob_scratch",
-      "bite",
-      "bug_buzz",
-      "toxic",
-      "double_kick",
-      "mob_growl",
-      "harden",
-      "u_turn"
-    ],
-    "tide_mid": [
-      "bite",
-      "crunch",
-      "mob_guard",
-      "harden",
-      "roost",
-      "mob_sand",
-      "dragon_breath",
-      "mob_growl"
-    ],
     "cliff_mid": [
       "bite",
       "rock_throw",
@@ -119,74 +72,51 @@
       "mob_growl",
       "mob_stare"
     ],
-    "kit_ground": [
-      "mob_scratch",
-      "tackle",
-      "rock_throw",
-      "bulldoze",
-      "sand_tomb",
+    "elite": [
+      "dragon_breath",
       "rock_slide",
-      "mob_guard",
-      "earth_power"
-    ],
-    "kit_ground_hi": [
-      "mob_scratch",
-      "tackle",
-      "rock_throw",
-      "bulldoze",
-      "sand_tomb",
-      "rock_slide",
-      "mob_guard",
-      "earth_power",
+      "crunch",
+      "fire_fang",
       "earthquake",
-      "body_press",
-      "bulk_up"
-    ],
-    "kit_rock": [
-      "mob_scratch",
-      "tackle",
-      "rock_throw",
-      "harden",
-      "mob_guard",
-      "rock_blast",
-      "stone_edge",
-      "mob_stare"
-    ],
-    "kit_rock_hi": [
-      "mob_scratch",
-      "tackle",
-      "rock_throw",
-      "harden",
-      "mob_guard",
-      "rock_blast",
-      "stone_edge",
-      "mob_stare",
-      "rock_slide",
-      "protect",
-      "iron_defense"
-    ],
-    "kit_steel": [
-      "mob_scratch",
-      "tackle",
-      "iron_head",
-      "harden",
-      "mob_guard",
-      "metal_sound",
-      "headbutt",
-      "double_kick"
-    ],
-    "kit_steel_hi": [
-      "mob_scratch",
-      "tackle",
-      "iron_head",
-      "harden",
-      "mob_guard",
-      "metal_sound",
-      "headbutt",
-      "double_kick",
+      "dragon_claw",
       "iron_defense",
-      "protect",
-      "bulk_up"
+      "bulk_up",
+      "screech"
+    ],
+    "forest_mid": [
+      "mob_scratch",
+      "bite",
+      "bug_buzz",
+      "toxic",
+      "double_kick",
+      "mob_growl",
+      "harden",
+      "u_turn"
+    ],
+    "kit_bleed": [
+      "mob_scratch",
+      "tackle",
+      "slash",
+      "fury_swipes",
+      "poison_fang",
+      "iron_barbs",
+      "headbutt",
+      "venom_burst"
+    ],
+    "kit_bleed_hi": [
+      "mob_scratch",
+      "tackle",
+      "slash",
+      "fury_swipes",
+      "poison_fang",
+      "iron_barbs",
+      "headbutt",
+      "venom_burst",
+      "rend",
+      "night_slash",
+      "bloodletting",
+      "megahorn",
+      "swords_dance"
     ],
     "kit_bug": [
       "mob_scratch",
@@ -210,236 +140,6 @@
       "megahorn",
       "bullet_seed",
       "swords_dance"
-    ],
-    "kit_grass": [
-      "mob_scratch",
-      "tackle",
-      "absorb",
-      "razor_leaf",
-      "leech_seed",
-      "spore",
-      "giga_drain",
-      "mob_guard"
-    ],
-    "kit_grass_hi": [
-      "mob_scratch",
-      "tackle",
-      "absorb",
-      "razor_leaf",
-      "leech_seed",
-      "spore",
-      "giga_drain",
-      "mob_guard",
-      "synthesis",
-      "leaf_storm",
-      "quiver_dance"
-    ],
-    "kit_poison": [
-      "mob_scratch",
-      "tackle",
-      "poison_sting",
-      "acid_armor",
-      "venom_drain",
-      "sludge_bomb",
-      "toxic",
-      "mob_sand"
-    ],
-    "kit_poison_hi": [
-      "mob_scratch",
-      "tackle",
-      "poison_sting",
-      "acid_armor",
-      "venom_drain",
-      "sludge_bomb",
-      "toxic",
-      "mob_sand",
-      "toxic_spikes",
-      "plague",
-      "venom_burst"
-    ],
-    "kit_water": [
-      "mob_scratch",
-      "tackle",
-      "water_pulse",
-      "aqua_ring",
-      "withdraw",
-      "brine",
-      "whirlpool",
-      "mob_guard"
-    ],
-    "kit_water_hi": [
-      "mob_scratch",
-      "tackle",
-      "water_pulse",
-      "aqua_ring",
-      "withdraw",
-      "brine",
-      "whirlpool",
-      "mob_guard",
-      "surf",
-      "moonlight",
-      "guardian_oath"
-    ],
-    "kit_flying": [
-      "mob_scratch",
-      "tackle",
-      "nuzzle",
-      "air_slash",
-      "acrobatics",
-      "tailwind",
-      "storm_throw",
-      "mob_sand"
-    ],
-    "kit_flying_hi": [
-      "mob_scratch",
-      "tackle",
-      "nuzzle",
-      "air_slash",
-      "acrobatics",
-      "tailwind",
-      "storm_throw",
-      "mob_sand",
-      "feather_dance",
-      "water_shuriken",
-      "dragon_ascension"
-    ],
-    "kit_fire": [
-      "mob_scratch",
-      "tackle",
-      "flame_charge",
-      "fire_fang",
-      "heat_wave",
-      "slash",
-      "bite",
-      "mob_sand"
-    ],
-    "kit_fire_hi": [
-      "mob_scratch",
-      "tackle",
-      "flame_charge",
-      "fire_fang",
-      "heat_wave",
-      "slash",
-      "bite",
-      "mob_sand",
-      "overheat",
-      "last_stand",
-      "howl"
-    ],
-    "kit_dark": [
-      "mob_scratch",
-      "tackle",
-      "bite",
-      "crunch",
-      "knock_off",
-      "night_slash",
-      "headbutt",
-      "mob_guard"
-    ],
-    "kit_dark_hi": [
-      "mob_scratch",
-      "tackle",
-      "bite",
-      "crunch",
-      "knock_off",
-      "night_slash",
-      "headbutt",
-      "mob_guard",
-      "scary_face",
-      "blood_price",
-      "charm"
-    ],
-    "kit_dragon": [
-      "mob_scratch",
-      "tackle",
-      "dragon_breath",
-      "dragon_claw",
-      "dragon_tail",
-      "bite",
-      "mob_guard",
-      "mob_sand"
-    ],
-    "kit_dragon_hi": [
-      "mob_scratch",
-      "tackle",
-      "dragon_breath",
-      "dragon_claw",
-      "dragon_tail",
-      "bite",
-      "mob_guard",
-      "mob_sand",
-      "dragon_rush",
-      "draco_meteor",
-      "dragon_ascension"
-    ],
-    "kit_ghost": [
-      "mob_scratch",
-      "tackle",
-      "toxic_thread",
-      "night_slash",
-      "mob_stare",
-      "sand_tomb",
-      "bite",
-      "mob_sand"
-    ],
-    "kit_ghost_hi": [
-      "mob_scratch",
-      "tackle",
-      "toxic_thread",
-      "night_slash",
-      "mob_stare",
-      "sand_tomb",
-      "bite",
-      "mob_sand",
-      "toxic_overflow",
-      "moonlight",
-      "venom_burst"
-    ],
-    "kit_fighting": [
-      "mob_scratch",
-      "tackle",
-      "double_kick",
-      "rolling_kick",
-      "headbutt",
-      "bite",
-      "mob_guard",
-      "mob_sand"
-    ],
-    "kit_fighting_hi": [
-      "mob_scratch",
-      "tackle",
-      "double_kick",
-      "rolling_kick",
-      "headbutt",
-      "bite",
-      "mob_guard",
-      "mob_sand",
-      "superpower",
-      "bulk_up",
-      "body_press"
-    ],
-    "kit_normal": [
-      "mob_scratch",
-      "tackle",
-      "bite",
-      "mob_sand",
-      "mob_guard",
-      "double_kick",
-      "headbutt",
-      "mob_stare"
-    ],
-    "kit_normal_hi": [
-      "mob_scratch",
-      "tackle",
-      "bite",
-      "mob_sand",
-      "mob_guard",
-      "double_kick",
-      "headbutt",
-      "mob_stare",
-      "bulk_up",
-      "last_stand",
-      "recycle"
     ],
     "kit_crystal": [
       "mob_scratch",
@@ -467,143 +167,28 @@
       "sunder",
       "languor"
     ],
-    "kit_electric": [
+    "kit_dark": [
       "mob_scratch",
       "tackle",
-      "nuzzle",
-      "double_kick",
-      "iron_head",
-      "body_press",
-      "metal_sound",
-      "earth_power",
-      "headbutt"
-    ],
-    "kit_electric_hi": [
-      "mob_scratch",
-      "tackle",
-      "nuzzle",
-      "double_kick",
-      "iron_head",
-      "body_press",
-      "metal_sound",
-      "earth_power",
+      "bite",
+      "crunch",
+      "knock_off",
+      "night_slash",
       "headbutt",
-      "tailwind",
-      "agility",
-      "dragon_breath",
-      "dragon_claw",
-      "scale_shot"
-    ],
-    "kit_fungal": [
-      "mob_scratch",
-      "tackle",
-      "absorb",
-      "poison_sting",
-      "spore",
-      "giga_drain",
-      "razor_leaf",
-      "bullet_seed",
-      "leech_seed",
       "mob_guard"
     ],
-    "kit_fungal_hi": [
+    "kit_dark_hi": [
       "mob_scratch",
       "tackle",
-      "absorb",
-      "poison_sting",
-      "spore",
-      "giga_drain",
-      "razor_leaf",
-      "bullet_seed",
-      "leech_seed",
-      "toxic",
-      "worsen",
-      "megahorn",
-      "venom_drain"
-    ],
-    "kit_ruins": [
-      "mob_scratch",
-      "tackle",
-      "rock_throw",
-      "sand_tomb",
-      "night_slash",
-      "mob_sand",
-      "mob_stare",
-      "scary_face",
-      "sunder",
-      "bug_buzz",
-      "earth_power"
-    ],
-    "kit_ruins_hi": [
-      "mob_scratch",
-      "tackle",
-      "sand_tomb",
-      "night_slash",
-      "mob_sand",
-      "mob_stare",
-      "scary_face",
-      "sunder",
-      "bug_buzz",
-      "rock_slide",
-      "languor",
-      "earth_power",
-      "metal_sound"
-    ],
-    "kit_bleed": [
-      "mob_scratch",
-      "tackle",
-      "slash",
-      "fury_swipes",
-      "poison_fang",
-      "iron_barbs",
-      "headbutt",
-      "venom_burst"
-    ],
-    "kit_bleed_hi": [
-      "mob_scratch",
-      "tackle",
-      "slash",
-      "fury_swipes",
-      "poison_fang",
-      "iron_barbs",
-      "headbutt",
-      "venom_burst",
-      "rend",
-      "night_slash",
-      "bloodletting",
-      "megahorn",
-      "swords_dance"
-    ],
-    "kit_weaken": [
-      "mob_scratch",
-      "tackle",
-      "sand_attack",
-      "rock_slide",
-      "water_pulse",
-      "nuzzle",
-      "triple_axel",
-      "mob_stare",
-      "scary_face",
-      "intimidate",
-      "browbeat"
-    ],
-    "kit_weaken_hi": [
-      "mob_scratch",
-      "tackle",
-      "sand_attack",
-      "rock_slide",
-      "water_pulse",
-      "nuzzle",
-      "triple_axel",
-      "mob_stare",
-      "scary_face",
-      "intimidate",
-      "browbeat",
-      "exploit_weak",
+      "bite",
+      "crunch",
       "knock_off",
-      "bulk_up",
-      "swords_dance",
-      "total_suppression"
+      "night_slash",
+      "headbutt",
+      "mob_guard",
+      "scary_face",
+      "blood_price",
+      "charm"
     ],
     "kit_debuff": [
       "mob_scratch",
@@ -642,6 +227,805 @@
       "triple_axel",
       "silver_wind",
       "giga_impact"
+    ],
+    "kit_dragon": [
+      "mob_scratch",
+      "tackle",
+      "dragon_breath",
+      "dragon_claw",
+      "dragon_tail",
+      "bite",
+      "mob_guard",
+      "mob_sand"
+    ],
+    "kit_dragon_hi": [
+      "mob_scratch",
+      "tackle",
+      "dragon_breath",
+      "dragon_claw",
+      "dragon_tail",
+      "bite",
+      "mob_guard",
+      "mob_sand",
+      "dragon_rush",
+      "draco_meteor",
+      "dragon_ascension"
+    ],
+    "kit_electric": [
+      "mob_scratch",
+      "tackle",
+      "nuzzle",
+      "double_kick",
+      "iron_head",
+      "body_press",
+      "metal_sound",
+      "earth_power",
+      "headbutt"
+    ],
+    "kit_electric_hi": [
+      "mob_scratch",
+      "tackle",
+      "nuzzle",
+      "double_kick",
+      "iron_head",
+      "body_press",
+      "metal_sound",
+      "earth_power",
+      "headbutt",
+      "tailwind",
+      "agility",
+      "dragon_breath",
+      "dragon_claw",
+      "scale_shot"
+    ],
+    "kit_fighting": [
+      "mob_scratch",
+      "tackle",
+      "double_kick",
+      "rolling_kick",
+      "headbutt",
+      "bite",
+      "mob_guard",
+      "mob_sand"
+    ],
+    "kit_fighting_hi": [
+      "mob_scratch",
+      "tackle",
+      "double_kick",
+      "rolling_kick",
+      "headbutt",
+      "bite",
+      "mob_guard",
+      "mob_sand",
+      "superpower",
+      "bulk_up",
+      "body_press"
+    ],
+    "kit_fire": [
+      "mob_scratch",
+      "tackle",
+      "flame_charge",
+      "fire_fang",
+      "heat_wave",
+      "slash",
+      "bite",
+      "mob_sand"
+    ],
+    "kit_fire_hi": [
+      "mob_scratch",
+      "tackle",
+      "flame_charge",
+      "fire_fang",
+      "heat_wave",
+      "slash",
+      "bite",
+      "mob_sand",
+      "overheat",
+      "last_stand",
+      "howl"
+    ],
+    "kit_flying": [
+      "mob_scratch",
+      "tackle",
+      "nuzzle",
+      "air_slash",
+      "acrobatics",
+      "tailwind",
+      "storm_throw",
+      "mob_sand"
+    ],
+    "kit_flying_hi": [
+      "mob_scratch",
+      "tackle",
+      "nuzzle",
+      "air_slash",
+      "acrobatics",
+      "tailwind",
+      "storm_throw",
+      "mob_sand",
+      "feather_dance",
+      "water_shuriken",
+      "dragon_ascension"
+    ],
+    "kit_fungal": [
+      "mob_scratch",
+      "tackle",
+      "absorb",
+      "poison_sting",
+      "spore",
+      "giga_drain",
+      "razor_leaf",
+      "bullet_seed",
+      "leech_seed",
+      "mob_guard"
+    ],
+    "kit_fungal_hi": [
+      "mob_scratch",
+      "tackle",
+      "absorb",
+      "poison_sting",
+      "spore",
+      "giga_drain",
+      "razor_leaf",
+      "bullet_seed",
+      "leech_seed",
+      "toxic",
+      "worsen",
+      "megahorn",
+      "venom_drain"
+    ],
+    "kit_ghost": [
+      "mob_scratch",
+      "tackle",
+      "toxic_thread",
+      "night_slash",
+      "mob_stare",
+      "sand_tomb",
+      "bite",
+      "mob_sand"
+    ],
+    "kit_ghost_hi": [
+      "mob_scratch",
+      "tackle",
+      "toxic_thread",
+      "night_slash",
+      "mob_stare",
+      "sand_tomb",
+      "bite",
+      "mob_sand",
+      "toxic_overflow",
+      "moonlight",
+      "venom_burst"
+    ],
+    "kit_grass": [
+      "mob_scratch",
+      "tackle",
+      "absorb",
+      "razor_leaf",
+      "leech_seed",
+      "spore",
+      "giga_drain",
+      "mob_guard"
+    ],
+    "kit_grass_hi": [
+      "mob_scratch",
+      "tackle",
+      "absorb",
+      "razor_leaf",
+      "leech_seed",
+      "spore",
+      "giga_drain",
+      "mob_guard",
+      "synthesis",
+      "leaf_storm",
+      "quiver_dance"
+    ],
+    "kit_ground": [
+      "mob_scratch",
+      "tackle",
+      "rock_throw",
+      "bulldoze",
+      "sand_tomb",
+      "rock_slide",
+      "mob_guard",
+      "earth_power"
+    ],
+    "kit_ground_hi": [
+      "mob_scratch",
+      "tackle",
+      "rock_throw",
+      "bulldoze",
+      "sand_tomb",
+      "rock_slide",
+      "mob_guard",
+      "earth_power",
+      "earthquake",
+      "body_press",
+      "bulk_up"
+    ],
+    "kit_normal": [
+      "mob_scratch",
+      "tackle",
+      "bite",
+      "mob_sand",
+      "mob_guard",
+      "double_kick",
+      "headbutt",
+      "mob_stare"
+    ],
+    "kit_normal_hi": [
+      "mob_scratch",
+      "tackle",
+      "bite",
+      "mob_sand",
+      "mob_guard",
+      "double_kick",
+      "headbutt",
+      "mob_stare",
+      "bulk_up",
+      "last_stand",
+      "recycle"
+    ],
+    "kit_poison": [
+      "mob_scratch",
+      "tackle",
+      "poison_sting",
+      "acid_armor",
+      "venom_drain",
+      "sludge_bomb",
+      "toxic",
+      "mob_sand"
+    ],
+    "kit_poison_hi": [
+      "mob_scratch",
+      "tackle",
+      "poison_sting",
+      "acid_armor",
+      "venom_drain",
+      "sludge_bomb",
+      "toxic",
+      "mob_sand",
+      "toxic_spikes",
+      "plague",
+      "venom_burst"
+    ],
+    "kit_rock": [
+      "mob_scratch",
+      "tackle",
+      "rock_throw",
+      "harden",
+      "mob_guard",
+      "rock_blast",
+      "stone_edge",
+      "mob_stare"
+    ],
+    "kit_rock_hi": [
+      "mob_scratch",
+      "tackle",
+      "rock_throw",
+      "harden",
+      "mob_guard",
+      "rock_blast",
+      "stone_edge",
+      "mob_stare",
+      "rock_slide",
+      "protect",
+      "iron_defense"
+    ],
+    "kit_ruins": [
+      "mob_scratch",
+      "tackle",
+      "rock_throw",
+      "sand_tomb",
+      "night_slash",
+      "mob_sand",
+      "mob_stare",
+      "scary_face",
+      "sunder",
+      "bug_buzz",
+      "earth_power"
+    ],
+    "kit_ruins_hi": [
+      "mob_scratch",
+      "tackle",
+      "sand_tomb",
+      "night_slash",
+      "mob_sand",
+      "mob_stare",
+      "scary_face",
+      "sunder",
+      "bug_buzz",
+      "rock_slide",
+      "languor",
+      "earth_power",
+      "metal_sound"
+    ],
+    "kit_steel": [
+      "mob_scratch",
+      "tackle",
+      "iron_head",
+      "harden",
+      "mob_guard",
+      "metal_sound",
+      "headbutt",
+      "double_kick"
+    ],
+    "kit_steel_hi": [
+      "mob_scratch",
+      "tackle",
+      "iron_head",
+      "harden",
+      "mob_guard",
+      "metal_sound",
+      "headbutt",
+      "double_kick",
+      "iron_defense",
+      "protect",
+      "bulk_up"
+    ],
+    "kit_t_一般": [
+      "tackle",
+      "swift",
+      "headbutt",
+      "slam",
+      "double_edge",
+      "body_slam",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_一般_hi": [
+      "tackle",
+      "swift",
+      "headbutt",
+      "slam",
+      "double_edge",
+      "body_slam",
+      "boomburst",
+      "giga_impact",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_冰": [
+      "ice_shard",
+      "frost_breath",
+      "ice_fang",
+      "freeze_dry",
+      "snow_grave",
+      "triple_axel",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_冰_hi": [
+      "ice_shard",
+      "frost_breath",
+      "ice_fang",
+      "freeze_dry",
+      "snow_grave",
+      "triple_axel",
+      "blizzard",
+      "glaciate",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_地面": [
+      "sand_attack",
+      "earth_power",
+      "sand_tomb",
+      "bulldoze",
+      "earthquake",
+      "fissure",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_地面_hi": [
+      "sand_attack",
+      "earth_power",
+      "sand_tomb",
+      "bulldoze",
+      "earthquake",
+      "fissure",
+      "precipice_blades",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_妖精": [
+      "fairy_wind",
+      "draining_kiss",
+      "disarming_voice",
+      "dazzling_gleam",
+      "play_rough",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_妖精_hi": [
+      "fairy_wind",
+      "draining_kiss",
+      "disarming_voice",
+      "baby_doll_eyes",
+      "dazzling_gleam",
+      "play_rough",
+      "moonblast",
+      "light_of_ruin",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_岩石": [
+      "rock_throw",
+      "accelrock",
+      "rock_polish",
+      "rock_blast",
+      "rock_slide",
+      "power_gem",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_岩石_hi": [
+      "rock_throw",
+      "accelrock",
+      "rock_polish",
+      "rock_blast",
+      "rock_slide",
+      "power_gem",
+      "stone_edge",
+      "head_smash",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_幽灵": [
+      "shadow_sneak",
+      "hex",
+      "curse",
+      "night_slash",
+      "shadow_punch",
+      "shadow_ball",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_幽灵_hi": [
+      "shadow_sneak",
+      "hex",
+      "curse",
+      "night_slash",
+      "shadow_punch",
+      "shadow_ball",
+      "phantom_force",
+      "shadow_bone",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_恶": [
+      "feint_attack",
+      "bite",
+      "snarl",
+      "crunch",
+      "dark_pulse",
+      "foul_play",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_恶_hi": [
+      "feint_attack",
+      "bite",
+      "snarl",
+      "knock_off",
+      "crunch",
+      "dark_pulse",
+      "foul_play",
+      "wicked_blow",
+      "night_daze",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_格斗": [
+      "mach_punch",
+      "double_kick",
+      "rolling_kick",
+      "brick_break",
+      "drain_punch",
+      "storm_throw",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_格斗_hi": [
+      "mach_punch",
+      "double_kick",
+      "rolling_kick",
+      "brick_break",
+      "drain_punch",
+      "storm_throw",
+      "focus_punch",
+      "close_combat",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_毒": [
+      "poison_sting",
+      "poison_fang",
+      "venom_dart",
+      "venoshock",
+      "sludge_bomb",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_毒_hi": [
+      "poison_sting",
+      "poison_fang",
+      "venom_dart",
+      "venoshock",
+      "sludge_bomb",
+      "gunk_shot",
+      "toxic_overflow",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_水": [
+      "aqua_jet",
+      "water_shuriken",
+      "water_pulse",
+      "brine",
+      "aqua_tail",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_水_hi": [
+      "aqua_jet",
+      "water_shuriken",
+      "water_pulse",
+      "brine",
+      "aqua_tail",
+      "surf",
+      "hydro_pump",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_火": [
+      "ember",
+      "flame_charge",
+      "fire_fang",
+      "flamethrower",
+      "heat_wave",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_火_hi": [
+      "ember",
+      "flame_charge",
+      "fire_fang",
+      "flamethrower",
+      "heat_wave",
+      "fire_blast",
+      "overheat",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_电": [
+      "thunder_shock",
+      "spark",
+      "thunder_wave",
+      "volt_tackle",
+      "discharge",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_电_hi": [
+      "thunder_shock",
+      "spark",
+      "thunder_wave",
+      "charge_beam",
+      "volt_tackle",
+      "discharge",
+      "thunder",
+      "thunderbolt",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_草": [
+      "branch_poke",
+      "absorb",
+      "razor_leaf",
+      "giga_drain",
+      "seed_bomb",
+      "bullet_seed",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_草_hi": [
+      "branch_poke",
+      "absorb",
+      "razor_leaf",
+      "giga_drain",
+      "seed_bomb",
+      "bullet_seed",
+      "energy_ball",
+      "leaf_storm",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_虫": [
+      "spider_web",
+      "bug_buzz",
+      "fury_cutter",
+      "leech_life",
+      "pin_missile",
+      "lunge",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_虫_hi": [
+      "spider_web",
+      "bug_buzz",
+      "fury_cutter",
+      "twineedle",
+      "leech_life",
+      "pin_missile",
+      "lunge",
+      "megahorn",
+      "x_scissor",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_超能": [
+      "confusion",
+      "psybeam",
+      "extrasensory",
+      "future_sight",
+      "psyshock",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_超能_hi": [
+      "confusion",
+      "psybeam",
+      "extrasensory",
+      "hypnosis",
+      "future_sight",
+      "psyshock",
+      "psychic",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_钢": [
+      "metal_claw",
+      "iron_head",
+      "flash_cannon",
+      "gyro_ball",
+      "iron_tail",
+      "sig_meteor_mash",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_钢_hi": [
+      "metal_claw",
+      "iron_head",
+      "flash_cannon",
+      "gyro_ball",
+      "iron_tail",
+      "sig_meteor_mash",
+      "dynamax_cannon",
+      "doom_desire",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_飞行": [
+      "peck",
+      "air_slash",
+      "wing_attack",
+      "acrobatics",
+      "aerial_ace",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_飞行_hi": [
+      "peck",
+      "air_slash",
+      "wing_attack",
+      "acrobatics",
+      "aerial_ace",
+      "hurricane",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_t_龙": [
+      "dragon_dance",
+      "dragon_darts",
+      "scale_shot",
+      "dragon_breath",
+      "dragon_claw",
+      "dragon_tail",
+      "mob_guard",
+      "mob_stare"
+    ],
+    "kit_t_龙_hi": [
+      "dragon_dance",
+      "dragon_darts",
+      "scale_shot",
+      "dragon_breath",
+      "dragon_claw",
+      "dragon_tail",
+      "dragon_rush",
+      "draco_meteor",
+      "mob_stare",
+      "protect"
+    ],
+    "kit_water": [
+      "mob_scratch",
+      "tackle",
+      "water_pulse",
+      "aqua_ring",
+      "withdraw",
+      "brine",
+      "whirlpool",
+      "mob_guard"
+    ],
+    "kit_water_hi": [
+      "mob_scratch",
+      "tackle",
+      "water_pulse",
+      "aqua_ring",
+      "withdraw",
+      "brine",
+      "whirlpool",
+      "mob_guard",
+      "surf",
+      "moonlight",
+      "guardian_oath"
+    ],
+    "kit_weaken": [
+      "mob_scratch",
+      "tackle",
+      "sand_attack",
+      "rock_slide",
+      "water_pulse",
+      "nuzzle",
+      "triple_axel",
+      "mob_stare",
+      "scary_face",
+      "intimidate",
+      "browbeat"
+    ],
+    "kit_weaken_hi": [
+      "mob_scratch",
+      "tackle",
+      "sand_attack",
+      "rock_slide",
+      "water_pulse",
+      "nuzzle",
+      "triple_axel",
+      "mob_stare",
+      "scary_face",
+      "intimidate",
+      "browbeat",
+      "exploit_weak",
+      "knock_off",
+      "bulk_up",
+      "swords_dance",
+      "total_suppression"
+    ],
+    "strong": [
+      "bite",
+      "rock_throw",
+      "crunch",
+      "double_kick",
+      "mob_growl",
+      "mob_guard",
+      "fire_fang",
+      "harden"
+    ],
+    "tide_mid": [
+      "bite",
+      "crunch",
+      "mob_guard",
+      "harden",
+      "roost",
+      "mob_sand",
+      "dragon_breath",
+      "mob_growl"
+    ],
+    "weak": [
+      "mob_scratch",
+      "tackle",
+      "mob_sand",
+      "mob_guard"
     ]
   },
   "enemies": [
@@ -650,7 +1034,7 @@
       "slug": "sandshrew",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ground",
+      "deck": "kit_t_地面",
       "lines": [
         "它把自己团成一个球滚过来。",
         "「沙子进眼睛了！」"
@@ -661,7 +1045,7 @@
       "slug": "cacnea",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "它张开手臂要一个拥抱。你决定不给。",
         "沙地上冒出一排新的刺。"
@@ -672,7 +1056,7 @@
       "slug": "gible",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_dragon",
+      "deck": "kit_t_龙",
       "lines": [
         "它一口咬在沙丘上，然后看着你。",
         "它好像在笑。也可能是牙疼。"
@@ -683,7 +1067,7 @@
       "slug": "trapinch",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ground",
+      "deck": "kit_t_地面",
       "lines": [
         "沙里张开一个漏斗形的坑，坑底有东西在等。",
         "它把下颚张到最大，然后一动不动 —— 那是它的捕猎方式。"
@@ -694,7 +1078,7 @@
       "slug": "sandile",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ground",
+      "deck": "kit_t_恶",
       "lines": [
         "沙面下有两道细细的波纹朝你移动。",
         "它只把眼睛露在外面，看你的时候顺便眨掉一层沙。"
@@ -705,7 +1089,7 @@
       "slug": "hippopotas",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ground",
+      "deck": "kit_t_地面",
       "lines": [
         "一大团沙子从沙丘后面挪过来，挪到一半停了，打了个哈欠。",
         "它鼻孔一张，喷出一小股沙暴。"
@@ -716,7 +1100,7 @@
       "slug": "sandygast",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ghost",
+      "deck": "kit_t_幽灵",
       "lines": [
         "一个沙堆长了嘴。它张开得很慢，像在等你主动走进去。",
         "它身上的沙一直往下掉，但永远掉不完。"
@@ -727,7 +1111,7 @@
       "slug": "silicobra",
       "tier": "mob",
       "biome": "desert",
-      "deck": "kit_ghost",
+      "deck": "kit_t_地面",
       "lines": [
         "它从沙里竖起半截身子，像一根会动的绳子。",
         "「绕过去吧，它好像挺得意。」"
@@ -738,7 +1122,7 @@
       "slug": "sandslash",
       "tier": "normal",
       "biome": "desert",
-      "deck": "kit_ground",
+      "deck": "kit_t_地面",
       "lines": [
         "它的背刺在正午的阳光下反着白光。"
       ]
@@ -748,7 +1132,7 @@
       "slug": "cacturne",
       "tier": "normal",
       "biome": "desert",
-      "deck": "kit_grass",
+      "deck": "kit_t_恶",
       "lines": [
         "它在白天一动不动，现在开始动了。"
       ]
@@ -758,7 +1142,7 @@
       "slug": "gligar",
       "tier": "normal",
       "biome": "desert",
-      "deck": "kit_bleed",
+      "deck": "kit_t_飞行",
       "lines": [
         "它从沙丘背面滑翔下来，尾巴上的钩子闪着光。"
       ]
@@ -768,7 +1152,7 @@
       "slug": "sandaconda",
       "tier": "normal",
       "biome": "desert",
-      "deck": "kit_bleed",
+      "deck": "kit_t_地面",
       "lines": [
         "沙面忽然鼓起一条长长的脊，绕着沙丘转了一整圈。",
         "「它把自己拧成了一盘。」"
@@ -779,7 +1163,7 @@
       "slug": "gabite",
       "tier": "normal",
       "biome": "desert",
-      "deck": "kit_dragon",
+      "deck": "kit_t_龙",
       "lines": [
         "它的爪子在星尘里划出三道亮痕。"
       ]
@@ -789,7 +1173,7 @@
       "slug": "hippowdon",
       "tier": "elite",
       "biome": "desert",
-      "deck": "kit_ground_hi",
+      "deck": "kit_t_地面_hi",
       "lines": [
         "沙丘自己站了起来。原来那不是沙丘。",
         "它张开嘴，风里全是沙在磨牙的声音。"
@@ -803,7 +1187,7 @@
       "slug": "excadrill",
       "tier": "elite",
       "biome": "desert",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "沙里伸出两只钢爪，把整块地面掀了起来。",
         "「这下面埋的东西，都是我的。」"
@@ -817,7 +1201,7 @@
       "slug": "steelix",
       "tier": "elite",
       "biome": "desert",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "沙面裂开，一条铁铸的身躯从中升起。"
       ],
@@ -830,7 +1214,7 @@
       "slug": "rhyperior",
       "tier": "elite",
       "biome": "desert",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_地面_hi",
       "lines": [
         "沙子被顶开一大片，那面像盾一样的肩膀先露了出来。"
       ],
@@ -843,7 +1227,7 @@
       "slug": "mudsdale",
       "tier": "elite",
       "biome": "desert",
-      "deck": "kit_ground_hi",
+      "deck": "kit_t_地面_hi",
       "lines": [
         "它每一步都在沙上踩出一个坑，坑里还冒着热气。"
       ],
@@ -856,7 +1240,7 @@
       "slug": "tyranitar",
       "tier": "boss",
       "biome": "desert",
-      "deck": "kit_rock_hi",
+      "deck": "kit_t_恶_hi",
       "lines": [
         "沙暴忽然停了。因为掀沙暴的那个东西来了。"
       ],
@@ -870,7 +1254,7 @@
       "slug": "aerodactyl",
       "tier": "boss",
       "biome": "desert",
-      "deck": "kit_rock_hi",
+      "deck": "kit_t_飞行_hi",
       "bossTitle": "沙丘上空的影子",
       "lines": [
         "沙丘顶上那个影子已经跟了你半天。它终于收起了翅膀。",
@@ -885,7 +1269,7 @@
       "slug": "machop",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_fighting",
+      "deck": "kit_t_格斗",
       "lines": [
         "它正在举一块比你大的石头，看到你之后举了两块。"
       ]
@@ -895,7 +1279,7 @@
       "slug": "slugma",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_fighting",
+      "deck": "kit_t_火",
       "lines": [
         "一摊亮橘色的东西贴着岩壁慢慢往下淌。",
         "「别踩。踩了要疼很久。」"
@@ -906,7 +1290,7 @@
       "slug": "numel",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_fire",
+      "deck": "kit_t_火",
       "lines": [
         "岩壁后面传来呼噜声，走近一看，它背上在冒热气。",
         "它慢吞吞地转过头，热气把空气扭了一下。"
@@ -917,7 +1301,7 @@
       "slug": "roggenrola",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_rock",
+      "deck": "kit_t_岩石",
       "lines": [
         "你踢到一颗石头，石头生气了。",
         "它没有眼睛，但你确定它在看你。"
@@ -928,7 +1312,7 @@
       "slug": "drilbur",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_ground",
+      "deck": "kit_t_地面",
       "lines": [
         "岩屑堆里钻出一个脑袋，它把爪子上的灰抖了抖。",
         "它一头扎进岩缝，再从你脚边冒出来。"
@@ -939,7 +1323,7 @@
       "slug": "darumaka",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_ground",
+      "deck": "kit_t_火",
       "lines": [
         "它原地晃来晃去，就是不肯倒。",
         "「……你还挺坚持。」"
@@ -950,7 +1334,7 @@
       "slug": "rockruff",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_rock",
+      "deck": "kit_t_岩石",
       "lines": [
         "它在岩壁上蹭脖子，蹭出一串火星。",
         "它摇尾巴的时候扫到了石头，石头碎了。"
@@ -961,7 +1345,7 @@
       "slug": "sizzlipede",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_fighting",
+      "deck": "kit_t_火",
       "lines": [
         "岩缝里的红点连成一条线，正往你这边挪。"
       ]
@@ -971,7 +1355,7 @@
       "slug": "magcargo",
       "tier": "mob",
       "biome": "canyon",
-      "deck": "kit_fire",
+      "deck": "kit_t_火",
       "lines": [
         "岩壁上的石头在动，而且很烫。"
       ]
@@ -981,7 +1365,7 @@
       "slug": "arbok",
       "tier": "normal",
       "biome": "canyon",
-      "deck": "kit_weaken",
+      "deck": "kit_t_毒",
       "lines": [
         "岩缝里传来鳞片摩擦石头的声音。"
       ]
@@ -991,7 +1375,7 @@
       "slug": "machoke",
       "tier": "normal",
       "biome": "canyon",
-      "deck": "kit_weaken",
+      "deck": "kit_t_格斗",
       "lines": [
         "它把一条岩柱当成沙袋，正在打。"
       ]
@@ -1001,7 +1385,7 @@
       "slug": "carnivine",
       "tier": "normal",
       "biome": "canyon",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "峡谷底部有一朵花，花开的方向一直对着你。"
       ]
@@ -1011,7 +1395,7 @@
       "slug": "centiskorch",
       "tier": "normal",
       "biome": "canyon",
-      "deck": "kit_grass",
+      "deck": "kit_t_火",
       "lines": [
         "它把身子盘在烧红的岩石上，像一条烧着的鞭子。",
         "「离远点，我这会儿很烫。」"
@@ -1022,7 +1406,7 @@
       "slug": "arcanine",
       "tier": "elite",
       "biome": "canyon",
-      "deck": "kit_fire_hi",
+      "deck": "kit_t_火_hi",
       "lines": [
         "一道橙色的影子沿着峡谷壁跑了三个来回，然后停在你面前。"
       ],
@@ -1035,7 +1419,7 @@
       "slug": "camerupt",
       "tier": "elite",
       "biome": "canyon",
-      "deck": "kit_fire_hi",
+      "deck": "kit_t_火_hi",
       "lines": [
         "岩壁上的红纹裂开了，里面是亮的。",
         "它每喘一口气，脚边的石头就化一点。"
@@ -1049,7 +1433,7 @@
       "slug": "torkoal",
       "tier": "elite",
       "biome": "canyon",
-      "deck": "kit_fire_hi",
+      "deck": "kit_t_火_hi",
       "lines": [
         "一团白烟沿着谷底滚过来，烟里有壳。",
         "它不动，但它周围的空气在抖。"
@@ -1063,7 +1447,7 @@
       "slug": "talonflame",
       "tier": "elite",
       "biome": "canyon",
-      "deck": "kit_rock_hi",
+      "deck": "kit_t_火_hi",
       "lines": [
         "一颗火球从崖顶冲下来，在离你两步的地方刹住了。"
       ],
@@ -1076,7 +1460,7 @@
       "slug": "golem",
       "tier": "elite",
       "biome": "canyon",
-      "deck": "kit_fire_hi",
+      "deck": "kit_t_岩石_hi",
       "lines": [
         "一整面岩壁开始滚 —— 滚到一半才发现那是活的。"
       ],
@@ -1089,7 +1473,7 @@
       "slug": "garchomp",
       "tier": "boss",
       "biome": "canyon",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_龙_hi",
       "lines": [
         "它从峡谷另一头抬起眼睛看你。距离大概是四十米，但它已经在考虑要不要过来了。"
       ],
@@ -1103,7 +1487,7 @@
       "slug": "gigalith",
       "tier": "boss",
       "biome": "canyon",
-      "deck": "kit_ground_hi",
+      "deck": "kit_t_岩石_hi",
       "lines": [
         "峡谷最窄的那段被一块会呼吸的石头堵住了。",
         "「让开？这里就是我的位置。」"
@@ -1118,7 +1502,7 @@
       "slug": "weedle",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_bug",
+      "deck": "kit_t_毒",
       "lines": [
         "树皮上有一条黄色的东西正在往上爬，爬到你面前停住了。",
         "它头上的角对着你。"
@@ -1129,7 +1513,7 @@
       "slug": "oddish",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_毒",
       "lines": [
         "一丛叶子从土里拔出来，然后开始走。",
         "它把叶子对着你，像是在闻。"
@@ -1140,7 +1524,7 @@
       "slug": "bellsprout",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_毒",
       "lines": [
         "它把根从土里抽出来，晃了晃，像是在热身。",
         "它的头一直在点，你分不清是点头还是准备咬。"
@@ -1151,7 +1535,7 @@
       "slug": "treecko",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "树干上贴着一只木守宫，尾巴上还挂着一片叶子。",
         "它从树上一路滑下来，落地时几乎没有声音。"
@@ -1162,7 +1546,7 @@
       "slug": "snivy",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "它昂着头站在路中间，像是嫌你走得慢。",
         "它用尾巴把你的影子拨开了一点，然后看你。"
@@ -1173,7 +1557,7 @@
       "slug": "ferroseed",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "一颗带刺的铁球从坡上滚下来，撞到你的腿，很有礼貌地停住了。",
         "它插在土里，刺上挂着别的宝可梦的毛。"
@@ -1184,7 +1568,7 @@
       "slug": "grubbin",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_bug",
+      "deck": "kit_t_虫",
       "lines": [
         "腐叶下面伸出一对很大的颚。",
         "它咬着树根往后拖，拖不动的样子很执着。"
@@ -1195,7 +1579,7 @@
       "slug": "fomantis",
       "tier": "mob",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_草",
       "lines": [
         "一株草举起了两把刀。",
         "它把叶片上的水抖掉，然后摆了个很像招式起手的姿势。"
@@ -1206,7 +1590,7 @@
       "slug": "vileplume",
       "tier": "normal",
       "biome": "forest",
-      "deck": "kit_bug",
+      "deck": "kit_t_毒",
       "lines": [
         "它头顶那朵花开得比你的头还大。",
         "「……好像不太欢迎我。」"
@@ -1217,7 +1601,7 @@
       "slug": "ledian",
       "tier": "normal",
       "biome": "forest",
-      "deck": "kit_grass",
+      "deck": "kit_t_虫",
       "lines": [
         "几颗星点在藤蔓间闪了一下，然后全都落到你面前。"
       ]
@@ -1227,7 +1611,7 @@
       "slug": "beautifly",
       "tier": "normal",
       "biome": "forest",
-      "deck": "kit_bug",
+      "deck": "kit_t_虫",
       "lines": [
         "它的翅膀在树影里晃出一片彩色的光，看不清它下一步要往哪飞。"
       ]
@@ -1237,7 +1621,7 @@
       "slug": "durant",
       "tier": "normal",
       "biome": "forest",
-      "deck": "kit_bug",
+      "deck": "kit_t_虫",
       "lines": [
         "一队亮闪闪的钢壳把地上的落果全搬走了。",
         "「它们搬得比你还快。」"
@@ -1248,7 +1632,7 @@
       "slug": "pinsir",
       "tier": "elite",
       "biome": "forest",
-      "deck": "kit_bug_hi",
+      "deck": "kit_t_虫_hi",
       "lines": [
         "两根角夹住了一棵小树，树断了。它转头看你，像是在问你有没有更硬的。"
       ],
@@ -1261,7 +1645,7 @@
       "slug": "scizor",
       "tier": "elite",
       "biome": "forest",
-      "deck": "kit_bug_hi",
+      "deck": "kit_t_虫_hi",
       "lines": [
         "一片叶子从中间分成两半，切口是直的。",
         "它抬起钳子，钳口上还挂着露水。"
@@ -1275,7 +1659,7 @@
       "slug": "heracross",
       "tier": "elite",
       "biome": "forest",
-      "deck": "kit_bug_hi",
+      "deck": "kit_t_格斗_hi",
       "lines": [
         "它从树干里拔出一根角，树汁顺着角往下滴。它很有礼貌地等你准备好。"
       ],
@@ -1288,7 +1672,7 @@
       "slug": "lurantis",
       "tier": "elite",
       "biome": "forest",
-      "deck": "kit_poison_hi",
+      "deck": "kit_t_草_hi",
       "lines": [
         "它举着两片叶子站得笔直，像在等你先动手。"
       ],
@@ -1301,7 +1685,7 @@
       "slug": "ariados",
       "tier": "elite",
       "biome": "forest",
-      "deck": "kit_bug_hi",
+      "deck": "kit_t_毒_hi",
       "lines": [
         "树影里垂下来一根丝，丝上挂着一排眼睛。"
       ],
@@ -1314,7 +1698,7 @@
       "slug": "sceptile",
       "tier": "boss",
       "biome": "forest",
-      "deck": "kit_grass_hi",
+      "deck": "kit_t_草_hi",
       "bossTitle": "密林的守林人",
       "lines": [
         "树叶全部停止摇晃。有东西从树冠上下来，落地的声音很轻。「走出去。这里不欢迎沙子。」"
@@ -1328,7 +1712,7 @@
       "slug": "tangrowth",
       "tier": "boss",
       "biome": "forest",
-      "deck": "kit_bug_hi",
+      "deck": "kit_t_草_hi",
       "lines": [
         "整片林子的藤忽然一起收紧了。",
         "「……原来这片林子是有主人的。」"
@@ -1343,7 +1727,7 @@
       "slug": "tentacool",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_毒",
       "lines": [
         "浅水里飘着一颗红宝石，下面连着十几条透明的线。",
         "它在水里一鼓一鼓的，像在呼吸，也像在等你下水。"
@@ -1354,7 +1738,7 @@
       "slug": "shellder",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "一块紫色的贝壳从盐壳底下顶出来，然后合上了。",
         "贝壳缝里伸出一条舌头，很快又缩回去。"
@@ -1365,7 +1749,7 @@
       "slug": "remoraid",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "一条铁炮鱼把水吸进嘴里，然后对着你吐了出来。",
         "它瞄准的时候会歪一下头。"
@@ -1376,7 +1760,7 @@
       "slug": "corphish",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "它在浅滩里横着走，钳子举得比头高。",
         "它把你的一片影子当成了对手，先夹了一下试试。"
@@ -1387,7 +1771,7 @@
       "slug": "shellos",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "盐壳上的浅水里趴着一团软软的东西，慢慢换了个形状。",
         "它爬过的地方留下一条亮亮的痕。"
@@ -1398,7 +1782,7 @@
       "slug": "wishiwashi",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "一小群弱丁鱼挤在一起，挤成了一个比它们单个大得多的形状。",
         "它们同时转向你，整齐得有点吓人。"
@@ -1409,7 +1793,7 @@
       "slug": "mareanie",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_poison",
+      "deck": "kit_t_毒",
       "lines": [
         "礁石上那朵花在动，而且带着毒刺。",
         "它伸出一条触手试探你，被你躲开之后又伸出两条。"
@@ -1420,7 +1804,7 @@
       "slug": "pyukumuku",
       "tier": "mob",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "浅滩上一坨黑色的东西，看不出哪边是头。",
         "它对着你吐出了自己的内脏，然后又收回去 —— 好像在打招呼。"
@@ -1431,7 +1815,7 @@
       "slug": "tentacruel",
       "tier": "normal",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_毒",
       "lines": [
         "整片浅水同时泛起红色。你意识到那不是水色。"
       ]
@@ -1441,7 +1825,7 @@
       "slug": "crawdaunt",
       "tier": "normal",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_恶",
       "lines": [
         "它把一只巨钳蟹的壳拆开，扔在一边，然后看向你。"
       ]
@@ -1451,7 +1835,7 @@
       "slug": "gastrodon",
       "tier": "normal",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_水",
       "lines": [
         "滩上那摊软软的东西站起来了一半。",
         "「……你确定它有正面吗？」"
@@ -1462,7 +1846,7 @@
       "slug": "bruxish",
       "tier": "normal",
       "biome": "tide",
-      "deck": "kit_water",
+      "deck": "kit_t_超能",
       "lines": [
         "它把嘴里的牙磨给你看了一下，颜色亮得晃眼。"
       ]
@@ -1472,7 +1856,7 @@
       "slug": "kingler",
       "tier": "elite",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "一只钳子砸在盐壳上，盐壳裂了一条缝。它比你高。"
       ],
@@ -1485,7 +1869,7 @@
       "slug": "mantine",
       "tier": "elite",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "一只翅膀贴着水面滑过去，没有溅起水花。",
         "它绕回来的时候，你才看清那对翅膀有多宽。"
@@ -1499,7 +1883,7 @@
       "slug": "kingdra",
       "tier": "elite",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "退潮之后，盐壳底下还有一汪水，水里有一个影子在转。",
         "它抬起头，整片盐海的水都跟着晃了一下。"
@@ -1513,7 +1897,7 @@
       "slug": "huntail",
       "tier": "elite",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "浅水里那道影子绕着你转了一圈，又钻回沙底。"
       ],
@@ -1526,7 +1910,7 @@
       "slug": "lapras",
       "tier": "elite",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "它从水里浮起来，背上驮着一小片湿掉的贝壳滩。"
       ],
@@ -1539,7 +1923,7 @@
       "slug": "kyogre",
       "tier": "boss",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "bossTitle": "盐海的心跳",
       "lines": [
         "潮水全部退了下去，露出底下睡了很久的东西。它睁开一只眼睛，海水就开始往回涨。"
@@ -1553,7 +1937,7 @@
       "slug": "toxapex",
       "tier": "boss",
       "biome": "tide",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_毒_hi",
       "lines": [
         "浅滩的水忽然全红了 —— 那些圆乎乎的东西是它伸出来的。",
         "「踩进来的，就别想出去了。」"
@@ -1568,7 +1952,7 @@
       "slug": "pidgey",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "一只波波在你的头顶绕圈，一圈比一圈低。",
         "它落在岩架上，用一只眼睛看你。"
@@ -1579,7 +1963,7 @@
       "slug": "taillow",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "它从风里冲下来，完全不减速。",
         "它站在风口上，像是在等什么。"
@@ -1590,7 +1974,7 @@
       "slug": "aron",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_steel",
+      "deck": "kit_t_钢",
       "lines": [
         "一堆铁在动。是它在吃岩壁上的锈。",
         "它撞过来的时候发出了金属声。"
@@ -1601,7 +1985,7 @@
       "slug": "woobat",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_ghost",
+      "deck": "kit_t_超能",
       "lines": [
         "岩缝里传出心跳一样的回声。",
         "它倒挂着，用耳朵对着你 —— 那是它的眼睛。"
@@ -1612,7 +1996,7 @@
       "slug": "rufflet",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "它站在崖边学飞，风一吹就往后退半步。",
         "「……加油。」"
@@ -1623,7 +2007,7 @@
       "slug": "fletchling",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "一只小箭雀在风口上挂着不动，尾巴上的红羽毛很显眼。",
         "它冲你叫了两声，声音比它自己大。"
@@ -1634,7 +2018,7 @@
       "slug": "minior",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_rock",
+      "deck": "kit_t_飞行",
       "lines": [
         "一颗小星星从上面掉下来，砸在岩架上，壳裂了一条缝。",
         "硬壳下面有橙色的光在动。"
@@ -1645,7 +2029,7 @@
       "slug": "rookidee",
       "tier": "mob",
       "biome": "cliff",
-      "deck": "kit_normal",
+      "deck": "kit_t_飞行",
       "lines": [
         "一小团黑色的东西在风里站得笔直。",
         "「风再大也没动。」"
@@ -1656,7 +2040,7 @@
       "slug": "fearow",
       "tier": "normal",
       "biome": "cliff",
-      "deck": "kit_weaken",
+      "deck": "kit_t_一般",
       "lines": [
         "它在高空停住不动，然后收翅，直直地掉下来。"
       ]
@@ -1666,7 +2050,7 @@
       "slug": "graveler",
       "tier": "normal",
       "biome": "cliff",
-      "deck": "kit_rock",
+      "deck": "kit_t_岩石",
       "lines": [
         "一段岩壁站了起来，然后滚了下来——用滚的。"
       ]
@@ -1676,7 +2060,7 @@
       "slug": "lairon",
       "tier": "normal",
       "biome": "cliff",
-      "deck": "kit_steel",
+      "deck": "kit_t_钢",
       "lines": [
         "它用头撞岩壁，岩壁让了。它转过头来找下一个目标。"
       ]
@@ -1686,7 +2070,7 @@
       "slug": "swablu",
       "tier": "normal",
       "biome": "cliff",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "它顶着风停在半空，身上的绒被吹成一个团。",
         "它落到岩尖上，把翅膀上的水抖成一小片雾。"
@@ -1697,7 +2081,7 @@
       "slug": "skarmory",
       "tier": "elite",
       "biome": "cliff",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "风里有刀。你终于看清那把刀长着翅膀。"
       ],
@@ -1710,7 +2094,7 @@
       "slug": "gliscor",
       "tier": "elite",
       "biome": "cliff",
-      "deck": "kit_bleed_hi",
+      "deck": "kit_t_飞行_hi",
       "lines": [
         "崖壁上倒挂着一只天蝎王，比你见过的大三倍，尾巴上挂着碎石。"
       ],
@@ -1723,7 +2107,7 @@
       "slug": "braviary",
       "tier": "elite",
       "biome": "cliff",
-      "deck": "kit_flying_hi",
+      "deck": "kit_t_一般_hi",
       "lines": [
         "风把它托在崖口，它没有扇翅膀。",
         "它低头看你，像是在判断你值不值得下来一趟。"
@@ -1737,7 +2121,7 @@
       "slug": "staraptor",
       "tier": "elite",
       "biome": "cliff",
-      "deck": "kit_rock_hi",
+      "deck": "kit_t_一般_hi",
       "lines": [
         "风停了半秒 —— 因为它正好挡在你和太阳之间。"
       ],
@@ -1750,7 +2134,7 @@
       "slug": "hawlucha",
       "tier": "elite",
       "biome": "cliff",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_格斗_hi",
       "lines": [
         "它从崖上一跃而下，落地时摆了个姿势。",
         "「……帅吧。」"
@@ -1764,7 +2148,7 @@
       "slug": "aggron",
       "tier": "boss",
       "biome": "cliff",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_钢_hi",
       "bossTitle": "峭壁的锤子",
       "lines": [
         "整段崖壁开始往下掉，因为有个东西正从里面走出来。它每一步都砸出一个坑。"
@@ -1778,7 +2162,7 @@
       "slug": "corviknight",
       "tier": "boss",
       "biome": "cliff",
-      "deck": "kit_flying_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "风里那副铠甲一直悬在同一块岩石上方，看样子已经等了你很久。",
         "「这片天归我。你要过去，先过我这关。」"
@@ -1793,7 +2177,7 @@
       "slug": "gastly",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_rock",
+      "deck": "kit_t_毒",
       "lines": [
         "沙里冒出一团带笑的紫烟。",
         "「嘿嘿……」"
@@ -1804,7 +2188,7 @@
       "slug": "shuppet",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_ground",
+      "deck": "kit_t_幽灵",
       "lines": [
         "它挂在你身后，学你走路的样子。"
       ]
@@ -1814,7 +2198,7 @@
       "slug": "duskull",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_ghost",
+      "deck": "kit_t_幽灵",
       "lines": [
         "一个红点在墓碑之间飘来飘去，好像在数什么。"
       ]
@@ -1824,7 +2208,7 @@
       "slug": "yamask",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_debuff",
+      "deck": "kit_t_幽灵",
       "lines": [
         "沙里露出半张面具，面具在哭。",
         "它举着面具看你，像是在确认你是不是它等的那个人。"
@@ -1835,7 +2219,7 @@
       "slug": "litwick",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_ghost",
+      "deck": "kit_t_火",
       "lines": [
         "沙丘上有一盏灯在慢慢靠近，火光很温柔。",
         "你注意到自己被照出来的影子，比那盏灯长得多。"
@@ -1846,7 +2230,7 @@
       "slug": "honedge",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_steel",
+      "deck": "kit_t_钢",
       "lines": [
         "一把剑插在沙里，剑柄上的布条在无风的时候动了一下。",
         "你还没伸手，它自己先动了。"
@@ -1857,7 +2241,7 @@
       "slug": "pumpkaboo",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_ground",
+      "deck": "kit_t_幽灵",
       "lines": [
         "沙地上放着一盏灯，灯后面有东西在笑。"
       ]
@@ -1867,7 +2251,7 @@
       "slug": "mimikyu",
       "tier": "mob",
       "biome": "night",
-      "deck": "kit_ghost",
+      "deck": "kit_t_幽灵_hi",
       "lines": [
         "它披着一块画得歪歪扭扭的布，在你面前站得笔直。",
         "「……看一眼就好。」"
@@ -1878,7 +2262,7 @@
       "slug": "banette",
       "tier": "normal",
       "biome": "night",
-      "deck": "kit_dragon",
+      "deck": "kit_t_幽灵",
       "lines": [
         "被丢下的旧东西，在沙里坐了起来。"
       ]
@@ -1888,7 +2272,7 @@
       "slug": "mismagius",
       "tier": "normal",
       "biome": "night",
-      "deck": "kit_ground",
+      "deck": "kit_t_幽灵",
       "lines": [
         "它念了一句什么，墓原上的风就停了。"
       ]
@@ -1898,7 +2282,7 @@
       "slug": "spiritomb",
       "tier": "normal",
       "biome": "night",
-      "deck": "kit_rock",
+      "deck": "kit_t_恶",
       "lines": [
         "一块石头上的裂纹全睁开了眼睛。"
       ]
@@ -1908,7 +2292,7 @@
       "slug": "cofagrigus",
       "tier": "normal",
       "biome": "night",
-      "deck": "kit_debuff",
+      "deck": "kit_t_幽灵",
       "lines": [
         "柱基上放着一口石棺，棺盖是合着的 —— 但棺缝里在漏沙。",
         "棺盖自己滑开了一条缝，缝里伸出来的东西不像手。"
@@ -1919,7 +2303,7 @@
       "slug": "gengar",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_ghost_hi",
+      "deck": "kit_t_毒_hi",
       "lines": [
         "影子先到了，笑声后到。",
         "「又有人走夜路？」"
@@ -1933,7 +2317,7 @@
       "slug": "chandelure",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_ghost_hi",
+      "deck": "kit_t_火_hi",
       "lines": [
         "远处有一盏灯，你以为那是营地。",
         "走近了才看出，那盏灯在飘，而且它在等你走近。"
@@ -1947,7 +2331,7 @@
       "slug": "runerigus",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_幽灵_hi",
       "lines": [
         "沙里翻出一块刻满字的石板，那些字正在动。"
       ],
@@ -1960,7 +2344,7 @@
       "slug": "drifblim",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_weaken_hi",
+      "deck": "kit_t_幽灵_hi",
       "lines": [
         "一团影子慢慢升到墓原上空，把你脚下的沙也带起来一点。"
       ],
@@ -1973,7 +2357,7 @@
       "slug": "dhelmise",
       "tier": "elite",
       "biome": "night",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_幽灵_hi",
       "lines": [
         "沙里竖着一截旧锚，锚上缠着的那些东西正在看你。"
       ],
@@ -1986,7 +2370,7 @@
       "slug": "darkrai",
       "tier": "boss",
       "biome": "night",
-      "deck": "kit_ghost_hi",
+      "deck": "kit_t_恶_hi",
       "lines": [
         "沙子开始自己往你身上爬 —— 这里的东西讨厌醒着的人。",
         "「睡吧。你要的答案在梦里。」"
@@ -2001,7 +2385,7 @@
       "slug": "zygarde",
       "tier": "boss",
       "biome": "night",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_龙_hi",
       "lines": [
         "沙丘背面浮出一张由绿色细胞拼成的脸。「……你走得太远了，沙漠的孩子。」"
       ],
@@ -2016,7 +2400,7 @@
       "slug": "zoroark",
       "tier": "boss",
       "biome": "night",
-      "deck": "kit_steel_hi",
+      "deck": "kit_t_恶_hi",
       "lines": [
         "沙地上出现了第二个你，它比你更早地摆好了架势。",
         "「你猜哪个是真的？」"
@@ -2031,7 +2415,7 @@
       "slug": "geodude",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_rock",
+      "deck": "kit_t_岩石",
       "lines": [
         "你差点一脚踩上去。它睁眼，很不高兴。",
         "它把自己从岩壁上掰下来，跳到你面前。"
@@ -2042,7 +2426,7 @@
       "slug": "cubone",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_地面",
       "lines": [
         "它抱着一个旧头骨，看了你一会儿，什么也没说。"
       ]
@@ -2052,7 +2436,7 @@
       "slug": "unown",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能",
       "lines": [
         "墙上的刻痕排成一个你不知道的字，然后那个字飘了下来。"
       ]
@@ -2062,7 +2446,7 @@
       "slug": "sableye",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_debuff",
+      "deck": "kit_t_恶",
       "lines": [
         "它原本就蹲在影子里，只是你现在才看清。",
         "它对着你搓了搓手，指缝里的东西在反光。"
@@ -2073,7 +2457,7 @@
       "slug": "lunatone",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能_hi",
       "lines": [
         "一根柱子的顶上浮着一块石头，它一直在慢慢转。",
         "它转过来的时候，柱廊里所有的影子都跟着挪了一下。"
@@ -2084,7 +2468,7 @@
       "slug": "baltoy",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能",
       "lines": [
         "沙里转出来一个泥做的小人，转得很有节奏。"
       ]
@@ -2094,7 +2478,7 @@
       "slug": "bronzor",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能",
       "lines": [
         "一面长满绿锈的旧镜面慢慢转向你。"
       ]
@@ -2104,7 +2488,7 @@
       "slug": "golett",
       "tier": "mob",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_幽灵",
       "lines": [
         "一个泥做的拳头从沙里举起来，像是在打招呼。"
       ]
@@ -2114,7 +2498,7 @@
       "slug": "solrock",
       "tier": "normal",
       "biome": "ruins",
-      "deck": "kit_crystal",
+      "deck": "kit_t_岩石_hi",
       "lines": [
         "整座遗迹忽然亮起来，因为柱顶那块石头转到了正对太阳的角度。",
         "它把光聚成一条线，线落在你脚边，冒了一点烟。"
@@ -2125,7 +2509,7 @@
       "slug": "claydol",
       "tier": "normal",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能_hi",
       "lines": [
         "石柱之间浮起一个陶偶，红点对着你逐个亮起。",
         "它把碎掉的柱子一块块吸到身边，围成了一圈。"
@@ -2136,7 +2520,7 @@
       "slug": "bastiodon",
       "tier": "normal",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "它把那张大脸往下一放，整条路就堵死了。",
         "「今天不通行。」"
@@ -2147,7 +2531,7 @@
       "slug": "bronzong",
       "tier": "normal",
       "biome": "ruins",
-      "deck": "kit_ruins",
+      "deck": "kit_t_超能",
       "lines": [
         "钟没被敲就响了，响得沙子都在跳。"
       ]
@@ -2157,7 +2541,7 @@
       "slug": "metagross",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_ruins_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "四根柱子同时浮了起来，柱子中间夹着一个铁青色的东西。",
         "它不看你，它在看整座遗迹，像是在清点什么。"
@@ -2171,7 +2555,7 @@
       "slug": "regirock",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_t_岩石_hi",
       "lines": [
         "石堆拼成了一个形状，形状睁开了眼。"
       ],
@@ -2184,7 +2568,7 @@
       "slug": "rampardos",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_ruins_hi",
+      "deck": "kit_t_岩石_hi",
       "lines": [
         "它低下头，对着石墙开始加速。",
         "「……它是不是看不见我们？」"
@@ -2198,7 +2582,7 @@
       "slug": "aegislash",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_ruins_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "墙边那把旧剑自己转了个身，剑柄上的花纹睁开了眼。"
       ],
@@ -2211,7 +2595,7 @@
       "slug": "armaldo",
       "tier": "elite",
       "biome": "ruins",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_t_虫_hi",
       "lines": [
         "它从沙里推开两块石板站起来，又把石板叠好放回原处。",
         "「……还挺讲究。」"
@@ -2225,7 +2609,7 @@
       "slug": "regigigas",
       "tier": "boss",
       "biome": "ruins",
-      "deck": "kit_ruins_hi",
+      "deck": "kit_t_一般_hi",
       "lines": [
         "整片遗迹的柱子同时往一个方向倒 —— 因为那个东西站起来了。",
         "「搬山的，是我。」"
@@ -2240,7 +2624,7 @@
       "slug": "tyrantrum",
       "tier": "boss",
       "biome": "ruins",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_龙_hi",
       "bossTitle": "结晶的暴君",
       "lines": [
         "最亮的那块水晶后面有东西站起来了，它一动，整片洞壁的光就全往它身上收。",
@@ -2255,7 +2639,7 @@
       "slug": "paras",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_bug",
+      "deck": "kit_t_虫",
       "lines": [
         "落叶底下有两只眼睛在看你，背上还长着蘑菇。",
         "它走过来的时候，蘑菇先动。"
@@ -2266,7 +2650,7 @@
       "slug": "grimer",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_毒",
       "lines": [
         "一摊紫色的东西从水里浮起来，很礼貌地让开了半步。",
         "「……谢谢？」"
@@ -2277,7 +2661,7 @@
       "slug": "shroomish",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_草",
       "lines": [
         "它蹲在树下生闷气，脚边的草全蔫了。"
       ]
@@ -2287,7 +2671,7 @@
       "slug": "nincada",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_虫",
       "lines": [
         "泥里钻出一层薄薄的壳，壳下面什么都没有。"
       ]
@@ -2297,7 +2681,7 @@
       "slug": "dewpider",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_虫",
       "lines": [
         "它顶着一个水泡在草叶上走，水泡里还有另一双眼睛在看你。"
       ]
@@ -2307,7 +2691,7 @@
       "slug": "foongus",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_毒",
       "lines": [
         "地上长着一排小球，其中一个眨了眨眼睛。",
         "它喷出一小团孢子，然后很期待地看着你。"
@@ -2318,7 +2702,7 @@
       "slug": "goomy",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_龙",
       "lines": [
         "一摊会呼吸的黏液慢慢挪过来，身后留下一道亮痕。"
       ]
@@ -2328,7 +2712,7 @@
       "slug": "morelull",
       "tier": "mob",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_妖精",
       "lines": [
         "菌盖下面亮着几盏很小的灯，一盏一盏转向你。",
         "它走过的地方，孢子浮起来又慢慢落回去。"
@@ -2339,7 +2723,7 @@
       "slug": "parasect",
       "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_bug",
+      "deck": "kit_t_虫",
       "lines": [
         "那只蘑菇现在长得比它的身子还大，而且看起来才是真正在走路的那个。"
       ]
@@ -2349,7 +2733,7 @@
       "slug": "marshtomp",
       "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_fungal",
+      "deck": "kit_t_水",
       "lines": [
         "它从泥水里站起来，甩了你一身泥。"
       ]
@@ -2359,7 +2743,7 @@
       "slug": "toxicroak",
       "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_poison",
+      "deck": "kit_t_格斗",
       "lines": [
         "它收着下巴看你，喉咙上那块囊一鼓一鼓。"
       ]
@@ -2369,7 +2753,7 @@
       "slug": "scolipede",
       "tier": "normal",
       "biome": "fungal",
-      "deck": "kit_poison",
+      "deck": "kit_t_毒",
       "lines": [
         "湿泥像被什么东西从下面一节一节顶起来。",
         "它从泥里把自己拔出来，每一节都在往下滴东西。"
@@ -2380,7 +2764,7 @@
       "slug": "beedrill",
       "tier": "elite",
       "biome": "fungal",
-      "deck": "kit_fungal_hi",
+      "deck": "kit_t_毒_hi",
       "lines": [
         "嗡声从菌盖下面传出来，三根针先到。",
         "它把整片菌林的孢子搅成了一个旋，旋的中心是它。"
@@ -2391,7 +2775,7 @@
       "slug": "quagsire",
       "tier": "elite",
       "biome": "fungal",
-      "deck": "kit_poison_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "整片浅水底下都是它，你只看得到两只眼睛。"
       ]
@@ -2401,7 +2785,7 @@
       "slug": "seismitoad",
       "tier": "elite",
       "biome": "fungal",
-      "deck": "kit_poison_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "湿地里那些鼓包忽然一起转过来，全都对着你。"
       ]
@@ -2411,7 +2795,7 @@
       "slug": "swalot",
       "tier": "elite",
       "biome": "fungal",
-      "deck": "kit_fungal_hi",
+      "deck": "kit_t_毒_hi",
       "lines": [
         "一摊紫色的东西慢慢张开了嘴，嘴比它自己还大。"
       ]
@@ -2421,7 +2805,7 @@
       "slug": "masquerain",
       "tier": "elite",
       "biome": "fungal",
-      "deck": "kit_fungal_hi",
+      "deck": "kit_t_虫_hi",
       "lines": [
         "它头顶那对花纹忽然全睁开了，湿地里一下安静下来。"
       ]
@@ -2431,7 +2815,7 @@
       "slug": "breloom",
       "tier": "boss",
       "biome": "fungal",
-      "deck": "kit_fungal_hi",
+      "deck": "kit_t_格斗_hi",
       "lines": [
         "菌盖底下那两只手臂一直垂着，直到你踩进它的圈。"
       ],
@@ -2445,7 +2829,7 @@
       "slug": "trevenant",
       "tier": "boss",
       "biome": "fungal",
-      "deck": "kit_fungal_hi",
+      "deck": "kit_t_幽灵_hi",
       "bossTitle": "菌林的看守",
       "lines": [
         "整片菌林同时静了下来。最粗的那棵树转过身，树皮上全是眼睛一样的菌斑。「踩到我孩子了。」"
@@ -2459,7 +2843,7 @@
       "slug": "magnemite",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "它飘在台地边缘，两边的磁铁一抖，你头发全立起来了。",
         "头顶亮了一下，它跟着亮了一下 —— 顺序反了。"
@@ -2470,7 +2854,7 @@
       "slug": "mareep",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "一团毛球蹲在岩缝里，毛越炸越开。",
         "它打了个喷嚏，旁边的草全趴下了。"
@@ -2481,7 +2865,7 @@
       "slug": "elekid",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "它在雷声里晃着两根线，插头一直对着你转。"
       ]
@@ -2491,7 +2875,7 @@
       "slug": "electrike",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "它身上的毛全竖着，雷每响一次就往前冲一步。"
       ]
@@ -2501,7 +2885,7 @@
       "slug": "emolga",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "它张着翼膜挂在风里，像一张被雷照亮的纸。",
         "它从你头顶滑过去，你脖子后面的汗毛全竖了。"
@@ -2512,7 +2896,7 @@
       "slug": "dedenne",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_妖精",
       "lines": [
         "岩缝里有个小东西，胡须上噼啪响。",
         "它把尾巴竖起来当引雷的杆，然后对着你。"
@@ -2523,7 +2907,7 @@
       "slug": "togedemaru",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "一颗带刺的圆球滚过来，刺上全是细小的火花。",
         "它一缩，刺全立起来，火花串成了一圈。"
@@ -2534,7 +2918,7 @@
       "slug": "pincurchin",
       "tier": "mob",
       "biome": "storm",
-      "deck": "kit_electric",
+      "deck": "kit_t_电",
       "lines": [
         "石头上那团黑色的刺亮了一下。"
       ]
@@ -2544,7 +2928,7 @@
       "slug": "raichu",
       "tier": "normal",
       "biome": "storm",
-      "deck": "kit_flying",
+      "deck": "kit_t_电",
       "lines": [
         "它把尾巴往地上一插，脚下的地面就亮了。"
       ]
@@ -2554,7 +2938,7 @@
       "slug": "electrode",
       "tier": "normal",
       "biome": "storm",
-      "deck": "kit_weaken",
+      "deck": "kit_t_电",
       "lines": [
         "台地上滚过来一个圆球，边滚边笑。",
         "「……那东西在笑。」"
@@ -2565,7 +2949,7 @@
       "slug": "manectric",
       "tier": "normal",
       "biome": "storm",
-      "deck": "kit_ghost",
+      "deck": "kit_t_电",
       "lines": [
         "它站的那块地一直在冒火花。"
       ]
@@ -2575,7 +2959,7 @@
       "slug": "heliolisk",
       "tier": "normal",
       "biome": "storm",
-      "deck": "kit_flying",
+      "deck": "kit_t_一般",
       "lines": [
         "它把脖子上那片东西撑开，雨在它身上分成了两半。"
       ]
@@ -2585,7 +2969,7 @@
       "slug": "gyarados",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_water_hi",
+      "deck": "kit_t_水_hi",
       "lines": [
         "水面被从下面顶开，一条蓝色的东西升起来，比你在沙丘上见过的任何东西都长。"
       ],
@@ -2598,7 +2982,7 @@
       "slug": "electivire",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_electric_hi",
+      "deck": "kit_t_电_hi",
       "lines": [
         "它把两条尾巴一碰，整个台地暗了一瞬。"
       ]
@@ -2608,7 +2992,7 @@
       "slug": "vikavolt",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_flying_hi",
+      "deck": "kit_t_电_hi",
       "lines": [
         "它悬在半空，那道炮口一直对着你。"
       ]
@@ -2618,7 +3002,7 @@
       "slug": "luxray",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_flying_hi",
+      "deck": "kit_t_电_hi",
       "lines": [
         "台地上的雨全是斜的 —— 因为中间那东西一直在放电。"
       ]
@@ -2628,7 +3012,7 @@
       "slug": "magnezone",
       "tier": "elite",
       "biome": "storm",
-      "deck": "kit_electric_hi",
+      "deck": "kit_t_电_hi",
       "lines": [
         "它悬在半空慢慢转，把周围的雷都吸了过去。"
       ]
@@ -2638,7 +3022,7 @@
       "slug": "ampharos",
       "tier": "boss",
       "biome": "storm",
-      "deck": "kit_electric_hi",
+      "deck": "kit_t_电_hi",
       "bossTitle": "灯塔的守望者",
       "lines": [
         "台地尽头立着一座旧灯塔，塔顶的灯亮了一下 —— 那不是灯，是它抬起了头。",
@@ -2653,7 +3037,7 @@
       "slug": "zeraora",
       "tier": "boss",
       "biome": "storm",
-      "deck": "kit_electric_hi",
+      "deck": "kit_t_电_hi",
       "lines": [
         "雷还没落下来，先落在了一双脚上。",
         "「跑得比我快的人，我还没见过。」"
@@ -2668,7 +3052,7 @@
       "slug": "onix",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_岩石",
       "lines": [
         "洞顶那些石柱，原来不是石柱。"
       ]
@@ -2678,7 +3062,7 @@
       "slug": "beldum",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_超能",
       "lines": [
         "一个铁块飘起来，用一只眼睛盯着你。"
       ]
@@ -2688,7 +3072,7 @@
       "slug": "dwebble",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_虫",
       "lines": [
         "一块小石头自己在走，石头底下露出几条细细的腿。"
       ]
@@ -2698,7 +3082,7 @@
       "slug": "druddigon",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_dragon",
+      "deck": "kit_t_龙",
       "lines": [
         "洞顶不太平整的那一块掉了下来，落地时站直了。",
         "它脸上的红纹在晶光底下显得特别亮。"
@@ -2709,7 +3093,7 @@
       "slug": "carbink",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_妖精",
       "lines": [
         "水晶后面滚出来一枚会眨眼的石头。",
         "它身上嵌满了碎晶，走一步响一下。"
@@ -2720,7 +3104,7 @@
       "slug": "bergmite",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_冰",
       "lines": [
         "冰里那团东西翻了个身，把整块冰一起挪了。"
       ]
@@ -2730,7 +3114,7 @@
       "slug": "noibat",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_龙",
       "lines": [
         "洞顶挂着一小团黑，你走近它就醒了。"
       ]
@@ -2740,7 +3124,7 @@
       "slug": "nacli",
       "tier": "mob",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_岩石",
       "lines": [
         "晶壁上结着一粒粒发亮的东西，其中一粒在眨眼。"
       ]
@@ -2750,7 +3134,7 @@
       "slug": "mawile",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_steel",
+      "deck": "kit_t_妖精",
       "lines": [
         "它回头对你笑了一下，然后它身后那张嘴也笑了。"
       ]
@@ -2760,7 +3144,7 @@
       "slug": "metang",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_超能",
       "lines": [
         "两个铁块叠在一起，成了更大的一只。"
       ]
@@ -2770,7 +3154,7 @@
       "slug": "avalugg",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_crystal",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "一大块冰趴在洞底，仔细看是活的。"
       ]
@@ -2780,7 +3164,7 @@
       "slug": "naclstack",
       "tier": "normal",
       "biome": "crystal",
-      "deck": "kit_steel",
+      "deck": "kit_t_岩石",
       "lines": [
         "刚才那粒东西长大了，还叫来了同伴。"
       ]
@@ -2790,7 +3174,7 @@
       "slug": "glalie",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "洞里的冰面上浮出一张脸，转过来正对着你。"
       ],
@@ -2803,7 +3187,7 @@
       "slug": "probopass",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_bleed_hi",
+      "deck": "kit_t_钢_hi",
       "lines": [
         "那撮铁砂一直在转，最后全部指向你。"
       ],
@@ -2816,7 +3200,7 @@
       "slug": "aurorus",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_ghost_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "整面冰壁亮了 —— 光是从那副骨架里透出来的。"
       ],
@@ -2829,7 +3213,7 @@
       "slug": "abomasnow",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_bleed_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "洞里的冰壁上开始飘雪 —— 那棵树是自己走过来的。"
       ],
@@ -2842,7 +3226,7 @@
       "slug": "froslass",
       "tier": "elite",
       "biome": "crystal",
-      "deck": "kit_crystal_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "冰面下那张脸一直跟着你移动，你停它也停。"
       ],
@@ -2855,7 +3239,7 @@
       "slug": "kyurem",
       "tier": "boss",
       "biome": "crystal",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_冰_hi",
       "lines": [
         "洞的最深处没有回声，因为那里的冷把声音也冻住了。",
         "「……冷吗。我也冷。」"
@@ -2870,7 +3254,7 @@
       "slug": "diancie",
       "tier": "boss",
       "biome": "crystal",
-      "deck": "kit_dragon_hi",
+      "deck": "kit_t_妖精_hi",
       "lines": [
         "最中间那块晶体自己转动起来，转出一圈光。",
         "「想要我头上的东西？先问过这面墙。」"

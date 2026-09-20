@@ -22,6 +22,8 @@ const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus'
 const STATUS_KINDS = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 const BUFF_STATS = ['atk', 'def', 'agi', 'luck'];
 const RARITIES = ['common', 'uncommon', 'rare', 'epic'];
+/** 卡牌的招式属性用官方的 18 种简称（species.json 里也是这一套；「超能力」这种写法会让按属性挑池子失效） */
+const POKEMON_TYPES = ['一般', '火', '水', '草', '电', '冰', '毒', '地面', '飞行', '超能', '虫', '岩石', '幽灵', '龙', '恶', '钢', '格斗', '妖精'];
 const TIERS = ['mob', 'normal', 'elite', 'boss'];
 
 const errors = [];
@@ -160,6 +162,13 @@ function validateCards(data, iconNames) {
     if (!RARITIES.includes(c.rarity)) err(`${at} 的 rarity 必须是 ${RARITIES.join('/')}`);
     if (!['enemy', 'self'].includes(c.targeting)) err(`${at} 的 targeting 必须是 enemy/self`);
     if (!Array.isArray(c.effects) || !c.effects.length) err(`${at} 至少要有一个 effects`);
+    /**
+     * 每张卡都要登记属性：`types` 是「这只敌人的招式里有没有本系」这条硬规矩的依据
+     * （见 validateEnemies），也是属性池组装的输入。少了它，那张卡就是「看不出什么属性」，
+     * 谁也没法检查 —— 以前正是因为没有这个字段，才让「幽灵系扔石头」一直没被发现。
+     */
+    if (!Array.isArray(c.types) || !c.types.length) err(`${at} 缺 types（这张牌是什么属性？比如 ["地面"]）`);
+    else for (const t of c.types) if (!POKEMON_TYPES.includes(t)) err(`${at} 的 types 里有未知属性 ${t}（要用官方简称：超能不是超能力）`);
     for (const eff of c.effects ?? []) {
       if (!ENGINE_EFFECT_KINDS.includes(eff.kind)) err(`${at} 用了引擎不认识的效果 kind=${eff.kind}`);
       if (eff.kind === 'buff') {
@@ -227,13 +236,37 @@ function validateSpecies(species, enemyList) {
   return slugs;
 }
 
-function validateEnemies(data, cardIds, biomeKeys) {
+function validateEnemies(data, cardIds, biomeKeys, speciesMap = {}) {
   const { enemies, movePools, tiers } = data;
   const ids = new Set();
   const cards = new Set(cardIds);
+  const cardTypes = new Map((data.cardList ?? []).map((c) => [c.id, c.types ?? []]));
   for (const [name, pool] of Object.entries(movePools ?? {})) {
     if (!Array.isArray(pool) || !pool.length) err(`招式池 ${name} 不能为空`);
     for (const id of pool) if (!cards.has(id)) err(`招式池 ${name} 引用了不存在的卡牌 ${id}`);
+    /**
+     * `kit_t_<属性>` 是「按属性组好的池子」：里面的**攻击牌**必须都是那个属性，
+     * 非攻击的通用小工具（缩壳 / 瞪眼 / 守住 这种，不带伤害、也不属于任何属性）放行。
+     *
+     * 这条不查的话，幽灵系的池子里混进一张地面招式谁也看不出来
+     * （用户报的「莫名其妙的技能」就是这种漏进来的）。
+     * 只认攻击牌是因为「属性」本来就只作用在伤害招式上：一只幽灵系用「瞪眼」不算跑题，
+     * 用「流沙地狱」才是。
+     */
+    const m = /^kit_t_(.+?)(_hi)?$/.exec(name);
+    if (m) {
+      let attacks = 0;
+      for (const id of pool) {
+        const card = (data.cardList ?? []).find((c) => c.id === id);
+        const t = cardTypes.get(id);
+        const isAttack = (card?.effects ?? []).some((e) => e.kind === 'damage');
+        if (!isAttack) continue;
+        attacks++;
+        if (!t?.length) { warn(`属性池 ${name} 里的攻击牌 ${id} 没有 types（看不出它是什么属性）`); continue; }
+        if (!t.includes(m[1])) err(`属性池 ${name} 的攻击牌 ${id} 是 ${t.join('/')} 系（这个池子只放 ${m[1]} 系）`);
+      }
+      if (attacks < 3) err(`属性池 ${name} 只有 ${attacks} 张攻击牌，敌人会不知道该打谁`);
+    }
   }
   for (const e of enemies) {
     const at = `敌人「${e.id}」`;
@@ -249,6 +282,20 @@ function validateEnemies(data, cardIds, biomeKeys) {
     } else err(`${at} 的 deck 必须是招式池名或卡牌 id 数组`);
     for (const id of e.signature ?? []) {
       if (!cards.has(id)) err(`${at} 的专属招式 ${id} 不存在`);
+    }
+    /**
+     * 每只敌人**至少要有一张本系招式**（用户要求：「很多宝可梦没有本系招式的卡牌」）。
+     * 这条是这次改造的核心约束 —— 以前池子是手挑的，谁也没把「池子的属性和这只怪的属性」
+     * 放在一起看过，于是出现了「怨影娃娃（幽灵）用地面招式」这种没人发现的问题。
+     */
+    const sp = speciesMap[e.slug];
+    const pool = typeof deck === 'string' ? (movePools[deck] ?? []) : (Array.isArray(deck) ? deck : []);
+    const types = sp?.types ?? [];
+    if (types.length && pool.length) {
+      const same = pool.filter((id) => (cardTypes.get(id) ?? []).some((t) => types.includes(t)));
+      if (!same.length) {
+        err(`${at}（${types.join('/')}）的招式池「${deck}」里没有一张本系招式`);
+      }
     }
     if (e.tier === 'boss' && !(e.signature?.length)) warn(`${at} 是首领但没有专属招式（signature）`);
     if (e.tier === 'boss' && !e.bossTitle) warn(`${at} 是首领但没有 bossTitle`);
@@ -740,7 +787,8 @@ const iconNameSet = new Set(icons.map((i) => i.name));
 
 const cardIds = validateCards(data.cards, iconNameSet);
 validateSpecies(data.species, data.enemies.enemies);
-validateEnemies(data.enemies, cardIds, Object.keys(data.biomes.biomes));
+// 传进去的 data 要带上卡表与物种表：属性的硬校验（池子里不许混异系卡、每只怪至少一张本系）靠它们
+validateEnemies({ ...data.enemies, cardList: data.cards.cards }, cardIds, Object.keys(data.biomes.biomes), data.species.species);
 validateBiomes(data.biomes, data.enemies.enemies);
 validateBgm(data.bgm, data.biomes.stageOrder, data.oggMap, data.bgmManifest);
 validateMerchants(data.merchants, new Set(Object.keys(data.species.species)), Object.keys(data.biomes.biomes), Object.keys(data.cards.items));

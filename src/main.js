@@ -177,6 +177,10 @@ async function boot() {
     // 曲子库诊断：?dgmusic=1 自检「没听过的显示 ？？？」；?dgmusic=shot 留屏截图
     import('../tools/diag-music.js').catch((e) => console.error('曲子库诊断加载失败', e));
   }
+  if (params.get('dgkit')) {
+    // 敌人招式属性诊断：实际开一场，看敌方拿到的攻击牌是不是本系（?dgkit=1）
+    import('../tools/diag-kits.js').catch((e) => console.error('招式属性诊断加载失败', e));
+  }
   if (params.get('dgfx') === '1') {
     // 查战斗简单特效（闪光 / 爆发 / 冲击）有没有真的播出来
     import('../tools/diag-fx.js').catch((e) => console.error('特效诊断加载失败', e));
