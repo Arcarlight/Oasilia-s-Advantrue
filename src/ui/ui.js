@@ -270,7 +270,7 @@ export class UI {
     const start = () => {
       bs.mount().catch((err) => {
         console.error('战斗界面挂载失败:', err?.message, '\n', err?.stack);
-        toast('战斗界面出错，已返回地图。', 'bad');
+        toast(t('战斗界面出错，已返回地图。'), 'bad');
         g.phase = 'map';
         this.current = null;
         this.render();

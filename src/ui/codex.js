@@ -48,10 +48,10 @@ export function medalTier(wins) {
 
 export const MEDALS = [
   null,
-  { cls: 'medal-bronze', name: '铜牌', at: 5 },
-  { cls: 'medal-silver', name: '银牌', at: 15 },
-  { cls: 'medal-gold', name: '金牌', at: 25 },
-  { cls: 'medal-platinum', name: '紫金牌', at: 50 },
+  { cls: 'medal-bronze', get name() { return t('铜牌'); }, at: 5 },
+  { cls: 'medal-silver', get name() { return t('银牌'); }, at: 15 },
+  { cls: 'medal-gold', get name() { return t('金牌'); }, at: 25 },
+  { cls: 'medal-platinum', get name() { return t('紫金牌'); }, at: 50 },
 ];
 
 /** 这一局正带着哪些卡（标题页没有 run —— 那时给空数组，全部按「以前拿过 / 没见过」显示） */

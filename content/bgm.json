@@ -3,7 +3,14 @@
   "_source": "两个来源，各自按自己的规矩署名（见下面 sources）。ontama 的 file 是「上游 mp3 名」，fetch-bgm.mjs 用 tools/bgm-ogg-map.json 查它的 ogg(L) 地址；d-symphony 的 file 直接就是 msc/ 下的 ogg 文件名（DS-<编号>o.ogg）。",
   "_loop": "ontama 的 ogg(L) 是上游剪好的无缝自然循环，注释里还带 LOOPSTART/LOOPLENGTH；d-symphony 的 ogg 是普通循环，文件里**没有**循环注释，起止处也不是无缝的（尾巴是干净的零采样，接缝跳变能到 -10dB）。这类曲子由 src/core/bgm.js 用「等功率交叉淡化循环」补上接缝（见那边的 crossfade 分支）。",
   "_reuse": "一张地图一张图，一首曲子只服务一个场景：map_/battle_/elite_ 三组在 10 张地图上互不重复。以前 desert 是借通用曲（map_desert = map.ogg），第 7~10 张图也各自借了 canyon/forest/cliff/night，进不同地图听到同一首 —— 现在补齐了。",
-  "roomOrder": ["title", "map", "battle", "elite", "boss", "misc"],
+  "roomOrder": [
+    "title",
+    "map",
+    "battle",
+    "elite",
+    "boss",
+    "misc"
+  ],
   "sources": {
     "ontama": {
       "name": "音楽の卵",
@@ -23,51 +30,333 @@
   "oggBaseUrl": "https://ontama-m.com/midi/data/ogg_file/original/",
   "dsBaseUrl": "https://d-symphony.com/msc/",
   "tracks": {
-    "title": { "source": "ontama", "file": "tabinohajime.mp3", "name": "旅のはじめ", "page": "RPG outdoor", "desc": "标题 · 旅途开始", "room": "title" },
-
-    "map": { "source": "ontama", "file": "kazehukusougen.mp3", "name": "風吹く草原", "page": "RPG outdoor", "desc": "地图兜底曲", "room": "map" },
-    "map_desert": { "source": "dsymphony", "file": "DS-145o.ogg", "name": "烈日と黄塵のヴェール", "page": "街 · 砂漠の街", "desc": "第一章 流沙之海", "room": "map" },
-    "map_canyon": { "source": "ontama", "file": "taniwokoete.mp3", "name": "谷を越えて", "page": "RPG outdoor", "desc": "第二章 赤岩峡谷", "room": "map" },
-    "map_forest": { "source": "ontama", "file": "usugiraimori.mp3", "name": "薄暗い森", "page": "RPG outdoor", "desc": "第三章 藤蔓密林", "room": "map" },
-    "map_tide": { "source": "ontama", "file": "taiyoutoshiokaze.mp3", "name": "太陽と潮風の街", "page": "RPG town", "desc": "第四章 潮汐盐海", "room": "map" },
-    "map_cliff": { "source": "ontama", "file": "tozan.mp3", "name": "頂上目指して", "page": "RPG outdoor", "desc": "第五章 风蚀峭壁", "room": "map" },
-    "map_night": { "source": "ontama", "file": "yamidoukutu.mp3", "name": "闇の洞窟", "page": "RPG outdoor", "desc": "第六章 夜砂墓原", "room": "map" },
-    "map_ruins": { "source": "dsymphony", "file": "DS-022o.ogg", "name": "永遠なる輝きのもとに", "page": "戦い · 強敵との死闘", "desc": "第七章 沉沙遗迹", "room": "map" },
-    "map_fungal": { "source": "dsymphony", "file": "DS-101o.ogg", "name": "木霊の踊り", "page": "ダンジョン · 精霊のいる森", "desc": "第八章 菌菇湿地", "room": "map" },
-    "map_storm": { "source": "dsymphony", "file": "DS-141o.ogg", "name": "霊峰は荘厳に", "page": "ダンジョン · 厳しくも美しい山", "desc": "第九章 雷暴台地", "room": "map" },
-    "map_crystal": { "source": "dsymphony", "file": "DS-113o.ogg", "name": "朽ち果てた紋章", "page": "ダンジョン · たたずむ古城", "desc": "第十章 水晶洞窟", "room": "map" },
-
-    "battle": { "source": "ontama", "file": "koubouittai.mp3", "name": "攻防一体", "page": "RPG battle", "desc": "战斗兜底曲", "room": "battle" },
-    "battle_desert": { "source": "dsymphony", "file": "DS-036o.ogg", "name": "Sand Labyrinth", "page": "ダンジョン · 砂に埋もれた遺跡", "desc": "流沙之海的战斗", "room": "battle" },
-    "battle_canyon": { "source": "ontama", "file": "tokkumiai.mp3", "name": "取っ組み合い", "page": "RPG battle", "desc": "赤岩峡谷的战斗", "room": "battle" },
-    "battle_forest": { "source": "ontama", "file": "saguriai.mp3", "name": "さぐり合い", "page": "RPG battle", "desc": "藤蔓密林的战斗", "room": "battle" },
-    "battle_tide": { "source": "ontama", "file": "hit_away.mp3", "name": "ヒット＆アウェイ", "page": "RPG battle", "desc": "潮汐盐海的战斗", "room": "battle" },
-    "battle_cliff": { "source": "ontama", "file": "kazaguruma.mp3", "name": "風車", "page": "RPG battle", "desc": "风蚀峭壁的战斗", "room": "battle" },
-    "battle_night": { "source": "ontama", "file": "yamiwouchiharau.mp3", "name": "闇を打ち払う", "page": "RPG battle", "desc": "夜砂墓原的战斗", "room": "battle" },
-    "battle_ruins": { "source": "dsymphony", "file": "DS-057o.ogg", "name": "龍飛鳳舞", "page": "戦い · 中華風バトル", "desc": "沉沙遗迹的战斗", "room": "battle" },
-    "battle_fungal": { "source": "dsymphony", "file": "DS-059o.ogg", "name": "Crimson Ridge", "page": "ダンジョン · 火山", "desc": "菌菇湿地的战斗", "room": "battle" },
-    "battle_storm": { "source": "dsymphony", "file": "DS-102o.ogg", "name": "蒼天疾駆", "page": "戦い · 青空を駆ける", "desc": "雷暴台地的战斗", "room": "battle" },
-    "battle_crystal": { "source": "dsymphony", "file": "DS-072o.ogg", "name": "深淵を行く", "page": "フィールド · 静かな海底", "desc": "水晶洞窟的战斗", "room": "battle" },
-
-    "elite": { "source": "ontama", "file": "cross.mp3", "name": "クロス陣形", "page": "RPG battle", "desc": "强敌兜底曲", "room": "elite" },
-    "elite_desert": { "source": "ontama", "file": "tachimukaumonotachi.mp3", "name": "立ち向かう者達", "page": "RPG outdoor", "desc": "流沙之海的强敌", "room": "elite" },
-    "elite_canyon": { "source": "ontama", "file": "syakunetu.mp3", "name": "灼熱の奥へ", "page": "RPG outdoor", "desc": "赤岩峡谷的强敌", "room": "elite" },
-    "elite_forest": { "source": "ontama", "file": "mamononokehai.mp3", "name": "魔物の気配", "page": "RPG outdoor", "desc": "藤蔓密林的强敌", "room": "elite" },
-    "elite_tide": { "source": "ontama", "file": "hiryu.mp3", "name": "飛竜の背に乗って", "page": "RPG outdoor", "desc": "潮汐盐海的强敌", "room": "elite" },
-    "elite_cliff": { "source": "ontama", "file": "wind.mp3", "name": "風を追いかけて", "page": "RPG outdoor", "desc": "风蚀峭壁的强敌", "room": "elite" },
-    "elite_night": { "source": "ontama", "file": "shikkounin.mp3", "name": "執行人", "page": "RPG event", "desc": "夜砂墓原的强敌", "room": "elite" },
-    "elite_ruins": { "source": "dsymphony", "file": "DS-127o.ogg", "name": "白虎豪勇", "page": "ダンジョン · 険しい山・渓谷", "desc": "沉沙遗迹的强敌", "room": "elite" },
-    "elite_fungal": { "source": "dsymphony", "file": "DS-150o.ogg", "name": "鉄と炎の律動", "page": "戦い · ちょっと手強い敵", "desc": "菌菇湿地的强敌", "room": "elite" },
-    "elite_storm": { "source": "dsymphony", "file": "DS-111o.ogg", "name": "轟く鉄の巨神", "page": "ダンジョン · 巨大兵器", "desc": "雷暴台地的强敌", "room": "elite" },
-    "elite_crystal": { "source": "dsymphony", "file": "DS-097o.ogg", "name": "Freezing Edge", "page": "戦い · 氷のように冷静に", "desc": "水晶洞窟的强敌", "room": "elite" },
-
-    "boss": { "source": "ontama", "file": "syuurai.mp3", "name": "襲来", "page": "RPG battle", "desc": "章节首领", "room": "boss" },
-    "boss_final": { "source": "dsymphony", "file": "DS-151o.ogg", "name": "巨竜血闘", "page": "戦い · ボス戦", "desc": "最终首领（终章）", "room": "boss" },
-
-    "victory": { "source": "ontama", "file": "syourinouta.mp3", "name": "勝利のうた", "page": "RPG battle", "desc": "战斗胜利 / 通关", "room": "misc" },
-    "defeat": { "source": "ontama", "file": "zenmetsu.mp3", "name": "ぜんめつ", "page": "RPG battle", "desc": "失败", "room": "misc" },
-    "event": { "source": "ontama", "file": "kasakashi.mp3", "name": "傘貸し", "page": "RPG event", "desc": "未知事件 / 宝箱", "room": "misc" },
-    "shop": { "source": "ontama", "file": "okasy.mp3", "name": "おかしな行商人", "page": "RPG event", "desc": "商店", "room": "misc" },
-    "rest": { "source": "ontama", "file": "izuminohotoride.mp3", "name": "泉のほとりで", "page": "RPG town", "desc": "营地", "room": "misc" }
+    "title": {
+      "source": "ontama",
+      "file": "tabinohajime.mp3",
+      "name": "旅のはじめ",
+      "page": "RPG outdoor",
+      "desc": "标题 · 旅途开始",
+      "room": "title"
+    },
+    "map": {
+      "source": "ontama",
+      "file": "kazehukusougen.mp3",
+      "name": "風吹く草原",
+      "page": "RPG outdoor",
+      "desc": "地图兜底曲",
+      "room": "map"
+    },
+    "map_desert": {
+      "source": "dsymphony",
+      "file": "DS-145o.ogg",
+      "name": "烈日と黄塵のヴェール",
+      "page": "街 · 砂漠の街",
+      "desc": "第一章 流沙之海",
+      "room": "map"
+    },
+    "map_canyon": {
+      "source": "ontama",
+      "file": "taniwokoete.mp3",
+      "name": "谷を越えて",
+      "page": "RPG outdoor",
+      "desc": "第二章 赤岩峡谷",
+      "room": "map"
+    },
+    "map_forest": {
+      "source": "ontama",
+      "file": "usugiraimori.mp3",
+      "name": "薄暗い森",
+      "page": "RPG outdoor",
+      "desc": "第三章 藤蔓密林",
+      "room": "map"
+    },
+    "map_tide": {
+      "source": "ontama",
+      "file": "taiyoutoshiokaze.mp3",
+      "name": "太陽と潮風の街",
+      "page": "RPG town",
+      "desc": "第四章 潮汐盐海",
+      "room": "map"
+    },
+    "map_cliff": {
+      "source": "ontama",
+      "file": "tozan.mp3",
+      "name": "頂上目指して",
+      "page": "RPG outdoor",
+      "desc": "第五章 风蚀峭壁",
+      "room": "map"
+    },
+    "map_night": {
+      "source": "ontama",
+      "file": "yamidoukutu.mp3",
+      "name": "闇の洞窟",
+      "page": "RPG outdoor",
+      "desc": "第六章 夜砂墓原",
+      "room": "map"
+    },
+    "map_ruins": {
+      "source": "dsymphony",
+      "file": "DS-022o.ogg",
+      "name": "永遠なる輝きのもとに",
+      "page": "戦い · 強敵との死闘",
+      "desc": "第七章 沉沙遗迹",
+      "room": "map"
+    },
+    "map_fungal": {
+      "source": "dsymphony",
+      "file": "DS-101o.ogg",
+      "name": "木霊の踊り",
+      "page": "ダンジョン · 精霊のいる森",
+      "desc": "第八章 菌菇湿地",
+      "room": "map"
+    },
+    "map_storm": {
+      "source": "dsymphony",
+      "file": "DS-141o.ogg",
+      "name": "霊峰は荘厳に",
+      "page": "ダンジョン · 厳しくも美しい山",
+      "desc": "第九章 雷暴台地",
+      "room": "map"
+    },
+    "map_crystal": {
+      "source": "dsymphony",
+      "file": "DS-113o.ogg",
+      "name": "朽ち果てた紋章",
+      "page": "ダンジョン · たたずむ古城",
+      "desc": "第十章 水晶洞窟",
+      "room": "map"
+    },
+    "battle": {
+      "source": "ontama",
+      "file": "koubouittai.mp3",
+      "name": "攻防一体",
+      "page": "RPG battle",
+      "desc": "战斗兜底曲",
+      "room": "battle"
+    },
+    "battle_desert": {
+      "source": "dsymphony",
+      "file": "DS-036o.ogg",
+      "name": "Sand Labyrinth",
+      "page": "ダンジョン · 砂に埋もれた遺跡",
+      "desc": "流沙之海的战斗",
+      "room": "battle"
+    },
+    "battle_canyon": {
+      "source": "ontama",
+      "file": "tokkumiai.mp3",
+      "name": "取っ組み合い",
+      "page": "RPG battle",
+      "desc": "赤岩峡谷的战斗",
+      "room": "battle"
+    },
+    "battle_forest": {
+      "source": "ontama",
+      "file": "saguriai.mp3",
+      "name": "さぐり合い",
+      "page": "RPG battle",
+      "desc": "藤蔓密林的战斗",
+      "room": "battle"
+    },
+    "battle_tide": {
+      "source": "ontama",
+      "file": "hit_away.mp3",
+      "name": "ヒット＆アウェイ",
+      "page": "RPG battle",
+      "desc": "潮汐盐海的战斗",
+      "room": "battle"
+    },
+    "battle_cliff": {
+      "source": "ontama",
+      "file": "kazaguruma.mp3",
+      "name": "風車",
+      "page": "RPG battle",
+      "desc": "风蚀峭壁的战斗",
+      "room": "battle"
+    },
+    "battle_night": {
+      "source": "ontama",
+      "file": "yamiwouchiharau.mp3",
+      "name": "闇を打ち払う",
+      "page": "RPG battle",
+      "desc": "夜砂墓原的战斗",
+      "room": "battle"
+    },
+    "battle_ruins": {
+      "source": "dsymphony",
+      "file": "DS-057o.ogg",
+      "name": "龍飛鳳舞",
+      "page": "戦い · 中華風バトル",
+      "desc": "沉沙遗迹的战斗",
+      "room": "battle"
+    },
+    "battle_fungal": {
+      "source": "dsymphony",
+      "file": "DS-059o.ogg",
+      "name": "Crimson Ridge",
+      "page": "ダンジョン · 火山",
+      "desc": "菌菇湿地的战斗",
+      "room": "battle"
+    },
+    "battle_storm": {
+      "source": "dsymphony",
+      "file": "DS-102o.ogg",
+      "name": "蒼天疾駆",
+      "page": "戦い · 青空を駆ける",
+      "desc": "雷暴台地的战斗",
+      "room": "battle"
+    },
+    "battle_crystal": {
+      "source": "dsymphony",
+      "file": "DS-072o.ogg",
+      "name": "深淵を行く",
+      "page": "フィールド · 静かな海底",
+      "desc": "水晶洞窟的战斗",
+      "room": "battle"
+    },
+    "elite": {
+      "source": "ontama",
+      "file": "cross.mp3",
+      "name": "クロス陣形",
+      "page": "RPG battle",
+      "desc": "强敌兜底曲",
+      "room": "elite"
+    },
+    "elite_desert": {
+      "source": "ontama",
+      "file": "tachimukaumonotachi.mp3",
+      "name": "立ち向かう者達",
+      "page": "RPG outdoor",
+      "desc": "流沙之海的强敌",
+      "room": "elite"
+    },
+    "elite_canyon": {
+      "source": "ontama",
+      "file": "syakunetu.mp3",
+      "name": "灼熱の奥へ",
+      "page": "RPG outdoor",
+      "desc": "赤岩峡谷的强敌",
+      "room": "elite"
+    },
+    "elite_forest": {
+      "source": "ontama",
+      "file": "mamononokehai.mp3",
+      "name": "魔物の気配",
+      "page": "RPG outdoor",
+      "desc": "藤蔓密林的强敌",
+      "room": "elite"
+    },
+    "elite_tide": {
+      "source": "ontama",
+      "file": "hiryu.mp3",
+      "name": "飛竜の背に乗って",
+      "page": "RPG outdoor",
+      "desc": "潮汐盐海的强敌",
+      "room": "elite"
+    },
+    "elite_cliff": {
+      "source": "ontama",
+      "file": "wind.mp3",
+      "name": "風を追いかけて",
+      "page": "RPG outdoor",
+      "desc": "风蚀峭壁的强敌",
+      "room": "elite"
+    },
+    "elite_night": {
+      "source": "ontama",
+      "file": "shikkounin.mp3",
+      "name": "執行人",
+      "page": "RPG event",
+      "desc": "夜砂墓原的强敌",
+      "room": "elite"
+    },
+    "elite_ruins": {
+      "source": "dsymphony",
+      "file": "DS-127o.ogg",
+      "name": "白虎豪勇",
+      "page": "ダンジョン · 険しい山・渓谷",
+      "desc": "沉沙遗迹的强敌",
+      "room": "elite"
+    },
+    "elite_fungal": {
+      "source": "dsymphony",
+      "file": "DS-150o.ogg",
+      "name": "鉄と炎の律動",
+      "page": "戦い · ちょっと手強い敵",
+      "desc": "菌菇湿地的强敌",
+      "room": "elite"
+    },
+    "elite_storm": {
+      "source": "dsymphony",
+      "file": "DS-111o.ogg",
+      "name": "轟く鉄の巨神",
+      "page": "ダンジョン · 巨大兵器",
+      "desc": "雷暴台地的强敌",
+      "room": "elite"
+    },
+    "elite_crystal": {
+      "source": "dsymphony",
+      "file": "DS-097o.ogg",
+      "name": "Freezing Edge",
+      "page": "戦い · 氷のように冷静に",
+      "desc": "水晶洞窟的强敌",
+      "room": "elite"
+    },
+    "boss": {
+      "source": "ontama",
+      "file": "syuurai.mp3",
+      "name": "襲来",
+      "page": "RPG battle",
+      "desc": "章节首领",
+      "room": "boss"
+    },
+    "boss_final": {
+      "source": "dsymphony",
+      "file": "DS-151o.ogg",
+      "name": "巨竜血闘",
+      "page": "戦い · ボス戦",
+      "desc": "最终首领（终章）",
+      "room": "boss"
+    },
+    "victory": {
+      "source": "ontama",
+      "file": "syourinouta.mp3",
+      "name": "勝利のうた",
+      "page": "RPG battle",
+      "desc": "战斗胜利 / 通关",
+      "room": "misc"
+    },
+    "defeat": {
+      "source": "ontama",
+      "file": "zenmetsu.mp3",
+      "name": "ぜんめつ",
+      "page": "RPG battle",
+      "desc": "失败",
+      "room": "misc"
+    },
+    "event": {
+      "source": "ontama",
+      "file": "kasakashi.mp3",
+      "name": "傘貸し",
+      "page": "RPG event",
+      "desc": "未知事件 / 宝箱",
+      "room": "misc"
+    },
+    "shop": {
+      "source": "ontama",
+      "file": "okasy.mp3",
+      "name": "おかしな行商人",
+      "page": "RPG event",
+      "desc": "商店",
+      "room": "misc"
+    },
+    "rest": {
+      "source": "ontama",
+      "file": "izuminohotoride.mp3",
+      "name": "泉のほとりで",
+      "page": "RPG town",
+      "desc": "营地",
+      "room": "misc"
+    }
   }
 }

@@ -687,6 +687,16 @@ function emitBgm(bgm, manifest) {
     name: s.name, site: s.site, url: s.url, license: s.license,
   }]));
   const byRoom = Object.fromEntries(Object.entries(bgm.tracks).map(([k, t]) => [k, t.source ?? 'ontama']));
+  /**
+   * 授权那句话是**中文字面量**，而中文字面量是词典的键。
+   *
+   * 这里多写一行 `const LICENSE = {...}` 不是为了好看：切语言时 `applyContentLang` 会把表里的
+   * 字段**原地改写**，而 `BGM_CREDITS` 是生成出来的普通对象、在 i18n 表之外 ——
+   * 不改写它的话，日语界面里那两条授权说明永远是中文
+   * （曲子库第一版就是这样，用户截图指出来的）。所以把这几条单独摘出来挂进 i18n 词表
+   * （见 src/core/i18n-tables.js 的 I18N_WORD_TABLES），让它们跟着语言走。
+   */
+  const licenses = Object.fromEntries(Object.entries(bgm.sources ?? {}).map(([id, s]) => [id, s.license]));
   return [
     'export const BGM_FILES = ' + J(files) + ';',
     '',
@@ -706,6 +716,9 @@ function emitBgm(bgm, manifest) {
     '',
     '/** 素材来源与授权（署名要求就写在这里，音乐室与设置页直接读它） */',
     'export const BGM_CREDITS = ' + J(sources) + ';',
+    '',
+    '/** 授权说明的原文（会被 i18n 词表原地改写，别当常量缓存） */',
+    'export const BGM_LICENSES = ' + J(licenses) + ';',
   ].join('\n');
 }
 

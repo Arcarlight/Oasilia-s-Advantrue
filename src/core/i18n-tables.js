@@ -18,6 +18,7 @@ import { NODE_TYPES } from '../data/mapgen.js';
 import { STATUS_INFO } from './battle.js';
 import { STAT_NAMES, STAT_SHORT, STAT_TIP, STAT_TIP_FOE } from './ui-words.js';
 import { CHANGELOG } from './changelog-data.js';
+import { BGM_CREDITS, BGM_LICENSES } from './bgm.js';
 
 /**
  * 需要跟着语言走的表。
@@ -42,8 +43,16 @@ export const I18N_TABLES = {
  * 界面上的「小词表」：它们在代码里是查表读出来的（t(STAT_NAMES[k])），静态扫不到，
  * 所以单独登记一份给 tools/build-i18n.mjs 收进待翻清单。**键和值都要收**（键如「攻」也会显示）。
  * 表本体在 src/core/ui-words.js（纯数据模块，工具 import 得起来）。
+ *
+ * bgmCredits / bgmLicense 也挂在这里：曲子库那两条授权说明是**生成出来的**普通对象
+ * （见 tools/build-content.mjs 的 emitBgm），不登记的话切语言时没人改写它们 ——
+ * 日语界面里会留一段中文（曲子库第一版就是这么漏的）。
  */
-export const I18N_WORD_TABLES = { statName: STAT_NAMES, statShort: STAT_SHORT, statTip: STAT_TIP, statTipFoe: STAT_TIP_FOE };
+export const I18N_WORD_TABLES = {
+  statName: STAT_NAMES, statShort: STAT_SHORT, statTip: STAT_TIP, statTipFoe: STAT_TIP_FOE,
+  bgmCredits: Object.fromEntries(Object.entries(BGM_CREDITS).map(([id, c]) => [id, c.site])),
+  bgmLicense: BGM_LICENSES,
+};
 
 /**
  * 「**列表形状**的文案」：现在只有更新日志（版本 + 日期 + 若干条）。

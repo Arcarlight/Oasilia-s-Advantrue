@@ -440,6 +440,12 @@ export const BGM_CREDITS = {
     "license": "免费使用（非营利 / 营利均可）、无需报告与许可，唯一要求是在制作人员名单等处标注「龍的交響楽」或链接 http://d-symphony.com/"
   }
 };
+
+/** 授权说明的原文（会被 i18n 词表原地改写，别当常量缓存） */
+export const BGM_LICENSES = {
+  "ontama": "个人 / 法人均可免费使用、无需报告、无需署名、可商用（署名非必须，游戏里仍然标注了出处）",
+  "dsymphony": "免费使用（非营利 / 营利均可）、无需报告与许可，唯一要求是在制作人员名单等处标注「龍的交響楽」或链接 http://d-symphony.com/"
+};
 // #endregion GENERATED-BGM
 
 /**

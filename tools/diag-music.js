@@ -191,6 +191,60 @@
     const noRoom = KEYS.filter((k) => !BGM_ROOMS[k]);
     ok(noRoom.length === 0, '每一首曲子都登记了音乐室分组', noRoom.join(', ') || '无');
 
+    // ---------- ⑥ 切语言之后不许有漏翻的硬编码中文 ----------
+    /**
+     * 起因（用户截图）：「音乐库这些文本完全没有本地化」——
+     * 曲子库的分组标题与「第一章 流沙之海」这类场景名当时是**裸字符串**，
+     * 既不在 t() 里、也没进待翻清单，于是界面永远中文，而覆盖率报告还写着 100%。
+     * 所以这里切到日语再看一遍：分组标题、场景名、按钮都得是日文。
+     */
+    log('⑥ 切日语之后曲子库全是日文');
+    {
+      const { changeLanguage } = await import('/src/ui/langswitch.js');
+      // 先把中文那份关掉，再切语言、重开 —— 弹窗不会跟着切语言重画
+      closeTop();
+      await wait(250);
+      changeLanguage('ja');
+      ui.current = null;
+      ui.forceRerender();
+      await wait(500);
+      click(qa('.title-codex .title-codex-btn')[3]);
+      await wait(400);
+      const m2 = topModal();
+      const text = m2?.textContent ?? '';
+      /**
+       * ⚠ 只查**简体专有字**，别用「有没有汉字」当判据：
+       * 日语译文里本来就有大量汉字（戦闘 / 章 / 画面都是正常的日文），
+       * 用 /[\u4e00-\u9fff]/ 查会误报（第一版就是这么误报的）。
+       * 这里列的是简体特有、日语绝不会出现的字：题 / 图 / 标 / 乐 / 击 / 败 / 敌 / 鉴…
+       * 注意别把「画」列进来 —— 它是「タイトル画面」的一部分，是正经日文。
+       */
+      const CN_ONLY = /[题图标乐击败敌鉴张解锁铜银奖级复录说写点类]/;
+      const bad = CN_ONLY.exec(text);
+      if (bad) {
+        const at = text.indexOf(bad[0]);
+        log(`    · 残留处上下文：…${text.slice(Math.max(0, at - 30), at + 30).replace(/\s+/g, ' ')}…`);
+      }
+      ok(!bad, '曲子库里没有残留的简体中文', bad ? `还留着「${bad[0]}」` : '（分组标题 / 场景名 / 按钮都翻了）');
+      const groups = qa('.mr-group-title', m2).map((n) => n.textContent);
+      ok(groups.some((s) => s.includes('タイトル画面')), '分组标题是日文',
+        groups.slice(0, 3).join(' / '));
+      const scenes = qa('.mr-scene', m2).map((n) => n.textContent);
+      ok(scenes.some((s) => /^第 \d+ 章 /.test(s)), '章节号翻成「第 N 章」（不是汉字数字）',
+        scenes.find((s) => /^第/.test(s)) ?? '（没有章节行）');
+      ok(scenes.some((s) => s.includes('流砂の海')), '地图名用了日文译名（流砂の海）',
+        scenes.find((s) => s.includes('の')) ?? '');
+      const lockText = qa('.mr-lock', m2).map((n) => n.textContent);
+      ok(lockText.length > 0 && lockText.every((s) => s.includes('まだ聴いていない')), '「还没听到」翻了',
+        lockText[0] ?? '');
+      for (const b of m2?.querySelectorAll('.modal-head button') ?? []) click(b);
+      await wait(200);
+      changeLanguage('zh');
+      ui.current = null;
+      ui.forceRerender();
+      await wait(300);
+    }
+
     if (fails.length) log(`MUSIC_ERRORS=[${fails.join(' | ')}]`);
     else log('曲子库自检：通过 ✓');
     log('MUSIC_DONE');
