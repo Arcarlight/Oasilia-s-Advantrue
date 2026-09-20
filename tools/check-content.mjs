@@ -36,6 +36,9 @@ const { optionTextNodes } = await import('../src/core/i18n.js');
 
 const stageCount = STAGE_BIOME.length;
 
+/** content/species.json：物种 → 图鉴编号 / 官方名（帧尺寸缓存按图鉴编号命名） */
+const speciesJson = JSON.parse(await fs.readFile(path.join(ROOT, 'content', 'species.json'), 'utf8'));
+
 // ---------- 1. 章节表长度 ----------
 for (const [name, table] of [['enemyHp', BALANCE.enemyHp], ['enemyAtk', BALANCE.enemyAtk]]) {
   for (const [tier, arr] of Object.entries(table)) {
@@ -149,6 +152,50 @@ if (missingArt) warn('立绘缺失：先把 Generation 9 Pack 解到 %TEMP%\\gen
       }
     }
     if (bad.length) err(`精灵表切分有问题：${bad.slice(0, 6).join('、')}${bad.length > 6 ? ` …共 ${bad.length} 条` : ''}（跑 node tools/build-sprite-meta.mjs 重新生成）`);
+
+    /**
+     * 帧尺寸是**猜的**吗？—— 这一条治的是「一格里塞进两三帧」。
+     *
+     * 用户反馈「赤面龙、电龙之类有很多宝可梦行走图有问题」：画面上是**两只宝可梦并排跳**。
+     * 根因不是图坏了，而是 `sprites.json` 里的帧宽是错的 —— 它本该从 SpriteCollab 的
+     * `AnimData.xml` 读（`tools/animdata-cache/<图鉴号>.xml`），但那份缓存是照着**当年的物种表**
+     * 抓的：本作从 96 只扩到 112 只时新加的那 17 只没有 AnimData，
+     * `build-sprite-meta.mjs` 只能「猜」——猜出来的值把两帧当成一帧，
+     * 而它与图片尺寸**完全自洽**（fw × cols 永远等于图片宽），所以上面那条尺寸校验根本报不出来。
+     *
+     * 现在元数据里带 `src: 'inferred'` 这面小旗子：**凡是会被画出来的物种**（敌人表 + 主角）
+     * 都不许出现「猜的」帧尺寸。缺 AnimData 就跑
+     *   node tools/fetch-animdata.mjs && node tools/build-sprite-meta.mjs
+     */
+    const inferred = [];
+    const noCache = [];
+    const used = new Set(ENEMIES.map((e) => e.slug));
+    used.add(BALANCE.player.species);
+    const dexOf = (slug) => {
+      const rec = speciesJson.species?.[slug];
+      return rec ? String(rec.dex).padStart(4, '0') : null;
+    };
+    for (const slug of [...used].sort()) {
+      const dex = dexOf(slug);
+      if (dex && !(await exists(path.join(ROOT, 'tools', 'animdata-cache', dex + '.xml')))) {
+        noCache.push(`${slug}(${dex})`);
+      }
+      for (const a of needAnims) {
+        const v = meta[slug]?.anims?.[a];
+        if (v && v.src !== 'animdata') inferred.push(`${slug}/${a}（${v.src}：${v.fw}×${v.fh}）`);
+      }
+    }
+    if (noCache.length) {
+      err(`这些物种没有 AnimData 缓存（帧尺寸只能靠猜 → 行走图会「一格里两只」）：${noCache.join('、')}`
+        + ' —— 跑 $env:NODE_USE_ENV_PROXY=1; $env:HTTPS_PROXY="http://127.0.0.1:7897"; node tools/fetch-animdata.mjs');
+    }
+    if (inferred.length) {
+      err(`这些动画的帧尺寸是**猜的**（不是从 AnimData 读的），画出来会一格里塞好几帧：`
+        + `${inferred.slice(0, 6).join('、')}${inferred.length > 6 ? ` …共 ${inferred.length} 条` : ''}`);
+    }
+    if (!noCache.length && !inferred.length) {
+      note(`精灵帧尺寸 ${used.size} 个物种全部来自 AnimData（不是猜的），切分对得上图片尺寸`);
+    }
   }
 }
 

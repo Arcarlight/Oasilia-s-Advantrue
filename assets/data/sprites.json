@@ -7,21 +7,24 @@
     "fh": 64,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -33,21 +36,24 @@
     "fh": 80,
     "cols": 18,
     "rows": 8,
-    "frames": 144
+    "frames": 144,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -59,21 +65,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -85,21 +94,24 @@
     "fh": 72,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    }
   }
  },
@@ -111,21 +123,24 @@
     "fh": 88,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -137,21 +152,24 @@
     "fh": 72,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -163,21 +181,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -189,21 +210,24 @@
     "fh": 80,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -215,21 +239,24 @@
     "fh": 80,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -241,21 +268,24 @@
     "fh": 72,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 24,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -267,21 +297,24 @@
     "fh": 72,
     "cols": 19,
     "rows": 8,
-    "frames": 152
+    "frames": 152,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 3,
     "rows": 8,
-    "frames": 24
+    "frames": 24,
+    "src": "animdata"
    }
   }
  },
@@ -293,21 +326,24 @@
     "fh": 88,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 1,
     "rows": 8,
-    "frames": 8
+    "frames": 8,
+    "src": "animdata"
    }
   }
  },
@@ -319,21 +355,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -345,21 +384,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -371,21 +413,24 @@
     "fh": 88,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    }
   }
  },
@@ -397,21 +442,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -423,21 +471,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 48,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -449,21 +500,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -475,21 +529,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 24,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -501,21 +558,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    }
   }
  },
@@ -523,25 +583,28 @@
   "dex": "0081",
   "anims": {
    "Attack": {
-    "fw": 114,
+    "fw": 72,
     "fh": 72,
-    "cols": 12,
+    "cols": 19,
     "rows": 8,
-    "frames": 96
+    "frames": 152,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 48,
+    "fw": 24,
     "fh": 32,
-    "cols": 2,
+    "cols": 4,
     "rows": 8,
-    "frames": 16
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -553,21 +616,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -579,21 +645,24 @@
     "fh": 80,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -605,21 +674,24 @@
     "fh": 72,
     "cols": 16,
     "rows": 8,
-    "frames": 128
+    "frames": 128,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -631,21 +703,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 32,
     "cols": 3,
     "rows": 8,
-    "frames": 24
+    "frames": 24,
+    "src": "animdata"
    }
   }
  },
@@ -657,21 +732,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -683,21 +761,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -709,21 +790,24 @@
     "fh": 136,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 72,
     "fh": 120,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 72,
     "fh": 128,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -735,21 +819,24 @@
     "fh": 72,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 64,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -757,25 +844,28 @@
   "dex": "0179",
   "anims": {
    "Attack": {
-    "fw": 160,
+    "fw": 64,
     "fh": 80,
-    "cols": 4,
+    "cols": 10,
     "rows": 8,
-    "frames": 32
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 64,
+    "fw": 32,
     "fh": 40,
-    "cols": 3,
+    "cols": 6,
     "rows": 8,
-    "frames": 24
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -783,25 +873,28 @@
   "dex": "0181",
   "anims": {
    "Attack": {
-    "fw": 128,
+    "fw": 64,
     "fh": 88,
-    "cols": 6,
+    "cols": 12,
     "rows": 8,
-    "frames": 48
+    "frames": 96,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 112,
+    "fw": 32,
     "fh": 64,
-    "cols": 2,
+    "cols": 7,
     "rows": 8,
-    "frames": 16
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -813,21 +906,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 56,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -839,21 +935,24 @@
     "fh": 152,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 112,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 64,
     "fh": 112,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -865,21 +964,24 @@
     "fh": 88,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 64,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -891,21 +993,24 @@
     "fh": 104,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 56,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -917,21 +1022,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -943,21 +1051,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -969,21 +1080,24 @@
     "fh": 80,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 80,
     "fh": 96,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 64,
     "fh": 72,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -995,21 +1109,24 @@
     "fh": 80,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 64,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -1021,21 +1138,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 72,
     "cols": 12,
     "rows": 8,
-    "frames": 96
+    "frames": 96,
+    "src": "animdata"
    }
   }
  },
@@ -1047,21 +1167,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 48,
     "cols": 12,
     "rows": 8,
-    "frames": 96
+    "frames": 96,
+    "src": "animdata"
    }
   }
  },
@@ -1073,21 +1196,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -1099,21 +1225,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1125,21 +1254,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 3,
     "rows": 8,
-    "frames": 24
+    "frames": 24,
+    "src": "animdata"
    }
   }
  },
@@ -1151,21 +1283,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -1177,21 +1312,24 @@
     "fh": 64,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -1199,25 +1337,28 @@
   "dex": "0286",
   "anims": {
    "Attack": {
-    "fw": 160,
+    "fw": 64,
     "fh": 80,
-    "cols": 4,
+    "cols": 10,
     "rows": 8,
-    "frames": 32
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 40,
     "fh": 48,
-    "cols": 5,
+    "cols": 12,
     "rows": 8,
-    "frames": 40
+    "frames": 96,
+    "src": "animdata"
    }
   }
  },
@@ -1225,25 +1366,28 @@
   "dex": "0302",
   "anims": {
    "Attack": {
-    "fw": 128,
+    "fw": 64,
     "fh": 72,
-    "cols": 5,
+    "cols": 10,
     "rows": 8,
-    "frames": 40
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -1255,21 +1399,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1281,21 +1428,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1307,21 +1457,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1333,21 +1486,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1359,21 +1515,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1385,21 +1544,24 @@
     "fh": 64,
     "cols": 18,
     "rows": 8,
-    "frames": 144
+    "frames": 144,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1411,21 +1573,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1437,28 +1602,32 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "FlapAround": {
     "fw": 32,
     "fh": 64,
     "cols": 19,
     "rows": 8,
-    "frames": 152
+    "frames": 152,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 72,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -1470,21 +1639,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1496,21 +1668,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 64,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1522,21 +1697,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 9,
     "rows": 8,
-    "frames": 72
+    "frames": 72,
+    "src": "animdata"
    }
   }
  },
@@ -1544,25 +1722,28 @@
   "dex": "0337",
   "anims": {
    "Attack": {
-    "fw": 144,
+    "fw": 72,
     "fh": 72,
-    "cols": 6,
+    "cols": 12,
     "rows": 8,
-    "frames": 48
+    "frames": 96,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 24,
     "fh": 48,
-    "cols": 2,
+    "cols": 8,
     "rows": 8,
-    "frames": 16
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -1570,25 +1751,28 @@
   "dex": "0338",
   "anims": {
    "Attack": {
-    "fw": 144,
+    "fw": 72,
     "fh": 72,
-    "cols": 6,
+    "cols": 12,
     "rows": 8,
-    "frames": 48
+    "frames": 96,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 32,
     "fh": 48,
-    "cols": 2,
+    "cols": 6,
     "rows": 8,
-    "frames": 16
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1600,21 +1784,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -1626,21 +1813,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1652,21 +1842,24 @@
     "fh": 80,
     "cols": 17,
     "rows": 8,
-    "frames": 136
+    "frames": 136,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -1678,21 +1871,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 72,
     "fh": 80,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 56,
     "fh": 56,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    }
   }
  },
@@ -1704,21 +1900,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -1730,21 +1929,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 88,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 64,
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    }
   }
  },
@@ -1756,21 +1958,24 @@
     "fh": 64,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 32,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 24,
     "cols": 3,
     "rows": 8,
-    "frames": 24
+    "frames": 24,
+    "src": "animdata"
    }
   }
  },
@@ -1782,21 +1987,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 56,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -1808,21 +2016,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1834,21 +2045,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1860,21 +2074,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 48,
     "fh": 56,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1886,21 +2103,24 @@
     "fh": 64,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 6,
     "rows": 8,
-    "frames": 48
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -1912,21 +2132,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -1938,21 +2161,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -1964,21 +2190,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 88,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 64,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -1990,21 +2219,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2016,21 +2248,24 @@
     "fh": 72,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -2042,21 +2277,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2068,21 +2306,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 3,
     "rows": 8,
-    "frames": 24
+    "frames": 24,
+    "src": "animdata"
    }
   }
  },
@@ -2094,21 +2335,24 @@
     "fh": 104,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 104,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 64,
     "fh": 72,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2120,21 +2364,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2146,21 +2393,24 @@
     "fh": 80,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -2172,21 +2422,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2198,21 +2451,24 @@
     "fh": 80,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 32,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2224,21 +2480,24 @@
     "fh": 72,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2246,25 +2505,28 @@
   "dex": "0587",
   "anims": {
    "Attack": {
-    "fw": 144,
+    "fw": 72,
     "fh": 72,
-    "cols": 5,
+    "cols": 10,
     "rows": 8,
-    "frames": 40
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 32,
     "fh": 48,
-    "cols": 2,
+    "cols": 6,
     "rows": 8,
-    "frames": 16
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -2272,25 +2534,28 @@
   "dex": "0590",
   "anims": {
    "Attack": {
-    "fw": 128,
+    "fw": 64,
     "fh": 72,
-    "cols": 5,
+    "cols": 10,
     "rows": 8,
-    "frames": 40
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 40,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 40,
+    "fw": 24,
     "fh": 24,
-    "cols": 3,
+    "cols": 5,
     "rows": 8,
-    "frames": 24
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -2302,21 +2567,24 @@
     "fh": 80,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 9,
     "rows": 8,
-    "frames": 72
+    "frames": 72,
+    "src": "animdata"
    }
   }
  },
@@ -2328,21 +2596,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 32,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2354,21 +2625,24 @@
     "fh": 80,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 40,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2376,25 +2650,28 @@
   "dex": "0621",
   "anims": {
    "Attack": {
-    "fw": 156,
+    "fw": 72,
     "fh": 88,
-    "cols": 6,
+    "cols": 13,
     "rows": 8,
-    "frames": 48
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 48,
     "fh": 64,
-    "cols": 3,
+    "cols": 6,
     "rows": 8,
-    "frames": 24
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -2406,21 +2683,24 @@
     "fh": 72,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2432,21 +2712,24 @@
     "fh": 64,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 32,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -2458,21 +2741,24 @@
     "fh": 96,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 80,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 56,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2480,25 +2766,28 @@
   "dex": "0697",
   "anims": {
    "Attack": {
-    "fw": 176,
+    "fw": 88,
     "fh": 96,
-    "cols": 7,
+    "cols": 14,
     "rows": 8,
-    "frames": 56
+    "frames": 112,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 80,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 112,
+    "fw": 56,
     "fh": 72,
-    "cols": 7,
+    "cols": 14,
     "rows": 8,
-    "frames": 56
+    "frames": 112,
+    "src": "animdata"
    }
   }
  },
@@ -2506,25 +2795,28 @@
   "dex": "0702",
   "anims": {
    "Attack": {
-    "fw": 120,
+    "fw": 72,
     "fh": 64,
-    "cols": 6,
+    "cols": 10,
     "rows": 8,
-    "frames": 48
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 48,
+    "fw": 24,
     "fh": 32,
-    "cols": 2,
+    "cols": 4,
     "rows": 8,
-    "frames": 16
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2532,25 +2824,28 @@
   "dex": "0703",
   "anims": {
    "Attack": {
-    "fw": 128,
+    "fw": 64,
     "fh": 72,
-    "cols": 5,
+    "cols": 10,
     "rows": 8,
-    "frames": 40
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 72,
+    "fw": 24,
     "fh": 48,
-    "cols": 2,
+    "cols": 6,
     "rows": 8,
-    "frames": 16
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },
@@ -2558,25 +2853,28 @@
   "dex": "0709",
   "anims": {
    "Attack": {
-    "fw": 156,
+    "fw": 72,
     "fh": 88,
-    "cols": 6,
+    "cols": 13,
     "rows": 8,
-    "frames": 48
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 72,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 100,
+    "fw": 40,
     "fh": 56,
-    "cols": 4,
+    "cols": 10,
     "rows": 8,
-    "frames": 32
+    "frames": 80,
+    "src": "animdata"
    }
   }
  },
@@ -2588,21 +2886,24 @@
     "fh": 112,
     "cols": 16,
     "rows": 8,
-    "frames": 128
+    "frames": 128,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 64,
     "fh": 88,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 56,
     "fh": 80,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2614,21 +2915,24 @@
     "fh": 64,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 24,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2640,21 +2944,24 @@
     "fh": 72,
     "cols": 15,
     "rows": 8,
-    "frames": 120
+    "frames": 120,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 48,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -2666,21 +2973,24 @@
     "fh": 72,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 8,
     "rows": 8,
-    "frames": 64
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2692,21 +3002,24 @@
     "fh": 64,
     "cols": 13,
     "rows": 8,
-    "frames": 104
+    "frames": 104,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 24,
     "cols": 4,
     "rows": 8,
-    "frames": 32
+    "frames": 32,
+    "src": "animdata"
    }
   }
  },
@@ -2718,21 +3031,24 @@
     "fh": 80,
     "cols": 10,
     "rows": 8,
-    "frames": 80
+    "frames": 80,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 32,
     "fh": 40,
     "cols": 14,
     "rows": 8,
-    "frames": 112
+    "frames": 112,
+    "src": "animdata"
    }
   }
  },
@@ -2744,21 +3060,24 @@
     "fh": 88,
     "cols": 11,
     "rows": 8,
-    "frames": 88
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 24,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 5,
     "rows": 8,
-    "frames": 40
+    "frames": 40,
+    "src": "animdata"
    }
   }
  },
@@ -2766,25 +3085,28 @@
   "dex": "0755",
   "anims": {
    "Attack": {
-    "fw": 132,
+    "fw": 72,
     "fh": 80,
-    "cols": 6,
+    "cols": 11,
     "rows": 8,
-    "frames": 48
+    "frames": 88,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 48,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 24,
     "fh": 56,
-    "cols": 2,
+    "cols": 8,
     "rows": 8,
-    "frames": 16
+    "frames": 64,
+    "src": "animdata"
    }
   }
  },
@@ -2796,21 +3118,24 @@
     "fh": 64,
     "cols": 9,
     "rows": 8,
-    "frames": 72
+    "frames": 72,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 24,
     "fh": 32,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 24,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    }
   }
  },
@@ -2822,21 +3147,24 @@
     "fh": 80,
     "cols": 12,
     "rows": 8,
-    "frames": 96
+    "frames": 96,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 40,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 24,
     "cols": 7,
     "rows": 8,
-    "frames": 56
+    "frames": 56,
+    "src": "animdata"
    }
   }
  },
@@ -2848,21 +3176,24 @@
     "fh": 80,
     "cols": 19,
     "rows": 8,
-    "frames": 152
+    "frames": 152,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 48,
     "fh": 64,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
     "fw": 24,
     "fh": 40,
     "cols": 12,
     "rows": 8,
-    "frames": 96
+    "frames": 96,
+    "src": "animdata"
    }
   }
  },
@@ -2870,25 +3201,28 @@
   "dex": "0777",
   "anims": {
    "Attack": {
-    "fw": 108,
+    "fw": 72,
     "fh": 64,
-    "cols": 8,
+    "cols": 12,
     "rows": 8,
-    "frames": 64
+    "frames": 96,
+    "src": "animdata"
    },
    "Hurt": {
     "fw": 56,
     "fh": 56,
     "cols": 2,
     "rows": 8,
-    "frames": 16
+    "frames": 16,
+    "src": "animdata"
    },
    "Idle": {
-    "fw": 96,
+    "fw": 32,
     "fh": 56,
-    "cols": 2,
+    "cols": 6,
     "rows": 8,
-    "frames": 16
+    "frames": 48,
+    "src": "animdata"
    }
   }
  },

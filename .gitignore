@@ -32,8 +32,14 @@ YOzBS_.otf
 # 诊断产物 / 截图 / 浏览器缓存（体积大，与运行无关）
 tools/shots/
 tools/.edge-profile*/
-tools/animdata-cache/
 verify-bundle.html
+
+# 注意：tools/animdata-cache/ **不进这里**（以前被当成「缓存」忽略掉了）。
+# 它是 SpriteCollab 每个物种的 AnimData.xml（帧宽 / 帧高），
+# `assets/data/sprites.json` 里的帧尺寸就是从这里读的 —— 少了它，生成脚本只能「猜」，
+# 而猜出来的帧尺寸会让一格里塞进两三帧（画面上就是两只宝可梦并排跳，
+# 用户反馈的「赤面龙、电龙的行走图有问题」就是这么来的）。
+# 111 份合计 795 KB，和已提交的 sprites.json 是一体的：要提交一起提交。
 
 # BGM 的旧版 mp3（68 MB）：游戏引用的 23 首全部是 ogg(L) 无缝循环版，
 # 这些 mp3 一个都没人引用（`content/bgm.json` + `src/core/bgm.js` 都是 ogg）。

@@ -144,6 +144,15 @@ for (const slug of Object.keys(DEX)) {
     const { width, height } = sizes[name];
     let fw = anims[name]?.fw ?? 0;
     let fh = anims[name]?.fh ?? 0;
+    /**
+     * 帧尺寸是**从 AnimData 读来的**，还是**猜的**？
+     *
+     * 这个标记必须留着：猜出来的帧尺寸会让一格里塞进两三帧
+     * （画面上就是两只宝可梦并排跳 —— 「赤面龙 / 电龙的行走图有问题」那条反馈），
+     * 而它与图片尺寸**完全自洽**（fw × cols 永远等于图片宽），所以靠尺寸校验查不出来。
+     * `src: 'inferred'` 就是那面小旗子，check-content 按它守门。
+     */
+    let src = 'animdata';
     if (!fw || !fh || width % fw !== 0 || height % fh !== 0) {
       const inferred = inferCell(name, width, height);
       if (inferred) {
@@ -155,16 +164,17 @@ for (const slug of Object.keys(DEX)) {
             + inferred.fw + 'x' + inferred.fh);
         }
         fw = inferred.fw; fh = inferred.fh;
+        src = 'inferred';
         warns++;
       } else {
         console.warn('size mismatch ' + slug + '/' + name + ': ' + fw + 'x' + fh
           + ' vs image ' + width + 'x' + height + ' -> 无法推断，整张图当一帧');
-        fw = width; fh = height; warns++;
+        fw = width; fh = height; src = 'fallback'; warns++;
       }
     }
     const cols = Math.round(width / fw);
     const rows = Math.round(height / fh);
-    meta[slug].anims[name] = { fw, fh, cols, rows, frames: cols * rows };
+    meta[slug].anims[name] = { fw, fh, cols, rows, frames: cols * rows, src };
     count++;
   }
 }

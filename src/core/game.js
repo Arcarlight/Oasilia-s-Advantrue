@@ -109,6 +109,12 @@ export class Game {
       items: { ...STARTER_ITEMS },
       relics: [],
       battleDeck: null,
+      /**
+       * 这一局打过照面的敌人 id（按顺序）。挑敌人时靠它保证「同一只不出现第二次」
+       * （见 pickEnemyDef）。以前没有这个账本，随机抽是有放回的，
+       * 同一只怪在一章里撞见两次很常见（用户反馈「出现很多宝可梦重复」）。
+       */
+      metEnemies: [],
       stage: 0,
       map: null,
       nodeId: null,
@@ -616,6 +622,63 @@ export class Game {
   }
 
   /**
+   * 这一局**已经打过照面的物种**。
+   *
+   * 按 slug 去重而不是按 id：同一只宝可梦在内容里可能占两条（`druddigon_crystal` 和
+   * `druddigon_alpha`），对玩家来说那是**同一只**。
+   */
+  metSpecies() {
+    const out = new Set();
+    for (const id of this.data?.metEnemies ?? []) {
+      const def = ENEMY_BY_ID[id];
+      if (def) out.add(def.slug);
+    }
+    return out;
+  }
+
+  /**
+   * 挑一只敌人。**同一局里不重复。**
+   *
+   * 起因（用户要求）：「现在出现很多宝可梦重复，要求不能有重复出现的敌方宝可梦。」
+   * 量出来的确有：一局十几二十场战斗，而本章的池子只有十来只，随机抽是**有放回**的 ——
+   * 同一只怪在一章里撞见两次很常见（生日悖论），跨章又会撞上「同一物种在不同图各占一条」的那批。
+   *
+   * 规则：优先从「本局还没见过的物种」里抽；池子被抽干了（真的没有新面孔了）
+   * 才允许重复 —— 这时候宁可重复，也不能让战斗节点开不出敌人来。
+   * 账本记在 run 数据里（`d.metEnemies`），中途存档读档也记得住。
+   */
+  pickEnemyDef(kind) {
+    const biome = this.data?.map?.biome ?? 'desert';
+    let pool;
+    if (kind === 'boss') pool = poolFor(biome, 'boss');
+    else if (kind === 'elite') pool = poolFor(biome, 'elite');
+    else pool = poolFor(biome, 'normal').concat(poolFor(biome, 'mob'));
+    // 这一档没配人（内容没写全）就往下找，别让战斗节点开天窗
+    if (!pool.length) {
+      pool = kind === 'boss' ? poolFor(biome, 'elite')
+        : kind === 'elite' ? poolFor(biome, 'normal').concat(poolFor(biome, 'mob'))
+          : poolFor(biome, 'mob');
+    }
+    if (!pool.length) pool = ENEMIES;
+    const seen = this.metSpecies();
+    const fresh = pool.filter((e) => !seen.has(e.slug));
+    return this.rng.pick(fresh.length ? fresh : pool) ?? pool[0] ?? null;
+  }
+
+  /**
+   * 抽一只敌人，并记进「这一局见过谁」的账本。
+   * startBattle 与实测脚本（tools/measure-enemy-repeat.mjs）共用这一份 ——
+   * 实测脚本要能**只抽不打**地跑一遍地图，才量得出重复率。
+   */
+  rollEnemyFor(kind) {
+    const def = this.pickEnemyDef(kind);
+    if (!def) return null;
+    if (!Array.isArray(this.data.metEnemies)) this.data.metEnemies = [];
+    if (!this.data.metEnemies.includes(def.id)) this.data.metEnemies.push(def.id);
+    return def;
+  }
+
+  /**
    * @param {'normal'|'elite'|'boss'} kind
    * @param {number} retry
    * @param {'map'|'direct'} entry
@@ -636,15 +699,13 @@ export class Game {
       // 不然 zygarde 永远不会出场——以前固定取 bosses[0]，标了 final 的那只被跳过了。
       const isFinalStage = stage >= stageCount() - 1;
       const chosen = isFinalStage ? bosses.find((b) => b.final) : null;
-      enemyDef = chosen ?? (isFinalStage ? bosses[0] : this.rng.pick(bosses))
+      // 章节首领也走「本局没见过优先」（池子里有两只的时候，不会连着两章撞上同一只）
+      enemyDef = chosen ?? (isFinalStage ? bosses[0] : this.rollEnemyFor('boss'))
         ?? poolFor(biome, 'elite')[0] ?? ENEMIES[ENEMIES.length - 1];
-    } else if (kind === 'elite') {
-      const pool = poolFor(biome, 'elite');
-      enemyDef = this.rng.pick(pool.length ? pool : poolFor(biome, 'normal'));
     } else {
-      const pool = poolFor(biome, 'normal').concat(poolFor(biome, 'mob'));
-      enemyDef = this.rng.pick(pool);
+      enemyDef = this.rollEnemyFor(kind);
     }
+    if (!enemyDef) enemyDef = ENEMIES[ENEMIES.length - 1];
 
     const scaled = scaleEnemy(enemyDef, stage, nodeIdx, {
       atk: d.atk, def: d.def, maxHp: d.maxHp, agi: d.agi,

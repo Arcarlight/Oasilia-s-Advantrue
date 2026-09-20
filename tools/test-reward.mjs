@@ -7,8 +7,26 @@
 //
 //   node tools/test-reward.mjs
 globalThis.localStorage = { _m: new Map(), getItem(k) { return this._m.get(k) ?? null; }, setItem(k, v) { this._m.set(k, String(v)); }, removeItem(k) { this._m.delete(k); } };
+
+/**
+ * 把 `Math.random` 换成**定种子**的伪随机。
+ *
+ * 为什么必须这么做：引擎里 `scaleEnemy()` 用 `Math.random()` 抽敌人的敏捷，
+ * 于是「胜负 → 采样到哪些场次 → 史诗占比」这条链每次跑都不一样 ——
+ * 这条测试曾经偶尔红（实测过一次 5.2% vs 7.9% 卡在阈值 1.3 倍上），
+ * 而种子全都在代码里写死了，看上去像「同样的输入给了不同的结果」。
+ * 定种子之后它就是可复现的：红了就是真的变了。
+ */
+{
+  let seed = 0x9e3779b9;
+  Math.random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+}
 const { Game } = await import('../src/core/game.js');
 const { BALANCE, REWARD_WEIGHTS } = await import('../src/data/balance.js');
+const { CARDS } = await import('../src/data/cards.js');
 
 const fails = [];
 const ok = (cond, label, detail = '') => {
@@ -36,11 +54,25 @@ function autoPlay(b) {
 /** 打 n 场某一档，返回每场的奖励（拿不到奖励的场次会被抛掉） */
 function collect(kind, n, { atk, def, maxHp, agi }) {
   const out = [];
-  for (let i = 0; i < n * 4 && out.length < n; i += 1) {
+  // 上限 n×10 次尝试：首领那一档的模拟玩家本来就只有一两成胜率，
+  // 上限太紧会「样本不够」而报假失败（实测有过 89/200 那种），
+  // 多试几次的成本很低（每场都是毫秒级）。
+  for (let i = 0; i < n * 10 && out.length < n; i += 1) {
     const g = new Game({ seed: 4000 + i * 23 + kind.length * 7 });
     g.newRun();
     Object.assign(g.data, { atk, def, maxHp, hp: maxHp, agi, luck: 8, stage: 2 });
     g.data.map = { ...g.data.map, biome: 'forest' };
+    /**
+     * 先把「保底」按住：初始卡组里既没有回血牌也没有解状态牌，
+     * 于是 `withSustainPity()` 会在**几乎每一次**奖励里各塞一张（实测：普通 65% 的场次、
+     * 精英 / 首领 100% 的场次，平均塞 1.4~2.2 张），而保底牌里有史诗 ——
+     * 结果就是「普通怪的史诗占比」被保底抬到 8~10%，和精英的差距被抹平，
+     * 这条门禁于是会红，而它想量的**档位差异**其实一直都在（量出来 3.5% / 6.8% / 13.6%）。
+     *
+     * 所以这里给卡组补上一张回血牌、一张解状态牌：保底不再触发，
+     * 量到的就是纯粹的档位权重。（保底本身由 test-deck-growth.mjs 那 9 条断言盯着。）
+     */
+    for (const id of [sustainHealId, sustainCleanseId]) if (id) g.data.deck.push(id);
     const b = g.startBattle(kind, 0, 'direct');
     autoPlay(b);
     if (b.winner !== 'player') continue;
@@ -50,9 +82,15 @@ function collect(kind, n, { atk, def, maxHp, agi }) {
   return out;
 }
 
+/** 卡组里放这两张，`withSustainPity()` 就不会再塞保底牌了 */
+const sustainHealId = CARDS.find((c) => !c.enemyOnly && c.effects.some((e) => e.kind === 'heal'))?.id;
+const sustainCleanseId = CARDS.find((c) => !c.enemyOnly && c.effects.some((e) => e.kind === 'cleanse'))?.id;
+
 // 玩家画像：精英 / 首领要用打得赢的数值，否则测不到奖励那头
 const PROFILE = { normal: { atk: 60, def: 30, maxHp: 400, agi: 14 }, elite: { atk: 110, def: 60, maxHp: 700, agi: 18 }, boss: { atk: 130, def: 70, maxHp: 800, agi: 20 } };
-const N = 120;
+// 样本量：原来 120。精英/普通 的史诗占比之比是个比值统计量，120 场时噪声能把它压到
+// 阈值（1.3 倍）以下（真的发生过一次），所以加到 200 —— 现在是定种子的，跑一次就能确认。
+const N = 200;
 
 console.log('战斗奖励回归测试：');
 const normal = collect('normal', N, PROFILE.normal);
