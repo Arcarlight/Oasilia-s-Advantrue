@@ -309,9 +309,49 @@
           ok(fs >= 14, '「简短介绍」的字号调大了一档（第一版 13px）', `${fs}px`);
         }
       }
-      // 口吻台词：**打赢过才看得到**（这一只是 slain）
-      ok(!!q('.dex-voice .dex-voice-line', detail), '打赢过的宝可梦会「说一句话」',
-        q('.dex-voice .dex-voice-line', detail)?.textContent);
+      /**
+       * 口吻台词：**头像 + 对话框**（用户给的版式），而且是**打赢过才看得到**（这一只是 slain）。
+       *
+       * 最要紧的那条断言是「**不许和出场台词重复**」—— 用户截图发现的就是这个：
+       * 那一栏原来直接拿出场台词充数，两栏印的是同一句话。所以这里两边都读出来逐句比。
+       */
+      const bubble = q('.dex-voice .dex-say-bubble', detail);
+      const bubbleText = q('.dex-voice .dex-voice-line', detail)?.textContent ?? '';
+      ok(!!bubble, '打赢过的宝可梦会「说一句话」，而且是在**对话框**里', bubbleText);
+      const sayFace = q('.dex-voice .dex-say-face', detail);
+      const faceImg = q('.dex-voice .dex-say-face img.portrait', detail);
+      ok(!!sayFace && !!faceImg, '「它可能会这么说」旁边放着它的**头像**（portraits，不是小图标）',
+        faceImg ? `${faceImg.getAttribute('src')} · ${Math.round(faceImg.getBoundingClientRect().width)}px` : '（没有头像）');
+      {
+        /** 对话框和头像的相对位置：框在头像右边、三角在框的左侧 */
+        const fr = sayFace?.getBoundingClientRect();
+        const br = bubble?.getBoundingClientRect();
+        if (fr && br) {
+          ok(br.left >= fr.right - 2, '对话框在头像**右边**（左边那个小三角指着它）',
+            `头像右沿 ${Math.round(fr.right)} ≤ 框左沿 ${Math.round(br.left)}`);
+          const tail = getComputedStyle(bubble, '::before');
+          ok(tail.content !== 'none' && parseFloat(tail.borderRightWidth) > 0, '对话框左边有一个指向头像的小三角',
+            `border-right ${tail.borderRightWidth}`);
+        }
+        const voiced = new Set((ENEMY_BY_ID[slainId].voice ?? []));
+        ok(voiced.size >= 3, '这只的口吻台词有 3 句（按击败次数轮换）', `${voiced.size} 句`);
+        const shown = bubbleText.replace(/^「|」$/g, '');
+        ok(voiced.has(shown), '框里印的**确实是口吻台词**（不是出场台词顶包）', shown);
+        const spoken = new Set(ENEMY_BY_ID[slainId].lines ?? []);
+        ok(!spoken.has(shown), '它和这只的**出场台词**不是同一句（用户点过的那个问题）',
+          `出场台词：${[...spoken].join(' ｜ ')}`);
+        ok(!qa('.dex-voice .dex-voice-line', detail).some((n) => spoken.has(n.textContent.replace(/^「|」$/g, ''))),
+          '对话框里没有混进任何一句出场台词');
+      }
+      // 全 193 只：每只都得有口吻台词，且都不和出场台词重复（新增宝可梦漏了就红）
+      {
+        const noVoice = ENEMIES.filter((e) => !(e.voice ?? []).length);
+        ok(noVoice.length === 0, `全部 ${ENEMIES.length} 只都有口吻台词`,
+          noVoice.length ? `缺 ${noVoice.length} 只：${noVoice.slice(0, 4).map((e) => e.id).join(', ')}` : `${ENEMIES[0].voice.length} 句/只`);
+        const dup = ENEMIES.filter((e) => (e.voice ?? []).some((v) => (e.lines ?? []).includes(v)));
+        ok(dup.length === 0, '没有任何一只的口吻台词和它的出场台词撞车',
+          dup.length ? dup.slice(0, 3).map((e) => e.id).join(', ') : '已逐只比对');
+      }
       ok(qa('.dex-medal-step', detail).length === 4, '奖牌进度条有 4 段（5 / 15 / 25 / 50）');
       // 打赢 1 次：还没有奖牌，四段都没点亮
       ok(qa('.dex-medal', detail).length === 0, '只赢过 1 次还没有奖牌');
@@ -343,6 +383,28 @@
       click(qa('.title-codex .title-codex-btn')[2]);
       await wait(300);
       modal = topModal();
+    }
+    /**
+     * 见过但**还没打赢**的那只：对话框要在（头像 + 框），但框里只印「打赢它一次就能听到。」——
+     * 口吻台词一句都不许提前漏出来，不然图鉴就等于剧透。
+     * （图鉴还开着：上面刚 `modal = topModal()` 重开过一次，别再关掉它）
+     */
+    {
+      const codex = topModal();
+      const met = qa('.dex-card', codex).find((n) => n.classList.contains('met'));
+      ok(!!met, '（图鉴里）能找到一只「见过但没打赢」的');
+      click(met);
+      await wait(300);
+      const d = topModal();
+      const txt = q('.dex-voice .dex-voice-line', d)?.textContent ?? '';
+      const ids = qa('.dex-card.met', codex).map((n) => n.dataset.enemyId);
+      const leak = ids.flatMap((id) => ENEMY_BY_ID[id]?.voice ?? []).filter((v) => txt.includes(v));
+      ok(!!q('.dex-voice .dex-say-bubble', d) && !!q('.dex-voice .dex-say-face', d),
+        '没打赢也看得到那个对话框（只是里面还没话）', txt);
+      ok(txt.includes('打赢它一次') && !leak.length, '没打赢时框里只有一句「打赢它一次就能听到。」，不提前漏台词',
+        `漏了 ${leak.length} 句`);
+      closeTop();
+      await wait(150);
     }
     // 没见过的点开：只能看到「还没遇见」那句，不能泄露台词与招式
     // （图鉴还是开着的：上面刚 `modal = topModal()` 重开过一次，别再关掉它）

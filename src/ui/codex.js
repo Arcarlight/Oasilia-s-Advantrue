@@ -554,25 +554,45 @@ function showEnemyDetail(def, sets, meta) {
     const side = el('div', { class: 'dex-detail-side' });
 
     /**
-     * 模仿它的口吻说一句话（用户要求，**只有击败过才看得到**）。
+     * 「它可能会这么说」：**头像 + 对话框**（用户给的版式）。
      *
-     * 用的就是它的出场台词：那几句本来就是按这个世界观写的、也早就翻成日 / 英了。
-     * 按击败次数轮换（第几次打赢听第几句），比再加 193 句新文案更稳 ——
-     * 而且它永远和战斗里听到的那句对得上。
+     * 头像用的是 PMD 头像（assets/portraits/<slug>/，和 HUD / 战斗里同一张脸），
+     * 不是那只小图标 —— 用户点名「头像是 portraits」。
+     * 拿不到头像时退回小图标，图鉴不会因为一张素材开天窗。
+     *
+     * 台词走 `def.voice`（content/enemy-voice.json，每只 3 句），
+     * **不再拿出场台词充数** —— 用户就是发现这两栏印的是同一句话才要求重写的。
      */
-    const lines = (def.lines ?? []).filter(Boolean);
-    if (state === 'slain' && lines.length) {
-      const voiceline = lines[(wins - 1) % lines.length];
-      side.append(el('div', { class: 'detail-sec dex-voice' }, [
-        el('h4', { text: t('它可能会这么说') }),
-        el('p', { class: 'dex-voice-line', text: `「${voiceline}」` }),
-        el('span', { class: 'dex-voice-note', text: t('第 {n} 次打赢它时，它就是这么说的。', { n: ((wins - 1) % lines.length) + 1 }) }),
-      ]));
-    } else if (lines.length) {
-      side.append(el('div', { class: 'detail-sec dex-voice locked' }, [
-        el('h4', { text: t('它可能会这么说') }),
-        el('p', { class: 'dex-voice-line', text: t('打赢它一次就能听到。') }),
-      ]));
+    const sayBox = (line, note) => {
+      const face = el('div', { class: 'dex-say-face' });
+      createPortrait(def.slug, { emotion: 'normal', size: 64, alt: def.name })
+        .then((img) => {
+          if (img) face.append(img);
+          else {
+            const ico = createIcon(def.slug, { size: 48, alt: def.name });
+            if (ico) face.append(ico);
+          }
+        })
+        .catch(() => {});
+      return el('div', { class: `detail-sec dex-voice${state === 'slain' ? '' : ' locked'}` }, [
+        el('div', { class: 'dex-say' }, [
+          face,
+          el('div', { class: 'dex-say-main' }, [
+            el('h4', { text: t('它可能会这么说') }),
+            el('div', { class: 'dex-say-bubble' }, [el('p', { class: 'dex-voice-line', text: line })]),
+            note ? el('span', { class: 'dex-voice-note', text: note }) : null,
+          ]),
+        ]),
+      ]);
+    };
+    const says = (def.voice ?? []).filter(Boolean);
+    const spoken = (def.lines ?? []).filter(Boolean);
+    if (state === 'slain' && says.length) {
+      const idx = (wins - 1) % says.length;
+      side.append(sayBox(`「${says[idx]}」`, t('第 {n} 次打赢它时，它就是这么说的。', { n: idx + 1 })));
+    } else if (spoken.length) {
+      // 见过但还没打赢：只给一个空框，别把台词提前漏出去
+      side.append(sayBox(t('打赢它一次就能听到。'), ''));
     }
 
     if (def.lines?.length) {

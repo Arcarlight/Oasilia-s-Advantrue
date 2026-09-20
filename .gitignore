@@ -49,6 +49,10 @@ assets/audio/bgm/*.mp3
 # 多智能体协作的中间状态
 .agent-teams/
 
+# 口吻台词（「它可能会这么说」）写作时的分片：中间产物，
+# 正式数据是 content/enemy-voice.json（tools/merge-enemy-voice.mjs 会把它当增量地基）
+content/voice-parts/
+
 # 杂项
 *.log
 

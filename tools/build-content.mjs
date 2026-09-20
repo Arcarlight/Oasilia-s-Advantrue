@@ -39,6 +39,8 @@ async function loadAll() {
   const species = await readJson(path.join(CONTENT, 'species.json'));
   // 图鉴详情右列的「简短介绍」第一句（每只敌人一句，tools/build-enemy-intros.mjs 生成）
   const enemyIntro = await readJson(path.join(CONTENT, 'enemy-intro.json')).catch(() => ({ intro: {} }));
+  // 图鉴详情「它可能会这么说」的口吻台词（每只 3 句，tools/merge-enemy-voice.mjs 生成）
+  const enemyVoice = await readJson(path.join(CONTENT, 'enemy-voice.json')).catch(() => ({ voice: {} }));
   const enemies = await readJson(path.join(CONTENT, 'enemies.json'));
   const biomes = await readJson(path.join(CONTENT, 'biomes.json'));
   const eventsDir = path.join(CONTENT, 'events');
@@ -63,7 +65,7 @@ async function loadAll() {
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice };
 }
 
 // ============================================================
@@ -595,7 +597,7 @@ function emitCards(cards, items, starterDeck, starterItems) {
   ].join('\n');
 }
 
-function emitEnemies(tiers, movePools, enemies, species, intros = {}) {
+function emitEnemies(tiers, movePools, enemies, species, intros = {}, voices = {}) {
   const list = enemies.map((e) => {
     // 物种信息（名称 / 图鉴号 / 属性）统一从 species.json 取，敌人条目里不再重复写一遍，
     // 也避免「加了敌人忘了写 types」这种缺失（战斗界面的属性行会直接崩）
@@ -617,6 +619,8 @@ function emitEnemies(tiers, movePools, enemies, species, intros = {}) {
     // 所以首领的招牌招不会被随机抽牌漏掉
     if (e.signature?.length) lines.push(`    "signature": ${J(e.signature).replace(/\n\s*/g, ' ')},`);
     lines.push(`    "lines": ${J(e.lines).replace(/\n\s*/g, ' ')},`);
+    // 「它可能会这么说」：打赢之后它自己嘀咕的那几句（content/enemy-voice.json，每只 3 句，按击败次数轮换）
+    if (voices[e.slug]?.length) lines.push(`    "voice": ${J(voices[e.slug]).replace(/\n\s*/g, ' ')},`);
     if (e.bossTitle) lines.push(`    "bossTitle": ${JSON.stringify(e.bossTitle)},`);
     if (e.final) lines.push('    "final": true,');
     lines.push('  }');
@@ -821,7 +825,7 @@ if (errors.length) {
 const changed = [];
 if (!CHECK_ONLY) {
   if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.items, data.cards.starterDeck, data.cards.starterItems))) changed.push('src/data/cards.js');
-  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}))) changed.push('src/data/enemies.js');
+  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}, data.enemyVoice?.voice ?? {}))) changed.push('src/data/enemies.js');
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');
   if (await writeBlock('src/data/events.js', 'EVENTS', emitEvents(data.events))) changed.push('src/data/events.js');
   if (await writeBlock('src/data/merchants.js', 'MERCHANTS', emitMerchants(data.merchants))) changed.push('src/data/merchants.js');

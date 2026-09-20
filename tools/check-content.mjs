@@ -67,6 +67,34 @@ for (const e of ENEMIES) {
    * 少了它那一行会空着 —— 而「空着一行」这种缺失在界面上不报错，所以要在这里卡住。
    */
   if (!e.intro) problems.push(`敌人 ${e.id} 没有简短介绍 intro（跑 node tools/build-enemy-intros.mjs）`);
+  /**
+   * 「它可能会这么说」的口吻台词（content/enemy-voice.json，每只 3 句）。
+   *
+   * ⚠ **新增宝可梦必须补这几句**：用户点过一次 —— 那一栏原来直接拿出场台词充数，
+   * 结果「它可能会这么说」和「出场台词」在界面上是同一句话，看着像坏了。
+   * 所以这里两道卡：① 一句都没有 → 报错；② 和出场台词一字不差 → 报错。
+   * 补写用 `node tools/voice-brief.mjs <id>` 出简报，改 content/voice-parts/ 后跑
+   * `node tools/merge-enemy-voice.mjs`。
+   */
+  if (!Array.isArray(e.voice) || !e.voice.length) {
+    problems.push(`敌人 ${e.id} 没有口吻台词 voice（图鉴「它可能会这么说」那一栏会空着）—— 补 content/voice-parts/ 后跑 node tools/merge-enemy-voice.mjs`);
+  } else {
+    const spoken = new Set(e.lines ?? []);
+    for (const v of e.voice) {
+      if (spoken.has(v)) problems.push(`敌人 ${e.id} 的口吻台词和它的出场台词一字不差：「${v}」`);
+    }
+    if (new Set(e.voice).size !== e.voice.length) problems.push(`敌人 ${e.id} 的口吻台词里有重复的句子`);
+  }
+}
+/**
+ * 口吻台词的覆盖数打在备注里：**新增宝可梦时这里是第一个会红的地方**，
+ * 顺手让写的人看见「一共多少只 / 多少句」，知道该往哪个文件补。
+ */
+{
+  const withVoice = ENEMIES.filter((e) => (e.voice ?? []).length).length;
+  const totalVoice = ENEMIES.reduce((n, e) => n + (e.voice ?? []).length, 0);
+  note(`口吻台词：${withVoice}/${ENEMIES.length} 只有（共 ${totalVoice} 句，按击败次数轮换）`
+    + ` —— 这一栏不许拿出场台词顶包，新增宝可梦必须补（content/enemy-voice.json）`);
 }
 for (const key of STAGE_BIOME) {
   const b = BIOMES[key];
