@@ -1,8 +1,12 @@
 # 手持道具改造 · 进度与交接（写给我自己，压缩上下文后照这份接着干）
 
-> 这份文件是**中途交接**用的。用户提的是一整块大改动（背包制 → 手持制），
-> 一次会话做不完。任何时候上下文被压缩、或者换了新会话，**先读这一份**再动手。
-> 最后更新：道具数据层 + 引擎钩子 + 手持面板已落地，**图鉴 / 商人卖道具 / 三语 / 打包上线还没做**。
+> **状态：已完成并上线（v2.0，提交 5c43fdc）。** 这份文件留着当**参考手册**：
+> 道具系统长什么样、每个工具干什么、以后加内容走哪条路、踩过哪些坑。
+> 最后更新：全部做完（图鉴 / 买卖 / 掉落 / 丢弃 / 三语 / 体检 / 打包 / 上线）。
+>
+> 一句话回顾：**背包制 → 手持制**。手里最多 3 件（每打赢一个首领 +1），
+> 道具分「持有生效」与「战斗外使用」两类；来源是商人买 / 卖、宝箱、敌人掉落；
+> 有独立的道具图鉴；**战斗中不能使用使用型道具**（用户点名：太 imba）。
 
 ---
 
@@ -51,73 +55,117 @@
 
 ---
 
-## 三、还没做的（按建议顺序）
+## 三、后面又做完的部分（原计划里的第 1~7 条，全部落地）
 
-1. **道具图鉴**（用户明确要）：标题页第 5 个入口 `ico-backpack`；`src/ui/codex.js` 里照
-   `showEnemyCodex` 的模式加 `showItemCodex` / `showItemDetail`；没拿过的显示剪影 + ？？？。
-   数据要记「见过 / 拿到过」：`save.js` 的 meta 加 `seenItems: []`（拿到或买过就记），
-   `game.js` 在 `giveItem` / `buy` 里调 `save.noteItem(id)`。
-2. **商人卖道具**：`screens.js` 的商店界面加「卖掉手上的道具」一栏（`game.sellItem(id)` 已经写好，
-   价钱 `itemSellPrice` = 售价 40%）；卖出后要刷新顶部金币与手持栏。
-3. **手持栏满的「丢掉哪一件」选择**：`game.awaitingOverflow` 已经会带 `{id, text}`，
-   需要在 `screens.js` 的地图 / 宝箱 / 奖励流程里弹一个选择框（列出当前手持的 + 「丢掉这件新拿的」）。
-4. **三语**：`node tools/build-i18n.mjs` 之后会看到 **ja / en 各缺 206 条**（69 个道具名 +
-   69 条 desc + 新增界面文案），另有 32 条**孤儿译文**要清。日 / 英的道具名建议：
-   官方译名优先（橙橙果 = オレンのみ / Oran Berry），效果文案照 `itemtext.js` 的口吻直译。
-   **翻完必须** `node tools/subset-fonts.mjs`（新汉字会掉兜底字体）。
-5. **测试与诊断**：
-   * `tools/diag-items.js` 还是**旧背包制**的（它读 `game.data.items`、点「使用」按钮）——
-     要按新机制重写：手持栏上限、战斗里不能使用、丢掉 / 卖掉、掉落按属性加权。
-   * `tools/diag-events.js` 里 `items: JSON.stringify(g.data.items)` 也要改成 `g.data.held`。
-   * `tools/test-items.mjs`（回归套件之一）同样要按新 API 重写。
-   * 建议新增：`node tools/autorun`（第五节）的一键体检里带上它们。
-6. **平衡**：`node tools/measure-balance.mjs 300` + `node tools/simulate-run.mjs 400`。
-   ⚠ 这一次的机制变化**主观上变难了**：战斗里不能嗑药、道具要靠掉落 / 购买、栏位只有 3 个。
-   跑完和基线比（基线：通关率 ~13.5%、平均到第 4.04 章），差得多就把
-   `itemDropChance` 调高一点（这是唯一该动的旋钮 —— 用户说过**当前平衡是基准**）。
-7. **更新日志 + 版本号**：`src/core/changelog-data.js` 加一条 **v2.0**（这是一次大改版），
-   `package.json` 同步;然后 `node tools/bundle.mjs` → `verify-bundle.mjs` → `smoke-check.mjs`
+1. **道具图鉴**：`src/ui/codex.js` 的 `showItemCodex()` / `showItemDetail()`；
+   标题页第 4 个入口（`ico-backpack`）。规则和敌人图鉴一样：没拿过 = 压暗剪影 + ？？？。
+   「见过」记在 `save.js` 的 `meta.seenItems`，**只在 `Game.giveItem()` 里记一次**
+   （买到 / 开箱 / 掉落都走它，散着记一定会漏一处）。
+2. **商人卖道具**：`screens.js` 的商店里多一栏「卖掉手上的道具」
+   （`game.sellItem(id)`，价钱 `itemSellPrice` = 售价 40%），卖完刷新顶部金币。
+3. **手持栏满的「丢掉哪一件」**：`overlays.js` 的 `showHeldOverflow(game)`，
+   由 `renderMap()` 在回到地图时弹（奖励 / 宝箱 / 掉落三条路都会经过地图，挂一处就够）。
+   数据侧是 `game.awaitingOverflow = { id, text }`。
+4. **三语**：工具做成了 `tools/i18n-todo.mjs`（`list` → 分片翻 → `merge`），
+   这批一共补了 **250 条**（206 + 39 + 5），现在 **ja / en 各 3509/3509（100%）**。
+   道具名要求用**官方译名**（见下面第五节的核对办法）。
+5. **测试与诊断**：`tools/test-items.mjs`（28 条）与 `tools/diag-items.js`（25 条）按新机制重写。
+   诊断抓到一个真 bug：**战斗里「使用」按钮没禁用**（`blocked` 里 inBattle 写反了）。
+6. **平衡**：`itemDropChance` 从 `{.06,.08,.18,.35}` 提到 `{.10,.12,.26,.45}`
+   （战斗中不能嗑药，道具成了唯一的战外续航）。400 局模拟：通关率 **13.5% / 14.5%**、
+   平均第 **3.94 / 4.08** 章 —— 和基线（13.5% / 4.04）一致，**没有系统性回归**。
+7. **更新日志 v2.0** + `package.json` 2.0，bundle → verify → smoke → 提交 → 推送 →
+   `compare-deployed` 全部一致。
+
+### 已知的小瑕疵（不影响交付，看到了别慌）
+
+* `tools/test-deck-growth.mjs` 极偶尔会红一条（概率型断言，5 次里偶发 1 次）——
+  重跑就好；改奖励 / RNG 流之后更容易撞上。
+* `diag-events.js` 里还留着 `items: JSON.stringify(g.data.items)` 这行**日志文本**
+  （不影响判定，但打出来是 undefined）—— 顺手可改成 `g.data.held`。
    → commit → push → `compare-deployed.mjs`。
-8. **README**：把「道具」那一节改成手持制，并写上第六节那份「怎么加内容」的入口。
+8. **README / 交接文档**：README 的「道具」一节已改成手持制，并指向 `tools/author.mjs`。
 
 ---
 
-## 四、当前门禁状态（中途快照，别被吓到）
+## 四、门禁状态（**交付时的快照，全绿**）
 
-* `node tools/smoke-check.mjs` → **SMOKE_OK / ERRORS=[]**（界面能跑，手持面板能用）。
-* `node tools/build-content.mjs --check` → **通过**（69 件道具全过校验）。
-* `node tools/build-i18n.mjs` → **ja / en 各 3261 / 3467（94%）**，缺的 206 条就是第 3 节第 4 条那些。
-* `node tools/check-content.mjs --strict` → **红的**，原因就是上面那 206 条未翻 + 孤儿译文。
-  这些**在翻完之前不用管**，别去改门禁把它变绿。
+* `node tools/author.mjs check` → **✅ 全绿：20 步，用时 41 秒**（一键跑完下面这一串）。
+* `build-content` → 通过（69 件道具全过校验）· `build-i18n` → **ja / en 各 3509/3509（100%）**。
+* `check-content --strict` → 通过（含「道具图 69 张齐全」的备注）。
+* `check-copy` → 13/13 · `check-icons` → 通过 · `subset-fonts` → 通过。
+* 11 套 `test-*.mjs` 全过（其中 test-items 28 条）· diag-items 25 条全过 · diag-codex 全过。
+* `bundle` → `verify-bundle` → **VERIFY_OK** → `smoke-check` → **SMOKE_OK / ERRORS=[]**。
+* 平衡：400 局模拟 **通关率 13.5%（另一次 14.5%）· 平均第 3.94 章**（基线 13.5% / 4.04）。
+* 上线：`git push` → `compare-deployed` → **全部一致**。
 
 ---
 
 ## 五、以后加内容怎么加（用户要的「接口」）
 
-现状：加内容要动好几处（content JSON → `build-content.mjs` 生成 → 三语 → 字体子集 → 门禁 → 打包），
-文件头的注释都写了各自的作用，但**没有统一入口**。计划做一个 `tools/author.mjs`：
+**入口就是 `tools/author.mjs`**（已经写好，不是计划）：
 
 ```
-node tools/author.mjs item  <id>     # 道具：写 content/items.json 骨架 + 按 art 导图 + 提示补三语
-node tools/author.mjs card  <id>     # 卡牌：写 content/cards.json 骨架（含效果模板）
-node tools/author.mjs enemy <slug>   # 敌人：enemies.json + species.json + 简介 + 口吻台词 + 招式池
-node tools/author.mjs map   <key>    # 地图：biomes.json + STAGE_BIOME + CSS 配色类 + 装饰
-node tools/author.mjs check          # 一键体检：见下
+node tools/author.mjs new item  <id>     # 道具：写 content/items.json 骨架 + 导图提示
+node tools/author.mjs new card  <id>     # 卡牌：cards.json 骨架（含最常用的效果模板）
+node tools/author.mjs new enemy <slug>   # 敌人：enemies.json + species.json 占位 + 五步清单
+node tools/author.mjs new map   <key>    # 地图：biomes.json 占位 + 要补什么
+node tools/author.mjs todo               # 还差什么（未翻文案 / 缺图 / 缺口吻台词 / 孤儿译文）
+node tools/author.mjs check              # 一键体检：按固定顺序跑完 20 步
 ```
 
-`check` 应当按顺序跑（**顺序有讲究**）：
-`build-content` → `build-i18n` → `check-content --strict` → `check-copy` → `check-icons`
+`check` 的顺序（**写死在脚本里，别改**）：
+`build-content` → `build-i18n` → **`subset-fonts`** → `check-content --strict` → `check-copy`
+→ `check-icons` → 11 套 `test-*.mjs` → `bundle` → `verify-bundle` → `smoke-check`。
+
+> 为什么字体子集排在内容体检**之前**：体检里有一条「字体子集是不是过期了」，
+> 刚改完文案时它必然过期（新字还没裁进去）。第一版顺序写反了，加一条更新日志就卡住。
+
+### 补译文的标准流程（`tools/i18n-todo.mjs`）
+
+```
+node tools/i18n-todo.mjs list        # 把待翻清单写成 content/i18n/_todo.json（权威清单来自 _report.json）
+node tools/i18n-todo.mjs slice 0 20  # 读第 0~19 条（写手读这个，不用把整份塞进提示里）
+# 写手把结果写成 content/i18n/parts/qNN.json：{ "<中文原文>": { "ja": "…", "en": "…" } }
+node tools/i18n-todo.mjs merge       # 校验（条数 / 占位符 / 非空）后并进 ja.json / en.json
+```
+合并完记得删掉 `content/i18n/parts/` 与 `_todo.json`（它们是中间产物，别提交）。
+
+### 道具名怎么保证是**官方译名**（用户专门盯过这条）
+
+别凭记忆写。用 52poke 的 API 逐条核（**英文名 → 官方中文条目标题**）：
+
+```js
+// 搜条目：拿到的第一条「xxx（道具）」就是官方中文名
+https://wiki.52poke.com/api.php?action=query&format=json&list=search&srlimit=5&srsearch=<英文名>
+// 判存在：一次问一批，看 missing 字段
+https://wiki.52poke.com/api.php?action=query&format=json&redirects=1&titles=<中文名（道具）|…>
+```
+（本机要走代理：`$env:NODE_USE_ENV_PROXY=1; $env:HTTPS_PROXY=http://127.0.0.1:7897`。
+这一轮就是这么查出 19 个错的：甜甜苹果 / 冰冷岩石 / 达人带 / 美丽之羽 / 妖怪石板 / 恶颜石板 /
+钢之宝石 / 妖精之羽 / 沙沙岩石 / 肌力之羽 / 硬石头 / 龙之鳞片 / 哞哞鲜奶 / 贝壳之铃 /
+光粉 / 紧缠钩爪 / 元气根 / 光苔 / 甜甜蜜。）
+改名字时**三处一起改**：`content/items.json` 的 `name`、两本字典的**键**（键就是中文原文，
+用脚本移动键并删掉旧键），然后 `build-content` + `build-i18n`。
 → `subset-fonts` → `check-content --strict`（字体指纹会变，要复查一次）→ 11 套 `test-*.mjs`
 → 相关 `diag2.mjs` → `bundle` → `verify-bundle` → `smoke-check`。
 每一项失败时就地打印「该改哪个文件 / 哪一行」，别只给退出码。
 
 写 `author.mjs` 时**照抄 `tools/import-items.mjs` 的头部格式**：用法、为什么要有它、
 依赖的解包目录、以及「改哪个字段就够」。这就是用户要的「未来的我看得懂」。
+（`tools/author.mjs` 已经按这个格式写好了，可以直接当模板。）
 
 ---
 
 ## 六、几个容易踩的坑（这次踩过的）
 
+* **在 `tools/smoke-script.js` 里改断言没用** —— 那个文件是 `tools/smoke-check.mjs`
+  每次运行时**生成**的（内嵌的 SCRIPT 字符串才是真身），手改会被下次运行覆盖。
+  改断言去改 `smoke-check.mjs`。
+* **循环 import 只在单文件包里炸**：`game.js → events → eventfx.js → game.js` 这种环，
+  开发时（浏览器逐个模块加载）看不出问题，`bundle` 之后变成
+  `Cannot destructure property 'heldCount' … as it is undefined`。所以**纯规则放叶子模块**
+  （`src/core/item-rules.js`），`verify-bundle` 是唯一能抓到这个的关卡，别跳过它。
 * **PowerShell 里 `git show > 文件` 会写成 UTF-16**，node 直接读不了 —— 用
   `git checkout <rev> -- <路径>` 或 write 工具，别用重定向。
 * 带引号 / 花括号的 `node -e` 在 PowerShell 下会被拆坏 —— 复杂逻辑写成临时 `.mjs` 再跑。
@@ -127,3 +175,5 @@ node tools/author.mjs check          # 一键体检：见下
 * 道具的 `hold.mods` 写错 key = **静默不生效**（玩家花了钱什么都没得到），所以校验卡得很死；
   加新效果时**先**在 `build-content.mjs` 的 `MOD_KEYS` 里登记，再加 `battle.js` 的钩子，
   最后在 `itemtext.js` 的 `modLabel` 里加一句人话。
+* **改中文原文 = 改字典的键**：两本字典都以中文原文为键，改名字 / 改句子时要把键**搬过去**
+  （旧键留着会变成「孤儿译文」，`check-content` 会列出来）。
