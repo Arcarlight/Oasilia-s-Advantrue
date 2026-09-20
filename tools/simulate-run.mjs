@@ -6,6 +6,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '..');
 const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);
+// 手持道具：模拟器要看「手上有哪些回血道具」，所以得知道每件道具的 use 效果
+const { ITEMS } = await imp('src/data/items.js');
 globalThis.localStorage = {
   _m: new Map(),
   getItem(k) { return this._m.has(k) ? this._m.get(k) : null; },
@@ -43,14 +45,21 @@ function fight(game) {
   return { win: b.winner === 'player', turns: b.turn };
 }
 
-/** 喝药：血量低于阈值就喝，尽量把血拉满 */
+/**
+ * 「喝药」：血量低于阈值就吃手上的回血道具。
+ *
+ * 手持道具时代只有一条规则要记：**使用型只能在战斗外用**（战斗中不能嗑，用户定的），
+ * 所以这里只在战斗外调用（见下面的调用点）。回血从大到小挑：先把大补的吃掉。
+ */
 function drink(game, threshold) {
   let used = 0;
   while (game.data.hp / game.data.maxHp < threshold && used++ < 5) {
-    const items = game.data.items ?? {};
-    if (items.potion_big) game.useItem('potion_big');
-    else if (items.potion_small) game.useItem('potion_small');
-    else break;
+    const held = game.data.held ?? [];
+    const healers = held
+      .filter((id) => ITEMS[id]?.use?.healPct || ITEMS[id]?.use?.healFull)
+      .sort((a, b) => (ITEMS[b].use.healPct ?? 1) - (ITEMS[a].use.healPct ?? 1));
+    if (!healers.length) break;
+    if (game.useItem(healers[0])?.ok !== true) break;
   }
 }
 
@@ -132,9 +141,18 @@ for (let i = 0; i < TOTAL; i++) {
     }
     if (game.phase === 'shop') {
       const stock = game.shop.stock.map((s, idx) => ({ s, idx })).filter((x) => !game.shop.soldOut.includes(x.idx));
-      const wantPotion = game.data.hp / game.data.maxHp < 0.7 || (game.data.items.potion_small ?? 0) + (game.data.items.potion_big ?? 0) < 1;
+      /**
+       * 手持道具时代：这一局「缺不缺续航」看两件事 ——
+       *   · 血不满（<70%）；
+       *   · 手上**一件能回血的都还没有**（use 型且 healPct / 血药那类）。
+       * 以前读的是 `data.items.potion_small`（背包制的计数），现在道具是 `data.held` 数组。
+       */
+      const heldHeal = (game.data.held ?? []).some((id) => ITEMS[id]?.use?.healPct);
+      const wantPotion = game.data.hp / game.data.maxHp < 0.7 || !heldHeal;
+      // 手持栏满了就不再买道具（买了也放不下）
+      const roomForItem = (game.data.held ?? []).length < game.heldMax();
       const target = stock
-        .filter((x) => (wantPotion ? x.s.kind === 'item' : x.s.kind === 'card'))
+        .filter((x) => ((wantPotion && roomForItem) ? x.s.kind === 'item' : x.s.kind === 'card'))
         .sort((a, b) => b.s.price - a.s.price)[0];
       if (target && game.data.gold >= target.s.price) {
         game.buy(target.idx);

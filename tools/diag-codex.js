@@ -23,6 +23,8 @@
     const { CARDS } = await import('../src/data/cards.js');
     const { ENEMIES, ENEMY_BY_ID } = await import('../src/data/enemies.js');
     const { BIOMES } = await import('../src/data/balance.js');
+    // 道具图鉴：入口数、进度数字都要和 content/items.json 里那 69 件对得上
+    const { ITEMS } = await import('../src/data/items.js');
     const params = new URLSearchParams(location.search);
 
     const q = (sel, root) => (root ?? document)?.querySelector?.(sel) ?? null;
@@ -62,12 +64,15 @@
     // ---------- ① 标题页上的四个入口 ----------
     log('① 标题页入口');
     const entries = qa('.title-codex .title-codex-btn');
-    ok(entries.length === 4, '标题页有 4 个入口（记录 / 卡牌图鉴 / 敌人图鉴 / 曲子库）', `实际 ${entries.length}`);
+    ok(entries.length === 5, '标题页有 5 个入口（记录 / 卡牌图鉴 / 敌人图鉴 / 道具图鉴 / 曲子库）', `实际 ${entries.length}`);
     const labels = entries.map((b) => q('.title-codex-label', b)?.textContent);
-    ok(labels[0]?.includes('通关记录') && labels[1]?.includes('卡牌图鉴') && labels[2]?.includes('敌人图鉴'),
+    ok(labels[0] === '通关记录' && labels[1] === '卡牌图鉴' && labels[2] === '敌人图鉴',
       '前三个入口分别是 通关记录 / 卡牌图鉴 / 敌人图鉴', labels.join(' / '));
-    // 曲子库是后加的（第 4 个）：它自己的自检在 tools/diag-music.js，这里只确认入口在
-    ok(labels[3] === '曲子库', '第 4 个入口是曲子库', labels.join(' / '));
+    ok(labels[3] === '道具图鉴', '第 4 个入口是道具图鉴（手持道具那一版加的）', labels.join(' / '));
+    // 曲子库是最后一个：它自己的自检在 tools/diag-music.js，这里只确认入口在
+    ok(labels[4] === '曲子库', '第 5 个入口是曲子库', labels.join(' / '));
+    ok(q('.title-codex-sub', entries[3])?.textContent === `0/${Object.keys(ITEMS).length}`,
+      '道具图鉴入口上带着进度（新档是 0）', q('.title-codex-sub', entries[3])?.textContent);
     ok(q('.title-codex-sub', entries[1])?.textContent === `0/${CARDS.length}`,
       '卡牌图鉴入口上带着进度（新档是 0）', q('.title-codex-sub', entries[1])?.textContent);
     ok(q('.title-codex-sub', entries[2])?.textContent === `0/${ENEMIES.length}`,
@@ -638,6 +643,18 @@
       const entries = qa('.title-codex .title-codex-btn');
       if (what === 'enemy') click(entries[2]);
       else if (what === 'card') click(entries[1]);
+      else if (what === 'item-codex') {
+        /**
+         * 道具图鉴的截图：先给几件「已获得」，好让截图里**剪影与已获得都有**
+         * （全是剪影看不出图鉴长什么样，全是已获得又看不出「没拿过」的规则）。
+         */
+        save.writeMeta({
+          ...save.readMeta(),
+          seenItems: ['oran_berry', 'sitrus_berry', 'razor_claw', 'moomoo_milk', 'toxic_candy',
+            'flame_orb', 'life_orb', 'sweet_apple', 'honey', 'quick_claw', 'white_herb', 'stardust'],
+        });
+        click(entries[3]);
+      }
       else if (what === 'records') click(entries[0]);
       else if (what === 'changelog') {
         const btn = qa('.title-menu .btn').find((b) => b.textContent.includes('更新日志'));

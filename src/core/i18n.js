@@ -121,7 +121,9 @@ export const CONTENT_FIELDS = {
   event: ['name', 'text'],
   // leave 是商店里那个「离开」按钮上的字（每位商人不一样：拍拍沙子走人 / 收下包裹…）
   merchant: ['name', 'role', 'greet', 'leave'],
-  item: ['name', 'desc'],
+  // 道具：名字、风味描述、以及**掉落属性**（drop 写的是中文属性名「一般 / 火 / 水…」，
+  // 它在道具图鉴里会显示成「{type} 属性掉落」，所以必须跟着语言走）
+  item: ['name', 'desc', 'drop'],
   species: ['name'],
   // 地图的 desc（简介）是玩家看得见的（地图页头部）—— 以前只挂了 name，
   // 于是切到日语时那一行永远留在中文。

@@ -223,7 +223,9 @@ console.log('\n⑦ HUD 的按钮、网页标题与标签页图标：index.html �
   const { setLang, dictOf } = await import('../src/core/i18n.js');
   const { refreshI18nTables } = await import('../src/core/i18n-tables.js');
   const { resolveCardText, richHTML } = await import('../src/ui/cardtext.js');
-  const { CARDS, ITEMS } = await import('../src/data/cards.js');
+  const { CARDS } = await import('../src/data/cards.js');
+// 道具（手持道具）已经搬进自己的模块：这里的 desc / use 效果文案也要一起过一遍
+const { ITEMS } = await import('../src/data/items.js');
   const { EVENTS } = await import('../src/data/events.js');
   const { ENEMIES } = await import('../src/data/enemies.js');
 

@@ -1,18 +1,16 @@
-// 诊断：背包里的道具到底能不能用（?dgitems=1）
+// 诊断：手持道具的**界面**（?dgitems=1）。
 //
-// 起因（玩家反馈）：「背包系统到现在都没有作用，道具都写着已生效，像好伤药那种完全没法用」。
-// 根因是界面自己判断「能不能用」，写的是 `item.heal`，而药水的字段叫 `healPct` ——
-// 七件道具全部落到「已生效」那一支，一个「使用」按钮都没有。
-//
-// 这里按真实指针把背包走一遍：
-//   ① 有药水时，那一行必须有可点的「使用」按钮；
-//   ② 点下去血真的回、数量真的减、有可见提示；
-//   ③ 血满时按钮禁用并写明「HP 已满」；
-//   ④ 数量为 0 的条目（开局自带 potion_big: 0）不该出现在背包里；
-//   ⑤ 护符类拿到就生效，不该残留在背包里。
+// 上一版这里查的是「背包里的药水能不能点」，现在整条链路都换了（背包制 → 手持制），
+// 所以整份重写。这里量的是**玩家真的能看见、能点到**的东西：
+//   ① 手持面板：格子数 = heldMax()、格子上有道具的图、生效效果汇总列得出来；
+//   ② 战斗外：使用型的「使用」按钮可点，点完血回、手上少一件；
+//   ③ **战斗中：按钮禁用 + 写明「战斗中不能使用」**（用户点名：太 imba）；
+//      引擎那一层也要拒绝（界面禁用只是第一道闸）
+//   ④ 道具图鉴：标题页第 5 个入口能开、列出全部道具、没拿过的是 ？？？+ 压暗剪影、
+//      拿到过的点开能看到效果与来路；
+//   ⑤ 商人：有「卖掉手上的道具」那一栏，点了金币进账、手上少一件。
 //
 // 用法：node tools/diag2.mjs "http://127.0.0.1:5123/?dgitems=1" rt
-
 (async () => {
   const log = (...a) => console.log('[d2] [it]', ...a);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -21,126 +19,157 @@
     if (cond) log(`  ✓ ${label}${detail ? ` — ${detail}` : ''}`);
     else { fails.push(label); log(`  ✗ ${label}${detail ? ` — ${detail}` : ''}`); }
   };
-  const hitAt = (x, y) => {
-    const n = document.elementFromPoint(x, y);
-    if (!n) return '(空)';
-    return `${n.tagName.toLowerCase()}${typeof n.className === 'string' && n.className ? '.' + n.className.trim().split(/\s+/).join('.') : ''}`;
+  const q = (sel, root) => (root ?? document)?.querySelector?.(sel) ?? null;
+  const qa = (sel, root) => [...((root ?? document)?.querySelectorAll?.(sel) ?? [])];
+  const click = (node) => node?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  const topModal = () => qa('.modal-backdrop').pop() ?? null;
+  const closeModals = () => { for (const b of qa('.modal-head button')) click(b); };
+  /** 打开手持面板（走界面上的入口；找不到按钮就退回直接调用，别让诊断因为入口改名而假红） */
+  const openHeldPanel = async (game) => {
+    const { showItems } = await import('../src/ui/overlays.js');
+    showItems(game);
+    await wait(250);
+    return topModal();
   };
-  /** 真实指针序列（不是 element.click()：后者绕过命中测试） */
-  const realClick = (node) => {
-    node.scrollIntoView({ block: 'center', inline: 'nearest' });
-    const r = node.getBoundingClientRect();
-    const x = Math.round(r.left + r.width / 2);
-    const y = Math.round(r.top + r.height / 2);
-    const top = document.elementFromPoint(x, y);
-    const hitSelf = !!top && (top === node || node.contains(top));
-    const opts = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, button: 0, buttons: 1 };
-    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) {
-      const ev = type.startsWith('pointer')
-        ? new PointerEvent(type, { ...opts, pointerId: 1, pointerType: 'mouse', isPrimary: true })
-        : new MouseEvent(type, opts);
-      (top ?? node).dispatchEvent(ev);
-    }
-    return { x, y, hitSelf, top };
-  };
-  /** 背包里某一件道具所在的那一行 */
-  const rowOf = (name) => [...document.querySelectorAll('.modal-backdrop .shop-item')]
-    .find((row) => row.querySelector('h4')?.textContent.includes(name)) ?? null;
 
   try {
     const game = window.__oasis;
-    const { showItems } = await import('../src/ui/overlays.js');
+    const ui = window.__oasisUI;
+    const { ITEMS } = await import('../src/data/items.js');
+    const { itemSellPrice } = await import('../src/core/game.js');
+    const { save } = await import('../src/core/save.js');
 
-    game.newRun(20250101);
-    // 等 boot 的标题页收场，免得它的异步收尾把界面盖住（diag-remove 里踩过这个坑）
-    const t0 = Date.now();
-    for (;;) {
-      const screens = [...document.querySelectorAll('#stage > .screen')];
-      if (screens.length === 1 && !screens[0].classList.contains('title-screen')) break;
-      if (Date.now() - t0 > 6000) break;
-      await wait(80);
-    }
-    game.phase = 'map';
-    document.querySelector('.modal-backdrop')?.remove();
+    // 干净的一台机器：seenItems 会直接影响图鉴那几条断言
+    localStorage.removeItem('oasis_desert_spirit_meta_v1');
+    localStorage.removeItem('oasis_desert_spirit_save_v1');
 
-    // 开局自带 { potion_small: 2, potion_big: 0 }
-    log(`  开局背包 = ${JSON.stringify(game.data.items)}`);
-    showItems(game);
+    log('① 手持面板（战斗外）');
+    game.phase = 'title';
+    ui.forceRerender();
     await wait(300);
+    game.newRun(20260101);
+    await wait(300);
+    let useItem = null;
+    {
+      const items = Object.values(ITEMS);
+      useItem = items.find((i) => i.kind === 'use' && i.use?.healPct);
+      const holdItem = items.find((i) => i.kind === 'hold');
+      game.data.held = [useItem.id, holdItem.id];
+      game.invalidateMods();
+      game.data.hp = Math.round(game.data.maxHp * 0.4);
+      game.phase = 'map';
+      ui.forceRerender();
+      await wait(300);
 
-    // 截图模式：把背包留在屏幕上给 shot.mjs 拍
-    if (new URLSearchParams(location.search).get('dgitems') === 'shot') {
-      log('背包已打开（截图模式）');
-      log('IT_DONE');
-      return;
+      const m = await openHeldPanel(game);
+      ok(!!m && !!q('.held-slots', m), '手持面板能打开，里面有一排格子');
+      const slots = qa('.held-slot', m);
+      ok(slots.length === game.heldMax(), '格子数 = 手持栏上限', `${slots.length} 个（上限 ${game.heldMax()}）`);
+      ok(qa('.held-slot-art', m).length === 2, '手上的两件都有图（不是空白方块）', `${qa('.held-slot-art', m).length} 张图`);
+      ok(!!q('.held-active', m), '「现在生效的持有效果」汇总列出来了',
+        qa('.held-chip', m).map((n) => n.textContent).join(' / ') || '（这件东西没有持有效果）');
+
+      // ② 战斗外使用
+      const hp0 = game.data.hp;
+      const row = qa('.held-item', m).find((r) => r.textContent.includes(useItem.name));
+      const useBtn = row ? qa('button', row).find((b) => b.textContent.includes('使用')) : null;
+      ok(!!useBtn && !useBtn.disabled, '战斗外：「使用」按钮可点', useItem.name);
+      click(useBtn);
+      await wait(250);
+      ok(game.data.hp > hp0, '点下去血真的回了', `${hp0} → ${game.data.hp}`);
+      ok(!game.data.held.includes(useItem.id), '用掉之后从手上消失');
+      closeModals();
+      await wait(200);
     }
 
-    // ---- ④ ×0 的条目不该列出来 ----
-    const rows = [...document.querySelectorAll('.modal-backdrop .shop-item')];
-    const names = rows.map((r) => r.querySelector('h4')?.textContent?.trim() ?? '');
-    log(`  背包列出 = [${names.join(' | ')}]`);
-    ok(!names.some((n) => /厉害伤药/.test(n)), '×0 的「厉害伤药」没有列出来', names.join('、'));
-    ok(names.some((n) => /好伤药/.test(n)), '好伤药 ×2 列出来了');
-
-    // ---- ① 每一行都必须是「能点的使用按钮」，不能是「已生效」 ----
-    const allRows = [...document.querySelectorAll('.modal-backdrop .shop-item')];
-    const stuck = allRows.filter((r) => !r.querySelector('button'));
-    const labels = allRows.map((r) => r.querySelector('button')?.textContent?.trim() ?? '(没有按钮)');
-    ok(stuck.length === 0, '每一件列出来的道具都有可点的按钮（不再出现「已生效」的死行）',
-      `按钮：${labels.join(' / ')}`);
-
-    // ---- ② 真实指针点「使用」 ----
-    game.data.hp = Math.max(1, Math.floor(game.data.maxHp * 0.4));
-    document.querySelector('.modal-backdrop')?.remove();
-    showItems(game);
-    await wait(250);
-    const row = rowOf('好伤药');
-    const btn = row?.querySelector('button');
-    ok(!!btn && !btn.disabled, '受伤时「好伤药」的使用按钮是可点的', btn ? `文案「${btn.textContent.trim()}」` : '（没有按钮）');
-    if (btn) {
-      const beforeHp = game.data.hp;
-      const beforeN = game.data.items.potion_small;
-      const c = realClick(btn);
-      ok(c.hitSelf, '按钮中心没有被别的东西盖住（真实命中测试）', `命中 = ${hitAt(c.x, c.y)}`);
-      await wait(350);
-      log(`  点完：HP ${beforeHp} → ${game.data.hp}，好伤药 ${beforeN} → ${game.data.items.potion_small}`);
-      ok(game.data.hp > beforeHp, '点一下真的回血了');
-      ok(game.data.items.potion_small === beforeN - 1, '数量真的减了 1');
-      const toastEl = document.getElementById('toast');
-      ok(/使用/.test(toastEl?.textContent ?? '') && !toastEl.classList.contains('hidden'),
-        '屏幕上有「使用…」的提示', `toast = 「${toastEl?.textContent ?? ''}」`);
-      // 背包重画之后那一行还在（paint 之后不能整块消失）
-      ok(!!rowOf('好伤药'), '用完一瓶之后这一行还在（数量变了而已）');
+    log('② 战斗中：不能使用');
+    {
+      game.newRun(20260102);
+      await wait(200);
+      game.data.held = [];
+      game.invalidateMods();
+      game.giveItem(useItem.id, 1);
+      game.startBattle('mob', 0, 'direct');
+      await wait(1400);
+      const m = await openHeldPanel(game);
+      const row = qa('.held-item', m).find((r) => r.textContent.includes(useItem.name));
+      const btn = row ? qa('button', row).find((b) => b.textContent.includes('使用')) : null;
+      ok(!!btn, '战斗中也能打开手持面板看到那件东西');
+      ok(!!btn?.disabled, '但「使用」按钮是禁用的');
+      const tip = btn?.dataset?.tip ?? '';
+      ok(/战斗中不能使用/.test(tip), '悬停说明写明「战斗中不能使用」', tip);
+      const res = game.useItem(useItem.id);
+      ok(res?.ok === false, '引擎层同样拒绝（换任何入口都绕不过去）', res?.text);
+      closeModals();
+      await wait(200);
     }
 
-    // ---- ③ 血满时禁用 ----
-    document.querySelector('.modal-backdrop')?.remove();
-    game.data.hp = game.data.maxHp;
-    showItems(game);
-    await wait(250);
-    const btn2 = rowOf('好伤药')?.querySelector('button');
-    ok(!!btn2 && btn2.disabled, 'HP 满时按钮禁用', btn2 ? `文案「${btn2.textContent.trim()}」` : '（没有按钮）');
-    ok(btn2?.textContent?.includes('已满'), '并且写明是「HP 已满」而不是含糊地不给点');
+    log('③ 道具图鉴');
+    {
+      game.phase = 'title';
+      ui.forceRerender();
+      await wait(400);
+      const entries = qa('.title-codex .title-codex-btn');
+      ok(entries.length === 5, '标题页有 5 个入口', String(entries.length));
+      const labels = entries.map((b) => q('.title-codex-label', b)?.textContent);
+      const idx = labels.indexOf('道具图鉴');
+      ok(idx >= 0, '其中一个是道具图鉴', labels.join(' / '));
+      click(entries[idx]);
+      await wait(400);
+      const m = topModal();
+      const cards = qa('.item-card', m);
+      ok(cards.length === Object.keys(ITEMS).length, '一页列出全部道具', `${cards.length} 件`);
+      const unknown = qa('.item-codex-art.silhouette', m);
+      ok(unknown.length > 0, '还没拿过的是**压暗剪影**', `${unknown.length} 件没拿过`);
+      const got = qa('.item-card.got', m);
+      ok(got.length >= 1, '拿到过的显示成已获得', `${got.length} 件已获得`);
+      ok(qa('.item-card.new .dex-card-name', m).every((n) => n.textContent.includes('？')),
+        '没拿过的名字是「？？？」');
+      ok(!qa('.item-card.new .dex-card-name', m).some((n) => n.textContent.includes(useItem.name)),
+        '没拿过的不泄露名字');
+      if (got.length) {
+        click(got[0]);
+        await wait(350);
+        const d = topModal();
+        ok(!!q('.item-detail-art', d), '详情页有道具的大图');
+        ok(qa('.detail-row', d).length >= 1, '列出了持有效果 / 使用效果',
+          qa('.detail-row', d).map((n) => n.textContent).join(' ｜ ').slice(0, 70));
+        ok(!!q('.item-src', d), '写明了来路与价钱');
+        closeModals();
+        await wait(200);
+      }
+      closeModals();
+      await wait(200);
+    }
 
-    // ---- ⑤ 护符拿到就生效、不留背包 ----
-    document.querySelector('.modal-backdrop')?.remove();
-    const atkBefore = game.data.atk;
-    const got = game.giveItem('charm_atk', 1);
-    log(`  买一枚锐爪护符：攻击 ${atkBefore} → ${game.data.atk}，返回值 ${JSON.stringify(got)}`);
-    ok(game.data.atk === atkBefore + 4, '锐爪护符拿到手攻击就 +4');
-    showItems(game);
-    await wait(250);
-    const names2 = [...document.querySelectorAll('.modal-backdrop .shop-item h4')].map((h) => h.textContent.trim());
-    ok(!names2.some((n) => /锐爪护符/.test(n)), '已生效的护符不会残留在背包里', names2.join('、'));
-    ok([...document.querySelectorAll('.modal-backdrop .shop-item')].every((r) => r.querySelector('button')),
-      '剩下的每一行仍然都能点');
+    log('④ 商人：卖掉手上的道具');
+    {
+      game.newRun(20260103);
+      await wait(250);
+      const it = Object.values(ITEMS).find((i) => i.price >= 60);
+      game.data.held = [it.id];
+      game.invalidateMods();
+      game.startShop();
+      await wait(500);
+      const sellBox = q('.shop-sell');
+      ok(!!sellBox, '商店里有「卖掉手上的道具」那一栏');
+      const row = qa('.shop-sell-item', sellBox).find((n) => n.textContent.includes(it.name));
+      ok(!!row, '手上有那件东西就会出现在可卖列表里', it.name);
+      const gold0 = game.data.gold;
+      const sellBtn = row ? qa('button', row)[0] : null;
+      ok(!!sellBtn, '有卖出按钮（上面写着卖价）', sellBtn?.textContent?.trim());
+      click(sellBtn);
+      await wait(300);
+      ok(game.data.gold === gold0 + itemSellPrice(it), '金币按售价 40% 进账',
+        `${gold0} → ${game.data.gold}（该 +${itemSellPrice(it)}）`);
+      ok(!game.data.held.includes(it.id), '卖掉之后手上少一件');
+    }
 
-    document.querySelector('.modal-backdrop')?.remove();
     if (fails.length) log(`IT_ERRORS=[${fails.join(' | ')}]`);
-    else log('背包道具自检：通过 ✓');
+    else log('手持道具自检：通过 ✓');
     log('IT_DONE');
   } catch (e) {
-    log('IT_FATAL ' + (e && e.stack ? e.stack.split('\n').slice(0, 5).join(' | ') : e));
+    log('IT_FATAL ' + (e && e.stack ? e.stack.split('\n').slice(0, 6).join(' | ') : e));
     log('IT_DONE');
   }
 })();

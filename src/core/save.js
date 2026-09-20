@@ -39,7 +39,7 @@ export const save = {
   readMeta() {
     const fallback = {
       bestDistance: 0, bestStage: 0, runs: 0, wins: 0, kills: 0, unlocked: false,
-      seenCards: [], seenEnemies: [], slainEnemies: [], history: [], heardBgm: [],
+      seenCards: [], seenEnemies: [], slainEnemies: [], history: [], heardBgm: [], seenItems: [],
       slainCount: {}, facedCount: {},
     };
     try {
@@ -55,6 +55,13 @@ export const save = {
       if (!Array.isArray(meta.slainEnemies)) meta.slainEnemies = [];
       if (!Array.isArray(meta.history)) meta.history = [];
       if (!Array.isArray(meta.heardBgm)) meta.heardBgm = [];
+      /**
+       * 见过 / 拿到过的**道具**（手持道具图鉴用）。
+       *
+       * 和卡牌图鉴同一套规则：没拿过的画成剪影 + ？？？，拿到手（买到 / 开箱 / 掉落）
+       * 就永久记下来。老存档补成空数组（图鉴会显示成「全都还没见过」，不会白屏）。
+       */
+      if (!Array.isArray(meta.seenItems)) meta.seenItems = [];
       // 击败**次数**（id -> 次数）：图鉴的奖牌（5 / 15 / 25 / 50 次）靠它。
       // 老存档没有这份计数，此时图鉴按「slainEnemies 里有 = 打赢过 1 次」算（见 codex.js）。
       if (!meta.slainCount || typeof meta.slainCount !== 'object') meta.slainCount = {};
@@ -91,6 +98,31 @@ export const save = {
     const next = { ...meta, seenCards: [...seen] };
     this.writeMeta(next);
     return next;
+  },
+
+  /**
+   * 记下「见过 / 拿到过哪些**道具**」（跨局累加），道具图鉴靠它分两档：
+   *   没拿过（压暗 + ？？？）/ 拿到过（图标 + 效果 + 出处）。
+   *
+   * 触发点只有一个：`Game.giveItem()` —— 买到、开箱、掉落全都经过它，
+   * 所以不用在商人 / 宝箱 / 掉落三处各记一次（那种散着记的写法一定会漏一处）。
+   */
+  noteItems(ids = []) {
+    const meta = this.readMeta();
+    const seen = new Set(meta.seenItems ?? []);
+    let added = 0;
+    for (const id of ids) {
+      if (id && !seen.has(id)) { seen.add(id); added += 1; }
+    }
+    if (!added) return meta;
+    const next = { ...meta, seenItems: [...seen] };
+    this.writeMeta(next);
+    return next;
+  },
+
+  /** 图鉴调试用：把「见过哪些道具」清空（诊断脚本用得上） */
+  clearSeenItems() {
+    return this.patchMeta({ seenItems: [] });
   },
 
   /**

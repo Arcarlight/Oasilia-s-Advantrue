@@ -24,7 +24,9 @@ const note = (m) => notes.push(m);
 
 const exists = async (p) => !!(await fs.stat(p).catch(() => null));
 
-const { CARDS, CARD_ART, ITEMS, STARTER_DECK } = await import('../src/data/cards.js');
+const { CARDS, CARD_ART, STARTER_DECK } = await import('../src/data/cards.js');
+// 道具（手持道具）已经搬出 cards.js，自己的模块 + 自己的图（assets/items/<id>.png）
+const { ITEMS, ITEM_ART, STARTER_ITEMS } = await import('../src/data/items.js');
 const { ENEMIES, MOVE_POOLS, TIERS } = await import('../src/data/enemies.js');
 const { EVENTS } = await import('../src/data/events.js');
 const { BIOMES, STAGE_BIOME, BALANCE, RARITY, REWARD_WEIGHTS } = await import('../src/data/balance.js');
@@ -267,8 +269,22 @@ for (const c of CARDS) {
   if (!css.includes(`.${art.ico}`)) err(`卡牌 ${c.id} 的图标类 ${art.ico} 在 style.css 里没有定义`);
   if (!fxFiles.has(`${art.fx}.png`)) err(`卡牌 ${c.id} 的特效图 assets/img/fx/${art.fx}.png 不存在`);
 }
-for (const [id, it] of Object.entries(ITEMS)) {
-  if (!iconFiles.has(`${it.art}.png`)) warn(`道具 ${id} 的图 assets/img/cards/${it.art}.png 不存在`);
+/**
+ * 道具的图**不再是** assets/img/cards/<art>.png（那是旧背包制时代的 Kenney 小图）。
+ * 手持道具这一版：每件道具一张 Generation 9 Pack 的图，放在 assets/items/<id>.png，
+ * 尺寸表在 assets/data/items.json —— 这里核对文件真的在 + 尺寸表里有它。
+ */
+{
+  const itemArt = await fs.readFile(path.join(ROOT, 'assets', 'data', 'items.json'), 'utf8')
+    .then((s) => JSON.parse(s).items).catch(() => null);
+  const itemFiles = new Set(await fs.readdir(path.join(ROOT, 'assets', 'items')).catch(() => []));
+  if (!itemArt) err('assets/data/items.json 不存在（跑 node tools/import-items.mjs）');
+  let missing = 0;
+  for (const id of Object.keys(ITEMS)) {
+    if (!itemFiles.has(`${id}.png`)) { err(`道具 ${id} 的图 assets/items/${id}.png 不存在（跑 node tools/import-items.mjs）`); missing += 1; }
+    if (itemArt && !itemArt[id]) { err(`道具 ${id} 不在 assets/data/items.json 里（跑 node tools/import-items.mjs）`); missing += 1; }
+  }
+  if (!missing) note(`道具图 ${Object.keys(ITEMS).length} 张齐全（assets/items/，来自 Generation 9 Pack 的 Items）`);
 }
 /**
  * 卡面文案 vs 引擎效果：文案里写的「N 层中毒 / 灼伤 / 虚弱」必须等于 effects 里的 stacks。

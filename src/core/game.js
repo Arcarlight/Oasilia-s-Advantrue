@@ -40,61 +40,13 @@ export { STAT_NAMES };
 //   · `kind: 'hold'` 拿在手上就一直生效（heldMods() 把它们汇总成一张系数表）；
 //   · `kind: 'use'` **只能在战斗外使用**（战斗里能嗑药太强，用户点名禁掉）；
 //   · 拿满时给不进去 —— 由界面问玩家「丢掉哪一件」（giveItem 返回 overflow）。
+//
+// **纯规则**（归并 / 求和 / 卖出价 / 分类）在 src/core/item-rules.js：那里是叶子模块，
+// eventfx 之类的地方也要用它，写在 game.js 里会形成循环 import（打包成单文件才会炸）。
+import { heldEntries, heldCount, sumHeldMods, itemUseEffect, itemSellPrice } from './item-rules.js';
 
-/** 手持栏里的东西按 id 归并（同名多件合成一条 ×n），顺序按拿到手的先后 */
-export function heldEntries(held) {
-  const out = [];
-  for (const id of held ?? []) {
-    const item = ITEMS[id];
-    if (!item) continue;
-    const found = out.find((e) => e.id === id);
-    if (found) found.n += 1;
-    else out.push({ id, item, n: 1 });
-  }
-  return out;
-}
-
-/** 手上这件东西有几个（事件的条件判断用它） */
-export function heldCount(held, id) {
-  return (held ?? []).filter((x) => x === id).length;
-}
-
-/**
- * 把持有效果汇总成一张系数表：`{ attackPct: {add:0.2,n:2}, poisonNoDecay: {flag:true}, ... }`
- *
- * 叠加规则（用户定的）：**数值型按件数叠加**（两件 +10% 就是 +20%），
- * **开关型重复无效**（多拿一件「中毒不衰减」没有任何额外好处，界面会标「已生效」）。
- */
-export function sumHeldMods(held) {
-  const acc = {};
-  for (const id of held ?? []) {
-    const item = ITEMS[id];
-    if (!item || item.kind !== 'hold') continue;
-    for (const m of item.hold?.mods ?? []) {
-      const e = acc[m.key] ?? (acc[m.key] = { add: 0, mul: 1, flag: false, n: 0 });
-      e.n += 1;
-      if (typeof m.add === 'number') e.add += m.add;
-      else if (typeof m.mul === 'number') e.mul *= m.mul;
-      else e.flag = true;
-    }
-  }
-  return acc;
-}
-
-/**
- * 一件道具「用下去会发生什么」——**界面和引擎共用这一份判断**。
- *
- * 只有 `kind: 'use'` 的道具才有这一步；持有型没有「使用」这个动作（它的效果一直开着）。
- */
-export function itemUseEffect(item) {
-  if (!item || item.kind !== 'use') return null;
-  return item.use ?? null;
-}
-
-/** 卖出价：售价的 40%（持有效果越贵，卖得越多） */
-export function itemSellPrice(item) {
-  return Math.max(1, Math.round((item?.price ?? 0) * 0.4));
-}
+// 再导出一次：老调用方（界面 / 测试）一直是从 game.js 拿的，别让它们全改一遍
+export { heldEntries, heldCount, sumHeldMods, itemUseEffect, itemSellPrice };
 
 export class Game {
   /**
@@ -319,6 +271,8 @@ export class Game {
       this.data.held.push(id);
       stored += 1;
     }
+    // 道具图鉴：拿到手就永久记一笔（买到 / 开箱 / 掉落都走这里，只有这一处）
+    save.noteItems(this.data.held.slice(-stored));
     return { ok: true, id, item, stored: true, overflow: false, storedCount: stored };
   }
 

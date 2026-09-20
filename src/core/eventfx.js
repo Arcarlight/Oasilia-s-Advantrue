@@ -24,7 +24,9 @@
 
 import { ITEMS } from '../data/items.js';
 import { CARD_BY_ID } from '../data/cards.js';
-import { heldCount } from './game.js';
+// heldCount 从**叶子模块**拿，不从 game.js 拿：game.js → events → 这里是循环 import，
+// 开发时看不出来，打包成单文件会变成 undefined（verify-bundle 抓到的）。
+import { heldCount } from './item-rules.js';
 
 /** 简单效果：对象里只允许有这些键之一 */
 export const SIMPLE_EFFECT_KEYS = [

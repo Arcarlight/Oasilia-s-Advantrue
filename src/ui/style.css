@@ -3183,8 +3183,52 @@ input, textarea { cursor: text !important; }
 .held-kind.hold { color: #9fd6ff; }
 .held-kind.use { color: #ffd27a; }
 .shop-item-art { width: 26px; height: 26px; image-rendering: pixelated; flex: 0 0 auto; }
+/* 商店里「卖掉手上的道具」那一栏（screens.js 的 renderShop） */
+.shop-sell { margin-top: 14px; padding-top: 10px; box-shadow: inset 0 1px 0 rgba(232, 207, 162, .18); }
+.shop-sell h4 { margin: 0 0 8px; font-family: var(--font-title); font-size: 14px; color: var(--accent-2); letter-spacing: .06em; }
+.shop-sell-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.shop-sell-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 9px; border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .22);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .16);
+}
+.shop-sell-name { font-size: 13px; }
+/* 手持栏满了的选择框（overlays.js 的 showHeldOverflow） */
+.held-slot-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; font-size: 13px; }
 .reward-pill-item { display: inline-flex; align-items: center; gap: 6px; }
 .reward-item-art { width: 22px; height: 22px; image-rendering: pixelated; }
+
+/* ---- 道具图鉴（codex.js 的 showItemCodex / showItemDetail）----
+   规则和敌人图鉴一样：没拿过 = 压暗剪影 + ？？？。道具的图是 48×48 的 png，
+   剪影用 filter: brightness(0) 压成纯黑块（比画一个「?」更像「这里有一件东西」）。 */
+.item-codex-art { width: 42px; height: 42px; image-rendering: pixelated; }
+.item-codex-art.silhouette, .item-detail-art.silhouette { filter: brightness(0) opacity(.5); }
+/**
+ * 道具卡和敌人卡不一样：敌人卡是「图标 + 名字 + 编号」横着排，名字短（3 个字），
+ * 而道具名可以到 4~5 个字（「哞哞鲜奶」「紧缠钩爪」），横排会被 `.dex-card-name`
+ * 的 `nowrap + ellipsis` 截成「哞…」（第一版就是这样，截图里一片省略号）。
+ * 所以道具卡改成**竖排**：图在上、名字居中、下面一排小胶囊，名字允许换行。
+ */
+.item-card { flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; text-align: center; }
+.item-card .dex-card-name {
+  font-size: 12.5px; line-height: 1.25;
+  white-space: normal; overflow: visible; text-overflow: clip;
+  word-break: break-word;
+}
+.item-chips { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+.item-kind, .item-type {
+  font-size: 10px; padding: 1px 6px; border-radius: 999px; letter-spacing: .04em;
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .28); opacity: .9;
+}
+.item-kind.hold { color: #9fd6ff; }
+.item-kind.use { color: #ffd27a; }
+.item-type { color: #d8c7a6; }
+.item-detail-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
+.item-detail-art { width: 84px; height: 84px; image-rendering: pixelated; }
+.item-detail-info h2 { margin: 0 0 6px; font-family: var(--font-title); font-size: 21px; }
+.item-detail-info p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.7; opacity: .92; }
+.item-src { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.8; opacity: .9; }
 
 /* ---- 口吻台词：**头像 + 对话框**（用户给的版式）----
    头像用 PMD 头像（portraits），左边一列；右边是标题 + 对话框 + 一行小字。

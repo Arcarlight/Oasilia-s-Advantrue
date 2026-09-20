@@ -10,7 +10,7 @@ import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance,
 // （抄漏过一次：判断写的是 `item.heal` 而数据字段叫 `healPct`，整个背包一个按钮都没有）
 // heldEntries / heldCount / itemUseEffect / sumHeldMods：手持道具（谁在手上、能不能用、
 // 加起来是什么效果）全部由引擎那一份判断说了算，界面不再自己抄一遍规则。
-import { heldEntries, itemUseEffect } from '../core/game.js';
+import { heldEntries, itemUseEffect } from '../core/item-rules.js';
 import { modLabel } from '../core/itemtext.js';
 import { ITEMS, itemArtUrl } from '../data/items.js';
 import { CARD_BY_ID, CARDS } from '../data/cards.js';
@@ -162,6 +162,81 @@ export function showDeck(game) {
 }
 
 // ============================================================
+// 手持栏满了：丢掉一件（用户要的规则）
+// ============================================================
+/**
+ * 拿不下新道具时弹的选择框。
+ *
+ * 什么时候弹：`game.awaitingOverflow = { id, text }` —— 奖励结算、开箱、掉落都会设它
+ * （见 game.js 的 giveItem / takeRewardCard / startChest）。地图页每次渲染时看一眼，
+ * 有就弹出来，处理完清掉。
+ *
+ * 三个出路都给：丢掉手上的某一件（换新的）、或者干脆不要新的那件。
+ * 「卖给商人」不在这个框里 —— 卖掉要钱货两清，得去商店（那里有正式的一栏）。
+ */
+export function showHeldOverflow(game) {
+  const pending = game.awaitingOverflow;
+  if (!pending) return null;
+  const fresh = ITEMS[pending.id];
+  const entries = heldEntries(game.data.held ?? []);
+
+  const body = el('div', {});
+  body.append(el('p', {
+    text: t('手上已经拿满了（{n} / {max}），「{name}」放不下 —— 丢掉一件就能拿它。', {
+      n: game.data.held.length, max: game.heldMax(), name: fresh?.name ?? pending.id,
+    }),
+  }));
+  body.append(el('div', { class: 'held-slot-row' }, [
+    el('span', { class: 'held-hint', text: t('新拿到的：') }),
+    el('img', { class: 'held-slot-art', src: itemArtUrl(pending.id), alt: fresh?.name ?? '', draggable: false }),
+    el('span', { text: `${fresh?.name ?? pending.id} —— ${t(fresh?.desc ?? '')}` }),
+  ]));
+
+  const list = el('div', { class: 'shop-list' });
+  const close = () => m.close();
+  for (const { id, item, n } of entries) {
+    list.append(el('div', { class: 'shop-item held-item' }, [
+      el('h4', {}, [
+        el('img', { class: 'held-art', src: itemArtUrl(id), alt: item.name, draggable: false }),
+        el('span', { text: n > 1 ? `${item.name} ×${n}` : item.name }),
+      ]),
+      el('p', { text: t(item.desc) }),
+      el('div', { class: 'row' }, [
+        el('button', {
+          class: 'btn btn-sm btn-primary',
+          onClick: () => {
+            game.dropItem(id);
+            const got = game.giveItem(pending.id, 1);
+            game.awaitingOverflow = null;
+            audio.useItem();
+            toast(got.stored ? t('丢掉「{a}」，收下「{b}」。', { a: item.name, b: fresh?.name ?? pending.id }) : t('换手失败，栏位还是满的。'), got.stored ? 'good' : 'bad');
+            close();
+            renderHud(game);
+          },
+        }, [t('丢掉这件，换新的')]),
+      ]),
+    ]));
+  }
+  body.append(list);
+
+  const m = modal({
+    title: t('手持栏满了'),
+    body,
+    foot: [
+      el('button', {
+        class: 'btn btn-ghost',
+        onClick: () => {
+          game.awaitingOverflow = null;
+          toast(t('没有收下「{name}」。', { name: fresh?.name ?? pending.id }));
+          close();
+        },
+      }, [t('不要这件新的')]),
+    ],
+  });
+  return m;
+}
+
+// ============================================================
 // 手持道具（这一版把「背包」换成了它，见 content/items.json 的 _comment）
 // ============================================================
 export function showItems(game) {
@@ -218,11 +293,16 @@ export function showItems(game) {
         const hpFull = game.data.hp >= game.data.maxHp;
         const heals = !!(eff?.healPct || eff?.healFlat || eff?.healFull);
         /**
-         * 「能不能用」两处判断，都写在这里，不散到界面各处：
-         *   · `eff` 为空 = 持有型（拿着就生效，没有「使用」这个动作）；
-         *   · `inBattle` = 战斗里一律不能用（用户点名：战斗中嗑药太 imba）。
+         * 「能不能用」的两个条件，都写在这一行里，不散到界面各处：
+         *   · `eff` 为空 = 持有型（拿着就生效，没有「使用」这个动作）→ 禁用；
+         *   · `inBattle` = **战斗中一律禁用**（用户点名：战斗中嗑药太 imba）→ 禁用；
+         *   · 回血类而血已满 → 禁用（吃了浪费）。
+         *
+         * ⚠ 第一版把 inBattle 写反了（`inBattle ? false : …`），结果是**战斗里按钮照样能点** ——
+         * 好在引擎那一层也拦着（useItem 里再判一次相位），所以只是按钮可点、点了报错。
+         * diag-items 的「战斗中按钮必须是禁用的」那条断言把它抓出来了。
          */
-        const blocked = !eff || (inBattle ? false : (heals && hpFull));
+        const blocked = !eff || inBattle || (heals && hpFull);
         const blockTip = !eff
           ? t('这类道具拿在手上就一直生效，不需要使用。')
           : (inBattle ? t('战斗中不能使用道具 —— 先打完这一场。') : t('HP 已经满了，吃了也是浪费。'));

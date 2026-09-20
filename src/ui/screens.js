@@ -12,13 +12,14 @@ import { CARD_BY_ID } from '../data/cards.js';
 import { ITEMS, itemArtUrl } from '../data/items.js';
 // 属性叫什么名字、道具怎么分类，都从引擎那一份问，别在界面里自己判断
 import { STAT_NAMES } from '../core/game.js';
+import { heldEntries, itemSellPrice } from '../core/item-rules.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
 import { changeLanguage } from './langswitch.js';
-import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
+import { showDeck, showItems, showHelp, showSettings, showHeldOverflow } from './overlays.js';
 // 标题页的三块收藏 / 战绩页：卡牌图鉴、敌人图鉴、通关记录（游戏内也能开敌人图鉴）
-import { showCardCodex, showEnemyCodex, cardCodexProgress, enemyCodexProgress } from './codex.js';
+import { showCardCodex, showEnemyCodex, showItemCodex, cardCodexProgress, enemyCodexProgress, itemCodexProgress } from './codex.js';
 import { showRecords, runCount } from './records.js';
 import { showMusicRoom, musicRoomProgress } from './music-room.js';
 import { showChangelog, CHANGELOG } from './changelog.js';
@@ -175,11 +176,14 @@ async function renderTitle(game) {
    */
   const cardProgress = cardCodexProgress([]);   // 标题页没有 run，「这一局带着的」自然算空
   const enemyProgress = enemyCodexProgress();
+  const itemProgress = itemCodexProgress();
   const musicProgress = musicRoomProgress();
   inner.append(el('div', { class: 'title-codex' }, [
     titleCodexBtn('ico-trophy', t('通关记录'), runCount() ? t('{n} 局', { n: runCount() }) : t('还没有'), () => showRecords()),
     titleCodexBtn('ico-cards', t('卡牌图鉴'), `${cardProgress.got}/${cardProgress.total}`, () => showCardCodex(game)),
     titleCodexBtn('ico-book', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
+    // 道具图鉴：手持道具那一版加的（拿过的登记，没拿过的是剪影）
+    titleCodexBtn('ico-backpack', t('道具图鉴'), `${itemProgress.seen}/${itemProgress.total}`, () => showItemCodex()),
     // 曲子库：和三个图鉴同一类（都是「收集进度」），只是收的是 BGM
     titleCodexBtn('ico-music', t('曲子库'), `${musicProgress.heard}/${musicProgress.total}`, () => showMusicRoom()),
   ]));
@@ -236,6 +240,14 @@ async function renderTitle(game) {
 function renderMap(game) {
   const host = document.getElementById('stage');
   clear(host);
+  /**
+   * 回到地图时看一眼「有没有拿不下的道具」（手持栏满了）。
+   *
+   * 为什么放在地图页：奖励结算 / 开宝箱之后玩家一定回到地图，
+   * 这里弹一次就够了，不必在奖励页、宝箱页、事件页各挂一遍
+   * （那样一定会有一处漏掉，丢掉的东西就静默消失了）。
+   */
+  if (game.awaitingOverflow) showHeldOverflow(game);
   const map = game.data.map;
   const biome = BIOMES[map.biome] ?? BIOMES.desert;
   const available = game.availableNodes().map((n) => n.id);
@@ -846,6 +858,47 @@ function renderShop(game) {
   }
 
   paint();
+  /**
+   * 「卖掉手上的道具」（用户要的规则：商人处可以把不需要的道具卖掉）。
+   *
+   * 卖价由引擎算（`itemSellPrice` = 售价的 40%），界面只管显示与点击 ——
+   * 这一栏和上面的货架分开：货架是「他要卖给你的」，这一栏是「你手上的」。
+   */
+  {
+    const sellBox = el('div', { class: 'shop-sell' });
+    const paintSell = () => {
+      clear(sellBox);
+      const entries = heldEntries(game.data.held ?? []);
+      sellBox.append(el('h4', { text: t('卖掉手上的道具') }));
+      if (!entries.length) {
+        sellBox.append(el('p', { class: 'dex-empty', text: t('手上没有可以卖的东西。') }));
+        return;
+      }
+      const grid = el('div', { class: 'shop-sell-grid' });
+      for (const { id, item, n } of entries) {
+        grid.append(el('div', { class: 'shop-sell-item' }, [
+          el('img', { class: 'shop-item-art', src: itemArtUrl(id), alt: item.name, draggable: false }),
+          el('span', { class: 'shop-sell-name', text: n > 1 ? `${item.name} ×${n}` : item.name }),
+          el('button', {
+            class: 'btn btn-sm btn-ghost',
+            dataset: { tip: t('卖给商人，换回 {g} 金币。', { g: itemSellPrice(item) }) },
+            onClick: () => {
+              const res = game.sellItem(id);
+              if (!res) { toast(t('这件已经不在手上了。'), 'bad'); return; }
+              audio.coin();
+              msg.className = 'result-box good';
+              msg.textContent = t('卖掉「{name}」，金币 +{g}。', { name: t(res.name), g: res.gold });
+              refreshLedger();
+              paintSell();
+            },
+          }, [el('span', { class: 'ico-money' }), String(itemSellPrice(item))]),
+        ]));
+      }
+      sellBox.append(grid);
+    };
+    paintSell();
+    panel.append(sellBox);
+  }
   panel.append(el('div', { class: 'reward-row', style: { justifyContent: 'flex-start' } }, [
     el('button', { class: 'btn btn-primary', onClick: () => { audio.ui('click'); game.leaveShop(); } }, [
       el('span', { class: 'ico-check' }), el('span', { text: merchant?.leave ?? t('离开商队') }),

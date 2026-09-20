@@ -20,6 +20,10 @@ import { el, clear, modal } from './dom.js';
 import { cardEl } from './cards.js';
 import { SORT_MODES, sortCards, groupLabel, cardPowerTotal, resolveCardText } from './cardtext.js';
 import { CARDS, CARD_BY_ID } from '../data/cards.js';
+// 道具图鉴（手持道具）：数据 + 效果说人话的那一份表 + 卖出价（引擎算的）
+import { ITEMS, itemArtUrl } from '../data/items.js';
+import { holdLines, useLine } from '../core/itemtext.js';
+import { itemSellPrice } from '../core/item-rules.js';
 import { ENEMIES, ENEMY_BY_ID, MOVE_POOLS, TIERS } from '../data/enemies.js';
 import { BIOMES, BALANCE } from '../data/balance.js';
 import { createPortrait } from '../core/portraits.js';
@@ -298,8 +302,195 @@ export function showEnemyCodex() {
   return modal({ title: t('敌人图鉴'), wide: true, body });
 }
 
-/** 图鉴里的一张敌人卡（没见过的画成剪影，只留图鉴编号） */
-function enemyCard(def, sets) {
+// ============================================================
+// 道具图鉴（手持道具）
+// ============================================================
+//
+// 规则和敌人图鉴一样（用户选的「跟敌人图鉴同一套规则」）：
+//   没拿过 = 压暗的剪影 + ？？？，拿过 = 图标 + 名字 + 效果 + 出处。
+// 「拿过」记在 save 的 meta.seenItems 里（由 Game.giveItem 那一处记，见 save.noteItems）。
+
+export function itemCodexSets() {
+  const meta = save.readMeta();
+  return { seen: new Set(meta.seenItems ?? []), meta };
+}
+
+export function itemCodexProgress(sets = itemCodexSets()) {
+  const list = Object.values(ITEMS);
+  return {
+    seen: list.filter((i) => sets.seen.has(i.id)).length,
+    total: list.length,
+  };
+}
+
+/** 一件道具的图鉴状态（拿到了就没变过 —— 道具不像敌人有「见过但没打赢」这一档） */
+function itemState(id, sets) {
+  return sets.seen.has(id) ? 'got' : 'new';
+}
+
+/**
+ * 道具图鉴。
+ *
+ * 按**用法**分三节，而不是按稀有度：玩家翻这一页时想知道的是
+ * 「有什么东西能拿在手上」「有什么能战斗外应急」，不是「哪个贵」。
+ * 属性掉落物那一节里，每件还会标出它属于哪个属性（打那个属性的敌人更容易掉）。
+ */
+export function showItemCodex() {
+  const sets = itemCodexSets();
+  const progress = itemCodexProgress(sets);
+  let filter = 'all';
+
+  const SECTIONS = [
+    { key: 'drop', title: t('属性掉落物（打赢对应属性的敌人更容易掉）'), match: (i) => i.drop != null },
+    { key: 'hold', title: t('持有生效（拿在手上一直起作用）'), match: (i) => i.kind === 'hold' && i.drop == null },
+    { key: 'use', title: t('战斗外使用（用掉就没了）'), match: (i) => i.kind === 'use' },
+  ];
+
+  const body = el('div', {});
+  body.append(el('div', { class: 'codex-head' }, [
+    el('div', { class: 'codex-progress' }, [
+      el('b', { text: `${progress.seen} / ${progress.total}` }),
+      el('span', { text: t('已见过的道具（拿到过一次就算）') }),
+    ]),
+    el('div', { class: 'codex-sub', text: t('商人那里能买、也能卖；宝箱和敌人掉落是另外两个来路。') }),
+  ]));
+
+  const filters = [
+    { key: 'all', label: t('全部') },
+    { key: 'got', label: t('已见过') },
+    { key: 'new', label: t('还没见过') },
+    { key: 'hold', label: t('持有型') },
+    { key: 'use', label: t('使用型') },
+  ];
+  const filterBar = el('div', { class: 'sort-bar' }, [el('span', { class: 'sort-label', text: t('筛选：') })]);
+  const tabs = filters.map((f) => {
+    const tab = el('button', {
+      class: `sort-tab${f.key === filter ? ' active' : ''}`,
+      onClick: () => {
+        filter = f.key;
+        audio.ui('toggle');
+        for (const x of tabs) x.classList.toggle('active', x.dataset.f === filter);
+        paint();
+      },
+    }, [f.label]);
+    tab.dataset.f = f.key;
+    filterBar.append(tab);
+    return tab;
+  });
+  body.append(filterBar);
+
+  const list = el('div', { class: 'dex-sections' });
+  body.append(list);
+
+  function paint() {
+    clear(list);
+    let shown = 0;
+    for (const sec of SECTIONS) {
+      const all = Object.values(ITEMS).filter(sec.match).sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      if (!all.length) continue;
+      const rows = all.filter((i) => {
+        const st = itemState(i.id, sets);
+        if (filter === 'got') return st === 'got';
+        if (filter === 'new') return st === 'new';
+        if (filter === 'hold') return i.kind === 'hold';
+        if (filter === 'use') return i.kind === 'use';
+        return true;
+      });
+      if (!rows.length) continue;
+      shown += rows.length;
+      const got = all.filter((i) => itemState(i.id, sets) === 'got').length;
+      const section = el('div', { class: 'dex-section' }, [
+        el('div', { class: 'dex-section-head' }, [
+          el('span', { class: 'dex-section-name', text: sec.title }),
+          el('span', { class: 'dex-section-count', text: `${got} / ${all.length}` }),
+        ]),
+      ]);
+      const grid = el('div', { class: 'dex-grid' });
+      for (const it of rows) grid.append(itemCard(it, sets));
+      section.append(grid);
+      list.append(section);
+    }
+    if (!shown) list.append(el('p', { class: 'dex-empty', text: t('这个筛选下没有道具 —— 换一个筛选看看。') }));
+  }
+
+  paint();
+  body.append(el('div', { class: 'help-card', style: { marginTop: '12px' } }, [
+    el('h4', { text: t('怎么看这一页') }),
+    el('ul', {}, [
+      el('li', { text: t('压暗的剪影 = 还没拿到过。名字与效果要拿到手之后才登记。') }),
+      el('li', { text: t('点开一件道具，能看到它的全部效果、价钱，以及在哪里能弄到。') }),
+      el('li', { text: t('道具图鉴也是跨局的：拿到过一次就永久登记，重开一局不会忘。') }),
+    ]),
+  ]));
+  return modal({ title: t('道具图鉴'), wide: true, body });
+}
+
+/** 图鉴里的一张道具卡（没拿过的画成压暗剪影 + ？？？） */
+function itemCard(item, sets) {
+  const got = itemState(item.id, sets) === 'got';
+  const art = el('div', { class: 'dex-art' });
+  art.append(el('img', {
+    class: `item-codex-art${got ? '' : ' silhouette'}`,
+    src: itemArtUrl(item.id),
+    alt: got ? item.name : '',
+    draggable: false,
+  }));
+  const chips = [];
+  chips.push(el('span', { class: `item-kind ${item.kind}`, text: item.kind === 'hold' ? t('持有') : t('可用') }));
+  if (item.drop) chips.push(el('span', { class: 'item-type', text: item.drop }));
+  return el('button', {
+    class: `dex-card item-card ${got ? 'got' : 'new'}`,
+    dataset: { tip: got ? `${item.name} · ${t(item.desc)}` : t('还没拿过的道具') },
+    onClick: () => { audio.ui('click2'); showItemDetail(item.id, sets); },
+  }, [
+    art,
+    el('div', { class: 'dex-card-name', text: got ? item.name : t('？？？') }),
+    el('div', { class: 'item-chips' }, chips),
+  ]);
+}
+
+/** 一件道具的详情（图鉴里点开） */
+export function showItemDetail(id, sets = itemCodexSets()) {
+  const item = ITEMS[id];
+  if (!item) return null;
+  const got = itemState(id, sets) === 'got';
+  const rows = [];
+  if (got) {
+    for (const line of holdLines(item)) rows.push(el('div', { class: 'detail-row' }, [el('span', { class: 'dr-label', text: t('持有') }), el('span', { text: line })]));
+    const u = useLine(item);
+    if (u) rows.push(el('div', { class: 'detail-row' }, [el('span', { class: 'dr-label', text: t('使用') }), el('span', { text: u })]));
+  }
+
+  const body = el('div', { class: 'item-detail' }, [
+    el('div', { class: 'item-detail-top' }, [
+      el('img', { class: `item-detail-art${got ? '' : ' silhouette'}`, src: itemArtUrl(id), alt: got ? item.name : '', draggable: false }),
+      el('div', { class: 'item-detail-info' }, [
+        el('h2', { text: got ? item.name : t('？？？') }),
+        el('div', { class: 'item-chips' }, [
+          el('span', { class: `item-kind ${item.kind}`, text: item.kind === 'hold' ? t('持有生效') : t('战斗外使用') }),
+          el('span', { class: `detail-chip rarity-${item.rarity}`, text: t(RARITY_NAME[item.rarity] ?? item.rarity) }),
+          item.drop ? el('span', { class: 'item-type', text: t('{type} 属性掉落', { type: item.drop }) }) : null,
+        ]),
+        el('p', { text: got ? t(item.desc) : t('还没拿过这件东西 —— 拿到手之后这里会写明它的效果。') }),
+      ]),
+    ]),
+    rows.length ? el('div', { class: 'detail-sec' }, [el('h4', { text: t('效果') }), el('div', { class: 'detail-rows' }, rows)]) : null,
+    got ? el('div', { class: 'detail-sec' }, [
+      el('h4', { text: t('来路与价钱') }),
+      el('ul', { class: 'item-src' }, [
+        el('li', { text: t('商人：买入 {buy} 金币，卖出 {sell} 金币。', { buy: item.price, sell: itemSellPrice(item) }) }),
+        item.drop ? el('li', { text: t('敌人掉落：打赢 {type} 属性的宝可梦时概率更高。', { type: item.drop }) }) : null,
+        el('li', { text: t('宝箱：开箱时有概率开出来。') }),
+      ]),
+    ]) : null,
+  ]);
+  return modal({ title: t('道具图鉴'), wide: true, body });
+}
+
+/** 稀有度的中文名（和卡牌图鉴共用同一套变量） */
+const RARITY_NAME = { common: '普通', uncommon: '精良', rare: '稀有', epic: '史诗' };
+
+/** 图鉴里的一张敌人卡（没见过的画成剪影，只留图鉴编号） */function enemyCard(def, sets) {
   const state = enemyState(def.id, sets);
   const known = state !== 'new';
   const tierName = TIERS[def.tier]?.name ?? def.tier;

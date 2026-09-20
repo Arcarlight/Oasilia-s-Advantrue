@@ -108,7 +108,7 @@ export const ITEMS = {
   },
   "sweet_apple": {
     "id": "sweet_apple",
-    "name": "甜苹果",
+    "name": "甜甜苹果",
     "kind": "use",
     "art": "SWEETAPPLE",
     "rarity": "uncommon",
@@ -123,7 +123,7 @@ export const ITEMS = {
   },
   "muscle_wing": {
     "id": "muscle_wing",
-    "name": "力量之羽",
+    "name": "肌力之羽",
     "kind": "use",
     "art": "MUSCLEWING",
     "rarity": "common",
@@ -370,7 +370,7 @@ export const ITEMS = {
   },
   "icy_rock": {
     "id": "icy_rock",
-    "name": "寒冷岩石",
+    "name": "冰冷岩石",
     "kind": "hold",
     "art": "ICYROCK",
     "rarity": "uncommon",
@@ -410,7 +410,7 @@ export const ITEMS = {
   },
   "expert_belt": {
     "id": "expert_belt",
-    "name": "专家腰带",
+    "name": "达人带",
     "kind": "hold",
     "art": "EXPERTBELT",
     "rarity": "uncommon",
@@ -507,7 +507,7 @@ export const ITEMS = {
   },
   "pretty_feather": {
     "id": "pretty_feather",
-    "name": "漂亮羽毛",
+    "name": "美丽之羽",
     "kind": "hold",
     "art": "PRETTYFEATHER",
     "rarity": "uncommon",
@@ -615,7 +615,7 @@ export const ITEMS = {
   },
   "hard_stone": {
     "id": "hard_stone",
-    "name": "坚硬石头",
+    "name": "硬石头",
     "kind": "hold",
     "art": "HARDSTONE",
     "rarity": "uncommon",
@@ -651,7 +651,7 @@ export const ITEMS = {
   },
   "spooky_plate": {
     "id": "spooky_plate",
-    "name": "妖异石板",
+    "name": "妖怪石板",
     "kind": "hold",
     "art": "SPOOKYPLATE",
     "rarity": "epic",
@@ -707,7 +707,7 @@ export const ITEMS = {
   },
   "dragon_scale": {
     "id": "dragon_scale",
-    "name": "龙之鳞",
+    "name": "龙之鳞片",
     "kind": "hold",
     "art": "DRAGONSCALE",
     "rarity": "rare",
@@ -725,7 +725,7 @@ export const ITEMS = {
   },
   "dread_plate": {
     "id": "dread_plate",
-    "name": "恶之石板",
+    "name": "恶颜石板",
     "kind": "hold",
     "art": "DREADPLATE",
     "rarity": "rare",
@@ -787,7 +787,7 @@ export const ITEMS = {
   },
   "steel_gem": {
     "id": "steel_gem",
-    "name": "钢铁宝石",
+    "name": "钢之宝石",
     "kind": "hold",
     "art": "STEELGEM",
     "rarity": "uncommon",
@@ -809,7 +809,7 @@ export const ITEMS = {
   },
   "fairy_feather": {
     "id": "fairy_feather",
-    "name": "妖精羽毛",
+    "name": "妖精之羽",
     "kind": "hold",
     "art": "FAIRYFEATHER",
     "rarity": "uncommon",
@@ -845,7 +845,7 @@ export const ITEMS = {
   },
   "moomoo_milk": {
     "id": "moomoo_milk",
-    "name": "哞哞牛奶",
+    "name": "哞哞鲜奶",
     "kind": "hold",
     "art": "MOOMOOMILK",
     "rarity": "rare",
@@ -902,7 +902,7 @@ export const ITEMS = {
   },
   "shell_bell": {
     "id": "shell_bell",
-    "name": "贝壳铃",
+    "name": "贝壳之铃",
     "kind": "hold",
     "art": "SHELLBELL",
     "rarity": "rare",
@@ -960,7 +960,7 @@ export const ITEMS = {
   },
   "bright_powder": {
     "id": "bright_powder",
-    "name": "光之粉",
+    "name": "光粉",
     "kind": "hold",
     "art": "BRIGHTPOWDER",
     "rarity": "rare",
@@ -996,7 +996,7 @@ export const ITEMS = {
   },
   "grip_claw": {
     "id": "grip_claw",
-    "name": "紧绑之爪",
+    "name": "紧缠钩爪",
     "kind": "hold",
     "art": "GRIPCLAW",
     "rarity": "rare",
@@ -1031,7 +1031,7 @@ export const ITEMS = {
   },
   "energy_root": {
     "id": "energy_root",
-    "name": "元气之根",
+    "name": "元气根",
     "kind": "hold",
     "art": "ENERGYROOT",
     "rarity": "uncommon",
@@ -1102,7 +1102,7 @@ export const ITEMS = {
   },
   "luminous_moss": {
     "id": "luminous_moss",
-    "name": "发光苔",
+    "name": "光苔",
     "kind": "hold",
     "art": "LUMINOUSMOSS",
     "rarity": "epic",
@@ -1120,7 +1120,7 @@ export const ITEMS = {
   },
   "honey": {
     "id": "honey",
-    "name": "蜂蜜",
+    "name": "甜甜蜜",
     "kind": "hold",
     "art": "HONEY",
     "rarity": "uncommon",
@@ -1178,7 +1178,7 @@ export const ITEMS = {
   },
   "smooth_rock": {
     "id": "smooth_rock",
-    "name": "光滑岩石",
+    "name": "沙沙岩石",
     "kind": "hold",
     "art": "SMOOTHROCK",
     "rarity": "uncommon",

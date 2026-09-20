@@ -1,18 +1,18 @@
-// 回归测试：背包道具真的能用。
+// 回归测试：手持道具（这一版把「背包制」换成了「手持制」）。
 //
-// 起因（玩家反馈）：「背包系统到现在都没有作用，道具都写着已生效，像好伤药那种完全没法用」。
-// 根因：背包界面自己判断「这件道具能不能用」，写的是 `item.heal`，
-// 而药水的数据字段叫 `healPct` —— 于是**七件道具全部显示「已生效」、一个「使用」按钮都没有**。
-// 修法：把「这件道具用下去会发生什么」抽成唯一的 itemEffect()，界面和引擎共用。
-//
-// 这份测试盯住：
-//   ① 每一件道具都必须被 itemEffect() 认出来（不能又出现「谁都不知道它能干什么」的死道具）；
-//   ② 药水：能回血、数量会减少、血满时拒绝且不消耗；
-//   ③ 护符 / 活力药：**拿到手就生效**，不进背包（界面上的「已生效」才是真的）；
-//   ④ 老存档里已经躺在背包里的护符，仍然能用掉（不能变成永远卡在背包里的死物）。
+// 上一版这份测试盯的是「背包里的药水能不能用」；现在道具分成两类，所以整份重写：
+//   ① **持有型**（kind: 'hold'）拿在手上就一直生效 —— 效果必须真的汇总进 heldMods()，
+//      战斗里读得到（攻击 +N、恢复量 +X%、中毒不衰减…）；
+//   ② **使用型**（kind: 'use'）**只能在战斗外使用** —— 战斗里必须被拒绝（用户点名：
+//      「战斗中不能使用使用道具，那样太 imba」），用掉之后从手上消失；
+//   ③ 栏位规则：3 个 + 每打赢一个 boss +1；满了 giveItem 要返回 overflow（不能静默吞掉）；
+//   ④ 丢掉 / 卖掉：卖掉按售价 40% 换金币；
+//   ⑤ 数值型叠加、开关型不叠加；
+//   ⑥ 每一件道具都得有图（assets/items/<id>.png），也得记进「见过」清单（图鉴用）。
 //
 // 用法：node tools/test-items.mjs
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -25,123 +25,154 @@ globalThis.localStorage = {
   removeItem(k) { this._m.delete(k); },
 };
 
-const { Game, itemEffect, inventoryEntries } = await imp('src/core/game.js');
-const { ITEMS } = await imp('src/data/cards.js');
+const { Game, itemSellPrice, itemUseEffect } = await imp('src/core/game.js');
+const { ITEMS } = await imp('src/data/items.js');
+const { effectiveAtk, Battle } = await imp('src/core/battle.js');
 
 let pass = 0;
 let fail = 0;
-const ok = (cond, label, extra = '') => {
-  if (cond) { pass += 1; console.log(`  ✓ ${label}${extra ? ' — ' + extra : ''}`); }
-  else { fail += 1; console.log(`  ✗ ${label}${extra ? ' — ' + extra : ''}`); }
+const ok = (cond, label, detail = '') => {
+  if (cond) { pass += 1; console.log(`  ✓ ${label}${detail ? ` — ${detail}` : ''}`); }
+  else { fail += 1; console.log(`  ✗ ${label}${detail ? ` — ${detail}` : ''}`); }
 };
+const group = (name) => console.log(`\n${name}`);
 
-const newGame = (seed = 1) => {
-  const g = new Game({ seed });
-  g.newRun();
-  // 开局自带 STARTER_ITEMS（好伤药 ×2、厉害伤药 ×0）——先清空，免得每个断言都要减去它
-  g.data.items = {};
-  return g;
-};
+const g = new Game({ seed: 4242 });
 
-console.log('\n① 每一件道具都必须被 itemEffect() 认出来');
+// ---------- ① 数据本身站得住 ----------
+group('① 道具数据');
 {
-  const all = Object.values(ITEMS);
-  const inert = all.filter((it) => !itemEffect(it));
-  ok(inert.length === 0, `全部 ${all.length} 件道具都有明确的使用效果（没有「谁都不知道它能干什么」的死道具）`,
-    inert.length ? `死道具：${inert.map((i) => i.name).join('、')}` : all.map((i) => `${i.name}=${itemEffect(i).kind}`).join(' '));
-  const heals = all.filter((it) => itemEffect(it)?.kind === 'heal');
-  ok(heals.length >= 2, '两瓶药水都被识别成回血类', heals.map((i) => i.name).join('、'));
-  const stats = all.filter((it) => itemEffect(it)?.kind === 'stat');
-  ok(stats.length >= 5, '护符 + 活力药都被识别成属性类', stats.map((i) => i.name).join('、'));
+  const list = Object.values(ITEMS);
+  ok(list.length >= 60, '道具总数够一局玩的（≥60 件）', `${list.length} 件`);
+  const noArt = list.filter((i) => !fs.existsSync(path.join(ROOT, 'assets', 'items', `${i.id}.png`)));
+  ok(!noArt.length, '每件道具都有自己的图（assets/items/<id>.png）', noArt.map((i) => i.id).join(', ') || '全部就位');
+  const noKind = list.filter((i) => !['hold', 'use'].includes(i.kind));
+  ok(!noKind.length, '每件道具都声明了 hold / use', noKind.map((i) => i.id).join(', ') || '全部就位');
+  const dropTypes = new Set(list.filter((i) => i.drop).map((i) => i.drop));
+  ok(dropTypes.size >= 18, '18 种属性都有对应的掉落物（「打对应属性的敌人更容易掉」才成立）', `${dropTypes.size} 种`);
+  const hold = list.filter((i) => i.kind === 'hold');
+  const use = list.filter((i) => i.kind === 'use');
+  ok(hold.every((i) => (i.hold?.mods ?? []).length), '持有型都有 mods', `${hold.length} 件`);
+  ok(use.every((i) => itemUseEffect(i)), '使用型都有 use 效果', `${use.length} 件`);
 }
 
-console.log('\n② 药水：能回血、数量减少、血满时拒绝且不消耗');
-for (const id of ['potion_small', 'potion_big']) {
-  const g = newGame(11);
-  const it = ITEMS[id];
-  g.giveItem(id, 2);
-  g.data.hp = 10;                       // 故意压低，不然「血满」会挡住
-  const before = g.data.hp;
-  const res = g.useItem(id);
-  const want = Math.round(g.data.maxHp * it.healPct);
-  ok(res?.ok && g.data.hp === Math.min(g.data.maxHp, before + want), `「${it.name}」能回血`,
-    `HP ${before} → ${g.data.hp}（期望回 ${want}）`);
-  ok(g.data.items[id] === 1, `「${it.name}」用掉一瓶，还剩 1 瓶`, `剩 ${g.data.items[id] ?? 0}`);
+// ---------- ② 持有型：效果真的汇总得出来 ----------
+group('② 持有型：拿在手上一直生效');
+{
+  g.newRun(1001);
+  const atkItem = Object.values(ITEMS).find((i) => i.kind === 'hold' && (i.hold.mods ?? []).some((m) => m.key === 'atk'));
+  ok(!!atkItem, '找得到一件「攻击 +N」的持有道具', atkItem?.name);
+  const add = atkItem.hold.mods.find((m) => m.key === 'atk').add;
+  g.data.held = [atkItem.id, atkItem.id];
+  g.invalidateMods();
+  ok(g.modAdd('atk') === add * 2, '同名两件：数值型**叠加**', `${atkItem.name} ×2 → 攻击 +${g.modAdd('atk')}（单件 +${add}）`);
 
-  // 血满时：拒绝、且**不能消耗**
-  g.data.hp = g.data.maxHp;
-  const r2 = g.useItem(id);
-  ok(r2?.ok === false && g.data.items[id] === 1, `「${it.name}」血满时拒绝使用且不消耗`,
-    `${r2?.text}；剩 ${g.data.items[id]}`);
+  const flagItem = Object.values(ITEMS).find((i) => i.kind === 'hold' && (i.hold.mods ?? []).some((m) => m.key === 'poisonNoDecay'));
+  ok(!!flagItem, '找得到一件开关型（中毒不衰减）的持有道具', flagItem?.name);
+  g.data.held = [flagItem.id, flagItem.id];
+  g.invalidateMods();
+  ok(g.modFlag('poisonNoDecay') === true, '同名两件：开关型**不叠加**（仍然只是「成立」）', `${flagItem.name} ×2`);
 
-  // 用完最后一瓶
+  // 战斗里读得到：把 mods 交给 Battle 之后，攻击力真的上去了
+  const mkBattle = () => new Battle({
+    seed: 7, mods: g.heldMods(),
+    player: { name: 'T', slug: 'flygon', hp: 300, maxHp: 300, atk: 30, def: 10, agi: 10, luck: 5 },
+    deck: ['tackle', 'tackle', 'tackle', 'tackle', 'tackle'],
+    enemy: { id: 'e', slug: 'sandshrew', name: 'E', maxHp: 200, atk: 10, def: 2, agi: 5, tier: 'mob', deck: ['tackle'] },
+  });
+  g.data.held = [];
+  g.invalidateMods();
+  const b0 = mkBattle();
+  g.data.held = [atkItem.id];
+  g.invalidateMods();
+  const b1 = mkBattle();
+  ok(effectiveAtk(b1.player) === effectiveAtk(b0.player) + add,
+    '战斗里读得到：攻击力 = 基础 + 道具加成', `${effectiveAtk(b0.player)} → ${effectiveAtk(b1.player)}`);
+}
+
+// ---------- ③ 使用型：战斗外能用、战斗里不能用 ----------
+group('③ 使用型：战斗外使用');
+{
+  g.newRun(1002);
+  const berry = ITEMS.oran_berry;
+  ok(!!berry && berry.kind === 'use', '橙橙果是使用型', berry?.name);
+  g.data.held = [berry.id];
+  g.invalidateMods();
   g.data.hp = 10;
-  g.useItem(id);
-  ok(!g.data.items[id], `「${it.name}」用完最后一瓶后从背包里消失`, JSON.stringify(g.data.items));
+  const r = g.useItem(berry.id);
+  ok(r?.ok === true, '战斗外使用成功（回血）', r?.text);
+  ok(g.data.hp > 10, '血真的回了', `10 → ${g.data.hp}`);
+  ok(!g.data.held.includes(berry.id), '用掉之后从手上消失');
+
+  g.data.held = [berry.id];
+  g.phase = 'battle';
+  g.data.hp = 10;
+  const inBattle = g.useItem(berry.id);
+  ok(inBattle?.ok === false, '战斗中拒绝使用', inBattle?.text);
+  ok(g.data.held.includes(berry.id) && g.data.hp === 10, '拒绝时不消耗、不回血');
+  g.phase = 'map';
+
+  const hold = Object.values(ITEMS).find((i) => i.kind === 'hold');
+  g.data.held = [hold.id];
+  const r2 = g.useItem(hold.id);
+  ok(r2?.ok === false, '持有型拒绝「使用」（它是拿在手上生效的）', `${hold.name}：${r2?.text}`);
 }
 
-console.log('\n③ 护符 / 活力药：拿到手就生效，不进背包');
-for (const id of ['charm_atk', 'charm_def', 'charm_agi', 'charm_luck', 'elixir']) {
-  const g = newGame(22);
-  const it = ITEMS[id];
-  const eff = itemEffect(it);
-  const before = g.data[eff.key];
-  const got = g.giveItem(id, 1);
-  const after = g.data[eff.key];
-  ok(after === before + eff.amount, `「${it.name}」拿到就 ${eff.key} +${eff.amount}`, `${before} → ${after}`);
-  ok(got.applied?.key === eff.key, `「${it.name}」的返回值说明了生效了什么`, JSON.stringify(got.applied));
-  ok(!g.data.items[id], `「${it.name}」不会留在背包里（界面上写「已生效」才是真的）`,
-    JSON.stringify(g.data.items));
-}
-
-console.log('\n④ 老存档：背包里已经躺着的护符仍然能用掉');
+// ---------- ④ 栏位：3 + boss，满了要能察觉 ----------
+group('④ 手持栏上限');
 {
-  const g = newGame(33);
-  // 模拟旧版本存下来的存档：护符躺在 data.items 里
-  g.data.items.charm_atk = 1;
-  const before = g.data.atk;
-  const res = g.useItem('charm_atk');
-  ok(res?.ok && g.data.atk === before + ITEMS.charm_atk.stat.atk, '背包里的旧护符能用掉并真的加属性',
-    `${res?.text}（攻击 ${before} → ${g.data.atk}）`);
-  ok(!g.data.items.charm_atk, '用掉之后从背包里消失');
+  g.newRun(1003);
+  ok(g.heldMax() === 3, '开局 3 个栏位', String(g.heldMax()));
+  g.data.bossKills = 2;
+  ok(g.heldMax() === 5, '每打赢一个 boss +1', `2 个 boss → ${g.heldMax()}`);
+
+  g.data.held = [];
+  g.invalidateMods();
+  const ids = Object.keys(ITEMS).slice(0, 6);
+  let overflowAt = null;
+  for (const id of ids) {
+    const res = g.giveItem(id, 1);
+    if (res.overflow) { overflowAt = id; break; }
+  }
+  ok(overflowAt !== null, '拿满了之后 giveItem 会返回 overflow（不会静默吞掉）',
+    `第 ${g.data.held.length + 1} 件：${ITEMS[overflowAt]?.name}`);
+  ok(g.data.held.length === g.heldMax(), 'overflow 时手上就是满的', `${g.data.held.length} / ${g.heldMax()}`);
+
+  const dropped = g.data.held[0];
+  g.dropItem(dropped);
+  const again = g.giveItem(overflowAt, 1);
+  ok(again.stored && g.data.held.includes(overflowAt), '丢掉一件之后就能收下新的',
+    `丢掉 ${ITEMS[dropped]?.name}，收下 ${ITEMS[overflowAt]?.name}`);
 }
 
-console.log('\n⑤ 边界：没有的道具 / 数量为 0 的道具');
+// ---------- ⑤ 卖掉 ----------
+group('⑤ 卖给商人');
 {
-  const g = newGame(44);
-  ok(g.useItem('potion_small') === null, '背包里没有的药用不了（返回 null，不会崩）');
-  g.data.items.potion_small = 0;
-  ok(g.useItem('potion_small') === null, '数量为 0 时也用不了');
-  ok(g.useItem('不存在的道具') === null, '未知 id 用不了');
+  g.newRun(1004);
+  const it = Object.values(ITEMS).find((i) => i.price >= 60);
+  g.data.held = [it.id];
+  g.invalidateMods();
+  const gold0 = g.data.gold;
+  const sold = g.sellItem(it.id);
+  const want = itemSellPrice(it);
+  ok(sold?.gold === want, '卖价 = 售价的 40%', `${it.name}（售价 ${it.price}）→ ${sold?.gold} 金币`);
+  ok(g.data.gold === gold0 + want, '金币真的进账了', `${gold0} → ${g.data.gold}`);
+  ok(!g.data.held.includes(it.id), '卖掉之后从手上消失');
+  ok(g.sellItem(it.id) === null, '再卖一次返回 null（手上没有这件了）');
 }
 
-console.log('\n⑦ 开局数据里那个 ×0 的道具不该出现在背包里');
+// ---------- ⑥ 图鉴记录 ----------
+group('⑥ 道具图鉴记录');
 {
-  const g = new Game({ seed: 77 });
-  g.newRun();
-  const raw = Object.entries(g.data.items ?? {}).filter(([, n]) => n <= 0);
-  ok(raw.length > 0, '开局数据里确实带着数量为 0 的条目（这就是要过滤掉的东西）',
-    JSON.stringify(g.data.items));
-  const listed = inventoryEntries(g.data.items).map(([id]) => id);
-  ok(!listed.includes('potion_big'), 'inventoryEntries() 会把 ×0 的厉害伤药滤掉', `留下：${listed.join('、') || '（空）'}`);
-  // 未知 id 也要滤掉（旧存档 / 内容改过时别让背包崩）
-  const weird = inventoryEntries({ potion_small: 1, 不存在的道具: 3, potion_big: 0 });
-  ok(weird.length === 1 && weird[0][0] === 'potion_small', '未知 id 也会被滤掉', JSON.stringify(weird));
+  g.newRun(1005);
+  const id = Object.keys(ITEMS)[3];
+  g.data.held = [];
+  g.invalidateMods();
+  g.giveItem(id, 1);
+  const meta = JSON.parse(globalThis.localStorage.getItem('oasis_desert_spirit_meta_v1') ?? '{}');
+  ok((meta.seenItems ?? []).includes(id), '拿到手就记进「见过」清单（图鉴靠它分剪影 / 已获得）',
+    `${ITEMS[id].name}；seenItems ${meta.seenItems?.length ?? 0} 条`);
 }
 
-console.log('\n⑥ 战斗中也能喝药（不占出牌次数）');
-{
-  const g = newGame(55);
-  g.giveItem('potion_big', 1);
-  g.startBattle('normal', 0);
-  const b = g.battle;
-  g.data.hp = Math.max(1, Math.floor(g.data.maxHp * 0.3));
-  const playsLeft = b.player.playsLeft;
-  const before = g.data.hp;
-  const res = g.useItem('potion_big');
-  ok(res?.ok && g.data.hp > before, '战斗中喝药真的回血', `HP ${before} → ${g.data.hp}`);
-  ok(b.player.playsLeft === playsLeft, '喝药不消耗出牌次数', `playsLeft ${playsLeft} → ${b.player.playsLeft}`);
-}
-
-console.log(`\n道具（背包）回归测试：通过 ${pass}，失败 ${fail}`);
-if (fail) process.exitCode = 1;
+console.log(`\n道具（手持）回归测试：通过 ${pass}，失败 ${fail}`);
+process.exit(fail ? 1 : 0);

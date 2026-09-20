@@ -189,7 +189,7 @@ export const BALANCE = {
    * 这里的数字是「打赢之后掉一件道具」的概率，按敌人档位分：
    * 普通怪很少掉，首领几乎每次都给点什么。
    */
-  itemDropChance: { mob: 0.06, normal: 0.08, elite: 0.18, boss: 0.35 },
+  itemDropChance: { mob: 0.1, normal: 0.12, elite: 0.26, boss: 0.45 },
   /** 掉落的道具里，**这件敌人的属性**对应的那些权重 ×这么多（其余属性权重 1） */
   itemDropTypeWeight: 4,
 

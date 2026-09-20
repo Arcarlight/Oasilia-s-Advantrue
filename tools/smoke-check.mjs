@@ -103,8 +103,8 @@ const SCRIPT = `
       await wait(400);
       const entries = [...document.querySelectorAll('.title-codex .title-codex-btn')];
       log('标题页收藏入口 =', entries.length);
-      if (entries.length !== 4) errors.push('标题页的收藏入口不是 4 个，而是 ' + entries.length);
-      for (const [i, name] of ['通关记录', '卡牌图鉴', '敌人图鉴', '曲子库'].entries()) {
+      if (entries.length !== 5) errors.push('标题页的收藏入口不是 5 个，而是 ' + entries.length);
+      for (const [i, name] of ['通关记录', '卡牌图鉴', '敌人图鉴', '道具图鉴', '曲子库'].entries()) {
         const btn = entries[i];
         if (!btn) { errors.push('标题页少了入口：' + name); continue; }
         btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
