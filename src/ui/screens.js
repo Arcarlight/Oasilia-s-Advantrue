@@ -1,7 +1,7 @@
 // 各个界面：标题 / 地图 / 事件 / 宝箱 / 商店 / 营地 / 奖励 / 结算
 // 弹窗类界面（卡组、背包、帮助、设置）在 overlays.js 里。
 
-import { el, clear, toast, modal, floatAt } from './dom.js';
+import { el, clear, toast, modal, floatAt, richText } from './dom.js';
 import { cardEl, CARD_ART } from './cards.js';
 import { resolveCardText } from './cardtext.js';
 import { createAnim, DIR } from '../core/sprites.js';
@@ -754,8 +754,12 @@ function renderShop(game) {
               }, [el('span', { class: 'ico-action_points', style: { width: '11px', height: '11px' } }), String(card.ap)])
             : null,
         ]),
-        // 卡牌那一行的描述也要走 {d} 解析（伤害是按当前攻击力实时算的）
-        el('p', { text: card ? resolveCardText(card) : (s.desc ?? '') }),
+        /**
+         * 卡牌那一行的描述也要走 resolveCardText（伤害 / 护盾都是按当前攻防实时算的）。
+         * ⚠ 这里以前是 `el('p', { text: … })` —— 纯文本节点，卡面文案里若写了 `**重点**`
+         * 就会原样印出两个星号。商店 / 事件里发的牌也会走到这条路上，所以统一过一遍富文本。
+         */
+        el('p', { html: card ? richText(resolveCardText(card)) : richText(s.desc ?? '') }),
         el('div', { class: 'row' }, [
           el('span', { class: 'price' }, [el('span', { class: 'ico-money' }), String(s.price)]),
           el('button', {

@@ -187,5 +187,58 @@ console.log('\n⑦ HUD 的按钮和悬停文字：index.html 与单文件包模�
     drift.join(' ｜ ') || ids.join('、'));
 }
 
+/**
+ * ⑧ 文案**渲染出来**以后不许还剩占位符 / `**`
+ *
+ * 两起用户实测：
+ *   · 商店里那张「薄雾场地」印着「シールドを {s} 得て」—— `resolveCardText` 当时只替换 {d}/{d2}；
+ *   · 卡牌图鉴里「转嫁」的描述原样印出 `**全部转移给对手**` —— 高亮规则把 `**` 从中间切开了，
+ *     逐段 replace 谁都匹配不上。
+ * 这里把**全部卡牌 + 物品 + 事件 + 敌人台词**按当前语言的模板跑一遍（用假值填占位符），
+ * 检查渲染结果里没有残留的 `{x}` 与 `**`。三语各跑一次。
+ */
+{
+  const { setLang, dictOf } = await import('../src/core/i18n.js');
+  const { refreshI18nTables } = await import('../src/core/i18n-tables.js');
+  const { resolveCardText, richHTML } = await import('../src/ui/cardtext.js');
+  const { CARDS, ITEMS } = await import('../src/data/cards.js');
+  const { EVENTS } = await import('../src/data/events.js');
+  const { ENEMIES } = await import('../src/data/enemies.js');
+
+  /**
+   * 占位符的假值表：**字典里出现过的每一个占位符都要在这里**（98 个），
+   * 少一个就会误报「残留占位符」—— 所以下面用 1 / 'X' 兜底，只要求「填得进去」。
+   * 真正要抓的是「译文里有、代码里没传」的占位符（那种在界面上就是原样印出来的 `{x}`）。
+   */
+  const sample = new Proxy({}, { get: (_t, k) => (typeof k === 'string' ? (/^(n|s|d|d2|per|hits|pct|ap|cost|hp|gold|amount|total|…|\w*[Nn]um|\w*[Cc]ount)$/.test(k) ? 3 : 'X') : undefined), has: () => true });
+  const bad = [];
+  for (const lang of ['zh', 'ja', 'en']) {
+    if (lang === 'zh') setLang('zh', { silent: true });
+    else { setLang(lang, { silent: true }); refreshI18nTables(); }
+    const scan = (where, text) => {
+      if (typeof text !== 'string' || !text) return;
+      // 属性文本（data-tip）里的 `**` 由 tips.js 负责转，不算「印在界面上的星号」
+      const body = text.replace(/data-tip="[^"]*"/g, '');
+      if (/\{[a-zA-Z_]\w*\}/.test(body)) bad.push(`${lang} ${where} 残留占位符 ${/\{[a-zA-Z_]\w*\}/.exec(body)[0]}`);
+      else if (body.includes('**')) bad.push(`${lang} ${where} 残留 **`);
+    };
+    for (const c of CARDS) scan(`card:${c.id}`, richHTML(resolveCardText(c)));
+    for (const [id, it] of Object.entries(ITEMS)) scan(`item:${id}`, richHTML(it.desc ?? ''));
+    for (const ev of EVENTS) {
+      scan(`event:${ev.id}`, richHTML(ev.text ?? ''));
+      for (const o of ev.options ?? []) scan(`event:${ev.id}`, richHTML(o.text ?? o.hint ?? ''));
+    }
+    for (const e of ENEMIES) for (const l of e.lines ?? []) scan(`enemy:${e.id}`, richHTML(l));
+    // 字典里每一条也过一遍（填上假值再看残留）
+    for (const [zh, tr] of Object.entries(dictOf(lang))) {
+      scan(`dict:${zh.slice(0, 14)}`, richHTML(String(tr).replace(/\{(\w+)\}/g, (m, k) => (k in sample ? String(sample[k]) : m))));
+    }
+  }
+  setLang('zh', { silent: true });
+  refreshI18nTables();
+  ok(bad.length === 0, '三语渲染后都没有残留的 {占位符} / **（卡牌 · 物品 · 事件 · 台词 · 字典）',
+    bad.slice(0, 4).join(' ｜ ') || '全部干净');
+}
+
 console.log(`\n文案体检：通过 ${pass}，失败 ${fail}`);
 if (fail) process.exitCode = 1;

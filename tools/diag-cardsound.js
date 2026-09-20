@@ -137,6 +137,71 @@
       await wait(150);
     }
 
+    /**
+     * ⑤ 界面文案的「印出来就是坏的」：
+     *   ① 渲染后还剩占位符（`获得 {s} 点护盾` —— 商店截图里就是这么印出来的）；
+     *   ② 渲染后还剩 `**`（富文本标记没被转成 <b>）。
+     * 查的是**真界面**（商店 + 卡组 + 卡牌图鉴）的文字，不是数据文件 ——
+     * 数据侧的遍历在 tools/audit-copy-render.mjs（那种查不到「某个界面忘了调 resolveCardText」）。
+     */
+    log('⑤ 界面文案里没有残留 {占位符} / **');
+    {
+      const { changeLanguage } = await import('/src/ui/langswitch.js');
+      game.newRun(4242);
+      game.phase = 'map';
+      ui.current = null;
+      ui.forceRerender();
+      await wait(300);
+      for (const lang of ['ja', 'zh']) {
+        changeLanguage(lang);
+        ui.current = null;
+        ui.forceRerender();
+        await wait(400);
+        // 商店（用户截图里那一屏）：走游戏自己的 startShop()，别手搓 phase
+        game.data.map = { ...(game.data.map ?? {}), biome: 'tide' };
+        game.startShop();
+        await wait(400);
+        const scan = (root, where) => {
+          const txt = root?.textContent ?? '';
+          const ph = /\{[a-zA-Z_]\w*\}/.exec(txt);
+          /**
+           * `**` 只看**文字**，不看属性：`data-tip` 里写 `**重点**` 是正常的
+           * （tips.js 用 richText 转成 <b>），拿 textContent 查会把它当成「印在界面上的星号」误报。
+           * 所以把带 tip 的节点的属性文本从扫描结果里剔掉再查。
+           */
+          const tips = [...(root?.querySelectorAll('[data-tip]') ?? [])]
+            .map((n) => n.getAttribute('data-tip')).filter(Boolean);
+          let plain = txt;
+          for (const tp of tips) plain = plain.split(tp).join('');
+          const star = plain.includes('**');
+          ok(!ph && !star, `${where}（${lang}）没有残留占位符 / **`,
+            ph ? `还印着 ${ph[0]}` : star ? '还印着 **' : `${txt.length} 字扫过`);
+          if (ph) log(`    · 上下文：…${txt.slice(Math.max(0, txt.indexOf(ph[0]) - 40), txt.indexOf(ph[0]) + 40).replace(/\s+/g, ' ')}…`);
+          if (star) {
+            const at = plain.indexOf('**');
+            const nodes = [...(root?.querySelectorAll('*') ?? [])].filter((n) => (n.textContent ?? '').includes('**'));
+            const deepest = nodes[nodes.length - 1];
+            log(`    · 星号上下文：…${plain.slice(Math.max(0, at - 50), at + 50).replace(/\s+/g, ' ')}…`
+              + ` ｜ 最深的节点：${deepest ? `${deepest.tagName}.${deepest.className}` : '(没找到)'}`);
+          }
+        };
+        scan(document.querySelector('.screen') ?? document.body, '商店');
+        // 卡牌图鉴也扫一遍（它铺出全部 273 张卡面文案，是「卡面文案渲染」的最大样本）
+        game.leaveShop?.();
+        const { showCardCodex } = await import('/src/ui/codex.js');
+        showCardCodex(game);
+        await wait(600);
+        scan([...document.querySelectorAll('.modal-backdrop')].pop(), '卡牌图鉴');
+        for (const b of document.querySelectorAll('.modal-head button')) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(200);
+      }
+      changeLanguage('zh');
+      game.phase = 'map';
+      ui.current = null;
+      ui.forceRerender();
+      await wait(300);
+    }
+
     if (fails.length) log(`CS_ERRORS=[${fails.join(' | ')}]`);
     else log('卡牌音效自检：通过 ✓');
     log('CS_DONE');

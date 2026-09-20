@@ -57,3 +57,4 @@ assets/audio/bgm/*.mp3
 .commit-msg-2.txt
 x.tmp
 commit-msg.tmp
+msg.tmp

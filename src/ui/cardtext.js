@@ -67,18 +67,37 @@ export function damageAt(power, opts = {}) {
   );
 }
 
-/** 卡面文案里的 {d} / {d2} 换成实际伤害数字 */
+/**
+ * 卡面文案占位符 -> 实际数字。
+ *
+ * 以前这里**只**处理 `{d}` / `{d2}`，于是带护盾的卡在界面上原样印出 `{s}`：
+ * 「获得 {s} 点护盾，抽 1 张。」（用户截图里的商店就是这样）。
+ * 现在按 effects 逐项填，并且**填完再检查一遍有没有剩下的** —— 新写一张带新占位符的卡时，
+ * 会当场看见 `{x}` 而不是悄悄印到界面上（tools/audit-copy-render.mjs 也在守这条）。
+ *
+ * 认得的占位符：
+ *   {d} / {d2}  第一条伤害 / 斩杀分支的实际伤害（按当前攻防算，和卡面角标同一个来源）
+ *   {s}         护盾实际值（吃自己的防御：基数 ×(1 + 防御 ÷ 12)，和引擎同一条公式）
+ */
 export function resolveCardText(card, ctx = {}) {
   const text = typeof card === 'string' ? card : (card?.text ?? '');
-  if (!text.includes('{d')) return text;
-  const effs = (typeof card === 'string' ? [] : (card.effects ?? [])).filter((e) => e.kind === 'damage');
-  if (!effs.length) return text.replace(/\{d2?\}/g, '—');
-  const at = (e, bonus = 0) => damageAt(e.power + bonus, { ...ctx, ignoreDefPct: e.ignoreDefPct ?? 0 });
-  const main = effs[0];
-  const exec = effs.find((e) => e.execThreshold != null);
-  const d = at(main);
-  const d2 = exec ? at(exec, exec.execBonus ?? 0) : d;
-  return text.replace(/\{d\}/g, String(d)).replace(/\{d2\}/g, String(d2));
+  if (!text.includes('{')) return text;
+  const effs = (typeof card === 'string' ? [] : (card.effects ?? []));
+  const dmgEffs = effs.filter((e) => e.kind === 'damage');
+  const values = {};
+  if (dmgEffs.length) {
+    const at = (e, bonus = 0) => damageAt(e.power + bonus, { ...ctx, ignoreDefPct: e.ignoreDefPct ?? 0 });
+    const main = dmgEffs[0];
+    const exec = dmgEffs.find((e) => e.execThreshold != null);
+    values.d = at(main);
+    values.d2 = exec ? at(exec, exec.execBonus ?? 0) : values.d;
+  }
+  const selfDef = ctx.selfDef ?? CTX.selfDef ?? 0;
+  const shield = effs.reduce((sum, e) => (e.kind === 'shield'
+    ? sum + Math.round((e.amount ?? 0) * (e.scaleWithDef ? 1 + selfDef / DEF_PER_SHIELD : 1))
+    : sum), 0);
+  if (shield > 0) values.s = shield;
+  return text.replace(/\{(\w+)\}/g, (m, key) => (key in values ? String(values[key]) : m));
 }
 
 // 高亮颜色全部写在 style.css 的 .kw-xxx 里（深色界面一套亮色 / 米黄卡面一套深墨），
@@ -342,13 +361,35 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/** 文案 → 高亮 HTML（数字 / 状态 / 关键词） */
+/**
+ * 把 `**重点**` 变成 `<b>重点</b>` —— 用**占位标记**在拼完之后统一替换，而不是逐段 replace。
+ *
+ * 为什么不能逐段做：关键词高亮的规则是**逐段匹配**的，一段被高亮切开之后
+ * `**` 就会落在两段里（例：「…层数**全部转移给对手**（…」里 `全部转移给对手` 命中了一条规则，
+ * 于是 `**` 被拆成「段尾一个 + 段首一个」），逐段 replace 谁都匹配不上，
+ * 界面上就原样印出两个星号（用户看到的 `**` 就是这么来的）。
+ * 现在 `**` 在扫描时就换成 `\u0000B\u0001` / `\u0000b\u0001` 标记，拼完再统一转 <b>，
+ * 中间的 <span> 怎么切都不影响。
+ */
+const BOLD_OPEN = '\u0000B\u0001';
+const BOLD_CLOSE = '\u0000b\u0001';
+
+/** 文案 → 高亮 HTML（数字 / 状态 / 关键词 + **加粗**） */
 export function richHTML(text) {
   if (!text) return '';
   const out = [];
   let buf = '';
   let i = 0;
+  let bold = false;
   while (i < text.length) {
+    // `**` 先处理：它是个状态开关，不是内容
+    if (text[i] === '*' && text[i + 1] === '*') {
+      if (buf) { out.push(esc(buf)); buf = ''; }
+      out.push(bold ? BOLD_CLOSE : BOLD_OPEN);
+      bold = !bold;
+      i += 2;
+      continue;
+    }
     const hit = matchAt(text, i);
     if (!hit) { buf += text[i]; i += 1; continue; }
     if (buf) { out.push(esc(buf)); buf = ''; }
@@ -361,7 +402,8 @@ export function richHTML(text) {
     i += m[0].length;
   }
   if (buf) out.push(esc(buf));
-  return out.join('');
+  if (bold) out.push(BOLD_CLOSE);   // 只写了一半的 `**`：收个尾，别把后面整段都吃掉
+  return out.join('').split(BOLD_OPEN).join('<b>').split(BOLD_CLOSE).join('</b>');
 }
 
 /** 卡面描述节点（用于卡牌上 / 详情页里，样式由 class 决定） */
