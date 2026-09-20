@@ -202,6 +202,58 @@
       await wait(300);
     }
 
+    /**
+     * ⑥ 图鉴详情页的行走图：三张图**同高**、且按素材原始像素比例显示（不许被压扁）。
+     * 起因（用户截图）：「行走图被压扁」——canvas 长宽由 createAnim 按帧尺寸设成内联 px，
+     * 一旦 CSS 里再给个 max-height / height，它就会被非等比拉伸。这条就是量这个。
+     */
+    log('⑥ 图鉴里的行走图没有被压扁');
+    {
+      const { showEnemyCodex } = await import('/src/ui/codex.js');
+      const { ENEMIES } = await import('/src/data/enemies.js');
+      const { save } = await import('/src/core/save.js');
+      save.noteEnemies([ENEMIES[0].id, ENEMIES[5].id], { faced: true });
+      game.phase = 'title';
+      ui.current = null;
+      ui.forceRerender();
+      await wait(300);
+      const open = async (i) => {
+        showEnemyCodex();
+        await wait(400);
+        const modal = [...document.querySelectorAll('.modal-backdrop')].pop();
+        const cards = [...modal.querySelectorAll('.dex-card')].filter((n) => !n.classList.contains('new'));
+        cards[i]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(500);
+        return [...document.querySelectorAll('.modal-backdrop')].pop();
+      };
+      const top = await open(0);
+      const walk = top?.querySelector('.dex-art-cell.dex-art-walk canvas');
+      ok(!!walk, '详情页有行走图');
+      if (walk) {
+        const r = walk.getBoundingClientRect();
+        const want = walk.frameInfo ? walk.frameInfo.fw / walk.frameInfo.fh : 1;
+        const got = r.width / r.height;
+        ok(Math.abs(got - want) < 0.02, '行走图按素材比例显示（没有被 CSS 拉伸）',
+          `frame ${walk.frameInfo?.fw}x${walk.frameInfo?.fh}（比 ${want.toFixed(3)}）vs 显示 ${r.width.toFixed(0)}x${r.height.toFixed(0)}（比 ${got.toFixed(3)}）`);
+        const boxes = [...top.querySelectorAll('.dex-art-box')].map((b) => b.getBoundingClientRect());
+        const hs = boxes.map((b) => Math.round(b.height));
+        ok(new Set(hs).size === 1, '三张图占的格子一样高（一行对齐）', hs.join(' / '));
+        // 三张图的**视觉底边**也要对齐（否则说明图在格子里没贴底）
+        const bottoms = [...top.querySelectorAll('.dex-art-cell')].map((c) => {
+          const media = c.querySelector('canvas, img, .poke-icon');
+          return media ? Math.round(media.getBoundingClientRect().bottom) : -1;
+        });
+        ok(new Set(bottoms).size === 1, '三张图的底边在同一水平线上', bottoms.join(' / '));
+        const heights = [...top.querySelectorAll('.dex-art-cell')].map((c) => {
+          const media = c.querySelector('canvas, img, .poke-icon');
+          return media ? Math.round(media.getBoundingClientRect().height) : -1;
+        });
+        log(`    · 三张图的显示高度：${heights.join(' / ')}（行走图 120 是目标值）`);
+      }
+      for (const b of document.querySelectorAll('.modal-head button')) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(200);
+    }
+
     if (fails.length) log(`CS_ERRORS=[${fails.join(' | ')}]`);
     else log('卡牌音效自检：通过 ✓');
     log('CS_DONE');

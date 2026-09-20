@@ -141,37 +141,84 @@ function frameList(info, img, ctx, dirRow = null) {
 }
 
 /**
+ * 把一整张精灵表按某一朝向行里**所有动画帧**的内容外接框裁掉透明边。
+ *
+ * 为什么需要：PMD 的帧格子是固定尺寸（常见 48×64），角色本身往往只有格子高度的六成，
+ * 上下左右全是透明填充。图鉴里三张图并排时，行走图就因为「格子大、人小」显得又小又扁
+ * （用户两次反馈「行走图被压扁」）。
+ * 这里按内容裁掉空白，再按内容高度定缩放，行走图就能和其他两张图一样高。
+ *
+ * @returns {{x:number,y:number,w:number,h:number}}
+ */
+function contentBox(info, img, pctx, row) {
+  const { fw, fh, cols } = info;
+  let x0 = Infinity; let y0 = Infinity; let x1 = -1; let y1 = -1;
+  const probe = document.createElement('canvas');
+  probe.width = fw;
+  probe.height = fh;
+  const px = probe.getContext('2d', { willReadFrequently: true });
+  for (let c = 0; c < cols; c++) {
+    if (isFrameBlank(img, pctx, c * fw, row * fh, fw, fh)) continue;
+    px.clearRect(0, 0, fw, fh);
+    px.drawImage(img, c * fw, row * fh, fw, fh, 0, 0, fw, fh);
+    const d = px.getImageData(0, 0, fw, fh).data;
+    for (let y = 0; y < fh; y++) {
+      for (let x = 0; x < fw; x++) {
+        if (d[(y * fw + x) * 4 + 3] > 8) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+  }
+  if (x1 < 0) return { x: 0, y: 0, w: fw, h: fh };   // 整行全空：老样子兜底
+  return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+/**
  * 创建一个动画 DOM 元素。
  * @param {string} slug 物种 slug
  * @param {{anim?:string, scale?:number, fps?:number, flip?:boolean, dir?:number|null,
- *          className?:string}} opts
+ *          className?:string, autoScale?:number, trim?:boolean}} opts
  *   dir = 朝向行（DIR.RIGHT / DIR.LEFT ...），不传就自动挑第一行有内容的
+ *   autoScale = 目标显示高度（px）：按**内容**高度自动定 scale，忽略 scale
+ *   trim = 裁掉帧里的透明边（图鉴那种「要和其他图并排」的场合用）
  */
 export async function createAnim(slug, opts = {}) {
-  const { anim = 'Idle', scale = 3, fps = 8, flip = false, className = '', dir = null } = opts;
+  const {
+    anim = 'Idle', scale = 3, fps = 8, flip = false, className = '', dir = null,
+    autoScale = null, trim = false,
+  } = opts;
   const resolved = resolveAnim(slug, anim);
   if (!resolved) throw new Error(`没有 ${slug} 的动画数据`);
   const { anim: animName, info } = resolved;
 
   const img = await loadSheet(slug, animName);
-  const canvas = document.createElement('canvas');
-  canvas.width = info.fw;
-  canvas.height = info.fh;
-  canvas.className = `anim ${className}`.trim();
-  canvas.style.width = `${info.fw * scale}px`;
-  canvas.style.height = `${info.fh * scale}px`;
-  canvas.style.imageRendering = 'pixelated';
-  if (flip) canvas.style.transform = 'scaleX(-1)';
-
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.imageSmoothingEnabled = false;
-
   const probe = document.createElement('canvas');
   probe.width = info.fw;
   probe.height = info.fh;
   const pctx = probe.getContext('2d', { willReadFrequently: true });
   // frames 用 let：setDir() 换朝向时会整条换掉（朝向 = 精灵图的一行）
   let frames = frameList(info, img, pctx, dir);
+  /** 当前朝向的裁剪框：换朝向时跟着更新（各朝向的外接框不完全一样） */
+  let box = trim ? contentBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0) : null;
+  const contentH = () => (box ? box.h : info.fh);
+  const fitScale = autoScale ? autoScale / contentH() : 0;
+  const useScale = autoScale ? fitScale : scale;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round((box ? box.w : info.fw) * useScale);
+  canvas.height = Math.round((box ? box.h : info.fh) * useScale);
+  canvas.className = `anim ${className}`.trim();
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
+  canvas.style.imageRendering = 'pixelated';
+  if (flip) canvas.style.transform = 'scaleX(-1)';
+
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = false;
 
   let i = 0;
   let last = 0;
@@ -195,9 +242,18 @@ export async function createAnim(slug, opts = {}) {
   }
 
   function paint() {
-    ctx.clearRect(0, 0, info.fw, info.fh);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const f = frames[i];
-    if (f) ctx.drawImage(img, f.x, f.y, info.fw, info.fh, 0, 0, info.fw, info.fh);
+    if (!f) return;
+    /**
+     * 两种画法：
+     *   · trim=false —— 按帧原样铺满 canvas（战斗 / 遭遇演出用的就是这种，
+     *     它们靠格子里的固定留白保持角色在场景里的站位一致）；
+     *   · trim=true —— 只画内容外接框（图鉴那种「和其他图并排」的场合），
+     *     格子的透明留白被裁掉，人就能填满给它留的位置。
+     */
+    if (box) ctx.drawImage(img, f.x + box.x, f.y + box.y, box.w, box.h, 0, 0, canvas.width, canvas.height);
+    else ctx.drawImage(img, f.x, f.y, info.fw, info.fh, 0, 0, info.fw, info.fh);
   }
   paint();
   startLoop();
@@ -262,6 +318,16 @@ export async function createAnim(slug, opts = {}) {
     if (next === canvas.dirRow) return false;
     frames = frameList(info, img, pctx, next);
     canvas.dirRow = next;
+    // 各朝向的外接框不一样（转身之后宽高会变），所以换向时重新量一次
+    if (trim) {
+      box = contentBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0);
+      const s = autoScale ? autoScale / box.h : useScale;
+      canvas.width = Math.round(box.w * s);
+      canvas.height = Math.round(box.h * s);
+      canvas.style.width = `${canvas.width}px`;
+      canvas.style.height = `${canvas.height}px`;
+      ctx.imageSmoothingEnabled = false;
+    }
     if (i >= frames.length) i = 0;
     paint();
     return true;
@@ -273,8 +339,10 @@ export async function createAnim(slug, opts = {}) {
    * 记下「这张 canvas 是按哪套帧信息建的」。
    * 外部（例如战斗布局自适应）要改它的 CSS 显示尺寸时，必须用**同一套**帧信息算宽高比；
    * 否则会拿 Idle 的帧尺寸去套 Attack 的图，行走图就被压扁了（这个 bug 真的出现过）。
+   * 开了 trim 的话，显示出来的比例是**内容外接框**的比例，所以这里给的是它。
    */
-  canvas.frameInfo = info;
+  canvas.frameInfo = box ? { fw: box.w, fh: box.h, cols: info.cols, rows: info.rows } : info;
+  canvas.trimmed = !!box;
   canvas.animName = animName;
 
   return canvas;

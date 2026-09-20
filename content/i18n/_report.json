@@ -1,22 +1,22 @@
 {
   "note": "由 tools/build-i18n.mjs 生成：待翻清单 + 各语言覆盖率 + 孤儿译文",
-  "neededTotal": 2496,
-  "codeStrings": 666,
-  "contentStrings": 1864,
+  "neededTotal": 2701,
+  "codeStrings": 674,
+  "contentStrings": 2061,
   "perLang": {
     "ja": {
-      "done": 2496,
-      "total": 2496,
+      "done": 2701,
+      "total": 2701,
       "percent": 100,
-      "codeDone": 666,
-      "contentDone": 1864
+      "codeDone": 674,
+      "contentDone": 2061
     },
     "en": {
-      "done": 2496,
-      "total": 2496,
+      "done": 2701,
+      "total": 2701,
       "percent": 100,
-      "codeDone": 666,
-      "contentDone": 1864
+      "codeDone": 674,
+      "contentDone": 2061
     }
   },
   "missing": {

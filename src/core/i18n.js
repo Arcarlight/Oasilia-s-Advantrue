@@ -117,7 +117,7 @@ export const CONTENT_FIELDS = {
   // bossTitle 是遭遇演出里打在那盏霓虹灯上的**称号**（「流沙之主」那种）——
   // 它以前不在字段表里，于是日 / 英模式下那一行一直是中文（同一类漏网：界面上看得见、
   // 清单里却没有）。加字段时记住：**凡是渲染出来的内容字段都要在这里登记**。
-  enemy: ['name', 'lines', 'types', 'bossTitle'],
+  enemy: ['name', 'lines', 'types', 'bossTitle', 'intro'],
   event: ['name', 'text'],
   // leave 是商店里那个「离开」按钮上的字（每位商人不一样：拍拍沙子走人 / 收下包裹…）
   merchant: ['name', 'role', 'greet', 'leave'],

@@ -62,6 +62,11 @@ for (const e of ENEMIES) {
   }
   if (!Array.isArray(e.types) || !e.types.length) problems.push(`敌人 ${e.id} 没有属性 types`);
   if (!Array.isArray(e.lines) || !e.lines.length) problems.push(`敌人 ${e.id} 没有台词 lines`);
+  /**
+   * 图鉴详情右列第一句「简短介绍」（content/enemy-intro.json）。
+   * 少了它那一行会空着 —— 而「空着一行」这种缺失在界面上不报错，所以要在这里卡住。
+   */
+  if (!e.intro) problems.push(`敌人 ${e.id} 没有简短介绍 intro（跑 node tools/build-enemy-intros.mjs）`);
 }
 for (const key of STAGE_BIOME) {
   const b = BIOMES[key];

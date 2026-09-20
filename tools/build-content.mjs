@@ -37,6 +37,8 @@ async function loadAll() {
   const cards = await readJson(path.join(CONTENT, 'cards.json'));
   const icons = await readJson(path.join(CONTENT, 'icons.json'));
   const species = await readJson(path.join(CONTENT, 'species.json'));
+  // 图鉴详情右列的「简短介绍」第一句（每只敌人一句，tools/build-enemy-intros.mjs 生成）
+  const enemyIntro = await readJson(path.join(CONTENT, 'enemy-intro.json')).catch(() => ({ intro: {} }));
   const enemies = await readJson(path.join(CONTENT, 'enemies.json'));
   const biomes = await readJson(path.join(CONTENT, 'biomes.json'));
   const eventsDir = path.join(CONTENT, 'events');
@@ -61,7 +63,7 @@ async function loadAll() {
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro };
 }
 
 // ============================================================
@@ -593,7 +595,7 @@ function emitCards(cards, items, starterDeck, starterItems) {
   ].join('\n');
 }
 
-function emitEnemies(tiers, movePools, enemies, species) {
+function emitEnemies(tiers, movePools, enemies, species, intros = {}) {
   const list = enemies.map((e) => {
     // 物种信息（名称 / 图鉴号 / 属性）统一从 species.json 取，敌人条目里不再重复写一遍，
     // 也避免「加了敌人忘了写 types」这种缺失（战斗界面的属性行会直接崩）
@@ -608,6 +610,8 @@ function emitEnemies(tiers, movePools, enemies, species) {
     lines.push(`    "types": ${J(sp.types ?? [])},`);
     lines.push(`    "tier": ${JSON.stringify(e.tier)},`);
     lines.push(`    "biome": ${JSON.stringify(e.biome)},`);
+    // 图鉴详情右列第一句「简短介绍」（content/enemy-intro.json，每只一句）
+    if (intros[e.slug]) lines.push(`    "intro": ${JSON.stringify(intros[e.slug])},`);
     lines.push(`    "deck": ${typeof e.deck === 'string' ? `MOVE_POOLS.${e.deck}` : J(e.deck).replace(/\n\s*/g, ' ')},`);
     // 专属招式：一定会进这副牌组（见 game.js 的 buildEnemyDeck），
     // 所以首领的招牌招不会被随机抽牌漏掉
@@ -817,7 +821,7 @@ if (errors.length) {
 const changed = [];
 if (!CHECK_ONLY) {
   if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.items, data.cards.starterDeck, data.cards.starterItems))) changed.push('src/data/cards.js');
-  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species))) changed.push('src/data/enemies.js');
+  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}))) changed.push('src/data/enemies.js');
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');
   if (await writeBlock('src/data/events.js', 'EVENTS', emitEvents(data.events))) changed.push('src/data/events.js');
   if (await writeBlock('src/data/merchants.js', 'MERCHANTS', emitMerchants(data.merchants))) changed.push('src/data/merchants.js');

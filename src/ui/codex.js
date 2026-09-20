@@ -21,7 +21,7 @@ import { cardEl } from './cards.js';
 import { SORT_MODES, sortCards, groupLabel, cardPowerTotal, resolveCardText } from './cardtext.js';
 import { CARDS, CARD_BY_ID } from '../data/cards.js';
 import { ENEMIES, ENEMY_BY_ID, MOVE_POOLS, TIERS } from '../data/enemies.js';
-import { BIOMES } from '../data/balance.js';
+import { BIOMES, BALANCE } from '../data/balance.js';
 import { createPortrait } from '../core/portraits.js';
 import { createIcon, ICONS } from '../core/icons.js';
 import { createAnim, DIR } from '../core/sprites.js';
@@ -406,7 +406,12 @@ function showEnemyDetail(def, sets, meta) {
     const walkStage = el('div', { class: 'dex-walk-stage' });
     walkBox.append(walkStage);
     let walkCanvas = null;
-    createAnim(def.slug, { anim: 'Idle', scale: 3, fps: 7, dir: DIR.DOWN, className: 'dex-anim' })
+    createAnim(def.slug, {
+      anim: 'Idle', fps: 7, dir: DIR.DOWN, className: 'dex-anim',
+      // 目标显示高度与另外两张图对齐；trim 把帧里的透明留白裁掉，
+      // 不然「格子大、人小」会让行走图看着又小又扁（用户两次反馈过）
+      autoScale: 120, trim: true,
+    })
       .then((canvas) => {
         walkCanvas = canvas;
         clear(walkStage).append(canvas);
@@ -428,13 +433,10 @@ function showEnemyDetail(def, sets, meta) {
     document.addEventListener('mousemove', onMove);
     artRow.__onClose = () => document.removeEventListener('mousemove', onMove);
 
-    const medal = MEDALS[medalTier(wins)];
-    if (medal) {
-      walkBox.append(el('span', {
-        class: `dex-medal ${medal.cls}`,
-        dataset: { tip: t('{name}：已经击败它 {n} 次。', { name: t(medal.name), n: wins }) },
-      }));
-    }
+    /**
+     * 奖牌**不再挂在这里**（用户给的排版：奖牌在右列计数条的最右端，只有那一条）。
+     * 这一格只负责行走图本身；奖牌的位置见 .dex-record-row > .dex-medal-inline。
+     */
     artRow.append(artCell(t('行走图'), walkBox, 'dex-art-walk'));
 
     const turnBox = el('div', { class: 'dex-turnart' });
@@ -456,7 +458,8 @@ function showEnemyDetail(def, sets, meta) {
     artRow.append(artCell(t('回合立绘'), turnBox));
 
     const iconBox = el('div', { class: 'dex-iconbox' });
-    const icon = createIcon(def.slug, { size: 80, fps: ICONS.detailFps, alt: def.name });
+    // 小图标也拉到和三张图一样高（120px）：三个尺寸不齐会显得页面歪
+    const icon = createIcon(def.slug, { size: 120, fps: ICONS.detailFps, alt: def.name });
     iconBox.append(icon ?? el('span', { class: 'dex-unknown', text: '?' }));
     artRow.append(artCell(t('小图标'), iconBox));
   } else {
@@ -465,8 +468,16 @@ function showEnemyDetail(def, sets, meta) {
   }
 
   // ── 右侧：名称 / 编号 / 称号 / 属性 + 战绩 ──
-  const head = el('div', { class: 'dex-detail-head' });
-  head.append(el('div', { class: 'detail-head' }, [
+  /**
+   * 右侧那一列（用户给的排版）：
+   *   ① 名称 / 编号 / 称号 / 属性 一行；
+   *   ② 三条简短介绍（「它是什么」—— 一眼看懂这只怪的身份与打法）；
+   *   ③ 下面一条分割线，然后是战绩小方块；
+   *   ④ 最右端是击败奖牌（进度条）。
+   * 卡牌与出场台词放到**下面**去（.dex-detail-bottom），不再挤在右列里。
+   */
+  const info = el('div', { class: 'dex-detail-info' });
+  info.append(el('div', { class: 'detail-head' }, [
     el('h2', { text: known ? def.name : t('？？？') }),
     el('span', { class: 'detail-chip', text: `#${def.dex ?? '----'}` }),
     el('span', { class: `detail-chip tier-${def.tier}`, text: tierName }),
@@ -476,20 +487,17 @@ function showEnemyDetail(def, sets, meta) {
   ]));
 
   if (known) {
+    info.append(introRows(def));
+
+    /**
+     * 奖牌**只在这里出现**（用户给的排版：计数条只有一条、上面画分割线、最右端是奖牌）。
+     * 第一版把它挂在行走图右上角，会和这一条重复成两个奖牌 —— 所以现在只有这一处。
+     */
     const medal = MEDALS[medalTier(wins)];
     const stat = (label, value, cls = '') => el('div', { class: `dex-stat ${cls}`.trim() }, [
       el('b', { text: String(value) }),
       el('span', { text: label }),
     ]);
-    head.append(el('div', { class: 'dex-stats' }, [
-      stat(t('挑战'), battles),
-      stat(t('击败'), wins),
-      stat(t('失败'), losses),
-      stat(t('胜率'), battles ? `${Math.round((wins / battles) * 100)}%` : t('—')),
-      stat(t('招式'), countPool(def)),
-    ]));
-
-    // 奖牌进度：4 段（5 / 15 / 25 / 50）
     const bar = el('div', { class: 'dex-medal-bar' });
     for (const m of MEDALS.slice(1)) {
       const done = wins >= m.at;
@@ -504,13 +512,24 @@ function showEnemyDetail(def, sets, meta) {
         el('span', { class: 'dex-medal-num', text: String(m.at) }),
       ]));
     }
-    head.append(el('div', { class: 'dex-medal-row' }, [
-      el('span', { class: 'dex-medal-cap', text: t('击败奖牌') }),
-      bar,
+    info.append(el('div', { class: 'dex-record-row' }, [
+      el('div', { class: 'dex-stats' }, [
+        stat(t('挑战'), battles),
+        stat(t('击败'), wins),
+        stat(t('失败'), losses),
+        stat(t('胜率'), battles ? `${Math.round((wins / battles) * 100)}%` : t('—')),
+        stat(t('招式'), countPool(def)),
+      ]),
+      el('div', { class: 'dex-medal-row' }, [
+        el('span', { class: 'dex-medal-cap', text: t('击败奖牌') }),
+        bar,
+      ]),
+      medal ? el('span', {
+        class: `dex-medal dex-medal-inline ${medal.cls}`,
+        dataset: { tip: t('{name}：已经击败它 {n} 次。', { name: t(medal.name), n: wins }) },
+      }) : null,
     ]));
   }
-
-  const info = el('div', { class: 'dex-detail-info' }, [head]);
 
   if (!known) {
     info.append(el('p', {
@@ -579,6 +598,56 @@ function showEnemyDetail(def, sets, meta) {
 function resolvePool(def) {
   if (Array.isArray(def.deck)) return def.deck;
   return MOVE_POOLS[def.deck] ?? def.deck ?? [];
+}
+
+/**
+ * 右列那三条「简短介绍」（用户给的排版）。
+ *
+ * ① 身份：content/enemy-intro.json 里那句手写的（「沙丘自己站了起来…」这类）。
+ * ② 怎么打：**从招式池与专属技里推** —— 有几张攻击牌、有没有削弱、有没有招牌技。
+ * ③ 面板：档位 + 这一章的 HP / 攻击（章节按这张地图能出现在第几章算）。
+ *
+ * ②③ 故意不手写：手写一句「血厚、爱降防」，数值或牌池一改它就变成假话，
+ * 而这里读的是引擎同一份数据，永远对得上。
+ */
+function introRows(def) {
+  const pool = resolvePool(def).map((id) => CARD_BY_ID[id]).filter(Boolean);
+  const attacks = pool.filter((c) => (c.effects ?? []).some((e) => e.kind === 'damage'));
+  const debuffs = pool.filter((c) => (c.effects ?? []).some((e) => e.kind === 'status' || (e.kind === 'buff' && e.target === 'enemy' && (e.amount ?? 0) < 0)));
+  const supports = pool.length - attacks.length - debuffs.length;
+  const sig = (def.signature ?? []).filter((id) => CARD_BY_ID[id]);
+  const typeLine = (def.types ?? []).join(' / ');
+
+  // ② 打法：攻击 / 削弱 / 辅助 / 招牌
+  const bits = [];
+  if (attacks.length) bits.push(t('攻击 {n} 张', { n: attacks.length }));
+  if (debuffs.length) bits.push(t('削弱 {n} 张', { n: debuffs.length }));
+  if (supports > 0) bits.push(t('辅助 {n} 张', { n: supports }));
+  const style = bits.join(' · ');
+  const sigText = sig.length
+    ? t('，招牌招「{name}」开打时一定在它手上', { name: CARD_BY_ID[sig[0]].name })
+    : '';
+
+  // ③ 面板：这一章的 HP / 攻击（地图的 slots 决定它可能出现在第几章；取第一档）
+  const stage = (BIOMES[def.biome]?.slots ?? [0])[0] ?? 0;
+  const hp = BALANCE.enemyHp?.[def.tier]?.[stage];
+  const atk = BALANCE.enemyAtk?.[def.tier]?.[stage];
+  const statText = (hp == null || atk == null)
+    ? ''
+    : t('生命约 {hp} · 攻击约 {atk}', { hp, atk });
+
+  const row = (label, text) => (text
+    ? el('div', { class: 'dex-intro-row' }, [
+        el('span', { class: 'dex-intro-cap', text: label }),
+        el('span', { class: 'dex-intro-text', text }),
+      ])
+    : null);
+
+  return el('div', { class: 'dex-intro' }, [
+    row(t('简短介绍'), def.intro ?? ''),
+    row(t('怎么打'), style ? `${style}${sigText}` : ''),
+    row(t('面板'), [typeLine, statText].filter(Boolean).join(' · ')),
+  ]);
 }
 
 /** 招式池里的牌数（详情页的数字统计用） */
