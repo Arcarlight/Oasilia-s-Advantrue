@@ -1547,7 +1547,13 @@ export class BattleScreen {
         await this.wait(PACE.turnEnd);
         break;
       case 'draw':
-        if (ev.side === 'player') audio.cardDraw();
+        /**
+         * 发牌音效：引擎的 `draw` 是**一批一次**（`ev.cards` 是这一批抽到的牌），
+         * 所以按张数连响几下（audio.dealCards 里封顶 3 下）。
+         * 以前这里一次只响一声、而且音量 0.32，压在别的音效底下基本听不见 ——
+         * 玩家的感受就是「发牌没有音效」。
+         */
+        if (ev.side === 'player') audio.dealCards((ev.cards ?? []).length);
         this.refreshSide(ev.side);
         this.refreshPiles();
         await this.wait(PACE.draw);

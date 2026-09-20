@@ -19,6 +19,8 @@ const PARTICLES = path.join(ROOT, 'kenney_particle-pack', 'PNG (Transparent)');
 const RPG_UI = path.join(ROOT, 'kenney_ui-pack-rpg-expansion', 'PNG');
 const PIXEL_UI = path.join(ROOT, 'kenney_pixel-ui-pack', 'PNG');
 const FANTASY = path.join(ROOT, 'kenney_fantasy-ui-borders', 'PNG', 'Default');
+/** 制图包（地图上的装饰物：树 / 岩 / 屋 / 湖…）。按地图主题挑，见下面的 jobs。 */
+const CARTO = path.join(ROOT, 'kenney_cartography-pack', 'PNG', 'Default');
 
 /** @type {{from:string[], to:string, dir:string}[]} */
 const jobs = [
@@ -99,6 +101,17 @@ const jobs = [
   { dir: 'img/cards', to: 'direction_e.png', from: [path.join(BOARD, 'direction_e.png')] },
   { dir: 'img/cards', to: 'direction_w.png', from: [path.join(BOARD, 'direction_w.png')] },
   { dir: 'img/cards', to: 'hexagon.png', from: [path.join(BOARD, 'hexagon.png')] },
+
+  // ---- 地图装饰（制图包 cartography：树 / 岩 / 屋 / 湖 / 遗迹…）----
+  // 名字保持包里的原名，界面按 `.map-deco-<name>` 类用（src/ui/screens.js 的 BIOME_DECOR）。
+  ...[
+    'bush', 'cactus', 'cactusLarge', 'campfire', 'castleWideLow', 'chest', 'church', 'dock',
+    'elementDiamond', 'elementShield', 'fence', 'flag', 'gate', 'graveyard', 'lake', 'lakeRound',
+    'lighthouse', 'mill', 'mine', 'palm', 'palmLarge', 'pyramid', 'rocks', 'rocksA', 'rocksB',
+    'rocksMountain', 'rocksTall', 'runis', 'ship', 'skull', 'tent', 'tipi', 'towerLow', 'towerWatch',
+    'treePine', 'treePineLarge', 'treePines', 'treePinesSmall', 'treePineTall', 'treePineTallLow',
+    'treeTall', 'vulcano', 'watchtower', 'waterWheel', 'well',
+  ].map((name) => ({ dir: 'img/map', to: `${name}.png`, from: [path.join(CARTO, `${name}.png`)] })),
 
   // ---- 粒子 / 特效 ----
   { dir: 'img/fx', to: 'dirt_1.png', from: [path.join(PARTICLES, 'dirt_01.png')] },

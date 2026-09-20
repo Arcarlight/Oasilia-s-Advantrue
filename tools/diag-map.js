@@ -112,6 +112,53 @@
     ok(seq[0] === 'desert' && seq[5] === 'night', '首章固定沙漠、终章固定夜砂墓原', `${seq[0]} / ${seq[5]}`);
     ok(new Set(seq).size === seq.length, '一局里不重复用同一张地图', `${new Set(seq).size} 张不同`);
 
+    log('⑦ 地图装饰物（Kenney 制图包）');
+    if (!onMap) {
+      log('  · 当前不在地图屏，跳过装饰物断言');
+    } else {
+      const decos = [...document.querySelectorAll('.map-scroll-inner .map-deco')];
+      ok(decos.length >= 5, '地图上撒了装饰物', `${decos.length} 个`);
+      ok(decos.length <= 20, '数量不过量（不至于糊成一片）', `${decos.length} 个`);
+      // 每个装饰物都得有底图（类名对了、CSS 区块生成了、文件也在）
+      const noBg = decos.filter((d) => {
+        const bg = getComputedStyle(d).backgroundImage;
+        return !bg || bg === 'none';
+      });
+      ok(noBg.length === 0, '每个装饰物都取到了图片（类名 ↔ GENERATED-MAP-DECOR ↔ assets/img/map）',
+        noBg.map((n) => n.className).join('、') || '全部有底图');
+      // 不能压住节点：装饰物与节点圆心保持距离（用圆心距离比，别用矩形相交 —— 大树的透明边很多）
+      const nodeEls = [...document.querySelectorAll('.map-scroll-inner .map-node')].map((n) => {
+        const r = n.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2, r };
+      });
+      const clash = [];
+      for (const d of decos) {
+        const r = d.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        for (const n of nodeEls) {
+          if (Math.hypot(cx - n.x, cy - n.y) < 66) clash.push(`${d.className} ↔ 节点`);
+        }
+      }
+      ok(clash.length === 0, '装饰物都避开了节点（圆心距离 ≥66px）', clash.slice(0, 4).join('、') || '无重叠');
+      // 不能撑出横向滚动条
+      const body = document.querySelector('.map-body');
+      ok(body && body.scrollWidth <= body.clientWidth + 1,
+        '装饰物没有把地图撑出横向滚动条',
+        body ? `scrollWidth ${body.scrollWidth} vs clientWidth ${body.clientWidth}` : '找不到 .map-body');
+      // 确定性：同一章重画一遍，装饰物位置必须一模一样
+      const before = decos.map((d) => `${d.className}@${d.style.left || d.style.right},${d.style.top}`).join('|');
+      ui.forceRerender();
+      await wait(300);
+      const after = [...document.querySelectorAll('.map-scroll-inner .map-deco')]
+        .map((d) => `${d.className}@${d.style.left || d.style.right},${d.style.top}`).join('|');
+      ok(before === after && before.length > 0, '同一章重画之后装饰物位置不变（种子取自本局 + 章节）',
+        before === after ? '逐项一致' : '重画后变了');
+      // 装饰物不该吃掉点击
+      ok(getComputedStyle(document.querySelector('.map-decor')).pointerEvents === 'none',
+        '装饰层不吃点击（能点的只有节点）');
+    }
+
     if (fails.length) log(`MAP_ERRORS=[${fails.join(' | ')}]`);
     else log('章节地图自检：通过 ✓');
     log('MAP_DONE');

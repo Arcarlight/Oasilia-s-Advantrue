@@ -21,6 +21,8 @@ import { showCardCodex, showEnemyCodex, cardCodexProgress, enemyCodexProgress } 
 import { showRecords, runCount } from './records.js';
 import { showChangelog, CHANGELOG } from './changelog.js';
 import { renderHud } from './hud.js';
+// 地图上的装饰物按「本局种子 + 章节」撒，用的是引擎那把可复现的随机数
+import { makeRng } from '../core/rng.js';
 
 /**
  * 地图节点图标。两层：
@@ -65,6 +67,26 @@ const BIOME_ICO = {
   tide: 'ico-sea', cliff: 'ico-wind', night: 'ico-gravestone',
   // 替补场景（随机替换中间 4 章）
   ruins: 'ico-key', fungal: 'ico-leaves', storm: 'ico-lightning', crystal: 'ico-diamond',
+};
+
+/**
+ * 地图上的**装饰物**（Kenney 制图包，`assets/img/map/`）。
+ *
+ * 每张地图按主题挑一池子，渲染时用「本局种子 + 章节」做种子撒在路两旁 ——
+ * 同一局同一章每次都摆在同一处（切界面、重画都不会重排），换个种子就是另一张图。
+ * 类名在 style.css 的 GENERATED-MAP-DECOR 区块里（由 tools/build-map-decor.mjs 生成）。
+ */
+const BIOME_DECOR = {
+  desert: ['cactus', 'cactusLarge', 'palm', 'palmLarge', 'rocksA', 'rocksB', 'pyramid', 'skull', 'tent'],
+  canyon: ['rocksMountain', 'rocksTall', 'rocksA', 'mine', 'vulcano', 'campfire', 'tipi', 'fence'],
+  forest: ['treePine', 'treePineLarge', 'treePines', 'treePineTall', 'treeTall', 'bush', 'mill', 'well', 'campfire'],
+  tide: ['lake', 'lakeRound', 'dock', 'ship', 'waterWheel', 'lighthouse', 'bush', 'rocks'],
+  cliff: ['rocksMountain', 'rocksTall', 'treePineTallLow', 'watchtower', 'flag', 'gate', 'lighthouse', 'tent'],
+  night: ['graveyard', 'skull', 'runis', 'church', 'fence', 'rocksTall', 'towerLow', 'campfire'],
+  ruins: ['runis', 'castleWideLow', 'towerLow', 'gate', 'well', 'pyramid', 'elementDiamond', 'elementShield', 'chest'],
+  fungal: ['bush', 'lake', 'rocks', 'treePineTallLow', 'mill', 'well', 'fence', 'campfire', 'tent'],
+  storm: ['rocksTall', 'rocksMountain', 'flag', 'towerWatch', 'watchtower', 'mine', 'tent', 'gate'],
+  crystal: ['elementDiamond', 'rocks', 'rocksA', 'mine', 'chest', 'towerLow', 'rocksTall', 'gate'],
 };
 
 // ============================================================
@@ -252,6 +274,78 @@ function renderMap(game) {
     x: 100 + n.x * 800,
     y: H - 70 - n.y * (H - 140),
   });
+
+  /**
+   * 装饰层：撒在路两旁的树 / 岩 / 屋…
+   *
+   * 三条规矩（都在诊断里量过）：
+   *   ① **确定性**：种子取「本局种子 + 章节」，所以同一局同一章每次都一样
+   *      （UI 会因为状态变化重画，装饰一重排就像整张图换了）；
+   *   ② **不挡节点**：节点永远落在 x∈[10%, 90%]，装饰尽量摆进两侧的空白带，
+   *      中间那点也要求离任何节点足够远；
+   *   ③ **不撑出横向滚动条**：右侧那些用 `right` 定位，宽度算在框内。
+   */
+  const decor = el('div', { class: 'map-decor', 'aria-hidden': 'true' });
+  {
+    const pool = BIOME_DECOR[biome.key] ?? BIOME_DECOR.desert;
+    const rand = makeRng(((game.data?.seed ?? 1) * 31 + ((game.data?.stage ?? 0) + 1) * 7919) >>> 0);
+    const nodes = map.nodes.map((n) => posOf(n));
+    /**
+     * 「离节点够不够远」按**像素**算，不按百分比：节点和装饰物都是固定像素大小
+     * （节点 76px、装饰 26~72px），用百分比在两块尺寸不同的屏上会一个太松一个太紧。
+     * 内层宽度就是 CSS 里那条 `min(880px, 96vw)`。
+     */
+    const innerW = Math.min(880, (typeof window !== 'undefined' ? window.innerWidth : 900) * 0.96);
+    const perX = innerW / 100;
+    const perY = H / 100;
+    const want = 8 + rand.int(0, 4);
+    const placed = [];
+    /**
+     * 抽位置而不是「抽一次不行就作废」：节点有十来个、又集中在中间那条带上，
+     * 一次就中的概率很低 —— 第一版就是这么写的，结果整张图一个装饰都没留下（截图里空空的）。
+     */
+    for (let guard = 0; placed.length < want && guard < want * 40; guard += 1) {
+      const name = rand.pick(pool);
+      // 尺寸分两档（小 / 大），免得整页一样大
+      const w = rand.chance(0.35) ? rand.int(46, 72) : rand.int(26, 42);
+      const px = rand();
+      const py = rand();
+      const useRight = px > 0.5;
+      /**
+       * 横向落点：两侧各留一条 0.6%~5.4% 的空白带（节点最靠边也在 10% 左右，
+       * 所以这里天然不压节点），中间那一段只放少数几个「撒在路中间」的 ——
+       * 它们还要跟节点比一次真实距离。右侧那些用 `right` 定位：宽度算在框内，
+       * 不会把 inner 撑宽、也就不会出横向滚动条。
+       */
+      const band = px < 0.42 ? rand() * 4.8 + 0.6
+        : px > 0.58 ? rand() * 4.8 + 0.6
+          : rand() * 64 + 16;
+      const left = useRight ? null : band;
+      const right = useRight ? band : null;
+      const top = 3 + py * 90;
+      // 装饰物的**中心**（右侧那一批用 right 定位，中心在 100 − band − 半个宽度）
+      const cx = useRight ? 100 - band - (w / 2) / perX : band + (w / 2) / perX;
+      const clash = nodes.some((n) => Math.hypot(
+        ((n.x / 1000) * 100 - cx) * perX,
+        ((n.y / H) * 100 - top) * perY,
+      ) < 78);
+      if (clash) continue;
+      placed.push({ name, w, left, right, top, flip: rand.chance(0.5), alpha: 0.72 + rand() * 0.26 });
+    }
+    for (const d of placed) {
+      decor.append(el('span', {
+        class: `map-deco map-deco-${d.name}${d.flip ? ' flip' : ''}`,
+        style: {
+          width: `${d.w}px`,
+          height: `${d.w}px`,
+          top: `${d.top}%`,
+          ...(d.left != null ? { left: `${d.left}%` } : { right: `${d.right}%` }),
+          opacity: d.alpha.toFixed(2),
+        },
+      }));
+    }
+  }
+  inner.append(decor);
 
   for (const n of map.nodes) {
     for (const nid of n.next) {

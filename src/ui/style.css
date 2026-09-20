@@ -2986,3 +2986,76 @@ input, textarea { cursor: text !important; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* ============================================================
+   地图装饰物（图片地址在文件末尾的 GENERATED-MAP-DECOR 区块里，由 tools/build-map-decor.mjs 生成）
+   ============================================================ */
+.map-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;             /* 连线(1) 与节点(2) 都在它上面 */
+  pointer-events: none;   /* 装饰物不该吃掉点击 —— 能点的只有节点 */
+}
+.map-deco {
+  position: absolute;
+  display: block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center bottom;
+  /* 提一点饱和、再压暗一档：一是不让「主题色画在主题色背景上」糊成一片（沙漠里的沙色仙人掌就是），
+     二是压暗之后它们读起来像「画在地图上的墨线」，而不是贴上去的彩色贴纸 */
+  filter: saturate(1.08) brightness(.84) drop-shadow(0 5px 7px rgba(0, 0, 0, .4));
+}
+/* 一半左右镜像：同一款树 / 岩不会看出是同一个模子 */
+.map-deco.flip { transform: scaleX(-1); }
+
+/* GENERATED-MAP-DECOR */
+/* 地图装饰物（Kenney 制图包）。由 tools/build-map-decor.mjs 从 assets/img/map/ 生成，别手改。
+   统一用 background-image 而不是 <img>：单文件包（file://）会拦掉 <img src>，
+   而 CSS 里的 url() 会被打包器内联成 data URI。 */
+.map-deco-bush { background-image: url(../../assets/img/map/bush.png); }
+.map-deco-cactus { background-image: url(../../assets/img/map/cactus.png); }
+.map-deco-cactusLarge { background-image: url(../../assets/img/map/cactusLarge.png); }
+.map-deco-campfire { background-image: url(../../assets/img/map/campfire.png); }
+.map-deco-castleWideLow { background-image: url(../../assets/img/map/castleWideLow.png); }
+.map-deco-chest { background-image: url(../../assets/img/map/chest.png); }
+.map-deco-church { background-image: url(../../assets/img/map/church.png); }
+.map-deco-dock { background-image: url(../../assets/img/map/dock.png); }
+.map-deco-elementDiamond { background-image: url(../../assets/img/map/elementDiamond.png); }
+.map-deco-elementShield { background-image: url(../../assets/img/map/elementShield.png); }
+.map-deco-fence { background-image: url(../../assets/img/map/fence.png); }
+.map-deco-flag { background-image: url(../../assets/img/map/flag.png); }
+.map-deco-gate { background-image: url(../../assets/img/map/gate.png); }
+.map-deco-graveyard { background-image: url(../../assets/img/map/graveyard.png); }
+.map-deco-lake { background-image: url(../../assets/img/map/lake.png); }
+.map-deco-lakeRound { background-image: url(../../assets/img/map/lakeRound.png); }
+.map-deco-lighthouse { background-image: url(../../assets/img/map/lighthouse.png); }
+.map-deco-mill { background-image: url(../../assets/img/map/mill.png); }
+.map-deco-mine { background-image: url(../../assets/img/map/mine.png); }
+.map-deco-palm { background-image: url(../../assets/img/map/palm.png); }
+.map-deco-palmLarge { background-image: url(../../assets/img/map/palmLarge.png); }
+.map-deco-pyramid { background-image: url(../../assets/img/map/pyramid.png); }
+.map-deco-rocks { background-image: url(../../assets/img/map/rocks.png); }
+.map-deco-rocksA { background-image: url(../../assets/img/map/rocksA.png); }
+.map-deco-rocksB { background-image: url(../../assets/img/map/rocksB.png); }
+.map-deco-rocksMountain { background-image: url(../../assets/img/map/rocksMountain.png); }
+.map-deco-rocksTall { background-image: url(../../assets/img/map/rocksTall.png); }
+.map-deco-runis { background-image: url(../../assets/img/map/runis.png); }
+.map-deco-ship { background-image: url(../../assets/img/map/ship.png); }
+.map-deco-skull { background-image: url(../../assets/img/map/skull.png); }
+.map-deco-tent { background-image: url(../../assets/img/map/tent.png); }
+.map-deco-tipi { background-image: url(../../assets/img/map/tipi.png); }
+.map-deco-towerLow { background-image: url(../../assets/img/map/towerLow.png); }
+.map-deco-towerWatch { background-image: url(../../assets/img/map/towerWatch.png); }
+.map-deco-treePine { background-image: url(../../assets/img/map/treePine.png); }
+.map-deco-treePineLarge { background-image: url(../../assets/img/map/treePineLarge.png); }
+.map-deco-treePineTall { background-image: url(../../assets/img/map/treePineTall.png); }
+.map-deco-treePineTallLow { background-image: url(../../assets/img/map/treePineTallLow.png); }
+.map-deco-treePines { background-image: url(../../assets/img/map/treePines.png); }
+.map-deco-treePinesSmall { background-image: url(../../assets/img/map/treePinesSmall.png); }
+.map-deco-treeTall { background-image: url(../../assets/img/map/treeTall.png); }
+.map-deco-vulcano { background-image: url(../../assets/img/map/vulcano.png); }
+.map-deco-watchtower { background-image: url(../../assets/img/map/watchtower.png); }
+.map-deco-waterWheel { background-image: url(../../assets/img/map/waterWheel.png); }
+.map-deco-well { background-image: url(../../assets/img/map/well.png); }
+/* END GENERATED-MAP-DECOR */

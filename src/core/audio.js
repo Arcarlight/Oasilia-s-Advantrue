@@ -83,8 +83,8 @@ const PS = {
  * 全部记下来逐个比对 —— 谁往战斗里加了新音效却忘了写进来，诊断就会红。
  */
 export const BATTLE_SFX = [
-  // 出牌 / 抽牌 / 洗牌
-  'cardSlide', 'cardSlide2', 'shuffle',
+  // 出牌 / 抽牌 / 洗牌（cardPlace = 卡牌落桌那一下，出牌音效就是它）
+  'cardPlace', 'cardSlide', 'cardSlide2', 'shuffle',
   // 命中与闪避
   'hit_normal', 'hit_hard', 'hit_sword', 'hit_miss', 'enemy_down',
   // 属性招式
@@ -287,8 +287,33 @@ export const audio = {
   chest() { this.play('chest_open', { volume: 0.6 }); },
   rare() { this.play('item_rare', { volume: 0.6 }); },
   useItem() { this.play('item_use', { volume: 0.55 }); },
-  cardPlay() { this.play('cardSlide2', { volume: 0.5 }); },
-  cardDraw() { this.play('cardSlide', { volume: 0.32, rate: 1.15 }); },
+  /**
+   * 出牌：卡牌**拍在桌上**的那一下（Kenney 制图/桌游包的 cardPlace）。
+   *
+   * 以前用的是 cardSlide2（滑牌声）—— 那是「把牌推过去」的声音，音量还只有 0.5，
+   * 压在命中音效（0.4~0.6）底下基本听不见，玩家的感受就是「出牌没音效」。
+   * 现在换成落桌声 + 单独混一层很轻的滑牌，既有「啪」又有「刷」。
+   */
+  cardPlay() {
+    // 音量按**实测**定：这两个文件本身比战斗音效低 5~7 dB（cardPlace −10.6 / hit_sword −5.0 dBFS），
+    // 所以这里给得比别的音效高一点，混起来才是同一个量级（见 tools/diag-cardsound.js）。
+    this.play('cardPlace', { volume: 0.75 });
+    this.play('cardSlide2', { volume: 0.34 });
+  },
+  /** 抽到一张牌：滑牌声（音量提到 0.6 —— 原来那 0.32 实测几乎听不见） */
+  cardDraw() { this.play('cardSlide', { volume: 0.6, rate: 1.08 }); },
+  /**
+   * 发一批牌：按张数放 1~3 声滑牌，间隔 70ms。
+   * 引擎的 `draw` 事件是**一批一次**（`cards` 里是这一批抽到的牌），
+   * 一次抽 7 张只响一声会显得很假，连响几下才像在发牌；超过 3 张就不再叠加，免得糊成噪音。
+   */
+  dealCards(n = 1) {
+    const times = Math.max(1, Math.min(3, n));
+    for (let i = 0; i < times; i += 1) {
+      if (i === 0) this.cardDraw();
+      else setTimeout(() => this.cardDraw(), i * 70);
+    }
+  },
   shuffle() { this.play('shuffle', { volume: 0.5 }); },
   win() { this.play('ui_confirm_big', { volume: 0.7 }); },
   lose() { this.play('ui_error', { volume: 0.6, rate: 0.85 }); },

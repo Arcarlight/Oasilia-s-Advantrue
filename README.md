@@ -421,6 +421,22 @@ AP        = min(8, 2 + 敏捷 / 2)
   `diag-codex.js` 会查它**真的在动**（`animation-name === 'poke-icon-play'`、
   底图比显示宽 = 动图条）而不是一张静止的图。
 
+### 地图上的装饰物
+每张地图会按主题撒 8~12 个装饰物（Kenney **制图包** `kenney_cartography-pack`：树 / 岩 / 屋 / 湖 / 遗迹…）。
+
+- 素材：`node tools/copy-kenney.mjs` 挑出 45 张复制到 `assets/img/map/`；
+  再用 `node tools/build-map-decor.mjs` 从目录里生成 `.map-deco-*` 的 CSS 区块（`GENERATED-MAP-DECOR`）。
+  **必须走 CSS 类而不是 `<img src>`**：单文件包是在 `file://` 下打开的，那里 `<img src="assets/…">` 会被拦掉，
+  而 CSS 里的 `url()` 会被打包器内联成 data URI。
+- 摆放（`src/ui/screens.js` 的 `BIOME_DECOR` + 渲染时那段）三条规矩，诊断里都有断言：
+  ① **确定性** —— 种子取「本局种子 + 章节」，同一章重画多少次位置都不变（重画时重排会像换了张图）；
+  ② **不挡节点** —— 两侧留出空白带，中间那批按**像素**距离（≥78px）避开每个节点圆心；
+  ③ **不出横向滚动条** —— 右侧那批用 `right` 定位，宽度算在框内。
+  装饰层 `pointer-events: none`，能点的永远只有节点。
+- 观感：压暗一档 + 提一点饱和，读起来像「画在地图上的墨线」而不是贴上去的彩色贴纸
+  （沙漠里沙色的仙人掌画在沙色背景上，不压暗根本看不见）。
+- 诊断：`tools/diag-map.js` 第 ⑦ 段（数量 / 有底图 / 避让节点 / 无横向滚动 / 重画一致 / 不吃点击）。
+
 ### 成长
 - 每场战斗胜利都会**永久提升属性**（野生怪 +3 点预算，精英 +5，首领 +8）。
 - 走到首领节点前会自动回复一部分生命；打完首领完全回血。
@@ -896,6 +912,9 @@ zip 的地址也没法从 mp3 名字推出来（是按日文标题的读音命�
 | `fetch-species-names.mjs` | 从 PokeAPI（英 / 日 / 属性）+ **52poke 神奇宝贝百科**（中文名，PokeAPI 的 G8/G9 覆盖不全）抓官方名，写进 `tools/_new-species.json`。52poke 要串行限速（6 并发立刻一片 429） |
 | `verify-species-names.mjs` | **物种名对账**：把 200 多个物种的中文名 / 日文名跟官方源核一遍（`--write` 直接改）。它要联网所以进门禁不合适，但随时能跑 —— 名字直接印在敌人面板与图鉴上（实测查出「导电飞鼠→电飞鼠」「死神棺→迭失棺」） |
 | `apply-enemy-plan.mjs` | 敌方名单设计表的落地（`check` 校验 / `species` 补物种 / `enemies` 重写名单）：招式包与专属招式按**位置继承**，保住各图各档的构成不变 |
+| `diag-cardsound.js` | **卡牌音效诊断**（`?dgcs=1`，**真实时间**跑）：起因是「发牌、出牌都没有音效」。三件事都量出来 —— ① 预载表里有它们吗；② 把音效解码出来量**峰值 dBFS** 跟战斗音效对照（实测卡牌音效本身低 5~7 dB，所以音量给得比别的音效高）；③ 真打一场，用计数器确认「出牌响 cardPlace、抽牌按张数连响几声」（**不能**靠 `playedNames()` 的增量 —— 那是集合，开局发牌就已经把它放进去了，第一版就是这么报的假失败） |
+| `build-map-decor.mjs` | 从 `assets/img/map/` 生成 style.css 的 `.map-deco-*` 区块（夹在 `GENERATED-MAP-DECOR` 标记之间，可重复运行） |
+| `import-icons.mjs` | 从 Generation 9 Pack 导出小图标（`assets/icons/<slug>.png` + `src/data/icons.js` 的帧数表）—— 敌人图鉴里的头像就是它 |
 | `diag-codex.js` | 图鉴 / 记录诊断（`?dgcodex=1`，**70 项断言**）：标题页三个入口（含按钮上的进度数字）、卡牌图鉴列出全部 192 张且新档全压暗、点卡开详情、敌人图鉴按 10 张地图分节 / 新档全是剪影且不泄露物种名 / 筛选三档、有进度后 `.met` 与 `.slain` 状态与 ✓、见过的才显示台词与招式池（剪影点开只有「还没遇见」）、地图页与战斗 HUD 的入口、战斗中按 `E`、打完一局真的写进记录（止步 / 地图链 / 看卡组 / 两步确认清空），以及**切到日语后记录里不许出现冻结的中文原名**。`?dgcodex=shot&what=title\|card\|enemy\|enemy-detail\|records\|changelog\|map\|battle&lang=ja` 留屏截图（截图模式会跳过自检 —— `shot.mjs` 走虚拟时间，几十个 await 会让截图拍在自检半路上） |
 | `sweep-curve.mjs` | 难度手感扫描：对若干组 (HP 系数, ATK 系数) 同时打印**胜率 / 平均回合数 / 每回合压力**——因为「只加血」会把战斗拖长，而难度其实是「回合数 × 每回合压力」（`node tools/sweep-curve.mjs 50 1*1 0.85*1.7 0.62*2.2`） |
 | `ab-deck.mjs` | **配对 A/B**：同一颗种子、同一副随机卡组，只改「带进战斗的牌」（全部卡牌 vs `defaultBattleDeck()` 挑的那 14 张），量卡组规模对战力的影响（40 对/档：带全部卡强 15~22 个百分点） |

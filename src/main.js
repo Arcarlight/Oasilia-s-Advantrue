@@ -269,6 +269,10 @@ async function boot() {
     // （?dgcodex=1 自检；?dgcodex=shot&what=enemy|card|records|enemy-detail 留屏截图）
     import('../tools/diag-codex.js').catch((e) => console.error('图鉴诊断加载失败', e));
   }
+  if (params.get('dgcs') === '1') {
+    // 卡牌音效诊断：发牌 / 出牌到底响没响、响得够不够（量峰值 dBFS）
+    import('../tools/diag-cardsound.js').catch((e) => console.error('卡牌音效诊断加载失败', e));
+  }
   if (params.get('autoplay') === '1') {
     // 自动打两回合，方便截图检查「日志有内容」时的排版
     setTimeout(async () => {
