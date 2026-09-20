@@ -242,6 +242,19 @@ for (const slug of await fs.readdir(portraitDir).catch(() => [])) {
 }
 console.log(`头像内联: ${Object.keys(portraitMap).length} 张（原始 ${(portraitBytes / 1024).toFixed(0)} KB）`);
 
+// 小图标（Generation 9 Pack 的 animated Icons）也内联：一只一张、每张 1~4 KB
+const iconDir = path.join(ROOT, 'assets', 'icons');
+const iconMap = {};
+let iconBytes = 0;
+for (const file of await fs.readdir(iconDir).catch(() => [])) {
+  if (!file.endsWith('.png')) continue;
+  const slug = path.basename(file, '.png');
+  const buf = await fs.readFile(path.join(iconDir, file));
+  iconMap[slug] = `data:image/png;base64,${buf.toString('base64')}`;
+  iconBytes += buf.length;
+}
+console.log(`小图标内联: ${Object.keys(iconMap).length} 张（原始 ${(iconBytes / 1024).toFixed(0)} KB）`);
+
 // 回合切换立绘（正/背面）也内联：168 张裁切后总共只有 200 KB 左右
 const gen9Dir = path.join(ROOT, 'assets', 'gen9');
 const gen9Map = {};
@@ -273,6 +286,10 @@ const spriteInline = `
 <script>
   // 表情头像（data URI），键是 "物种slug/表情名"
   window.__OASIS_PORTRAITS__ = ${JSON.stringify(portraitMap)};
+</script>
+<script>
+  // 小图标（Generation 9 Pack 的 animated Icons，data URI），键是物种 slug
+  window.__OASIS_ICONS__ = ${JSON.stringify(iconMap)};
 </script>
 <script>
   // 回合切换立绘（data URI），键是 "物种slug/front|back"

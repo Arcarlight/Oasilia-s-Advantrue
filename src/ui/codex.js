@@ -23,6 +23,9 @@ import { CARDS, CARD_BY_ID } from '../data/cards.js';
 import { ENEMIES, TIERS } from '../data/enemies.js';
 import { BIOMES } from '../data/balance.js';
 import { createPortrait } from '../core/portraits.js';
+import { createIcon, ICONS } from '../core/icons.js';
+import { createAnim, DIR } from '../core/sprites.js';
+import { turnArt } from '../core/gen9.js';
 import { save } from '../core/save.js';
 import { t } from '../core/i18n.js';
 import { audio } from '../core/audio.js';
@@ -280,12 +283,20 @@ function enemyCard(def, sets) {
 
   const art = el('div', { class: 'dex-art' });
   if (known) {
-    // 头像原生 40×40，放大到 64（整数倍）最清晰
-    createPortrait(def.slug, { emotion: 'normal', size: 64, alt: def.name }).then((img) => {
-      if (!img) return;
-      clear(art);
-      art.append(img);
-    });
+    /**
+     * 见过的用**小图标**（Generation 9 Pack 的 animated Icons，会动）。
+     * 它是 64×64 一帧的动图条，靠 CSS `steps()` 逐帧播（见 src/core/icons.js）。
+     * 那只没有小图标时退回 PMD 头像 —— 图鉴不能因为少一张素材就开天窗。
+     */
+    const icon = createIcon(def.slug, { size: 40, alt: def.name });
+    if (icon) art.append(icon);
+    else {
+      createPortrait(def.slug, { emotion: 'normal', size: 64, alt: def.name }).then((img) => {
+        if (!img) return;
+        clear(art);
+        art.append(img);
+      });
+    }
   } else {
     art.append(el('span', { class: 'dex-unknown', text: '?' }));
   }
@@ -318,15 +329,50 @@ function showEnemyDetail(def, sets) {
   const tierName = TIERS[def.tier]?.name ?? def.tier;
   const biome = BIOMES[def.biome];
 
-  const face = el('div', { class: 'dex-detail-face' });
+  /**
+   * 三张图并排：**小图标（动图）/ 回合立绘 / 战斗动图**（用户要求）。
+   *   · 小图标 —— Generation 9 Pack 的 Icons，会动；
+   *   · 回合立绘 —— 进入战斗时那一闪而过的那张（gen9 的正面图）；
+   *   · 战斗动图 —— 战斗里站着的那只（PMD 精灵，按朝向取行逐帧播）。
+   * 没见过的（剪影）三格都只放一个「?」——不能泄露长什么样。
+   */
+  const artRow = el('div', { class: 'dex-art-row' });
+  const artCell = (label, node) => el('div', { class: 'dex-art-cell' }, [
+    el('div', { class: 'dex-art-box' }, [node]),
+    el('div', { class: 'dex-art-cap', text: label }),
+  ]);
   if (known) {
-    createPortrait(def.slug, { emotion: 'normal', size: 128, alt: def.name }).then((img) => {
-      if (!img) return;
-      clear(face);
-      face.append(img);
-    });
+    const icon = createIcon(def.slug, { size: 64, fps: ICONS.detailFps, alt: def.name }) ?? el('span', { class: 'dex-unknown', text: '?' });
+    artRow.append(artCell(t('小图标'), icon));
+
+    const turnBox = el('div', { class: 'dex-turnart' });
+    {
+      // 回合立绘（gen9 的正面图）：战斗里「由大变小」闪过的就是它
+      const art = turnArt(def.slug, 'front');
+      if (art) {
+        const img = document.createElement('img');
+        img.src = art.url;
+        img.alt = def.name;
+        img.className = 'dex-turnart-img';
+        img.draggable = false;
+        // 按裁切后的宽高比放进固定高度的框里（素材已经裁到包围盒，不用再算偏移）
+        img.style.height = '100%';
+        img.style.width = 'auto';
+        turnBox.append(img);
+      } else {
+        turnBox.append(el('span', { class: 'dex-unknown', text: '?' }));
+      }
+    }
+    artRow.append(artCell(t('回合立绘'), turnBox));
+
+    const battleArt = el('div', { class: 'dex-battleart' });
+    createAnim(def.slug, { anim: 'Idle', scale: 2, fps: 6, dir: DIR.LEFT, className: 'dex-anim' })
+      .then((canvas) => { clear(battleArt).append(canvas); })
+      .catch(() => {});
+    artRow.append(artCell(t('战斗动图'), battleArt));
   } else {
-    face.append(el('span', { class: 'dex-unknown big', text: '?' }));
+    const q = () => el('span', { class: 'dex-unknown big', text: '?' });
+    artRow.append(artCell(t('小图标'), q()), artCell(t('回合立绘'), q()), artCell(t('战斗动图'), q()));
   }
 
   const info = el('div', { class: 'dex-detail-info' }, [
@@ -381,10 +427,8 @@ function showEnemyDetail(def, sets) {
     ]));
   }
 
-  const body = el('div', { class: 'card-detail' }, [
-    el('div', { class: 'card-detail-main' }, [face]),
-    info,
-  ]);
+  // 详情页是**上下两段**：上面三张图并排（小图标 / 回合立绘 / 战斗动图），下面是文字
+  const body = el('div', { class: 'dex-detail' }, [artRow, info]);
   return modal({ title: t('图鉴详情 · {name}', { name: known ? def.name : t('？？？') }), wide: true, body });
 }
 

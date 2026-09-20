@@ -1,6 +1,6 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了",
-  "textSha256": "40ab8a4f58c71b7e86e8494180c82e6095bff3856c2e13b1abb061283b998075",
+  "textSha256": "6e17387fa7065634b2aa6eda1cbb1a034be226fa627ba0515966a5da9cae13e7",
   "chars": 2680,
   "fonts": [
     {

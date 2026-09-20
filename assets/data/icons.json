@@ -1,0 +1,1072 @@
+{
+ "weedle": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "beedrill": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pidgey": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "fearow": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "arbok": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "raichu": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sandshrew": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sandslash": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "oddish": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gloom": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "vileplume": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "paras": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "parasect": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "arcanine": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "machop": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "machoke": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "machamp": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bellsprout": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "tentacool": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "tentacruel": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "geodude": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "graveler": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "golem": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "magnemite": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "grimer": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "shellder": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "cloyster": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gastly": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gengar": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "onix": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "kingler": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "electrode": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "cubone": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rhyhorn": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rhydon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pinsir": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gyarados": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "lapras": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "aerodactyl": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "ledian": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "ariados": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mareep": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "ampharos": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "quagsire": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "unown": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gligar": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "steelix": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "scizor": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "heracross": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "slugma": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "magcargo": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "remoraid": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mantine": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "skarmory": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "kingdra": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "elekid": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "larvitar": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pupitar": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "tyranitar": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "treecko": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sceptile": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "marshtomp": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "beautifly": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "taillow": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "masquerain": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "shroomish": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "breloom": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "nincada": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sableye": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mawile": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "aron": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "lairon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "aggron": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "electrike": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "manectric": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "swalot": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "numel": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "camerupt": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "torkoal": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "trapinch": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "flygon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "cacnea": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "cacturne": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "swablu": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "lunatone": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "solrock": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "corphish": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "crawdaunt": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "baltoy": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "claydol": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "armaldo": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "shuppet": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "banette": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "duskull": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "glalie": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "huntail": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "salamence": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "beldum": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "metang": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "metagross": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "regirock": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "kyogre": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "staraptor": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "luxray": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rampardos": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bastiodon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "shellos": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gastrodon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "drifblim": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "buneary": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mismagius": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bronzor": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bronzong": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "spiritomb": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gible": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gabite": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "garchomp": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "hippopotas": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "hippowdon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "toxicroak": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "carnivine": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "abomasnow": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "magnezone": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rhyperior": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "tangrowth": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "electivire": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gliscor": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "probopass": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "froslass": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "regigigas": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "darkrai": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "snivy": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "roggenrola": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "gigalith": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "woobat": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "drilbur": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "excadrill": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "seismitoad": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "throh": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "scolipede": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sandile": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "darumaka": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "maractus": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "dwebble": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "yamask": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "cofagrigus": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "carracosta": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "archeops": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "zoroark": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "emolga": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "foongus": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "amoonguss": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "ferroseed": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "litwick": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "chandelure": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "stunfisk": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "druddigon": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "golett": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rufflet": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "braviary": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "durant": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "kyurem": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "fletchling": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "talonflame": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "honedge": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "aegislash": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "heliolisk": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "tyrantrum": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "aurorus": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "hawlucha": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "dedenne": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "carbink": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "goomy": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "trevenant": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pumpkaboo": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bergmite": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "avalugg": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "noibat": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "zygarde": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "diancie": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "grubbin": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "vikavolt": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rockruff": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "wishiwashi": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mareanie": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "toxapex": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mudbray": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mudsdale": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "dewpider": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "fomantis": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "lurantis": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "morelull": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sandygast": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pyukumuku": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "minior": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "togedemaru": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "mimikyu": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "bruxish": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "dhelmise": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "zeraora": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rookidee": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "corviknight": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "rolycoly": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "carkol": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "silicobra": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sandaconda": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "sizzlipede": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "centiskorch": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "runerigus": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "falinks": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "pincurchin": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "stonjourner": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "nacli": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ },
+ "naclstack": {
+  "frames": 2,
+  "fw": 64,
+  "fh": 64
+ }
+}

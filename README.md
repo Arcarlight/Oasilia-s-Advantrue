@@ -400,6 +400,23 @@ AP        = min(8, 2 + 敏捷 / 2)
 （`tools/diag-encounter.js` 与 `diag-enemy-panel.js` 各有几条断言盯着「在名字下面 / 字号更小 /
 总宽相等 / 两端对齐 / 非首领没有这一行」。）
 
+### 小图标（图鉴里的头像）
+敌人图鉴里的头像用的是 **Generation 9 Pack 的 Icons**（Essential 的 animated Icons，会动）：
+每张素材是「**64×64 一帧、横向排开**」的动图条（本作这 214 张都是 2 帧 128×64）。
+
+- 导出：`node tools/import-icons.mjs` → `assets/icons/<slug>.png` + `src/data/icons.js`（只记帧数，帧宽固定 64）。
+- 播放：`src/core/icons.js` 的 `createIcon(slug, {size})` —— 纯 CSS 的
+  `background-position` + `steps(帧数)`，**不用 setInterval**：
+  图鉴一屏几十上百张图标，每张挂个定时器太贵。（代价是 background-position 不走合成器，
+  所以图鉴里帧率压到 4fps、详情页那张 7fps。）
+- 兜底：那只没有小图标时**返回 null**，调用方退回 PMD 头像，不会开天窗。
+- 点进**敌人详情**同时给三张图（用户要求）：**小图标 / 回合立绘（gen9 正面图）/ 战斗动图（PMD 精灵）**。
+  没见过的（剪影）三格都只放一个「?」——不能提前泄露长相。
+- 门禁：`check-content` 要求每个敌人都有小图标且是 64 的整数倍宽 × 64 高
+  （拿错素材 / 帧宽不是 64 会让图标跳成半帧），`test-sprite.mjs` 也钉了一遍；
+  `diag-codex.js` 会查它**真的在动**（`animation-name === 'poke-icon-play'`、
+  底图比显示宽 = 动图条）而不是一张静止的图。
+
 ### 成长
 - 每场战斗胜利都会**永久提升属性**（野生怪 +3 点预算，精英 +5，首领 +8）。
 - 走到首领节点前会自动回复一部分生命；打完首领完全回血。

@@ -2909,6 +2909,45 @@ input, textarea { cursor: text !important; }
 .btn-sub { margin-left: 6px; font-size: 11px; opacity: .65; font-variant-numeric: tabular-nums; }
 
 /* ============================================================
+   小图标（Essentials 的 animated Icons，来自 Generation 9 Pack）
+   每张素材是「64×64 一帧、横向排开」的动图条，用 background-position + steps() 逐帧播
+   （帧数与尺寸由 src/core/icons.js 现算，不写死在这里）。
+   ============================================================ */
+@keyframes poke-icon-play {
+  from { background-position: 0 0; }
+  to { background-position: calc(-1 * var(--icon-total, 0px)) 0; }
+}
+.poke-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
+
+/* ============================================================
+   图鉴详情：三张图并排（小图标 / 回合立绘 / 战斗动图）
+   ============================================================ */
+.dex-detail { display: flex; flex-direction: column; gap: 14px; }
+.dex-art-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  padding-bottom: 12px;
+  box-shadow: inset 0 -1px 0 rgba(232, 207, 162, .2);
+}
+.dex-art-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.dex-art-box {
+  width: 100%; height: 112px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-md);
+  background: radial-gradient(70% 70% at 50% 40%, rgba(255, 255, 255, .1), rgba(0, 0, 0, .22));
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .18);
+  overflow: hidden;
+}
+.dex-art-cap { font-size: 11px; opacity: .65; }
+.dex-turnart-img { image-rendering: pixelated; max-width: 100%; }
+.dex-battleart canvas, .dex-anim { image-rendering: pixelated; max-height: 104px; width: auto; }
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width: 900px) {

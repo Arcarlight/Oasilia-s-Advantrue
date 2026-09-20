@@ -171,6 +171,26 @@ console.log('精灵图回归测试：');
     [...single, ...noIdleFrames].slice(0, 6).join('、') || '');
 }
 
+// ---------- ⑥ 小图标（图鉴里的头像就是它） ----------
+{
+  const { ICON_META } = await import('../src/data/icons.js');
+  const noIcon = [];
+  const noMeta = [];
+  const badSize = [];
+  for (const slug of used) {
+    if (slug === BALANCE.player.species) continue;   // 主角不需要小图标（图鉴里只有敌人）
+    const buf = await fs.readFile(path.join(ROOT, 'assets', 'icons', slug + '.png')).catch(() => null);
+    if (!buf) { noIcon.push(slug); continue; }
+    if (!ICON_META[slug]) { noMeta.push(slug); continue; }
+    const w = buf.readUInt32BE(16); const h = buf.readUInt32BE(20);
+    // 素材是「64×64 一帧、横向排开」的动图条：高必须 64，宽必须是帧数的整数倍
+    if (h !== 64 || w !== ICON_META[slug].frames * 64) badSize.push(`${slug}(${w}×${h} vs ${ICON_META[slug].frames} 帧)`);
+  }
+  ok(noIcon.length === 0, '每个敌人都有一张小图标（assets/icons/<slug>.png）', noIcon.slice(0, 8).join('、') || `${used.length - 1} 只`);
+  ok(noMeta.length === 0, '小图标的帧数表（src/data/icons.js）里有每一只', noMeta.slice(0, 8).join('、') || '');
+  ok(badSize.length === 0, '小图标都是 64×64 一帧的动图条（宽 = 帧数 × 64）', badSize.slice(0, 6).join('、') || '');
+}
+
 if (fails.length) {
   console.error(`\n精灵图回归测试：失败 ${fails.length} 条`);
   for (const f of fails) console.error(`  ✗ ${f}`);

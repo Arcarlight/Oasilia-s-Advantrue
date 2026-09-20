@@ -144,6 +144,12 @@
     ok(qa('.dex-card.met', modal).length === 1, '「见过但没打赢」的那只是 .met', `${qa('.dex-card.met', modal).length}`);
     ok(qa('.dex-card.slain', modal).length === 1, '「打赢过」的那只是 .slain', `${qa('.dex-card.slain', modal).length}`);
     ok(qa('.dex-card .dex-slain', modal).length === 1, '打赢过的那只角上有一个 ✓');
+    // 见过的用**小图标**（Generation 9 Pack 的动图），没见过的仍然是剪影
+    ok(qa('.dex-card.met .poke-icon, .dex-card.slain .poke-icon', modal).length === 2,
+      '见过的敌人卡上用的是小图标（不是 PMD 头像）',
+      `${qa('.dex-card .poke-icon', modal).length} 个图标 / 见过 ${qa('.dex-card.met, .dex-card.slain', modal).length} 只`);
+    ok(qa('.dex-card.new .poke-icon', modal).length === 0, '没见过的仍然是剪影，不给图标（不然等于提前看到长相）');
+    ok(qa('.dex-card .dex-art img', modal).length === 0, '敌人卡上不再用 <img> 头像（统一换成小图标）');
     ok(qa('.dex-card-name', modal).some((n) => n.textContent === ENEMY_BY_ID[seenId].name),
       '见过的显示真实名字', ENEMY_BY_ID[seenId].name);
     // 点开见过的：要有台词与招式（详情页是**新的一层**，断言要查最上面那层）
@@ -152,6 +158,28 @@
     await wait(250);
     const detail = topModal();
     ok(!!q('.dex-detail-info', detail), '点开见过的宝可梦有详情页');
+    /**
+     * 详情页要同时给出**三张图**（用户要求）：小图标（动图）/ 回合立绘 / 战斗动图。
+     * 「动图」这件事不能只看有没有元素 —— 要查它真的挂着逐帧动画（CSS animation-name）。
+     */
+    {
+      const cells = qa('.dex-art-cell', detail);
+      const caps = cells.map((c) => q('.dex-art-cap', c)?.textContent);
+      ok(cells.length === 3, '详情页并排三张图（小图标 / 回合立绘 / 战斗动图）', caps.join(' / '));
+      const icon = q('.dex-art-cell .poke-icon', detail);
+      ok(!!icon, '第一格是小图标');
+      if (icon) {
+        const cs = getComputedStyle(icon);
+        ok(cs.animationName === 'poke-icon-play' && cs.animationIterationCount === 'infinite',
+          '小图标**在动**（挂着逐帧动画，不是一张静止的图）',
+          `${cs.animationName} / ${cs.animationDuration} / ${cs.animationIterationCount}`);
+        ok(parseFloat(cs.backgroundSize) > icon.clientWidth,
+          '小图标的底图比它自己宽（说明是「一帧一帧横向排开」的动图条）',
+          `底图 ${cs.backgroundSize} vs 显示宽 ${icon.clientWidth}px`);
+      }
+      ok(!!q('.dex-art-cell .dex-turnart-img', detail), '第二格是回合立绘（gen9 正面图）');
+      ok(!!q('.dex-art-cell canvas', detail), '第三格是战斗动图（PMD 精灵的 canvas）');
+    }
     ok(qa('.dex-moves .dex-move', detail).length > 0, '详情里列了招式',
       `${qa('.dex-moves .dex-move', detail).length} 个胶囊`);
     ok(qa('.dex-moves .dex-move.sig', detail).length > 0, '招牌招式单独标出来了',

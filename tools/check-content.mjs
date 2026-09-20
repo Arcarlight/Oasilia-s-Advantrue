@@ -196,6 +196,32 @@ if (missingArt) warn('立绘缺失：先把 Generation 9 Pack 解到 %TEMP%\\gen
     if (!noCache.length && !inferred.length) {
       note(`精灵帧尺寸 ${used.size} 个物种全部来自 AnimData（不是猜的），切分对得上图片尺寸`);
     }
+
+    /**
+     * 小图标（Generation 9 Pack 的 animated Icons）：**敌人图鉴里的头像就是它**（用户要求）。
+     * 每张是「64×64 一帧、横向排开」的动图条，所以宽必须是 64 的整数倍、高必须正好 64 ——
+     * 这一个判据就能挡住「拿错素材 / 帧宽不是 64」这类问题（那样图标会跳成半帧）。
+     */
+    const noIcon = [];
+    const badIcon = [];
+    for (const slug of [...used].sort()) {
+      const p = path.join(ROOT, 'assets', 'icons', slug + '.png');
+      const buf = await fs.readFile(p).catch(() => null);
+      if (!buf) { noIcon.push(slug); continue; }
+      const w = buf.readUInt32BE(16); const h = buf.readUInt32BE(20);
+      if (h !== 64 || w % 64 !== 0) badIcon.push(`${slug}(${w}×${h})`);
+    }
+    if (noIcon.length) {
+      err(`这些物种没有小图标（assets/icons/<slug>.png）：${noIcon.slice(0, 8).join('、')}`
+        + `${noIcon.length > 8 ? ` …共 ${noIcon.length} 只` : ''} —— 跑 node tools/import-icons.mjs`
+        + '（图鉴里会退回 PMD 头像，但看起来就不统一了）');
+    }
+    if (badIcon.length) {
+      err(`这些小图标不是「64×64 一帧横向排开」的动图条：${badIcon.slice(0, 6).join('、')}`);
+    }
+    if (!noIcon.length && !badIcon.length) {
+      note(`小图标 ${used.size} 只齐全，且都是 64 的整数倍宽 × 64 高（帧数由 src/data/icons.js 记着）`);
+    }
   }
 }
 
