@@ -192,3 +192,9 @@ https://wiki.52poke.com/api.php?action=query&format=json&redirects=1&titles=<中
   （用「首领奖励页必须点得掉」那条断言 A/B 验过：去掉修复 → exit 1）。
   加浏览器级断言就往 `smoke-check.mjs` 的内嵌 SCRIPT 里加，**别忘了它是个模板字符串**：
   注释里不能出现反引号和 `${`。
+* **"整理画屏"时别把 `finishBattle()` 一起删掉**（v2.5 的真实事故）：`BattleScreen.settle()`
+  里那一句 `this.game.finishBattle()` 才是把 phase 从 battle 推到 reward / gameover 的那一步，
+  画屏可以交给 UI，推进状态不行 —— 删掉之后**每场战斗打完都停在战场上**（敌人 0 血、
+  「战斗结束」飘着、永远不进奖励页），而当时所有门禁全绿。教训是**测试不许替被测代码干活**：
+  原来的冒烟断言自己调 `finishBattle()` 造奖励页，于是"战斗界面打完有没有推状态"没人守。
+  现在 `smoke-check.mjs` 的第 3.6 条是**全程只通过战斗界面出牌打赢**，再断言它自己进了奖励页。

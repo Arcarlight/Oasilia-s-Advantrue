@@ -106,6 +106,51 @@ const SCRIPT = `
       errors.push('bossReward: ' + e.message);
     }
 
+    /**
+     * 3.6) **真的打赢一场**：从出牌打到结算，全程不让脚本帮忙（不许自己调 finishBattle）。
+     *
+     * 为什么补这一条：3.5 里那几条断言是脚本自己调 finishBattle() 把奖励页造出来的 ——
+     * 于是「战斗界面打完到底有没有推进状态」这件事**没有任何人守**。实测漏过一次：
+     * 整理 settle() 时把 finishBattle() 连同画屏一起删掉，后果是**每场战斗打完都停在战场上**
+     * （敌人已经 0 血、「战斗结束」飘着，永远不进奖励页），而冒烟测试全绿、一键体检全绿。
+     */
+    try {
+      window.__oasisAuto({ scene: 'battle', stage: 1 });
+      await wait(600);
+      let turn = 0;
+      while (g.phase === 'battle' && turn++ < 15) {
+        const b2 = window.__oasisUI.battleScreen;
+        if (!b2) break;
+        let busy = 0;
+        while (b2.busy && busy++ < 200) await wait(80);
+        if (g.phase !== 'battle') break;
+        // 把敌人血压到 1：一两张牌就能结束，不用真打完一整场
+        g.battle.enemy.hp = Math.min(g.battle.enemy.hp, 1);
+        const playable = b2.battle.hand('player').filter((c) => b2.battle.canPlay(c.uid));
+        if (playable.length) await b2.playCard(playable[0].uid);
+        else await b2.onEndTurn();
+        await wait(400);
+      }
+      let reach = 0;
+      while (g.phase === 'battle' && reach++ < 120) await wait(100);
+      const hasReward = !!document.querySelector('.reward-screen');
+      log('真打赢一场（不自己调 finishBattle）→ phase=' + g.phase, '奖励页？' + hasReward, '回合数=' + turn);
+      if (g.phase !== 'reward' || !hasReward) {
+        errors.push('战斗打赢之后没进奖励页（phase=' + g.phase + '，还在' +
+          (document.querySelector('#stage .screen') ? document.querySelector('#stage .screen').className : '空屏') + '）');
+      } else {
+        const deckBefore = g.data.deck.length;
+        const card = document.querySelector('.reward-cards .card');
+        if (card) card.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(450);
+        const stuck = !!document.querySelector('.reward-screen');
+        log('  点卡之后 phase=' + g.phase, 'deck', deckBefore, '->', g.data.deck.length, '奖励页还在？' + stuck);
+        if (stuck) errors.push('战斗胜利的奖励页没关掉');
+      }
+    } catch (e) {
+      errors.push('battleWin: ' + e.message);
+    }
+
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
     try {
       const audioMod = await import('/src/core/audio.js');

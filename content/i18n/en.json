@@ -612,6 +612,7 @@
   "便宜货商人": "Cheap Goods Merchant",
   "保护": "Protection",
   "保护：保命的那一类。": "Protection: the life-saving kind.",
+  "修一个**战斗打赢之后停在战场上**的问题：对手已经倒下，画面却还停在战斗里、不进奖励页（刷新页面重进这一局可以继续，这一场再打一次就行）。": "Fixed a **freeze on the battlefield after winning a fight**: the opponent was down, but the screen stayed in the battle and never moved on to the reward screen (reload the page and continue the run — you just fight that battle again).",
   "修一个**打完首领之后会卡住**的问题：战斗奖励那屏点「拿卡」或「跳过」都不会关掉，卡进了卡组、下一章其实已经开始，画面却停在奖励页不动（这一屏现在会正常关掉，界面也不会再留下关不掉的旧屏）。": "Fixed a **freeze after beating a boss**: on the battle reward screen neither \"take the card\" nor \"skip\" would close it — the card went into your deck and the next chapter had already started, but the display stayed frozen on the reward page (that screen now closes properly, and no unclosable old screen is left behind).",
   "修好了几个名字：「电飞鼠」「迭失棺」，还有「沙铃仙人掌」的日文写法。": "Fixed a few names: \"Emolga\", \"Cofagrigus\", and the Japanese spelling of \"Maractus\".",
   "修好了赤面龙、电龙这些新宝可梦的行走图（帧尺寸算错了，画面上会并排出现两只）。": "Fixed the walking sprites for new Pokémon like Druddigon and Ampharos (the frame size was wrong, so two of them showed up side by side).",
