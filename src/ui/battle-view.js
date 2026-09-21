@@ -8,7 +8,7 @@ import { createAnim, createStill, animInfo, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion, emotionForEvent } from '../core/portraits.js';
 import { turnArt as turnArtOf, fitArt, ART_FROM_SCALE } from '../core/gen9.js';
 import { audio } from '../core/audio.js';
-import { STATUS_INFO, ALL_STATUSES, computeHit, effectiveAtk, effectiveDef } from '../core/battle.js';
+import { STATUS_INFO, ALL_STATUSES, BUFF_INFO, computeHit, effectiveAtk, effectiveDef } from '../core/battle.js';
 import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
 import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
@@ -885,6 +885,13 @@ export class BattleScreen {
     // （血量/护盾早就走 disp 了，状态这块当初漏了 —— 和当年那个「血条不动」是同一类 bug。）
     const dd = this.disp[key] ?? {};
     this.syncStatusChips(statusEl, dd);
+    /**
+     * **强化胶囊**（我方 buff，v2.9961 新加的）：行动点上限 / 回响 / 威力提升 / 附加层数。
+     * 和状态胶囊同一排、同一套样式，只是往另一头（右边）排 —— 玩家一眼能看出
+     * 「哪些是坏的、哪些是我给自己挂的」。数据直接读引擎（强化只在回合边界变化，
+     * 不像血量那样会被一次性算完的敌方回合抢跑）。
+     */
+    this.syncBuffChips(statusEl, this.battle[key]?.buffs ?? {});
 
     clear(statsEl);
     const rows = isPlayer
@@ -928,6 +935,42 @@ export class BattleScreen {
     // 顶部 HUD 也跟着一起刷：只在整个回合演完时刷的话，
     // 演出途中「角色卡上的血条已经掉了、顶部的还满着」，看着像没掉血。
     if (isPlayer) this.syncHud();
+  }
+
+  /**
+   * 强化胶囊（我方 buff）：和状态胶囊同一排，`data-buff` 前缀区分（退场逻辑按 data-st 找，互不干扰）。
+   * 显示成「名字 + 剩余回合」，悬停给出完整说明。
+   */
+  syncBuffChips(statusEl, buffs) {
+    const keys = Object.keys(buffs ?? {}).filter((k) => BUFF_INFO[k] && (buffs[k]?.turns ?? 0) > 0);
+    for (const node of [...statusEl.children]) {
+      if (node.dataset.buff && !keys.includes(node.dataset.buff)) node.remove();
+    }
+    for (const k of keys) {
+      const v = buffs[k];
+      const info = BUFF_INFO[k];
+      const label = t(info.name);
+      const val = k === 'echo' ? `×${(1 + v.n).toFixed(1).replace(/\.0$/, '')}` : `+${v.n}`;
+      const text = `${label} ${val} · ${t('剩 {n} 回合', { n: v.turns })}`;
+      const tip = `${label} ${val}\n${t(info.desc, { n: v.n, mul: (1 + v.n).toFixed(1).replace(/\.0$/, '') })}\n${t('剩余 {n} 回合。', { n: v.turns })}`;
+      let node = [...statusEl.children].find((n) => n.dataset.buff === k);
+      if (!node) {
+        node = el('span', {
+          class: 'status-chip buff enter',
+          dataset: { buff: k, val: val, tip },
+          style: { '--chip': info.color, boxShadow: `inset 0 0 0 1px ${info.color}66` },
+        }, [
+          el('span', { class: `status-ico ${info.ico}`, style: { backgroundColor: info.color } }),
+          el('span', { class: 'status-val', text }),
+        ]);
+        statusEl.append(node);
+        continue;
+      }
+      const valEl = node.querySelector('.status-val');
+      if (valEl && valEl.textContent !== text) { valEl.textContent = text; restartAnim(valEl, 'val-up'); }
+      node.dataset.val = val;
+      node.dataset.tip = tip;
+    }
   }
 
   /**

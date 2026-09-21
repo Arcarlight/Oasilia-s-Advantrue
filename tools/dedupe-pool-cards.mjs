@@ -50,9 +50,51 @@ const KIT_OF_TYPE = {
   钢: 'kit_t_钢', 飞行: 'kit_t_飞行', 龙: 'kit_t_龙',
 };
 
+/**
+ * **沙漠蜻蜓（主角）相关度**：同效果的重复组里，优先把「像她自己的招」留给玩家。
+ *
+ * 用户的原话：「我希望玩家能拿到的卡牌或多或少和沙漠蜻蜓相关，你可以将非常不相关的
+ * 换成同样效果的相关的，或是单纯更名（但是不要让敌人那边出现怪异的情况）。」
+ *
+ * 上一版只看「稀有度低 / 不在招式池」，于是把「地震」「龙爪」这些**本命招**换了出去
+ * （用户点名：「注意到你之前移除的卡牌有地震」）—— 方向正好反了。打分（高者留在玩家池）：
+ *   ① 起始卡组里的（开局就带着，必须留）+100；
+ *   ② 本命招 +50（她的经典配置 / 沙漠与声波那一路，见 ICONIC）；
+ *   ③ 同属性：地面 / 龙 +40，岩石 / 虫 / 飞行 / 钢 / 火 +12（她能学的那些）；
+ *   ④ 名字里的沙漠蜻蜓味道：沙 / 尘 / 龙 / 翼 / 吼 / 声 / 震 / 裂 / 掘 / 咬 / 爪 / 尾 +6；
+ *   ⑤ 不在任何敌人招式池里的 +4（留在池里才不会变成没人用的死卡），稀有度低 +0/1/2/3。
+ */
+const FLYGON_TYPES = { 地面: 40, 龙: 40, 岩石: 12, 虫: 12, 飞行: 12, 钢: 12, 火: 12 };
+const FLYGON_WORDS = ['沙', '尘', '龙', '翼', '翅', '吼', '声', '震', '裂', '掘', '咬', '爪', '尾'];
+/** 本命招：她的招牌 + 沙漠 / 声波那一路（都是她能学的招） */
+const ICONIC = new Set([
+  'earthquake', 'dragon_claw', 'dragon_dance', 'outrage', 'boomburst',
+  'sandstorm', 'earth_power', 'sand_tomb', 'sand_attack', 'dragon_rush',
+]);
+function flygonScore(c) {
+  let s = 0;
+  if (starterDeck.includes(c.id)) s += 100;
+  if (ICONIC.has(c.id)) s += 50;
+  for (const ty of c.types ?? []) s += FLYGON_TYPES[ty] ?? 0;
+  for (const w of FLYGON_WORDS) if ((c.name ?? '').includes(w)) { s += 6; break; }
+  if (!inAnyKit.has(c.id)) s += 4;
+  s += 3 - (RANK[c.rarity] ?? 3);
+  return s;
+}
+
 const reachable = (id) => inAnyKit.has(id) || signatureMoves.has(id);
 const signature = (c) => `${c.ap}|${JSON.stringify(c.effects ?? [])}`;
 
+/**
+ * ⚠ 只管「**玩家池里的重复**」：组内多余的移出去，每组留 Flygon 相关度最高的那张。
+ *
+ * 以前这里还兼着「每组必须留一张给玩家」，于是**故意的减法会被它撤销** ——
+ * 另一份工具刻意把一批「伤害 + 削弱」的牌移出玩家池（用户要的），它下一次运行又把
+ * 那组里最相关的一张塞回池子（实测：一次运行就撤回了 14 张）。所以现在：
+ *   · 组只在**玩家池内部**算（`!enemyOnly`）—— 池里只剩一张的组根本不碰；
+ *   · 只做「移出」，不做「回收」；一个效果整组都不给玩家是允许的（敌人照样会用、
+ *     图鉴照样能靠「看见敌方打出」解锁），但**池子里出现两张一模一样的牌**不行。
+ */
 const groups = new Map();
 for (const c of cards) {
   if (c.enemyOnly) continue;
@@ -63,9 +105,7 @@ for (const c of cards) {
 const dupes = [...groups.values()].filter((g) => g.length > 1);
 
 const pick = (g) => [...g].sort((a, b) => (
-  (Number(starterDeck.includes(b.id)) - Number(starterDeck.includes(a.id)))
-  || (Number(!inAnyKit.has(b.id)) - Number(!inAnyKit.has(a.id)))
-  || ((RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9))
+  (flygonScore(b) - flygonScore(a)) || ((RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9))
 ))[0];
 
 let converted = 0;
@@ -102,9 +142,9 @@ for (const p of kitPatches) {
   }
 }
 
-console.log(`\n合计：转成 enemyOnly ${converted} 张 · 补进招式池 ${kitPatches.length} 张 · 没法处理 ${unhandled.length} 张`);
+console.log(`\n合计：移出玩家池 ${converted} 张 · 补进招式池 ${kitPatches.length} 张 · 没法处理 ${unhandled.length} 张`);
 const playerPool = cards.filter((c) => !c.enemyOnly);
-console.log(`玩家抽卡池：233 → ${playerPool.length} 张（只给敌人用：${cards.length - playerPool.length} 张）`);
+console.log(`玩家抽卡池：${playerPool.length} 张（只给敌人用：${cards.length - playerPool.length} 张）`);
 byRarity(playerPool);
 
 function byRarity(list) {

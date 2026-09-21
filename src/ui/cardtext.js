@@ -15,7 +15,7 @@
 // 唯一的真相仍然是 content/cards.json：文案和高亮都只是「读」它，不改写。
 
 import { el } from './dom.js';
-import { STATUS_INFO, computeHit } from '../core/battle.js';
+import { STATUS_INFO, BUFF_INFO, computeHit } from '../core/battle.js';
 import { BALANCE } from '../data/balance.js';
 import { t, currentLang } from '../core/i18n.js';
 
@@ -82,7 +82,7 @@ export function damageAt(power, opts = {}) {
 export function resolveCardText(card, ctx = {}) {
   const text = typeof card === 'string' ? card : (card?.text ?? '');
   if (!text.includes('{')) return text;
-  const effs = (typeof card === 'string' ? [] : (card.effects ?? []));
+  const effs = (typeof card === 'string' ? [] : flatEffects(card));
   const dmgEffs = effs.filter((e) => e.kind === 'damage');
   const values = {};
   if (dmgEffs.length) {
@@ -440,8 +440,24 @@ export function collectKeywords(text) {
  * 排序、角标、详情页三处会一起变成错的，而且没人发现。
  * 现在唯一的真相是 effects + 当前的攻防上下文。
  */
+/**
+ * 把 effects 摊平：`delay` / `trigger` 里**预约的那串效果**也算这张牌会做的事
+ * （「下回合开始时造成 {d} 点伤害」——伤害写在里面，卡面的 {d} 得从那儿取）。
+ */
+export function flatEffects(card) {
+  const out = [];
+  const walk = (list) => {
+    for (const e of list ?? []) {
+      out.push(e);
+      if (e.kind === 'delay' || e.kind === 'trigger') walk(e.effects);
+    }
+  };
+  walk(card?.effects);
+  return out;
+}
+
 export function damageParts(card, ctx = {}) {
-  const effs = (card?.effects ?? []).filter((e) => e.kind === 'damage');
+  const effs = flatEffects(card).filter((e) => e.kind === 'damage');
   if (!effs.length) return null;
   const main = effs[0];
   const per = damageAt(main.power, { ...ctx, ignoreDefPct: main.ignoreDefPct ?? 0 });
@@ -460,7 +476,7 @@ export function damageParts(card, ctx = {}) {
  * 顺序不一样；而「哪张牌威力高」是卡牌自身的属性，用威力总量排才稳定。
  */
 export function cardPowerTotal(card) {
-  return (card?.effects ?? [])
+  return flatEffects(card)
     .filter((e) => e.kind === 'damage')
     .reduce((s, e) => s + (e.power + (e.execBonus ?? 0) / 2) * (e.hits ?? 1), 0);
 }
@@ -725,6 +741,42 @@ export function effectLines(card) {
         break;
       case 'discard':
         rows.push({ ico: 'ico-shuffle', label: t('弃牌'), value: t('{n} 张', { n: e.n ?? 1 }), note: TIP.discard() });
+        break;
+      /**
+       * **强化（buff）**：v2.9961 新加的我方强化，带持续回合数。
+       * 详情页要把「哪个强化、多少、几回合」写全 —— 不然玩家看不出一张牌给自己挂上了什么。
+       */
+      case 'grantBuff': {
+        const info = BUFF_INFO[e.buff];
+        const who = e.target === 'enemy' ? t('对手') : t('自身');
+        const val = e.buff === 'echo' ? `×${(1 + (e.n ?? 1)).toFixed(1).replace(/\.0$/, '')}` : `+${e.n ?? 1}`;
+        rows.push({
+          ico: info?.ico ?? 'ico-star',
+          label: t('{who} · 强化「{name}」', { who, name: t(info?.name ?? e.buff) }),
+          value: t('{val}，{turns} 回合', { val, turns: e.turns ?? 3 }),
+          note: t(info?.desc ?? '', { n: e.n ?? 1, mul: (1 + (e.n ?? 1)).toFixed(1).replace(/\.0$/, '') }),
+        });
+        break;
+      }
+      /** **下回合生效**：预约一串效果，到点才结算 */
+      case 'delay':
+        rows.push({
+          ico: 'ico-clock',
+          label: t('下回合生效'),
+          value: t('{n} 回合后', { n: e.turns ?? 1 }),
+          note: t('这一串效果会在 {n} 个回合后的回合开始时结算 —— 先蓄一手，再一次性打出来。', { n: e.turns ?? 1 }),
+        });
+        break;
+      /** **行动 N 次后生效**：数「又打了几张牌」或「又过了几个回合」 */
+      case 'trigger':
+        rows.push({
+          ico: 'ico-clock',
+          label: e.on === 'turn' ? t('{n} 回合后生效', { n: e.count ?? 2 }) : t('再打出 {n} 张牌后生效', { n: e.count ?? 2 }),
+          value: t('埋一手'),
+          note: e.on === 'turn'
+            ? t('从打出的这一张算起，{n} 个自己的回合之后结算。', { n: e.count ?? 2 })
+            : t('从打出的这一张之后算起，再打出 {n} 张牌就结算（同一张牌反复打也算）。', { n: e.count ?? 2 }),
+        });
         break;
       default:
         rows.push({ ico: 'ico-star', label: e.kind, value: '', note: '' });

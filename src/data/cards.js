@@ -97,6 +97,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -252,7 +255,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "aurora_veil",
@@ -299,7 +303,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "barrier",
@@ -366,7 +371,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "blood_price",
@@ -389,6 +395,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "恶"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -412,6 +421,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -434,6 +446,9 @@ export const CARDS = [
     ],
     "types": [
       "恶"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -495,6 +510,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -557,6 +575,9 @@ export const CARDS = [
     ],
     "types": [
       "水"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -717,6 +738,9 @@ export const CARDS = [
     ],
     "types": [
       "超能"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -830,6 +854,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -854,6 +881,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -896,6 +926,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "恶"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -962,6 +995,9 @@ export const CARDS = [
     ],
     "types": [
       "恶"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -1180,27 +1216,38 @@ export const CARDS = [
   },
   {
     "id": "draco_meteor",
-    "name": "流星群",
+    "name": "龙星群",
     "ap": 3,
     "rarity": "epic",
     "targeting": "enemy",
     "art": "star_1",
-    "text": "造成 {d} 点伤害，本场战斗攻击 -8。使用后销毁。",
+    "text": "造成 {d} 点伤害；攻击牌威力 +100%（持续 2 回合）；自身攻击 -30%（本场战斗）。",
     "exhaust": true,
     "effects": [
       {
         "kind": "damage",
-        "power": 342
+        "power": 285
+      },
+      {
+        "kind": "grantBuff",
+        "buff": "power",
+        "n": 100,
+        "turns": 2
       },
       {
         "kind": "buff",
         "stat": "atk",
-        "amount": -8
+        "pct": -0.3
       }
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "tags": [
+      "buff",
+      "burst"
+    ],
+    "enemyOnly": false
   },
   {
     "id": "dragon_ascension",
@@ -1295,6 +1342,9 @@ export const CARDS = [
     ],
     "types": [
       "龙"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -1335,6 +1385,9 @@ export const CARDS = [
     ],
     "types": [
       "龙"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -1532,7 +1585,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.3
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "exploit_weak",
@@ -1554,6 +1608,9 @@ export const CARDS = [
     ],
     "types": [
       "恶"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -1601,7 +1658,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "feather_dance",
@@ -1832,6 +1890,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -1919,7 +1980,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "fury_cutter",
@@ -1961,6 +2023,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -2009,21 +2074,32 @@ export const CARDS = [
     "id": "giga_impact",
     "name": "终极冲击",
     "ap": 3,
-    "rarity": "rare",
+    "rarity": "epic",
     "targeting": "enemy",
     "art": "exploding",
-    "text": "造成 {d} 点伤害，自身受到 5 点反伤。使用后销毁。",
+    "text": "下回合开始时造成 {d} 点伤害（这一回合只做蓄力）。",
     "exhaust": true,
     "effects": [
       {
-        "kind": "damage",
-        "power": 342,
-        "recoilPct": 0.1
+        "kind": "delay",
+        "turns": 1,
+        "name": "终极冲击",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 420
+          }
+        ]
       }
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "tags": [
+      "timing",
+      "burst"
+    ],
+    "enemyOnly": false
   },
   {
     "id": "glaciate",
@@ -2046,7 +2122,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "guardian_oath",
@@ -2253,6 +2330,9 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -2274,6 +2354,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -2297,7 +2380,8 @@ export const CARDS = [
         "amount": -3,
         "target": "enemy"
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "hydro_pump",
@@ -2502,6 +2586,9 @@ export const CARDS = [
     ],
     "types": [
       "钢"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -2642,6 +2729,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "格斗"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -2713,6 +2803,9 @@ export const CARDS = [
     ],
     "types": [
       "草"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -2852,6 +2945,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "虫"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -3091,7 +3187,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "moonlight",
@@ -3152,6 +3249,9 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -3194,6 +3294,9 @@ export const CARDS = [
     ],
     "types": [
       "龙"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -3238,6 +3341,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "火"
+    ],
+    "tags": [
+      "burst"
     ]
   },
   {
@@ -3320,6 +3426,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -3366,6 +3475,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -3523,7 +3635,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "psyshock",
@@ -3699,6 +3812,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -3731,18 +3847,29 @@ export const CARDS = [
     "rarity": "uncommon",
     "targeting": "enemy",
     "art": "dirt_1",
-    "text": "连续 3 次造成 {d} 点伤害。",
+    "text": "2 个回合后，造成 3 次 {d} 点伤害。",
     "effects": [
       {
-        "kind": "damage",
-        "power": 63,
-        "hits": 3
+        "kind": "trigger",
+        "on": "turn",
+        "count": 2,
+        "name": "岩石爆击",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 95,
+            "hits": 3
+          }
+        ]
       }
     ],
     "types": [
       "岩石"
     ],
-    "enemyOnly": true
+    "enemyOnly": false,
+    "tags": [
+      "timing"
+    ]
   },
   {
     "id": "rock_polish",
@@ -3916,6 +4043,9 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -3939,6 +4069,9 @@ export const CARDS = [
     ],
     "types": [
       "地面"
+    ],
+    "tags": [
+      "weaken"
     ]
   },
   {
@@ -4075,6 +4208,10 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "weaken",
+      "buff"
     ]
   },
   {
@@ -5137,6 +5274,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "bleed"
     ]
   },
   {
@@ -5162,6 +5302,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5323,6 +5466,9 @@ export const CARDS = [
     ],
     "types": [
       "草"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5467,7 +5613,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "swift",
@@ -5491,22 +5638,32 @@ export const CARDS = [
   {
     "id": "swords_dance",
     "name": "剑舞",
-    "ap": 1,
+    "ap": 2,
     "rarity": "rare",
     "targeting": "self",
     "art": "sword",
-    "text": "本场战斗攻击 +6。使用后销毁。",
+    "text": "攻击牌威力 +70%（持续 2 回合），本场战斗威力 +40%。",
     "exhaust": true,
     "effects": [
       {
-        "kind": "buff",
-        "stat": "atk",
-        "amount": 6
+        "kind": "strength",
+        "n": 40
+      },
+      {
+        "kind": "grantBuff",
+        "buff": "power",
+        "n": 70,
+        "turns": 2
       }
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "tags": [
+      "buff",
+      "burst"
+    ],
+    "enemyOnly": false
   },
   {
     "id": "synthesis",
@@ -5738,6 +5895,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5761,6 +5921,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5787,6 +5950,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5805,6 +5971,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -5868,7 +6037,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "twineedle",
@@ -5975,6 +6145,9 @@ export const CARDS = [
     ],
     "types": [
       "毒"
+    ],
+    "tags": [
+      "poison"
     ]
   },
   {
@@ -6055,7 +6228,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "water_shuriken",
@@ -6103,7 +6277,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "wicked_blow",
@@ -6225,6 +6400,312 @@ export const CARDS = [
       }
     ],
     "enemyOnly": true
+  },
+  {
+    "id": "echoed_voice",
+    "name": "回声",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "buff"
+    ],
+    "text": "抽 1 张。本场战斗里，再次打出**同一张牌**时，它的伤害与附加状态层数 ×2（持续 3 回合）。",
+    "effects": [
+      {
+        "kind": "draw",
+        "n": 1
+      },
+      {
+        "kind": "grantBuff",
+        "buff": "echo",
+        "n": 1,
+        "turns": 3
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "self"
+  },
+  {
+    "id": "sand_beat",
+    "name": "沙之节拍",
+    "ap": 1,
+    "rarity": "uncommon",
+    "types": [
+      "地面"
+    ],
+    "tags": [
+      "buff"
+    ],
+    "text": "行动点上限 +1（持续 3 回合），抽 1 张。",
+    "effects": [
+      {
+        "kind": "grantBuff",
+        "buff": "apMax",
+        "n": 1,
+        "turns": 3
+      },
+      {
+        "kind": "draw",
+        "n": 1
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "self"
+  },
+  {
+    "id": "hone_claws",
+    "name": "磨爪",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "地面"
+    ],
+    "tags": [
+      "buff",
+      "poison",
+      "bleed"
+    ],
+    "text": "给对手附加状态时，层数 +1（持续 3 回合）。",
+    "effects": [
+      {
+        "kind": "grantBuff",
+        "buff": "stacks",
+        "n": 1,
+        "turns": 3
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "self"
+  },
+  {
+    "id": "dual_chop",
+    "name": "二连劈",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "龙"
+    ],
+    "tags": [
+      "timing",
+      "burst"
+    ],
+    "text": "打出这张牌之后，再打出 2 张牌时造成 {d} 点伤害。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 2,
+        "name": "二连劈",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 150
+          }
+        ]
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "dig",
+    "name": "挖洞",
+    "ap": 2,
+    "rarity": "rare",
+    "types": [
+      "地面"
+    ],
+    "tags": [
+      "timing",
+      "weaken"
+    ],
+    "text": "下回合开始时造成 {d} 点伤害，并给对手 2 层虚弱。",
+    "effects": [
+      {
+        "kind": "delay",
+        "turns": 1,
+        "name": "挖洞",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 250
+          },
+          {
+            "kind": "status",
+            "status": "weak",
+            "stacks": 2
+          }
+        ]
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "rock_tomb",
+    "name": "岩石封锁",
+    "ap": 1,
+    "rarity": "uncommon",
+    "types": [
+      "岩石"
+    ],
+    "tags": [
+      "weaken"
+    ],
+    "text": "造成 {d} 点伤害，对手防御 -3；对手每损失 1 点防御，这张牌威力 +6%。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 90,
+        "powerPerDefLost": 6
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "amount": -3,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "breaking_swipe",
+    "name": "广域破坏",
+    "ap": 2,
+    "rarity": "rare",
+    "types": [
+      "龙"
+    ],
+    "tags": [
+      "weaken"
+    ],
+    "text": "造成 {d} 点伤害，对手攻击 -25%（按基础值）。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 190
+      },
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "pct": -0.25,
+        "target": "enemy"
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "cut",
+    "name": "居合斩",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "bleed"
+    ],
+    "text": "造成 {d} 点伤害，并给对手 1 层出血。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 90
+      },
+      {
+        "kind": "status",
+        "status": "bleed",
+        "stacks": 1
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "take_down",
+    "name": "猛撞",
+    "ap": 2,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "burst"
+    ],
+    "text": "造成 {d} 点伤害，自身受到伤害的 25% 反伤。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 190,
+        "recoilPct": 0.25
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "sand_toxin",
+    "name": "沙中毒",
+    "ap": 0,
+    "rarity": "common",
+    "types": [
+      "地面"
+    ],
+    "tags": [
+      "poison"
+    ],
+    "text": "造成 {d} 点伤害，并给对手 1 层中毒。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 30
+      },
+      {
+        "kind": "status",
+        "status": "poison",
+        "stacks": 1
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
+  },
+  {
+    "id": "sand_burst",
+    "name": "沙尘卷",
+    "ap": 1,
+    "rarity": "uncommon",
+    "types": [
+      "地面"
+    ],
+    "tags": [
+      "timing"
+    ],
+    "text": "打出这张牌之后，再打出 3 张牌时造成 {d} 点伤害并给对手 2 层出血。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 3,
+        "name": "沙尘卷",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 190
+          },
+          {
+            "kind": "status",
+            "status": "bleed",
+            "stacks": 2
+          }
+        ]
+      }
+    ],
+    "enemyOnly": false,
+    "targeting": "enemy"
   }
 ];
 
@@ -6442,7 +6923,7 @@ export const CARD_ART = {
   },
   "draco_meteor": {
     "ico": "ico-meteor",
-    "fx": "star_1"
+    "fx": "star_01"
   },
   "dragon_ascension": {
     "ico": "ico-star",
@@ -6589,8 +7070,8 @@ export const CARD_ART = {
     "fx": "magic_1"
   },
   "giga_impact": {
-    "ico": "ico-counter",
-    "fx": "dirt_2"
+    "ico": "ico-volcanic_eruption",
+    "fx": "flare_1"
   },
   "glaciate": {
     "ico": "ico-temperature_down",
@@ -6897,8 +7378,8 @@ export const CARD_ART = {
     "fx": "light_1"
   },
   "rock_blast": {
-    "ico": "ico-triple",
-    "fx": "dirt_1"
+    "ico": "ico-stone",
+    "fx": "dirt_2"
   },
   "rock_polish": {
     "ico": "ico-stone",
@@ -7190,7 +7671,7 @@ export const CARD_ART = {
   },
   "swords_dance": {
     "ico": "ico-sword",
-    "fx": "twirl_1"
+    "fx": "flare_1"
   },
   "synthesis": {
     "ico": "ico-leaves",
@@ -7323,6 +7804,50 @@ export const CARD_ART = {
   "x_scissor": {
     "ico": "ico-bug",
     "fx": "slash_1"
+  },
+  "echoed_voice": {
+    "ico": "ico-audio_waves",
+    "fx": "magic_2"
+  },
+  "sand_beat": {
+    "ico": "ico-earthquake",
+    "fx": "dirt_1"
+  },
+  "hone_claws": {
+    "ico": "ico-dagger",
+    "fx": "slash_1"
+  },
+  "dual_chop": {
+    "ico": "ico-double",
+    "fx": "slash_1"
+  },
+  "dig": {
+    "ico": "ico-earthquake",
+    "fx": "dirt_1"
+  },
+  "rock_tomb": {
+    "ico": "ico-stone",
+    "fx": "dirt_1"
+  },
+  "breaking_swipe": {
+    "ico": "ico-sword",
+    "fx": "slash_1"
+  },
+  "cut": {
+    "ico": "ico-sword",
+    "fx": "slash_1"
+  },
+  "take_down": {
+    "ico": "ico-mace",
+    "fx": "dirt_1"
+  },
+  "sand_toxin": {
+    "ico": "ico-poison",
+    "fx": "smoke_1"
+  },
+  "sand_burst": {
+    "ico": "ico-wind",
+    "fx": "smoke_1"
   }
 };
 

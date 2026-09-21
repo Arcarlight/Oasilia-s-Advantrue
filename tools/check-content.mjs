@@ -310,7 +310,12 @@ for (const c of CARDS) {
       fromText[key] = (fromText[key] ?? 0) + Number(m[1]);
     }
     const fromFx = {};
-    for (const e of c.effects) {
+    /**
+     * ⚠ 要把 delay / trigger 里**预约的那串效果**也算进来：那些牌的效果是嵌套的
+     * （「下回合开始时造成伤害并给 2 层虚弱」），只看顶层会把它们当成 0 层而误报。
+     */
+    const flat = (list) => list.flatMap((e) => ((e.kind === 'delay' || e.kind === 'trigger') ? [e, ...flat(e.effects ?? [])] : [e]));
+    for (const e of flat(c.effects)) {
       if (e.kind !== 'status') continue;
       fromFx[NAME[e.status]] = (fromFx[NAME[e.status]] ?? 0) + (e.stacks ?? 1);
     }
@@ -362,6 +367,34 @@ if (merchantMissing) warn(`跑 & tools/fetch-content.ps1 可以把缺的头像�
       const pack = registry.icons.filter((i) => String(i.source).startsWith('pack:')).length;
       note(`图标注册表 ${registry.icons.length} 条（Game-Icon-Pack ${pack} + 本地素材 ${registry.icons.length - pack}），生成区块 ${defined.size} 条 .ico-*`);
       if (!missing && defined.size !== registry.icons.length) warn(`生成区块有 ${defined.size} 条 .ico-*，注册表有 ${registry.icons.length} 条（区块里可能有手写残留）`);
+    }
+  }
+}
+
+/**
+ * **流派在每个稀有度上都要有牌**（用户要的）：
+ *   「这些卡牌应该各个等级都有，以免出现某流派的卡都在高级导致成型困难的情况。」
+ *
+ * 卡片的 `tags` 就是流派标签（毒 / 出血 / 单次高伤 / 削弱 / 强化 / 蓄势）。
+ * 这里对每个标签逐个稀有度数一遍，缺哪一档就报出来 —— 光靠人眼盯卡池一定会漏。
+ */
+{
+  const RARITY_ORDER = Object.keys(RARITY);
+  const tagMap = new Map();
+  for (const c of CARDS) {
+    if (c.enemyOnly) continue;
+    for (const tag of c.tags ?? []) {
+      if (!tagMap.has(tag)) tagMap.set(tag, {});
+      const row = tagMap.get(tag);
+      row[c.rarity] = (row[c.rarity] ?? 0) + 1;
+    }
+  }
+  const lines = [...tagMap.entries()].map(([tag, row]) => `${tag} ${RARITY_ORDER.map((r) => row[r] ?? 0).join('/')}`);
+  note(`流派 × 稀有度（${RARITY_ORDER.join('/')}）：${lines.join(' · ')}`);
+  for (const [tag, row] of tagMap) {
+    const missing = RARITY_ORDER.filter((r) => !(row[r] > 0));
+    if (missing.length) {
+      err(`流派「${tag}」在 ${missing.join(' / ')} 这几档上一张牌都没有 —— 抽不到就组不起来（用户点名要避免的）`);
     }
   }
 }

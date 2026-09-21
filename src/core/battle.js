@@ -50,6 +50,52 @@ export const DOT_STATUSES = ['poison', 'toxic', 'burn'];
 export const ALL_STATUSES = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 
 /**
+ * **我方强化（buff）**：带持续回合的正面效果 —— 和中毒 / 灼伤那些负面状态是同一层东西，
+ * 只是一侧是坏的、一侧是好的。用户的原话：
+ *   「为我方添加强化效果（例如增大 AP 上限、同种卡打出多次效果（包括伤害、
+ *     叠加异常层数）翻倍等强化，这个目前没有任何我方强化效果）」
+ *
+ * 规则（都在这一份表里说了算）：
+ *   · 每个强化有**层数 n** 和**剩余回合 turns**，挂上时同类取「更强的 n、更长的回合」；
+ *   · 在**那一方自己回合开始时**倒计时，到 0 就消失（有日志）；
+ *   · 显示成玩家卡旁边的一排胶囊（和大招 / 状态胶囊一样），悬停有说明。
+ *
+ * 目前四个：
+ *   apMax   行动点上限 +n（每回合真的多 n 点，不是「只多这一次」）
+ *   echo    回响：再次打出**同一张牌**时，它的伤害与状态层数 ×(1 + n)
+ *   power   攻击牌威力 +n%（buff 版的力量：会到期，但可以和小牌一起早期拿到）
+ *   stacks  附加状态层数 +n（毒 / 出血流铺得更快）
+ */
+export const BUFF_INFO = {
+  apMax: {
+    name: '行动点上限',
+    ico: 'ico-action_points',
+    color: '#8fd4ff',
+    desc: '每回合的行动点上限 +{n} —— 一个回合能做的事真的变多了。',
+  },
+  echo: {
+    name: '回响',
+    ico: 'ico-refresh',
+    color: '#ffd27a',
+    desc: '再次打出同一张牌时，它的伤害与附加状态层数 ×{mul} —— 打法变成「把一张牌反复打」。',
+  },
+  power: {
+    name: '威力提升',
+    ico: 'ico-sword',
+    color: '#ff9f8a',
+    desc: '攻击牌威力 +{n}%（和「力量」叠加，只是它会到期）。',
+  },
+  stacks: {
+    name: '附加层数',
+    ico: 'ico-poison',
+    color: '#c9a3ff',
+    desc: '给对手附加状态时，层数 +{n} —— 铺毒 / 出血更快。',
+  },
+};
+export const BUFF_KEYS = Object.keys(BUFF_INFO);
+
+
+/**
  * 一层持续伤害值 = 目标最大生命 × 百分比 + 1。
  * 「+1」是为了让前期（血量两三百）的毒依然有存在感，不至于取整成 0。
  */
@@ -100,6 +146,16 @@ function cloneSide(base) {
     bleed: 0,
     ap: 0,
     apMax: 0,
+    /** 「行动点上限 +N」的强化值（recalcDerived 会把它加回 apMax，见 grantBuff） */
+    apMaxBonus: 0,
+    /** 我方强化（BUFF_INFO）：{ key: { n, turns } } */
+    buffs: {},
+    /** 预约生效的效果（「下回合开始…」）：[{ turns, effects }] */
+    pending: [],
+    /** 「再打出 N 张牌 / 再过 N 个回合后生效」：[{ on, count, left, effects, name }] */
+    triggers: [],
+    /** 本场战斗里每种牌打过几张（回响用它判断「同一张牌」） */
+    playedIds: {},
     drawN: 0,
     handMax: 0,
     blockBonus: 0,
@@ -152,7 +208,7 @@ export function clampDebuffs(s) {
  * 引擎算伤害、AI 打分、界面预估三处都调它 —— 以前这三处各写一份，
  * 加了新机制就会漏掉一两处（AI 会看不见新牌的价值，界面上数字对不上）。
  */
-export function damagePowerOf(attacker, defender, eff) {
+export function damagePowerOf(attacker, defender, eff, powerMul = 1) {
   let power = eff.power;  if (eff.execThreshold != null && defender.hp / defender.maxHp < eff.execThreshold) {
     power += eff.execBonus ?? 0;
   }
@@ -163,6 +219,17 @@ export function damagePowerOf(attacker, defender, eff) {
   }
   if (eff.bonusIfDot && ['poison', 'toxic', 'burn'].some((s) => (defender[s] ?? 0) > 0)) {
     power += eff.bonusIfDot;
+  }
+  /**
+   * 削弱流的收尾：**对手每损失 1 点防御，威力 +powerPerDefLost%**。
+   *
+   * 「伤害 + 削弱属性」这类牌以前最大的问题是**削弱的价值会随时间归零**（用户原话：
+   * 「现在的设计会导致削弱卡到后面变得价值不高」）—— 因为对手的防御有下限（半价），
+   * 削到底之后再削就是浪费。加上这一条之后，「先削、再补一刀」变成一条真正的终结路线。
+   */
+  if (eff.powerPerDefLost) {
+    const lost = Math.max(0, (defender.def ?? 0) - effectiveDef(defender));
+    power += lost * eff.powerPerDefLost;
   }
   if (eff.plusShield) {    // 「每 1 点护盾折算成 plusShield 点威力百分比」。
     // 曾经写成 round(护盾 / 攻击 × 100 × plusShield) —— 想让「护盾转伤害」跟攻击力脱钩，
@@ -179,6 +246,8 @@ export function damagePowerOf(attacker, defender, eff) {
    */
   const bonus = modAdd(attacker, 'attackPct') + (attacker.firstAttackPending ? modAdd(attacker, 'firstAttackPct') : 0);
   if (bonus) power = Math.round(power * (1 + bonus));
+  /** 回响（同种卡重复打出）：乘在最后，和道具加成之后 */
+  if (powerMul && powerMul !== 1) power = Math.round(power * powerMul);
   return power;
 }
 
@@ -277,6 +346,12 @@ export class Battle {
       this.decks[side] = { draw: this.rng.shuffle(this.decks[side]), hand: [], discard: [], exhaust: [] };
     }
 
+    /**
+     * 精英的「追求最高伤害」是**概率**的（用户要的：精英有很大概率这样、杂兵不会）：
+     * 每场战斗开局掷一次，掷中就整场都按贪心打法走 —— 比每回合重掷更好读
+     * （玩家能看出「这一只打得很凶」）。
+     */
+    if (this.enemy?.tier === 'elite') this._eliteGreedy = this.rng.chance(0.75);
     this.recalcDerived();
   }
 
@@ -289,10 +364,115 @@ export class Battle {
       const s = this[key];
       clampDebuffs(s);
       const agi = effectiveAgi(s);
-      s.apMax = apFromAgi(agi);
+      // 行动点上限 = 敏捷推出来的那份 + 「行动点上限 +N」强化（apMaxBonus 不会被重算清掉）
+      s.apMax = apFromAgi(agi) + (s.apMaxBonus ?? 0);
       s.drawN = drawFromAgi(agi);
       s.handMax = handFromAgi(agi);
       s.playMax = playsFromAgi(agi);
+    }
+  }
+
+  // ====================== 我方强化（buff） ======================
+
+  /** 某一侧某个强化的层数（没有就是 0） */
+  buffValue(key, buff) {
+    return this[key]?.buffs?.[buff]?.n ?? 0;
+  }
+
+  /**
+   * 给某一侧挂一个强化。
+   * 同类强化**取更强的层数与更长的回合**（不叠数值，避免「连打三张就无限叠」）。
+   */
+  grantBuff(key, buff, n = 1, turns = 3) {
+    const s = this[key];
+    const info = BUFF_INFO[buff];
+    if (!s || !info) return null;
+    if (buff === 'apMax') s.apMaxBonus = (s.apMaxBonus ?? 0) + n;   // 上限是永久加的（本场战斗）
+    const cur = s.buffs[buff];
+    s.buffs[buff] = { n: Math.max(n, cur?.n ?? 0), turns: Math.max(turns, cur?.turns ?? 0) };
+    this.recalcDerived();
+    const label = buff === 'echo'
+      ? t('「{name}」×{mul}', { name: t('回响'), mul: (1 + s.buffs[buff].n).toFixed(1).replace(/\.0$/, '') })
+      : t(info.name);
+    this.emitLogged(
+      { type: 'buffUp', side: key, buff, n: s.buffs[buff].n, turns: s.buffs[buff].turns, value: this.buffValue(key, buff) },
+      t('{name} 获得了强化「{label}」（持续 {turns} 回合）。', { name: s.name, label, turns: s.buffs[buff].turns }),
+      key === 'player' ? 'good' : 'bad'
+    );
+    return s.buffs[buff];
+  }
+
+  /** 那一方回合开始时：强化倒计时，到 0 就消失 */
+  tickBuffs(key) {
+    const s = this[key];
+    for (const [buff, v] of Object.entries(s.buffs ?? {})) {
+      if (!v || v.turns <= 0) continue;
+      v.turns -= 1;
+      if (v.turns > 0) continue;
+      if (buff === 'apMax') s.apMaxBonus = Math.max(0, (s.apMaxBonus ?? 0) - v.n);
+      delete s.buffs[buff];
+      this.recalcDerived();
+      this.emitLogged(
+        { type: 'buffDown', side: key, buff, value: 0 },
+        t('{name} 的强化「{label}」结束了。', { name: s.name, label: t(BUFF_INFO[buff]?.name ?? buff) }),
+        'info'
+      );
+    }
+  }
+
+  /** 「下回合开始生效」：预约一串效果，turns 个该方回合之后在回合开始时结算 */
+  scheduleEffects(key, effects, turns = 1, name = null) {
+    const s = this[key];
+    if (!s || !effects?.length) return;
+    s.pending.push({ turns, effects, name });
+  }
+
+  /** 「再打出 N 张牌 / 再过 N 个回合后生效」 */
+  addTrigger(key, spec) {
+    const s = this[key];
+    if (!s || !spec?.effects?.length) return;
+    s.triggers.push({ on: spec.on ?? 'plays', left: Math.max(1, spec.count ?? 1), effects: spec.effects, name: spec.name ?? null });
+  }
+
+  /**
+   * 到时候了就把「预约的效果」放出来。
+   * @param {'turn'|'plays'} why 触发原因（回合开始 / 又打了一张牌）
+   */
+  fireTimers(key, why) {
+    const s = this[key];
+    if (!s) return;
+    // ① 预约（下回合开始）
+    if (why === 'turn') {
+      for (const p of [...(s.pending ?? [])]) {
+        p.turns -= 1;
+        if (p.turns > 0) continue;
+        s.pending.splice(s.pending.indexOf(p), 1);
+        this.emitLogged(
+          { type: 'timer', side: key, name: p.name },
+          t('{name} 攒的那一手到时间了。', { name: s.name }),
+          key === 'player' ? 'good' : 'bad'
+        );
+        for (const eff of p.effects) {
+          if (this.over) return;
+          this.resolveEffect(key, eff, {});
+        }
+      }
+    }
+    // ② 计数触发（打出 N 张牌 / 过 N 个回合）
+    for (const tr of [...(s.triggers ?? [])]) {
+      if (tr.on !== why) continue;
+      tr.left -= 1;
+      if (tr.left > 0) continue;
+      s.triggers.splice(s.triggers.indexOf(tr), 1);
+      this.emitLogged(
+        { type: 'timer', side: key, name: tr.name },
+        t('{name} 的「{label}」生效了！', { name: s.name, label: tr.name ?? t('蓄势') }),
+        key === 'player' ? 'good' : 'bad'
+      );
+      for (const eff of tr.effects) {
+        if (this.over) return;
+        this.resolveEffect(key, eff, {});
+      }
     }
   }
 
@@ -520,6 +700,13 @@ export class Battle {
     this.emit({ type: 'turnStart', side: 'player', turn: this.turn, ap: p.ap });
     this.tickStatuses('player');
     if (this.over) return;
+    /**
+     * 「下回合生效」/「N 回合后生效」的预约在这里结算（**在自己回合开始时**）。
+     * 强化（buff）的倒计时不在这里 —— 它在回合**结束**时扣（和虚弱同一套计时），
+     * 否则「持续 1 回合」的 AP 上限强化会在给你 AP 之前就过期。
+     */
+    this.fireTimers('player', 'turn');
+    if (this.over) return;
     if (modAdd(p, 'healPerTurnPct')) {
       const h = Math.round(p.maxHp * modAdd(p, 'healPerTurnPct'));
       if (h > 0 && p.hp < p.maxHp) {
@@ -530,8 +717,6 @@ export class Battle {
     }
     this.drawCards('player', p.drawN + modAdd(p, 'drawPerTurn'));
   }
-
-  /** 玩家出牌 */
   playCard(uid, opts = {}) {
     if (this.over || this.active !== 'player') return { ok: false, reason: t('不是你的回合') };
     const d = this.decks.player;
@@ -598,6 +783,23 @@ export class Battle {
     let damageLanded = false;
     const src = this[sourceKey];
     /**
+     * **回响**（同种卡打出多次翻倍）：本场战斗里这张牌之前打过几次？
+     * 有「回响」强化时，第 2 次及以后打出同名卡 → 伤害与附加状态层数 ×(1 + n)。
+     * 这就是用户点名的「同种卡打出多次效果翻倍」：打法围绕**反复打同一张牌**展开。
+     */
+    const plays = src.playedIds?.[card.id] ?? 0;
+    const echo = plays > 0 ? (this.buffValue(sourceKey, 'echo') || 0) : 0;
+    if (echo > 0) {
+      opts = { ...opts, powerMul: 1 + echo, stackMul: 1 + echo };
+      this.emitLogged(
+        { type: 'echo', side: sourceKey, id: card.id, times: plays + 1, mul: 1 + echo },
+        t('回响：这是第 {n} 次打出「{card}」，威力与层数 ×{mul}。', { n: plays + 1, card: card.name, mul: (1 + echo).toFixed(1).replace(/\.0$/, '') }),
+        sourceKey === 'player' ? 'good' : 'bad'
+      );
+    }
+    src.playedIds = src.playedIds ?? {};
+    src.playedIds[card.id] = plays + 1;
+    /**
      * 手持道具里那几件「每次出攻击牌都要付代价」的东西（生命宝珠的 selfDamagePct）：
      * 一张牌里可能有好几段伤害，但**一件道具只为一张牌收一次利息**，
      * 所以用 playedOnce 把「这一张牌已经收过」记下来。
@@ -619,6 +821,8 @@ export class Battle {
         }
       }
     }
+    /** 「再打出 N 张牌就生效」的计数（打出的这一张算第一张） */
+    this.fireTimers(sourceKey, 'plays');
   }
 
   /** 这个效果是不是打在对手身上（自己身上的护盾 / 抽牌 / 强化不算） */
@@ -757,6 +961,44 @@ export class Battle {
         break;
       }
       /**
+       * **强化（buff）**：给自己（或对手）挂一条带回合数的正面效果。
+       * 目前四种：行动点上限 +N / 回响 / 威力 +N% / 附加层数 +N（见 BUFF_INFO）。
+       */
+      case 'grantBuff': {
+        const targetKey = eff.target === 'enemy' ? foeKey : sourceKey;
+        this.grantBuff(targetKey, eff.buff, eff.n ?? 1, eff.turns ?? 3);
+        break;
+      }
+      /**
+       * **下回合生效**：把这串效果预约到 `turns` 个该方回合之后的回合开始时结算。
+       * 「先蓄一手、下回合爆」—— 和立即结算的区别是它**不占用这一回合的行动点产出比**，
+       * 代价是给对手一个回合的反应时间。
+       */
+      case 'delay': {
+        this.scheduleEffects(sourceKey, eff.effects ?? [], eff.turns ?? 1, eff.name ?? null);
+        this.emitLogged(
+          { type: 'delay', side: sourceKey, turns: eff.turns ?? 1, name: eff.name ?? null },
+          t('{name} 蓄势待发：{turns} 回合后生效。', { name: self.name, turns: eff.turns ?? 1 }),
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      }
+      /**
+       * **行动 N 次后生效**：`on: 'plays'` 数「又打出几张牌」、`on: 'turn'` 数「再过几个回合」。
+       * 用户点名要的第二种节奏（「或是我方行动（敌方行动）N 次后生效」）。
+       */
+      case 'trigger': {
+        this.addTrigger(sourceKey, { on: eff.on ?? 'plays', count: eff.count ?? 2, effects: eff.effects ?? [], name: eff.name ?? null });
+        this.emitLogged(
+          { type: 'triggerSet', side: sourceKey, on: eff.on ?? 'plays', count: eff.count ?? 2, name: eff.name ?? null },
+          eff.on === 'turn'
+            ? t('{name} 埋下了一手：{count} 回合后生效。', { name: self.name, count: eff.count ?? 2 })
+            : t('{name} 埋下了一手：再打出 {count} 张牌就生效。', { name: self.name, count: eff.count ?? 2 }),
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+        break;
+      }
+      /**
        * 引爆：把对手身上的中毒 / 剧毒层数立刻结算成伤害并清掉。
        * 毒流派的收尾手段 —— 没有它，「上毒」永远要等对方自己掉血。
        */
@@ -867,6 +1109,10 @@ export class Battle {
           else if (eff.status === 'bleed') stacks = Math.round(stacks * modMul(from, 'bleedStacksMult'));
           else if (eff.status === 'weak') stacks += modAdd(from, 'debuffStacks');
         }
+        /** 「附加层数 +N」这个**强化**（buff 版，毒 / 出血流铺得更快）：只有给对手上状态时才加 */
+        if (targetKey !== sourceKey) stacks += this.buffValue(sourceKey, 'stacks');
+        /** 回响：同一张牌再打一次，层数也跟着 ×(1+n)（用户点名的「叠加异常层数也翻倍」） */
+        if (opts.stackMul && opts.stackMul !== 1) stacks = Math.round(stacks * opts.stackMul);
         actor[eff.status] = (actor[eff.status] ?? 0) + stacks;
         this.emitLogged(
           { type: 'status', side: targetKey, status: eff.status, delta: stacks, value: actor[eff.status] },
@@ -968,7 +1214,7 @@ export class Battle {
 
     // 暴击判定
     const crit = this.rng() * 100 < critChance(effectiveLuck(attacker));
-    const power = damagePowerOf(attacker, defender, eff);
+    const power = damagePowerOf(attacker, defender, eff, opts.powerMul ?? 1);
     const dmg = computeHit(attacker, defender, power, {
       ignoreDefPct: eff.ignoreDefPct ?? 0,
       isCrit: crit,
@@ -1094,6 +1340,7 @@ export class Battle {
     // 手牌保留（上限在抽卡时判定），这里只切换行动方
     this.emit({ type: 'turnEnd', side: 'player' });
     this.decayWeak('player');   // 虚弱用满这一回合才减层
+    this.tickBuffs('player');   // 强化也是「用满这一回合」才倒计时（和虚弱同一套计时）
     this.active = 'enemy';
     this.beginEnemyTurn();
   }
@@ -1109,6 +1356,8 @@ export class Battle {
     this.emit({ type: 'turnStart', side: 'enemy', turn: this.turn, ap: e.ap });
     this.tickStatuses('enemy');
     if (this.over) return;
+    this.fireTimers('enemy', 'turn');
+    if (this.over) return;
     this.drawCards('enemy', e.drawN);
     this.enemyAct();
   }
@@ -1120,6 +1369,36 @@ export class Battle {
   enemyAct() {
     let guard = 0;
     let utilityUsed = 0;
+    const greedy = this.wantsMaxDamage();
+    /**
+     * 贪心打法（首领 / 精英）：**先把强化挂上，再全力输出**。
+     * 只有当「先挂强化」确实能让这一回合的总伤害更高时才这么做（见 planEnemyTurn）。
+     * 杂兵不走这条路（老的那套评分：偶尔漏刀、偶尔先丢强化，看起来更笨）。
+     */
+    if (greedy) {
+      const plan = this.planEnemyTurn();
+      if (plan.first) {
+        const entry = plan.first;
+        const cost = this.cardCost(entry);
+        this.enemy.ap -= cost;
+        this.enemy.playsLeft -= 1;
+        this.decks.enemy.hand.splice(this.decks.enemy.hand.indexOf(entry), 1);
+        this.emitLogged(
+          { type: 'playCard', side: 'enemy', id: entry.card.id, name: entry.card.name, cost, greedy: true },
+          t('{name} 使用了「{card}」。', { name: this.enemy.name, card: entry.card.name })
+        );
+        this.onCardPlayed?.('enemy', entry.card.id);
+        utilityUsed += 1;
+        this.resolveCard('enemy', entry.card, {});
+        if (entry.card.exhaust) {
+          this.decks.enemy.exhaust.push(entry);
+          this.emit({ type: 'exhaust', side: 'enemy', id: entry.card.id });
+        } else {
+          this.decks.enemy.discard.push(entry);
+          this.emit({ type: 'discard', side: 'enemy', cards: [entry.card.id] });
+        }
+      }
+    }
     while (!this.over && guard++ < 14) {
       const e = this.enemy;
       if ((e.playsLeft ?? 0) <= 0) break;
@@ -1160,9 +1439,91 @@ export class Battle {
     }
     this.emit({ type: 'turnEnd', side: 'enemy' });
     this.decayWeak('enemy');    // 同上：敌人的虚弱也在它回合结束时才减层
+    this.tickBuffs('enemy');    // 敌人的强化同理
     if (!this.over) {
       this.beginPlayerTurn();
     }
+  }
+
+  /**
+   * 这一档敌人会不会「**追求本回合的最大伤害**」（用户要的规则）。
+   *
+   * 用户的原话：「目前敌人也有出现出的牌并不追求最高威力的情况，体现在有强化卡牌和输出卡牌
+   * 情况下，敌人打完输出卡牌才会出强化卡牌。因此，你可以让敌人出卡时追求打出最高的伤害
+   * （BOSS 会这样，精英有很大概率这样，普通小怪不会）。」
+   *
+   * 老 AI 的病根：强化牌的分值是**固定小分**（`Math.min(6, …)`），永远比不上一张伤害牌，
+   * 于是它总是先把输出打完、最后才丢一张强化 —— 而强化牌的效果（力量 / 攻击 buff）本该
+   * 让**这一回合**的输出更高。现在对首领和精英改成真正的计划：先算「先挂强化再全力输出」
+   * 和「直接全力输出」哪个总伤害更高，取高的那个。
+   */
+  wantsMaxDamage() {
+    const kind = this.enemy?.tier;
+    if (kind === 'boss') return true;
+    if (kind === 'elite') return this._eliteGreedy ?? false;
+    return false;
+  }
+
+  /** 按「每点行动点的伤害」降序把伤害牌装进预算里，返回总伤害 */
+  packDamage(cards, budget, over = null) {
+    const list = cards
+      .map((c) => ({ cost: this.cardCost(c), dmg: this.cardDamage('enemy', c.card, over) }))
+      .filter((x) => x.dmg > 0 && x.cost <= budget)
+      .sort((a, b) => (b.dmg / Math.max(1, b.cost)) - (a.dmg / Math.max(1, a.cost)));
+    let left = budget;
+    let total = 0;
+    for (const x of list) {
+      if (x.cost > left) continue;
+      left -= x.cost;
+      total += x.dmg;
+    }
+    return total;
+  }
+
+  /**
+   * 一张**非伤害牌**打出去之后，本回合的攻防参数会变成什么（只算影响伤害的那几种）。
+   * 只做这些近似：力量 / 攻击 buff / 威力强化 / AP 与行动点 / 多一次出牌（折算成 2 点 AP）。
+   */
+  overridesAfter(card) {
+    const e = this.enemy;
+    const over = {};
+    let apGain = 0;
+    for (const eff of card.effects ?? []) {
+      if (eff.kind === 'strength') over.strength = (over.strength ?? e.strength ?? 0) + eff.n;
+      else if (eff.kind === 'buff' && eff.target !== 'enemy' && eff.stat === 'atk') {
+        const add = eff.pct != null ? Math.round((e.atk ?? 0) * eff.pct) : eff.amount;
+        over.atk = (over.atk ?? e.atk) + add;
+      } else if (eff.kind === 'grantBuff' && eff.buff === 'power') over.powBuff = (over.powBuff ?? 0) + (eff.n ?? 0);
+      else if (eff.kind === 'grantBuff' && eff.buff === 'apMax') apGain += eff.n ?? 0;
+      else if (eff.kind === 'ap' || eff.kind === 'apBonus') apGain += eff.n ?? 0;
+      else if (eff.kind === 'plays') apGain += 2;   // 多一次出牌 ≈ 多 2 点行动点
+      else if (eff.kind === 'delay' || eff.kind === 'trigger') apGain += 0;   // 延后生效：本回合不涨伤害
+    }
+    /**
+     * 「威力 +n%」的强化在 damagePowerOf 里是乘在**最后的道具加成**那一档，
+     * 这里没有 mods 可挂，所以用一个自带倍率的假克隆去算（见 cardDamage 的 over.powBuff）。
+     */
+    return { over, apGain };
+  }
+
+  /**
+   * 敌方这一回合的计划：**先手的那张非伤害牌（如果有）**。
+   * 只有「先挂它再输出」的总伤害**严格高于**直接输出时才采用。
+   */
+  planEnemyTurn() {
+    const e = this.enemy;
+    const hand = this.decks.enemy.hand.filter((c) => this.cardCost(c) <= (e.ap ?? 0));
+    const ap0 = e.ap ?? 0;
+    let best = { total: this.packDamage(hand, ap0), first: null };
+    for (const c of hand) {
+      if ((c.card.effects ?? []).some((x) => x.kind === 'damage')) continue;   // 只看非伤害牌
+      const cost = this.cardCost(c);
+      const { over, apGain } = this.overridesAfter(c.card);
+      const rest = hand.filter((x) => x !== c);
+      const total = this.packDamage(rest, ap0 - cost + apGain, over);
+      if (total > best.total + 0.5) best = { total, first: c, gain: total - best.total };
+    }
+    return best;
   }
 
   /** 给敌人卡牌打分（越大越想用） */
@@ -1251,15 +1612,18 @@ export class Battle {
     return score;
   }
 
-  /** 一张牌按当前攻防能打出多少伤害（多段求和，不含暴击/闪避的随机成分） */
-  cardDamage(key, card) {
-    const self = this[key];
+  /** 一张牌按当前攻防能打出多少伤害（多段求和，不含暴击/闪避的随机成分）
+   *  @param {object} [over] 临时参数（AI 试算「先挂强化会怎样」时用）：atk / strength / powBuff */
+  cardDamage(key, card, over = null) {
+    const self0 = this[key];
+    const self = over ? { ...self0, ...over } : self0;
     const foe = this[key === 'player' ? 'enemy' : 'player'];
     const mul = key === 'enemy' ? BALANCE.enemyAtkMul * (self.powerMul ?? 1) : 1;
     let total = 0;
     for (const eff of card.effects) {
       if (eff.kind !== 'damage') continue;
-      const perHit = computeHit(self, foe, damagePowerOf(self, foe, eff), { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
+      const power = damagePowerOf(self, foe, eff, 1 + (over?.powBuff ?? 0));
+      const perHit = computeHit(self, foe, power, { ignoreDefPct: eff.ignoreDefPct ?? 0, attackMul: mul });
       total += perHit * (eff.hits ?? 1);
     }
     return total;

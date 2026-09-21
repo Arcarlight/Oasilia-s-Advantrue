@@ -1111,6 +1111,14 @@ button { font-family: inherit; }
 /* 状态胶囊上的图标：mask 染成 STATUS_INFO 的主题色（内联 backgroundColor 覆盖 currentColor） */
 .status-chip .status-ico { width: 11px; height: 11px; }
 .status-val { display: inline-block; }
+/**
+ * 强化胶囊（我方 buff，v2.9961）：和状态胶囊同一排，但要一眼分得清 ——
+ * 状态是「我身上出了什么事」（暗底），强化是「我自己挂上的」（金底 + 金色描边）。
+ */
+.status-chip.buff {
+  background: rgba(255, 210, 122, .18);
+  color: #ffe9bd;
+}
 
 /**
  * 「被挂上了毒」：从无到有，必须看得见。

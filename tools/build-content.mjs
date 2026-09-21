@@ -18,7 +18,9 @@ const ROOT = path.resolve(here, '..');
 const CONTENT = path.join(ROOT, 'content');
 
 // 战斗引擎能解释的效果种类（改 battle.js 的 resolveEffect 时要同步这里）
-const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'statusDouble', 'statusSteal', 'selfDmg', 'discard', 'exhaustHand', 'cleanse'];
+const ENGINE_EFFECT_KINDS = ['damage', 'shield', 'heal', 'draw', 'ap', 'apBonus', 'plays', 'buff', 'status', 'strength', 'detonate', 'statusDouble', 'statusSteal', 'selfDmg', 'discard', 'exhaustHand', 'cleanse', 'grantBuff', 'delay', 'trigger'];
+/** 「我方强化（buff）」的四种（battle.js 的 BUFF_INFO）：写错了会静默不生效，所以这里卡名单 */
+const GRANT_BUFFS = ['apMax', 'echo', 'power', 'stacks'];
 const STATUS_KINDS = ['poison', 'toxic', 'burn', 'weak', 'bleed'];
 const BUFF_STATS = ['atk', 'def', 'agi', 'luck'];
 const RARITIES = ['common', 'uncommon', 'rare', 'epic'];
@@ -202,6 +204,28 @@ function validateCards(data, iconNames) {
         }
         if (eff.plusShield != null && typeof eff.plusShield !== 'number') err(`${at} 的 plusShield 必须是数字`);
         if (eff.execThreshold != null && typeof eff.execBonus !== 'number') err(`${at} 有 execThreshold 但没有 execBonus`);
+        /**
+         * 削弱流的收尾：对手每损失 1 点防御、威力 +N%（battle.js 的 damagePowerOf）。
+         * 这条是「削弱卡到后面没价值」的解法之一，字段写错就等于白写。
+         */
+        if (eff.powerPerDefLost != null && typeof eff.powerPerDefLost !== 'number') err(`${at} 的 powerPerDefLost 必须是数字`);
+      }
+      /** 强化（buff）：名字必须在名单里、要有层数和回合数 —— 写错会静默不生效 */
+      if (eff.kind === 'grantBuff') {
+        if (!GRANT_BUFFS.includes(eff.buff)) err(`${at} 的 grantBuff.buff 必须是 ${GRANT_BUFFS.join('/')}`);
+        if (eff.n != null && typeof eff.n !== 'number') err(`${at} 的 grantBuff.n 必须是数字`);
+        if (eff.turns != null && (typeof eff.turns !== 'number' || eff.turns < 1)) err(`${at} 的 grantBuff.turns 必须是不小于 1 的数字`);
+      }
+      /** 下回合生效：必须带一串要生效的效果，否则这张牌什么也不做 */
+      if (eff.kind === 'delay') {
+        if (!Array.isArray(eff.effects) || !eff.effects.length) err(`${at} 的 delay 缺 effects（要预约哪些效果？）`);
+        if (eff.turns != null && (typeof eff.turns !== 'number' || eff.turns < 1)) err(`${at} 的 delay.turns 必须是不小于 1 的数字`);
+      }
+      /** 行动 N 次后生效：on 只能是 plays / turn，count 必须 ≥1（否则当场就炸） */
+      if (eff.kind === 'trigger') {
+        if (!['plays', 'turn'].includes(eff.on ?? 'plays')) err(`${at} 的 trigger.on 只能是 plays / turn`);
+        if (!Array.isArray(eff.effects) || !eff.effects.length) err(`${at} 的 trigger 缺 effects`);
+        if (typeof eff.count !== 'number' || eff.count < 1) err(`${at} 的 trigger.count 必须是不小于 1 的数字`);
       }
       if (eff.kind === 'shield' && eff.keep != null && typeof eff.keep !== 'boolean') err(`${at} 的 shield.keep 必须是 true/false`);
       // 威力改成「攻击力的百分比」之后，卡面上写死的伤害数字必须是 {d} 占位符
