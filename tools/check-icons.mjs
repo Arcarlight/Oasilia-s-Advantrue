@@ -10,8 +10,17 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, '..');
 
 // 从 style.css 里收集 .ico-xxx 的 mask 定义
+//
+// ⚠ 必须要求这一段真的带 `mask:` —— 只看「.ico-xxx 后面跟着 {」会漏：
+// `.endless-btn .ico-infinity { color: #c9a8ff; }` 这种**配色规则**也能满足那个正则，
+// 于是「代码里用了 ico-infinity、注册表里却没登记」被白白放过（用户报的：
+// 无尽模式那个按钮的图标位一直是个空白方块，门禁却显示 ✅）。
 const css = await fs.readFile(path.join(ROOT, 'src', 'ui', 'style.css'), 'utf8');
-const defined = new Set([...css.matchAll(/\.ico-([a-z0-9_]+)\s*\{/g)].map((m) => m[1]));
+const defined = new Set();
+for (const block of css.split('}')) {
+  if (!block.includes('mask')) continue;
+  for (const m of block.matchAll(/\.ico-([a-z0-9_]+)/g)) defined.add(m[1]);
+}
 
 // 从各个 js 文件里收集用到的类名
 const used = new Map();

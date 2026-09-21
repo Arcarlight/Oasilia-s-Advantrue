@@ -11,6 +11,8 @@
 
 import { el, modal } from './dom.js';
 import { cardEl, cardTag } from './cards.js';
+// 流派标签（毒 / 出血 / 单次高伤 / 削弱 / 强化 / 蓄势）：图标 + 名字 + 说明
+import { cardTags } from './cardtags.js';
 import {
   cardDamageTotal, richHTML, resolveCardText, collectKeywords, effectLines,
 } from './cardtext.js';
@@ -72,6 +74,21 @@ export function showCardDetail(card, opts = {}) {
         class: 'detail-chip enemy-only',
         dataset: { tip: t('这张牌只出现在敌人手里，玩家拿不到。图鉴里看见敌方打出过就会解锁。') },
       }, [t('仅敌人可用')]) : null,
+      /**
+       * **流派标签**（毒 / 出血 / 单次高伤 / 削弱 / 强化 / 蓄势）：带图标的小胶囊。
+       * 这些标签以前只活在内容校验里（门禁用它查「每个流派每档稀有度都有牌」），
+       * 界面上一个字都看不到 —— 玩家没法一眼看出这张牌是往哪条线上靠的。
+       */
+      ...cardTags(card).map((tag) => el('span', {
+        class: 'detail-chip tag-chip',
+        style: { '--tag': tag.color },
+        dataset: { tip: `${
+          tag.desc()
+        }` },
+      }, [
+        el('span', { class: `tag-ico ${tag.ico}` }),
+        el('span', { text: tag.label() }),
+      ])),
     ]),
     el('div', { class: 'detail-desc', html: richHTML(resolveCardText(card)) }),
   ]);

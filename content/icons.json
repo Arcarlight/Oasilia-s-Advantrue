@@ -675,7 +675,6 @@
       "desc": "满瓶药水：道具（existing）",
       "group": "本地面板图标"
     },
-
     {
       "name": "triple",
       "source": "pack:triple",
@@ -829,7 +828,6 @@
       "category": "8-ui",
       "group": "补充·卡牌语义"
     },
-
     {
       "name": "wolf",
       "source": "pack:wolf",
@@ -910,6 +908,24 @@
       "component": "sycee",
       "category": "2-items",
       "group": "补充·界面与地图"
+    },
+    {
+      "name": "infinity",
+      "source": "pack:infinity",
+      "file": "icons/pack/infinity.svg",
+      "desc": "无限：无尽模式入口",
+      "component": "infinity",
+      "category": "11-symbols",
+      "group": "界面与流程"
+    },
+    {
+      "name": "lock",
+      "source": "pack:lock",
+      "file": "icons/pack/lock.svg",
+      "desc": "锁：还没解锁的入口",
+      "component": "lock",
+      "category": "8-ui",
+      "group": "界面与流程"
     }
   ]
 }

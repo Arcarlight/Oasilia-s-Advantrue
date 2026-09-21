@@ -380,10 +380,13 @@ if (merchantMissing) warn(`跑 & tools/fetch-content.ps1 可以把缺的头像�
  */
 {
   const RARITY_ORDER = Object.keys(RARITY);
+  /** 认识的流派标签（和 src/ui/cardtags.js 的 CARD_TAG_INFO 一一对应）——写成别的就等于没标签 */
+  const KNOWN_TAGS = ['poison', 'bleed', 'burst', 'weaken', 'buff', 'timing'];
   const tagMap = new Map();
   for (const c of CARDS) {
     if (c.enemyOnly) continue;
     for (const tag of c.tags ?? []) {
+      if (!KNOWN_TAGS.includes(tag)) err(`卡牌「${c.name}」的流派标签 ${tag} 不在名单里（${KNOWN_TAGS.join('/')}）—— 界面上不会显示、也不会计入流派覆盖`);
       if (!tagMap.has(tag)) tagMap.set(tag, {});
       const row = tagMap.get(tag);
       row[c.rarity] = (row[c.rarity] ?? 0) + 1;
@@ -1123,7 +1126,12 @@ if (BGM_FILES) {
     err('更新日志一条都没有（src/core/changelog-data.js）');
   } else {
     for (const e of CHANGELOG) {
-      if (!/^\d+\.\d+$/.test(String(e.version))) err(`更新日志的版本号格式不对：${e.version}（要写成 1.9 这样）`);
+      /**
+       * 版本号：`2.9` 这种两段为主，但也允许 `2.9961.1` 这种三段小补丁 ——
+       * 用户点名要过一个玩笑号（「这次更新可以作为 2.9961.1 版本号」），
+       * 门禁不该因此拦人，所以只要求「数字.数字(.数字)」。
+       */
+      if (!/^\d+\.\d+(\.\d+)?$/.test(String(e.version))) err(`更新日志的版本号格式不对：${e.version}（要写成 1.9 或 2.9961.1 这样）`);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(e.date))) err(`更新日志的日期格式不对：v${e.version} ${e.date}（要写成 2026-09-20）`);
       if (!e.items?.length) err(`更新日志 v${e.version} 一条内容都没有`);
       for (const line of e.items ?? []) {

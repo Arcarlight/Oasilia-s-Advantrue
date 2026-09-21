@@ -410,6 +410,10 @@ button { font-family: inherit; }
 .ico-ingot { /* 金砖：赤岩峡谷的宝箱节点 */ -webkit-mask-image: url(../../assets/img/icons/pack/ingot.svg); mask-image: url(../../assets/img/icons/pack/ingot.svg); }
 .ico-tool_kit { /* 工具箱：风蚀峭壁的宝箱节点 */ -webkit-mask-image: url(../../assets/img/icons/pack/tool_kit.svg); mask-image: url(../../assets/img/icons/pack/tool_kit.svg); }
 .ico-sycee { /* 元宝：潮汐盐海的宝箱节点 */ -webkit-mask-image: url(../../assets/img/icons/pack/sycee.svg); mask-image: url(../../assets/img/icons/pack/sycee.svg); }
+
+/* --- 界面与流程 --- */
+.ico-infinity { /* 无限：无尽模式入口 */ -webkit-mask-image: url(../../assets/img/icons/pack/infinity.svg); mask-image: url(../../assets/img/icons/pack/infinity.svg); }
+.ico-lock { /* 锁：还没解锁的入口 */ -webkit-mask-image: url(../../assets/img/icons/pack/lock.svg); mask-image: url(../../assets/img/icons/pack/lock.svg); }
 /* #endregion GENERATED-ICONS */
 
 /* 面板 */
@@ -604,7 +608,17 @@ button { font-family: inherit; }
 @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(4px); } }
 @keyframes pulseGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
 @keyframes slideInUp { from { opacity: 0; transform: translateY(40px) scale(.94); } to { opacity: 1; transform: none; } }
-@keyframes slither { 0% { transform: translateX(-30%) rotate(-2deg); } 100% { transform: translateX(30%) rotate(2deg); } }
+/**
+ * 沙丘 / 沙雾那两层。
+ *
+ * ⚠ 用户报的「背景那种沙漠一样的雾是断开的、不是完全连着的」= 这个动画的锅：
+ * 原先是 `left/right: -20%`（宽度 140%）配 `translateX(±30%)` —— **平移幅度是按自身宽度算的**，
+ * ±30% × 140% = ±42% 的屏幕宽，飘到两头时图层边缘直接进了画面，于是出现一条直边的「断面」。
+ * 现在两头都留足余量（图层宽 190%、平移只有 ±13% 自身宽 ≈ ±25% 屏幕宽），
+ * 并且每团雾气的渐变都**在图层内部就淡完**（`transparent 70%` 左右）——
+ * 就算将来谁改了幅度，边缘也只是「已经透明」而不是一条硬线。
+ */
+@keyframes slither { 0% { transform: translateX(-13%) rotate(-1.2deg); } 100% { transform: translateX(13%) rotate(1.2deg); } }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
 .shake { animation: shake .34s ease; }
@@ -617,6 +631,8 @@ button { font-family: inherit; }
   align-items: center;
   justify-content: center;
   gap: 0;
+  /** 内容一律不许溢出到屏幕外（用户报过「东西挤到屏幕外面去了」） */
+  overflow: hidden;
   background:
     radial-gradient(90% 60% at 50% 12%, rgba(255, 200, 110, .22), transparent 70%),
     linear-gradient(180deg, #2a1a12 0%, #6b4a2a 42%, #d79a4e 62%, #7a4f26 72%, #2a1810 100%);
@@ -624,33 +640,70 @@ button { font-family: inherit; }
 .title-screen::before {
   content: "";
   position: absolute;
-  left: -20%; right: -20%; bottom: 22%; height: 34%;
+  /* 比屏幕大一圈：动画平移时边缘始终在画面外（见 @keyframes slither 的说明） */
+  inset: -12% -45%;
   background:
-    radial-gradient(60% 100% at 20% 100%, #8a5a2b, transparent 70%),
-    radial-gradient(70% 100% at 70% 100%, #a06a34, transparent 70%),
-    radial-gradient(50% 90% at 45% 100%, #935f2c, transparent 70%);
+    radial-gradient(60% 30% at 20% 74%, #8a5a2b, transparent 70%),
+    radial-gradient(70% 28% at 68% 78%, #a06a34, transparent 72%),
+    radial-gradient(52% 24% at 44% 86%, #935f2c, transparent 74%);
   opacity: .85;
   animation: slither 26s ease-in-out infinite alternate;
   pointer-events: none;
 }
+/**
+ * 两栏：左 = 主视觉（飞着的沙漠蜻蜓 + 标题），右 = 选项。
+ * 用户的要求：「左边是标题和头像……标题选项放在右边。这样就不会挤到外面去了。」
+ */
 .title-inner {
   position: relative;
   z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+  align-items: center;
+  gap: clamp(14px, 2.6vw, 48px);
+  width: min(1180px, 96vw);
+  height: 100%;
+  padding: clamp(12px, 2.4vh, 30px) clamp(16px, 3vw, 44px);
+  overflow: hidden;
+}
+.title-left {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 24px;
-  text-align: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
 }
-.title-hero { position: relative; margin-bottom: -18px; }
+.title-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+/* 飞行姿态：底下一圈椭圆影子，让「飞」看得出来（不然像悬在半空） */
+.title-hero { position: relative; margin-bottom: 2px; }
+.title-hero::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -6px;
+  width: 62%; height: 18px;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, .45), transparent 70%);
+  pointer-events: none;
+}
 .title-hero canvas {
+  max-width: 100%;
+  height: auto;
   filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .5));
   animation: bob 3.4s ease-in-out infinite;
 }
 .title-h1 {
   font-family: var(--font-title);
-  font-size: clamp(34px, 6vw, 60px);
+  font-size: clamp(28px, 4.4vw, 54px);
   margin: 0;
   letter-spacing: .12em;
   color: #fff4dd;
@@ -658,7 +711,7 @@ button { font-family: inherit; }
 }
 .title-h2 {
   font-family: var(--font-title);
-  font-size: clamp(14px, 2.2vw, 20px);
+  font-size: clamp(13px, 1.7vw, 19px);
   letter-spacing: .42em;
   margin: 2px 0 4px;
   color: var(--accent-2);
@@ -668,18 +721,36 @@ button { font-family: inherit; }
   /* 标题页 / 结算页那段旁白是「讲故事」的地方，用手写体。
      字号比正文大一档：手写体的字面比正文那套小一圈，同字号会显得偏小。 */
   font-family: var(--font-hand);
-  max-width: 560px;
-  margin: 10px auto 18px;
-  font-size: 17px;
-  line-height: 1.9;
+  max-width: 100%;
+  margin: 8px auto 10px;
+  font-size: clamp(14px, 1.5vw, 17px);
+  line-height: 1.8;
+  text-align: center;
   color: #ffe9c8;
   text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
   opacity: .92;
 }
-.title-menu { display: flex; flex-direction: column; gap: 10px; width: min(340px, 80vw); }
-.title-foot { margin-top: 18px; font-size: 11px; opacity: .55; line-height: 1.7; }
-.title-meta { display: flex; gap: 16px; font-size: 12px; opacity: .8; margin-bottom: 6px; justify-content: center; }
+.title-menu { display: flex; flex-direction: column; gap: 9px; width: min(360px, 100%); }
+.title-foot { margin-top: 6px; font-size: 10.5px; opacity: .55; line-height: 1.65; text-align: center; max-width: 620px; }
+.title-meta { display: flex; gap: 14px; font-size: 12px; opacity: .8; justify-content: center; flex-wrap: wrap; }
 .title-meta b { color: var(--accent-2); }
+
+/**
+ * 窄屏 / 矮屏：两栏压回一栏，并且允许纵向滚动 ——
+ * 挤压的时候宁可让玩家滚一下，也不能把按钮推到屏幕外面（这一条就是这次的起因）。
+ */
+@media (max-width: 860px), (max-height: 700px) {
+  .title-inner {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    overflow-y: auto;
+    padding: 12px 16px 20px;
+  }
+  .title-hero canvas { max-height: 24vh; }
+  .title-quote { font-size: 13.5px; margin: 4px auto 6px; }
+  .title-foot { display: none; }
+}
 
 /* ============================================================
    地图界面
@@ -2757,17 +2828,25 @@ input, textarea { cursor: text !important; }
 
 /* ---- 标题页那一排入口 ---- */
 .title-codex {
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  margin-top: 10px; width: min(420px, 92vw);
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  width: 100%;
 }
+/* 5 个入口排成一行：min-width 压在 84px，右栏（≈470px）刚好放得下 5 × 84 + 4 × 6 的间隙 */
 .title-codex-btn {
-  flex: 1 1 0; min-width: 112px;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 9px 6px; line-height: 1.25;
+  flex: 1 1 calc(20% - 6px); min-width: 84px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px; line-height: 1.2;
 }
+.title-codex-label { font-size: 12.5px; }
 .title-codex-ico { width: 20px; height: 20px; opacity: .95; }
 .title-codex-label { font-size: 13px; font-family: var(--font-title); letter-spacing: .04em; }
 .title-codex-sub { font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
+
+/* ---- 卡牌详情里的流派标签（毒 / 出血 / 单次高伤 / 削弱 / 强化 / 蓄势）----
+   以前这些标签只活在内容校验里，界面上一个字都看不到（用户要求补上）。
+   颜色由 JS 写在行内变量 --tag 上，图标用 mask 吃到 currentColor。 */
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; color: var(--tag, var(--accent-2)); box-shadow: inset 0 0 0 1px currentColor; }
+.tag-ico { width: 12px; height: 12px; background-color: currentColor; }
 
 /* ---- 两个图鉴顶上的进度 ---- */
 .codex-head {

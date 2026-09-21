@@ -104,12 +104,27 @@ async function renderTitle(game) {
   const screen = el('div', { class: 'screen title-screen' });
   const inner = el('div', { class: 'title-inner' });
   screen.append(inner);
+  /**
+   * 两栏：**左边主视觉（飞行的沙漠蜻蜓 + 标题），右边选项**。
+   *
+   * 用户的要求（原话）：「左边是标题和头像。沙漠蜻蜓欧亚西莉亚的行走图朝右做出飞行的样子。
+   * 标题选项放在右边。这样就不会挤到外面去了。」
+   * 之前是单列居中、一路往下堆（标题 / 旁白 / 7 个按钮 / 5 个收藏入口 / 语言 / 统计 / 版权），
+   * 高过一屏之后内容被推到屏幕外，背景那层沙丘（`.title-screen::before`）也跟着错位，
+   * 屏幕上出现一条**直边的断面**（用户截图里那个「迷之断面」）。
+   */
+  const left = el('div', { class: 'title-left' });
+  const right = el('div', { class: 'title-right' });
+  inner.append(left, right);
 
   const heroBox = el('div', { class: 'title-hero' });
-  inner.append(heroBox);
+  left.append(heroBox);
   try {
-    // 标题用飞行动画（FlapAround）比原地待机更有「出发去冒险」的感觉
-    const hero = await createAnim('flygon', { anim: 'FlapAround', scale: 3.4, fps: 10, dir: DIR.DOWN_RIGHT });
+    /**
+     * 标题用的行走图：**朝右的飞行动画**（FlapAround），像在往前飞一样。
+     * 底下配一层椭圆阴影（CSS 的 .title-hero::after），不然「飞」看着像悬在半空。
+     */
+    const hero = await createAnim('flygon', { anim: 'FlapAround', scale: 4.2, fps: 10, dir: DIR.RIGHT });
     heroBox.append(hero);
   } catch { /* ignore */ }
 
@@ -122,13 +137,13 @@ async function renderTitle(game) {
     el('div', { class: 'title-h2', text: heroName }),
   ]);
   lockup.append(faceBox, names);
-  inner.append(lockup);
+  left.append(lockup);
   // 头图原生只有 40x40，放大到 64px（整数倍）最清晰
   createPortrait('flygon', { emotion: 'happy', size: 64, alt: heroName }).then((img) => {
     if (img) faceBox.append(img);
   });
 
-  inner.append(el('p', {
+  left.append(el('p', {
     class: 'title-quote',
     text: t('「凡是听见沙子唱歌的人，最后都留在了沙里。」\n——你是{name}，一只雌性沙漠蜻蜓。沙海深处有个声音在叫你，你决定去看看。', { name: heroName }),
   }));
@@ -194,7 +209,7 @@ async function renderTitle(game) {
       },
     }, [t('导入存档 JSON')]),
   );
-  inner.append(menu);
+  right.append(menu);
 
   /**
    * 标题页第二排：通关记录 / 卡牌图鉴 / 敌人图鉴。
@@ -208,7 +223,7 @@ async function renderTitle(game) {
   const enemyProgress = enemyCodexProgress();
   const itemProgress = itemCodexProgress();
   const musicProgress = musicRoomProgress();
-  inner.append(el('div', { class: 'title-codex' }, [
+  right.append(el('div', { class: 'title-codex' }, [
     titleCodexBtn('ico-trophy', t('通关记录'), runCount() ? t('{n} 局', { n: runCount() }) : t('还没有'), () => showRecords()),
     titleCodexBtn('ico-cards', t('卡牌图鉴'), `${cardProgress.got}/${cardProgress.total}`, () => showCardCodex(game)),
     titleCodexBtn('ico-book', t('敌人图鉴'), `${enemyProgress.seen}/${enemyProgress.total}`, () => showEnemyCodex()),
@@ -224,18 +239,18 @@ async function renderTitle(game) {
    * 放在这里而不是只藏在「设置」里：换语言是**第一次进游戏就可能想做的事**
    * （看不懂中文的人根本进不去设置页找它）。三个按钮直接摆出来。
    */
-  inner.append(el('div', { class: 'lang-switch' }, LANGS.map((l) => el('button', {
+  right.append(el('div', { class: 'lang-switch' }, LANGS.map((l) => el('button', {
     class: `lang-btn${l.id === currentLang() ? ' on' : ''}`,
     onClick: () => { audio.ui('click'); changeLanguage(l.id); },
   }, [l.name]))));
 
-  inner.append(el('div', { class: 'title-meta' }, [
+  right.append(el('div', { class: 'title-meta' }, [
     el('span', {}, [t('最远步数 '), el('b', { text: String(meta.bestDistance ?? 0) })]),
     el('span', {}, [t('累计击败 '), el('b', { text: String(meta.kills ?? 0) })]),
     el('span', {}, [t('通关次数 '), el('b', { text: String(meta.wins ?? 0) })]),
   ]));
 
-  inner.append(el('div', {
+  left.append(el('div', {
     class: 'title-foot',
     html: t('素材：宝可梦精灵图与表情头像来自 <b>PMDCollab/SpriteCollab</b>；回合立绘来自 <b>Generation 9 Pack</b>；界面图标与音效来自 <b>Kenney</b> 素材包与 <b>Game-Icon-Pack</b>；BGM 来自「<b>音楽の卵</b>」与「<b>龍的交響楽</b>」。<br>字体：<b>小杉圆体</b>（Apache-2.0）、<b>はなぞめフォント</b>、<b>YOzFont</b>（OFL）等。<br>这是一个非商业的同人练习作品。'),
   }));
