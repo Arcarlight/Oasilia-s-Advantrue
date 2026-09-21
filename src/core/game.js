@@ -1361,9 +1361,13 @@ export class Game {
      * 掉落的那件道具：正常情况**早在 finishBattle 里就发过了**（reward.itemDrop）。
      * 这里只兜底「有 item 但没有 itemDrop」的调用方（调试用的 mockReward）——
      * 免得那种路径下的道具静默消失。
+     *
+     * ⚠ `declined` 也要看：玩家在掉落那一屏明确点了「不要，就这样」之后，
+     * 这一页**不许再问一遍**（用户报的「两个选项都会弹出让你丢东西的页面」就是这里漏了判断）。
      */
-    let overflow = this.reward.itemDrop?.overflow ? { id: this.reward.item, text: this.reward.itemDrop.text } : null;
-    if (this.reward.item && !this.reward.itemDrop) {
+    const drop = this.reward.itemDrop;
+    let overflow = (drop?.overflow && !drop?.declined) ? { id: this.reward.item, text: drop.text } : null;
+    if (this.reward.item && !drop) {
       const res = this.giveItem(this.reward.item, 1);
       if (res.overflow) overflow = { id: this.reward.item, text: res.text };
     }
@@ -1736,6 +1740,23 @@ export class Game {
     if (entry.kind === 'service' && this.data.deck.length <= 3) {
       return { ok: false, text: t('卡组只剩 {n} 张了，不能再删 —— 再删就没牌可打了。', { n: this.data.deck.length }) };
     }
+    /**
+     * **手持栏满了就不能成交** —— 这一条必须在 `data.gold -= price` **之前**。
+     *
+     * ⚠ 用户报的：「身上道具满了的时候还能买道具，但是不光没有钱还消失了」。
+     * 原来的顺序是「先扣钱 → 标记售出 → 再看栏位满不满」，于是栏位满时一买就是
+     * **钱扣掉了、货也卖掉了、东西没拿到**（三样全丢）。删卡服务那条拦截写在前面是对的，
+     * 道具这条却写在了后面 —— 同一个坑踩了两次。
+     */
+    if (entry.kind === 'item' && this.data.held.length >= this.heldMax()) {
+      return {
+        ok: false,
+        heldFull: true,
+        text: t('手持栏满了（{n} / {max}）—— 先在「手持道具」里丢掉一件，再回来买。', {
+          n: this.data.held.length, max: this.heldMax(),
+        }),
+      };
+    }
     this.data.gold -= entry.price;
     if (entry.kind === 'service') {
       // 删卡服务**不售罄**：卡组变薄是这一版唯一「精简」手段（不能挑着不带），
@@ -1749,19 +1770,7 @@ export class Game {
       return { ok: true, text: t('买下「{name}」，已放入卡组。', { name: entry.name }) };
     }
     if (entry.kind === 'item') {
-      /**
-       * 手持栏满了**不能收钱**（和上面的删卡服务同一个道理：付了钱又拿不到东西，
-       * 玩家只会觉得商店坏了）。所以先看栏位，满了就把这单退回去，让玩家先丢一件。
-       */
-      if (this.data.held.length >= this.heldMax()) {
-        return {
-          ok: false,
-          heldFull: true,
-          text: t('手持栏满了（{n} / {max}）—— 先在「手持道具」里丢掉一件，再回来买。', {
-            n: this.data.held.length, max: this.heldMax(),
-          }),
-        };
-      }
+      // 栏位满不满在**扣钱之前**已经判过了（见上面那条 heldFull），这里直接发货
       const got = this.giveItem(entry.id, 1);
       const it = ITEMS[entry.id];
       const kindNote = it?.kind === 'hold'

@@ -64,3 +64,6 @@ commit-msg.tmp
 msg.tmp
 msg2.tmp
 msg3.tmp
+# 浏览器 profile（截图 / 冒烟跑出来的，体积大且与运行无关）
+tools/.edge-bd/
+tools/.edge-bd-*/

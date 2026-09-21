@@ -212,5 +212,78 @@ group('⑦ 首领掉落：先扩容再发掉落');
   ok(!g.awaitingOverflow, '奖励结清之后也没有遗留的「丢掉一件」提示');
 }
 
+group('⑧ 手持栏满了：商店不能成交（用户报的「钱消失了」）');
+{
+  /**
+   * 用户的原话：「身上道具满了的时候还能买道具，但是不光没有钱还消失了」。
+   * 根因：`buy()` 里「先扣钱 → 标售出 → 再看栏位满不满」——
+   * 满栏位时一买就是**钱扣掉、货卖掉、东西没拿到**。
+   * 这条门禁把顺序钉死：栏位满 → 什么都没发生。
+   */
+  g.newRun(1007);
+  g.data.gold = 500;
+  const ids = Object.keys(ITEMS).slice(0, 3);   // 任意三件都能占满栏位（kind 是 hold / use，不是 item）
+  g.data.held = [...ids];
+  g.invalidateMods();
+  g.data.bossKills = 0;
+  ok(g.data.held.length === g.heldMax(), '前提：手上正好拿满', `${g.data.held.length} / ${g.heldMax()}`);
+
+  const shop = g.startShop();
+  const idx = (shop?.stock ?? []).findIndex((s) => s.kind === 'item');
+  ok(idx >= 0, '货架上有道具可买', `第 ${idx} 项`);
+  if (idx >= 0) {
+    const gold0 = g.data.gold;
+    const held0 = g.data.held.length;
+    const res = g.buy(idx);
+    ok(res.ok === false && res.heldFull === true, '满栏位时买道具被拦住（heldFull）', res.text?.slice(0, 24));
+    ok(g.data.gold === gold0, '**一分钱都没扣**', `${gold0} → ${g.data.gold}`);
+    ok(g.data.held.length === held0, '手上也没多出东西');
+    ok(!g.shop.soldOut.includes(idx), '这件货还挂在货架上（没被白标成售出）');
+    // 丢掉一件之后应该就能正常买
+    g.dropItem(g.data.held[0]);
+    const res2 = g.buy(idx);
+    ok(res2.ok === true && g.data.gold === gold0 - g.shop.stock[idx].price,
+      '丢掉一件之后能正常买、并且照价扣钱', `${gold0} → ${g.data.gold}`);
+  }
+}
+
+group('⑨ 掉落「不要这件」之后不许再问一遍');
+{
+  /**
+   * 用户报的：「两个选项都会弹出让你丢东西的页面，而且两个选项的意思都是拿下，不能选择不拿」。
+   * 引擎这一侧的责任是：**拒绝之后不留 `awaitingOverflow`**（否则地图页会再弹一次）。
+   */
+  g.newRun(1008);
+  g.data.held = Object.keys(ITEMS).slice(0, 3);
+  g.invalidateMods();
+  g.data.bossKills = 0;
+  /**
+   * 用**普通战斗**造「拿不下」：首领那一条会先把栏位 +1（那是另一条规则，见 ⑦），
+   * 所以首领掉落永远放得下 —— 想测溢出只能用普通怪。
+   */
+  g.startBattle('normal', 0, 'direct');
+  const fresh = Object.keys(ITEMS).find((id) => !g.data.held.includes(id));
+  g.rollItemDrop = () => ({ id: fresh, reason: 'random' });
+  g.battle.enemy.hp = 0;
+  g.battle.winner = 'player';
+  g.battle.over = true;
+  const r = g.finishBattle();
+  ok(r?.itemDrop && r.itemDrop.stored === false, '前提：这次是真的拿不下（overflow）', `${g.data.held.length} / ${g.heldMax()}`);
+  // 模拟界面点「丢掉一件，收下它」那条路：把 pending 交给丢弃弹窗
+  g.awaitingOverflow = { id: r.itemDrop.id, text: r.itemDrop.text };
+  ok(!!g.awaitingOverflow, '选择「丢掉一件」时会把待处理项交给弹窗');
+  /**
+   * 模拟界面点「不要，就这样」：界面会把三个标记一次写好（见 src/ui/screens.js 的 renderItemDrop），
+   * 然后走结算 —— 结算**不许**再把它塞回 awaitingOverflow。
+   */
+  r.itemDrop.overflow = false;
+  r.itemDrop.declined = true;
+  r.itemDrop.seen = true;
+  g.awaitingOverflow = null;
+  g.takeRewardCard(null);
+  ok(!g.awaitingOverflow, '拒绝之后没有遗留的待处理项（地图页不会第二次弹「丢掉一件」）');
+  ok(!g.data.held.includes(fresh), '拒绝的那件确实没进手持栏', `${ITEMS[fresh]?.name}`);
+}
+
 console.log(`\n道具（手持）回归测试：通过 ${pass}，失败 ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -87,7 +87,7 @@ export const HEROES = [
       "enemy": {
         "hp": 1.08,
         "atk": 1.06,
-        "perStage": 0.01
+        "perStage": 0.015
       }
     }
   }

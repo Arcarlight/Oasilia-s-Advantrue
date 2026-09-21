@@ -209,7 +209,6 @@
       ],
       "ground": "#55483a",
       "accent": "#e8d9a0",
-      "bgm": "canyon",
       "shape": {
         "desc": "遗迹：事件多、精英中量，柱子后面常有东西",
         "rows": 9,
@@ -242,7 +241,6 @@
       ],
       "ground": "#3a4426",
       "accent": "#c8ff8a",
-      "bgm": "forest",
       "shape": {
         "desc": "菌林：事件与宝箱最多，路上怪事不断",
         "rows": 10,
@@ -275,7 +273,6 @@
       ],
       "ground": "#2e3a5e",
       "accent": "#ffe066",
-      "bgm": "cliff",
       "shape": {
         "desc": "雷台：战斗与精英最多，一路打上去",
         "rows": 10,
@@ -310,7 +307,6 @@
       ],
       "ground": "#2a4a5e",
       "accent": "#a8f0ff",
-      "bgm": "night",
       "shape": {
         "desc": "洞窟：宝箱最多（水晶里常嵌着东西），战斗也不少",
         "rows": 10,

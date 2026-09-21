@@ -229,5 +229,86 @@ group('⑤ 敌人追求本回合最大伤害（首领一定 / 精英大概率 / 
   }
 }
 
+// ---------------- ⑥ 计时：卡面怎么写，就该怎么数 ----------------
+group('⑥ 计时：卡面怎么写，就该怎么数（用户报的两个差一格）');
+{
+  /**
+   * 用户报的：「标着再打两张牌就能触发效果的卡，现在打一张就可以了 —— 应该是它连着自己那张也算进去了」。
+   * 「二连劈 / 追咬 / 尘卷 / 蓄势爆发」这类牌，创建预约的那一次出牌**不能**算进计数里。
+   */
+  const selfCount = () => {
+    const b = makeBattle({ deck: ['tackle'], enemyDeck: ['tackle'], seed: 4242 });
+    b.start();
+    b.takeEvents();
+    b.resolveCard('player', CARD_BY_ID.dual_chop, {});
+    const firedOnSelf = b.takeEvents().some((e) => e.type === 'timer');
+    b.resolveCard('player', CARD_BY_ID.harden, {});      // 第 1 张垫刀（0 伤害）
+    const firedOnOne = b.takeEvents().some((e) => e.type === 'timer');
+    b.resolveCard('player', CARD_BY_ID.harden, {});      // 第 2 张垫刀 → 这时才该触发
+    const firedOnTwo = b.takeEvents().some((e) => e.type === 'timer');
+    return { firedOnSelf, firedOnOne, firedOnTwo };
+  };
+  const sc = selfCount();
+  ok(!sc.firedOnSelf, '「再打出 2 张牌」：打出它自己的那一刻**不**触发');
+  ok(!sc.firedOnOne, '「再打出 2 张牌」：之后再打出第 1 张时**还不**触发（以前这里就触发了 = bug）');
+  ok(sc.firedOnTwo, '「再打出 2 张牌」：再打出第 2 张时才触发');
+
+  /**
+   * 同一个坑的第二半：「N 个回合后」的牌不能把**当前回合**算进去。
+   * 现在卡面写「2 个回合后」= 数据里 3 格（打出它的那个回合不算，之后完整过去 2 个回合）。
+   * 门禁（tools/check-content.mjs）另外钉住「卡面文字 ↔ 格数」这一对。
+   */
+  const b = makeBattle({ deck: ['tackle'], enemyDeck: ['tackle'], seed: 777 });
+  b.start();
+  b.takeEvents();
+  b.resolveCard('player', CARD_BY_ID.rock_blast, {});    // 卡面：「2 个回合后」
+  b.takeEvents();
+  b.endTurn();
+  const t1 = b.takeEvents().some((e) => e.type === 'timer');
+  b.endTurn();
+  const t2 = b.takeEvents().some((e) => e.type === 'timer');
+  b.endTurn();
+  const t3 = b.takeEvents().some((e) => e.type === 'timer');
+  ok(!t1 && !t2, '「2 个回合后」：过去 1、2 个回合时都还没生效（当前回合没被算进去）');
+  ok(t3, '「2 个回合后」：完整过去 2 个回合之后（第 3 个回合开始时）才生效');
+
+  // 对照组：「下回合开始时」的牌就是 1 格，别被上面那条改动带跑
+  const b2 = makeBattle({ deck: ['tackle'], enemyDeck: ['tackle'], seed: 778 });
+  b2.start();
+  b2.takeEvents();
+  b2.resolveCard('player', CARD_BY_ID.dig, {});
+  b2.takeEvents();
+  b2.endTurn();
+  ok(b2.takeEvents().some((e) => e.type === 'timer'), '「下回合开始时」：下一个回合开始就生效（1 格，没被动过）');
+}
+
+// ---------------- ⑦ 敌方出牌数封顶（3.0.1：第 6 章精英 400 伤害/回合的根因） ----------------
+group('⑦ 敌人一回合的出牌数按档位封顶');
+{
+  /**
+   * 玩法：给敌人**一手的 0 费牌**（撞击）+ 20 点行动点，让它随便打 ——
+   * 封顶只能靠「出牌数」，AP 管不住它（这正是 bug 的成因：AP 上限 8 点配 0 费牌能连打 7 张）。
+   * 然后数它这一轮到底打了几张。
+   */
+  const playsInOneTurn = (tier) => {
+    const b = makeBattle({ deck: ['tackle'], enemyDeck: Array.from({ length: 9 }, () => 'tackle'), tier });
+    b.start();
+    b.collectEvents = null;
+    b.takeEvents();
+    b.enemy.ap = 20;
+    b.enemy.playsLeft = b.enemy.playMax;
+    b.endTurn();
+    return b.events.filter((e) => e.type === 'playCard' && e.side === 'enemy').length;
+  };
+  const mob = playsInOneTurn('mob');
+  const normal = playsInOneTurn('normal');
+  const elite = playsInOneTurn('elite');
+  const boss = playsInOneTurn('boss');
+  ok(mob <= 3, '杂兵：一回合最多 3 张', `${mob} 张`);
+  ok(normal <= 3, '较强：一回合最多 3 张', `${normal} 张`);
+  ok(elite <= 3, '精英：一回合最多 3 张（用户被 400 伤害推死就是这里没封顶）', `${elite} 张`);
+  ok(boss <= 4 && boss > elite, '首领宽松一档（4 张，留出「强化 + 输出」的组合）', `${boss} 张`);
+}
+
 console.log(`\n强化 / 预约 / 敌方贪心的回归测试：通过 ${pass}，失败 ${fail}`);
 process.exit(fail ? 1 : 0);

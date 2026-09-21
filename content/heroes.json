@@ -2,7 +2,10 @@
   "_comment": "两位主角（3.0）：欧亚西莉亚（沙漠蜻蜓）与阿特拉斯（暴飞龙）。这份文件是主角的**唯一数据源** —— 名字 / 物种 / 初始属性 / 标题台词 / 结局文案 / 这一章的难度与地图形状，全在这里，node tools/build-content.mjs 生成 src/data/heroes.js。",
   "_unlock_note": "unlock 写成 'clear:<heroId>' = 用那个主角通关一次之后才可选（界面上会写明条件）。阿特拉斯解锁后可以打普通难度；无尽模式还要**用阿特拉斯通关一次**（见 endlessUnlock）。",
   "_map_note": "map.rowsMul = 一关的行数倍率（阿特拉斯是 2：路径变成两倍长）；map.bosses = 一关几个首领（2 = 两个，且保证两只不重样）；map.enemy = 这一局敌人的额外倍率（难度曲线抬一点）。",
-  "order": ["oasilia", "atlas"],
+  "order": [
+    "oasilia",
+    "atlas"
+  ],
   "heroes": [
     {
       "id": "oasilia",
@@ -10,7 +13,10 @@
       "species": "flygon",
       "speciesName": "沙漠蜻蜓",
       "dex": "0330",
-      "types": ["地面", "龙"],
+      "types": [
+        "地面",
+        "龙"
+      ],
       "ability": "飘浮",
       "gender": "♀",
       "atk": 16,
@@ -29,7 +35,14 @@
         "title": "你走到了沙的尽头",
         "text": "夜砂墓原的尽头不是墙，是一片什么都没有的平地。\n绿色细胞拼成的脸慢慢散开，落回沙里。\n「……好吧。你走得够远了，沙漠的孩子。」\n\n{name} 展开翅膀，第一次觉得风是干净的。"
       },
-      "map": { "rowsMul": 1, "bosses": 1, "enemy": { "hp": 1, "atk": 1 } }
+      "map": {
+        "rowsMul": 1,
+        "bosses": 1,
+        "enemy": {
+          "hp": 1,
+          "atk": 1
+        }
+      }
     },
     {
       "id": "atlas",
@@ -37,7 +50,10 @@
       "species": "salamence",
       "speciesName": "暴飞龙",
       "dex": "0373",
-      "types": ["龙", "飞行"],
+      "types": [
+        "龙",
+        "飞行"
+      ],
       "ability": "威吓",
       "gender": "♂",
       "atk": 17,
@@ -56,11 +72,30 @@
         "title": "沙的尽头是家",
         "text": "沙的尽头，她正坐在一块被风磨圆的大石头上，像是早算准了你会追来。\n「你来得可够晚的。」她冲你眨眨眼，「路上不好走？」\n「你一声不吭就走。」{name} 回了一句，「我总不能装没看见。」\n\n她笑了一声，你们一起展开翅膀，从沙海的尽头起飞。\n风把来时的脚印全抹平了，可回家的方向，你们都记得。\n等落在自家门口，天边刚刚透亮。"
       },
-      "map": { "rowsMul": 2, "bosses": 2, "enemy": { "hp": 1.08, "atk": 1.06, "perStage": 0.01 } }
+      "map": {
+        "rowsMul": 2,
+        "bosses": 2,
+        "enemy": {
+          "hp": 1.08,
+          "atk": 1.06,
+          "perStage": 0.015
+        }
+      }
     }
   ],
   "starters": {
     "_note": "只写**新增主角**的开局卡组。欧亚西莉亚那份在 content/cards.json 的 starterDeck（一处一份，不复制）。阿特拉斯那四张基础牌是「改名字、效果相同」的自己那一版（暴冲 / 噬咬 / 鳞甲 / 翼连击），原版（撞击 / 咬住 / 变硬 / 二连踢）锁给了欧亚西莉亚 —— 不然他的抽卡池里会同时出现「咬住」和「噬咬」。泼沙与电光一闪是两人共用的牌（用户说「可以有重叠」）。",
-    "atlas": ["atlas_charge", "atlas_charge", "atlas_charge", "atlas_bite", "atlas_bite", "atlas_scales", "atlas_scales", "atlas_wingbeat", "sand_attack", "quick_attack"]
+    "atlas": [
+      "atlas_charge",
+      "atlas_charge",
+      "atlas_charge",
+      "atlas_bite",
+      "atlas_bite",
+      "atlas_scales",
+      "atlas_scales",
+      "atlas_wingbeat",
+      "sand_attack",
+      "quick_attack"
+    ]
   }
 }

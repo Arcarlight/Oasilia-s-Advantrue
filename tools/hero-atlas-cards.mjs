@@ -133,7 +133,7 @@ const ARCHETYPE = [
     ico: 'ico-triple', fx: 'slash_1',
     text: '2 个回合后，连续 3 次造成 {d} 点伤害，并给对手 2 层出血。',
     effects: [{
-      kind: 'trigger', on: 'turn', count: 2, name: '血崩',
+      kind: 'trigger', on: 'turn', count: 3, name: '血崩',
       effects: [{ kind: 'damage', power: 130, hits: 3 }, { kind: 'status', status: 'bleed', stacks: 2 }],
     }],
   },
@@ -143,7 +143,7 @@ const ARCHETYPE = [
     ico: 'ico-stone', fx: 'dirt_1',
     text: '2 个回合后造成 {d} 点伤害，并让对手防御 -4。',
     effects: [{
-      kind: 'delay', turns: 2, name: '悬岩',
+      kind: 'delay', turns: 3, name: '悬岩',
       effects: [{ kind: 'damage', power: 190 }, { kind: 'buff', stat: 'def', amount: -4, target: 'enemy' }],
     }],
   },

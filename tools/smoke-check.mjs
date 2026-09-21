@@ -348,6 +348,69 @@ const SCRIPT = `
       errors.push('heroSwitch: ' + e.message);
     }
 
+    // 6b) **掉落那一屏：两个按钮的意思必须不一样**（用户报的「两个选项都是拿下、不能说不拿」）
+    try {
+      window.__oasisAuto({ scene: 'reward', kind: 'boss' });
+      await wait(400);
+      const gD = window.__oasis;
+      const drop = gD.reward && gD.reward.itemDrop;
+      if (!drop) {
+        log('掉落屏断言跳过：这一局没掉东西');
+      } else {
+        // 造一个「手持栏满了」的掉落：把栏位塞满，并把这一件标成没放下
+        while (gD.data.held.length < gD.heldMax()) gD.giveItem('oran_berry', 1);
+        drop.stored = false;
+        drop.overflow = true;
+        drop.seen = false;
+        window.__oasisUI.forceRerender();
+        await wait(400);
+        const btns = [...document.querySelectorAll('.drop-screen .reward-row .btn')];
+        const labels = btns.map((b) => b.textContent.trim());
+        log('满栏位时的掉落按钮 =', JSON.stringify(labels));
+        if (btns.length !== 2) errors.push('手持栏满时的掉落屏不是两个按钮，而是 ' + btns.length + ' 个：' + labels.join(' / '));
+        if (labels.length === 2 && labels[0] === labels[1]) errors.push('掉落屏两个按钮的字一样：「' + labels[0] + '」');
+        if (btns[1]) {
+          btns[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          await wait(400);
+          /**
+           * 只认**「丢掉一件」那个弹窗**（它的主体里有 .held-slot-row）。
+           * 用「页面上有没有 .modal-backdrop」判会误报：前面几步跑过的弹窗可能还挂在 DOM 上。
+           */
+          const modals = [...document.querySelectorAll('.modal-backdrop')];
+          const overflowModal = modals.find((m) => m.querySelector('.held-slot-row'));
+          log('点「不要」之后：还在掉落屏？', !!document.querySelector('.drop-screen'),
+            '｜弹了丢东西的窗？', !!overflowModal, '｜待处理的溢出 =', JSON.stringify(gD.awaitingOverflow ?? null));
+          if (document.querySelector('.drop-screen')) errors.push('点「不要，就这样」之后还停在掉落屏');
+          if (overflowModal) errors.push('点「不要，就这样」之后又弹出了「丢掉一件」的窗');
+          if (gD.awaitingOverflow) errors.push('拒绝掉落之后还留着待处理的溢出（地图页会再问一遍）');
+        }
+      }
+    } catch (e) {
+      errors.push('dropChoice: ' + e.message);
+    }
+
+    // 6c) 商店：手持栏满了**不能扣钱**（用户报的「钱消失了」）
+    try {
+      window.__oasisAuto({ scene: 'shop', stage: 1 });
+      await wait(400);
+      const gS = window.__oasis;
+      while (gS.data.held.length < gS.heldMax()) gS.giveItem('oran_berry', 1);
+      window.__oasisUI.forceRerender();
+      await wait(500);
+      const rows = [...document.querySelectorAll('.shop-item')];
+      // 只有**道具**那一行才受手持栏限制（卡牌是进卡组的），道具行的标志是那句作用说明 .shop-eff
+      const itemRow = rows.find((r) => r.querySelector('.shop-eff'));
+      const buy = itemRow ? [...itemRow.querySelectorAll('.btn')].pop() : null;
+      log('满栏位时的商店购买按钮：存在 =', !!buy, '｜禁用 =', buy ? buy.disabled : '—');
+      if (buy && !buy.disabled) errors.push('手持栏满了，商店的「购买」按钮还能点（应该禁掉并写明原因）');
+      const before = gS.data.gold;
+      if (buy) buy.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(300);
+      if (gS.data.gold !== before) errors.push('手持栏满了还买得成、钱被扣了：' + before + ' → ' + gS.data.gold);
+    } catch (e) {
+      errors.push('shopFullBag: ' + e.message);
+    }
+
     // 7) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容
     //    （不该只活在专门的诊断脚本里 —— 冒烟是每次改完都会跑的那一道）
     try {

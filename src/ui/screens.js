@@ -979,21 +979,35 @@ function renderShop(game) {
         card ? expertChipsNode(card) : null,
         el('div', { class: 'row' }, [
           el('span', { class: 'price' }, [el('span', { class: 'ico-money' }), String(s.price)]),
-          el('button', {
-            class: 'btn btn-sm',
-            disabled: sold || game.data.gold < s.price,
-            onClick: () => {
-              const res = game.buy(i);
-              audio[res.ok ? 'coin' : 'bad']();
-              msg.className = `result-box ${res.ok ? 'good' : 'bad'}`;
-              msg.textContent = res.text;
-              msg.classList.remove('hidden');
-              if (res.needRemove) {
-                pickRemove();
-              }
-              paint();
-            },
-          }, [sold ? t('已售出') : t('购买')]),
+          (() => {
+            /**
+             * **手持栏满了就别让玩家点得下去**（用户报的：「身上道具满了的时候还能买道具，
+             * 但是不光没有钱还消失了」）—— 引擎那一条已经拦在扣钱之前，
+             * 但按钮还亮着、点下去只会得到一句红字，玩家会以为「买到了但没拿到」。
+             * 这里直接禁用 + 写明原因，点不动的按钮比一句错误提示清楚得多。
+             */
+            const bagFull = s.kind === 'item' && game.data.held.length >= game.heldMax();
+            const disabled = sold || bagFull || game.data.gold < s.price;
+            const tip = bagFull
+              ? t('手持栏满了（{n} / {max}）—— 先在「手持道具」里丢掉一件。', { n: game.data.held.length, max: game.heldMax() })
+              : (sold ? t('这件已经卖掉了。') : (game.data.gold < s.price ? t('金币不够。') : t('买下这一件。')));
+            return el('button', {
+              class: 'btn btn-sm',
+              disabled,
+              dataset: { tip },
+              onClick: () => {
+                const res = game.buy(i);
+                audio[res.ok ? 'coin' : 'bad']();
+                msg.className = `result-box ${res.ok ? 'good' : 'bad'}`;
+                msg.textContent = res.text;
+                msg.classList.remove('hidden');
+                if (res.needRemove) {
+                  pickRemove();
+                }
+                paint();
+              },
+            }, [sold ? t('已售出') : t('购买')]);
+          })(),
         ]),
       ]);
       list.append(node);
@@ -1193,8 +1207,26 @@ function renderItemDrop(game) {
       el('span', { class: 'ico-cross' }),
       t('手持栏满了（{n} / {max}）—— 得先丢掉一件才拿得下。', { n: game.data.held.length, max: game.heldMax() }),
     ]));
-    heldRow.append(el('button', {
-      class: 'btn btn-sm',
+  }
+  panel.append(heldRow);
+
+  /**
+   * 两个按钮，**意思必须不一样**（用户报的：「两个选项都会弹出让你丢东西的页面，
+   * 而且两个选项的意思都是拿下，不能选择不拿」）。
+   *
+   * 以前是：上面那枚「丢掉一件，收下它」会弹丢弃框，下面那枚写的却是「收下，去结算」——
+   * 而它其实**什么都没收下**（栏位满时 giveItem 根本没存进去），
+   * 于是走到地图上又会弹一次丢弃框（`awaitingOverflow`），玩家体验就是「两个按钮都是拿下」。
+   *
+   * 现在：
+   *   · 栏位够 → 只给「收下，去结算」；
+   *   · 栏位满 → 「丢掉一件，收下它」**和**「不要，丢掉它」两条清楚的路，
+   *     后者会清掉 `overflow` 标记，绝不会再弹第二次。
+   */
+  const actions = el('div', { class: 'reward-row' });
+  if (!drop.stored) {
+    actions.append(el('button', {
+      class: 'btn btn-primary',
       onClick: () => {
         audio.ui('open');
         /**
@@ -1206,19 +1238,33 @@ function renderItemDrop(game) {
         showHeldOverflow(game);
       },
     }, [el('span', { class: 'ico-trash' }), el('span', { text: t('丢掉一件，收下它') })]));
-  }
-  panel.append(heldRow);
-
-  panel.append(el('div', { class: 'reward-row' }, [
-    el('button', {
+    actions.append(el('button', {
+      class: 'btn btn-ghost',
+      onClick: () => {
+        audio.ui('click');
+        /**
+         * **明确不要**：清掉 overflow 标记 → 结算页 / 地图页都不会再问一次，
+         * 这件掉落就此作罢（它本来也没进手持栏）。
+         */
+        drop.overflow = false;
+        drop.declined = true;
+        drop.seen = true;
+        game.awaitingOverflow = null;
+        toast(t('没有收下「{name}」—— 就放在这儿了。', { name: item.name }));
+        game.changed();
+      },
+    }, [el('span', { class: 'ico-cross' }), el('span', { text: t('不要，就这样') })]));
+  } else {
+    actions.append(el('button', {
       class: 'btn btn-primary',
       onClick: () => {
         audio.ui('confirm');
         drop.seen = true;            // 这一屏看过一次就够，接着走战斗结算
         game.changed();
       },
-    }, [el('span', { class: 'ico-check' }), el('span', { text: t('收下，去结算') })]),
-  ]));
+    }, [el('span', { class: 'ico-check' }), el('span', { text: t('收下，去结算') })]));
+  }
+  panel.append(actions);
 
   host.append(screen);
   return screen;

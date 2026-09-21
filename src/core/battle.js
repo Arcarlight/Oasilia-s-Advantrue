@@ -152,8 +152,13 @@ function cloneSide(base) {
     buffs: {},
     /** 预约生效的效果（「下回合开始…」）：[{ turns, effects }] */
     pending: [],
-    /** 「再打出 N 张牌 / 再过 N 个回合后生效」：[{ on, count, left, effects, name }] */
+    /** 「再打出 N 张牌 / 再过 N 个回合后生效」：[{ on, count, left, effects, name, seq }] */
     triggers: [],
+    /**
+     * 这一方**打过几张牌**（从 1 开始）。预约（triggers）记着自己是在第几张牌上创建的，
+     * 于是「再打出 N 张牌」不会把创建它的那一张算进去（见 fireTimers）。
+     */
+    playSeq: 0,
     /** 本场战斗里每种牌打过几张（回响用它判断「同一张牌」） */
     playedIds: {},
     drawN: 0,
@@ -431,7 +436,18 @@ export class Battle {
   addTrigger(key, spec) {
     const s = this[key];
     if (!s || !spec?.effects?.length) return;
-    s.triggers.push({ on: spec.on ?? 'plays', left: Math.max(1, spec.count ?? 1), effects: spec.effects, name: spec.name ?? null });
+    s.triggers.push({
+      on: spec.on ?? 'plays',
+      left: Math.max(1, spec.count ?? 1),
+      effects: spec.effects,
+      name: spec.name ?? null,
+      /**
+       * **创建这个预约的那一次出牌**（`playSeq`）。见 fireTimers 的说明：
+       * 「再打出 N 张牌」里的 N **不该把创建它的这张牌自己算进去**
+       * （用户报的：「标着再打两张牌就能触发效果的卡，现在打一张就可以了」）。
+       */
+      seq: s.playSeq ?? 0,
+    });
   }
 
   /**
@@ -461,6 +477,13 @@ export class Battle {
     // ② 计数触发（打出 N 张牌 / 过 N 个回合）
     for (const tr of [...(s.triggers ?? [])]) {
       if (tr.on !== why) continue;
+      /**
+       * **创建它的那一次出牌不算**（`tr.seq === s.playSeq`）：
+       * 卡面写「打出这张牌之后，**再**打出 2 张牌时生效」，那么它应该等**两张别的牌**。
+       * 以前这里不判 seq，于是这张牌自己把计数吃掉一格 —— 实测「二连劈」打出 1 张就触发，
+       * 而卡面写着 2 张（用户报的正是这个）。
+       */
+      if (why === 'plays' && tr.seq === (s.playSeq ?? 0)) continue;
       tr.left -= 1;
       if (tr.left > 0) continue;
       s.triggers.splice(s.triggers.indexOf(tr), 1);
@@ -799,6 +822,12 @@ export class Battle {
     }
     src.playedIds = src.playedIds ?? {};
     src.playedIds[card.id] = plays + 1;
+    /**
+     * 第几张牌（**每一次出牌 +1**）：「再打出 N 张牌就生效」的预约靠它区分
+     * 「创建它的那次出牌」和「之后打出的牌」（见 addTrigger / fireTimers）。
+     * 必须在**结算效果之前**先 +1，这样这张牌自己创建的预约带的就是当前这张牌的序号。
+     */
+    src.playSeq = (src.playSeq ?? 0) + 1;
     /**
      * 手持道具里那几件「每次出攻击牌都要付代价」的东西（生命宝珠的 selfDamagePct）：
      * 一张牌里可能有好几段伤害，但**一件道具只为一张牌收一次利息**，
@@ -1352,7 +1381,14 @@ export class Battle {
     else e.shield = 0;
     e.ap = e.apMax + e.blockBonus;
     e.blockBonus = 0;
-    e.playsLeft = e.playMax;
+    /**
+     * 每回合能出几张牌：**按档位封顶**（见 BALANCE.enemyPlaysCap 的说明）。
+     * 不封的话，敌人拿着和玩家一样的 8 点行动点、配上 0~1 费的牌，
+     * 一回合能打 5~7 张（实测第 6 章精英每回合平均 3.95 张、最凶一回合打掉玩家 89% 血）——
+     * 而敌人数值表是按「每回合 3 张」推的。这里把它收回来。
+     */
+    const cap = BALANCE.enemyPlaysCap?.[e.tier];
+    e.playsLeft = cap ? Math.min(e.playMax, cap) : e.playMax;
     this.emit({ type: 'turnStart', side: 'enemy', turn: this.turn, ap: e.ap });
     this.tickStatuses('enemy');
     if (this.over) return;
@@ -1493,33 +1529,45 @@ export class Battle {
       else if (eff.kind === 'buff' && eff.target !== 'enemy' && eff.stat === 'atk') {
         const add = eff.pct != null ? Math.round((e.atk ?? 0) * eff.pct) : eff.amount;
         over.atk = (over.atk ?? e.atk) + add;
-      } else if (eff.kind === 'grantBuff' && eff.buff === 'power') over.powBuff = (over.powBuff ?? 0) + (eff.n ?? 0);
+      }
+      /**
+       * 「威力 +n%」的强化：`damagePowerOf` 的最后一个参数是**倍率**（1.7 = +70%），
+       * 所以这里要把百分比换算成倍率（÷100）。
+       *
+       * ⚠ 这里以前直接塞的是 `eff.n`（= 70），而 `cardDamage` 拿它当倍率用（`1 + powBuff` = ×71）——
+       * 于是「先挂一张威力强化牌」在 AI 的试算里被高估了 70 倍，
+       * 敌人会**毫无道理地优先去打强化牌**，战斗界面那条威胁预判也会报出
+       * 「下回合预计 7627 伤害」这种荒唐数字（实测在基格尔德身上撞到过）。
+       */
+      else if (eff.kind === 'grantBuff' && eff.buff === 'power') over.powBuff = (over.powBuff ?? 0) + (eff.n ?? 0) / 100;
       else if (eff.kind === 'grantBuff' && eff.buff === 'apMax') apGain += eff.n ?? 0;
       else if (eff.kind === 'ap' || eff.kind === 'apBonus') apGain += eff.n ?? 0;
       else if (eff.kind === 'plays') apGain += 2;   // 多一次出牌 ≈ 多 2 点行动点
       else if (eff.kind === 'delay' || eff.kind === 'trigger') apGain += 0;   // 延后生效：本回合不涨伤害
     }
-    /**
-     * 「威力 +n%」的强化在 damagePowerOf 里是乘在**最后的道具加成**那一档，
-     * 这里没有 mods 可挂，所以用一个自带倍率的假克隆去算（见 cardDamage 的 over.powBuff）。
-     */
     return { over, apGain };
   }
 
   /**
    * 敌方这一回合的计划：**先手的那张非伤害牌（如果有）**。
    * 只有「先挂它再输出」的总伤害**严格高于**直接输出时才采用。
+   *
+   * @param {Array} [hand] 用哪一手牌来算（默认：敌人现在真的握在手里的那些）。
+   *   预判（predictEnemyThreat）要拿**它下回合可能抽到的手牌**来算，所以留了这个口子。
+   * @param {number} [apBudget] 行动点预算。默认用敌人**当前**的行动点 ——
+   *   注意轮到玩家行动时敌人的 AP 是 0，所以预判必须显式传「它下回合会有多少 AP」，
+   *   否则这里会把所有牌都过滤掉、永远算不出「先挂强化」（预判偏低的元凶之一）。
    */
-  planEnemyTurn() {
+  planEnemyTurn(hand = null, apBudget = null) {
     const e = this.enemy;
-    const hand = this.decks.enemy.hand.filter((c) => this.cardCost(c) <= (e.ap ?? 0));
-    const ap0 = e.ap ?? 0;
-    let best = { total: this.packDamage(hand, ap0), first: null };
-    for (const c of hand) {
+    const ap0 = apBudget ?? (e.ap ?? 0);
+    const list = (hand ?? this.decks.enemy.hand).filter((c) => this.cardCost(c) <= ap0);
+    let best = { total: this.packDamage(list, ap0), first: null };
+    for (const c of list) {
       if ((c.card.effects ?? []).some((x) => x.kind === 'damage')) continue;   // 只看非伤害牌
       const cost = this.cardCost(c);
       const { over, apGain } = this.overridesAfter(c.card);
-      const rest = hand.filter((x) => x !== c);
+      const rest = list.filter((x) => x !== c);
       const total = this.packDamage(rest, ap0 - cost + apGain, over);
       if (total > best.total + 0.5) best = { total, first: c, gain: total - best.total };
     }
@@ -1633,39 +1681,119 @@ export class Battle {
    * 预判敌方下回合的威胁上界（只读，不改任何状态）。
    *
    * 为什么需要它：敌人是在**它自己回合开始时**才抽牌的，所以轮到玩家行动时
-   * decks.enemy.hand 基本都是空的 —— 界面拿手牌去猜，永远只能得出「无计可施」，
-   * 这就是之前那个「对手正在蓄势……」怎么写都不变的原因。
-   * 现在改成拿「整副牌 + 下回合的行动点/出牌数」按 AI 同一套评分贪心模拟一遍，
-   * 得到的是它下回合**最多**能打出多少伤害（真抽到什么牌仍然随机）。
+   * decks.enemy.hand 基本都是空的 —— 界面拿手牌去猜，永远只能得出「无计可施」。
+   * 所以这里拿「整副牌 + 下回合的行动点 / 出牌数」把它下个回合**照着真 AI 演一遍**，
+   * 得到「抽得最顺时最多能打出多少」。
+   *
+   * ⚠ 用户报过「这条非常不准」—— 根因是它和 `enemyAct()` **各写了一套**：
+   *   ① 老版本按 `scoreCard` 选牌、却不把「先挂强化」算进去 ——
+   *      于是「过热（+120 力量）之后再打两张」这种回合会被低估一大截；
+   *   ② 它用的是 `e.playMax`，而真 AI 现在按档位封顶（BALANCE.enemyPlaysCap）；
+   *   ③ 真 AI 一回合最多用一张非伤害牌、而且精英 / 首领可能先手挂强化。
+   * 现在这里逐条对齐 `enemyAct()` 的执行顺序（强化 → 再按评分贪心出牌），
+   * 并且**用同一个 `cardDamage` 在同一个模拟状态上累加** —— 两套逻辑从此只有一份。
    */
   predictEnemyThreat() {
     const e = this.enemy;
-    const out = { damage: 0, topName: null, topDamage: 0, cards: 0 };
+    const out = { damage: 0, expected: 0, topName: null, topDamage: 0, cards: 0 };
     const pool = [...this.decks.enemy.hand, ...this.decks.enemy.draw, ...this.decks.enemy.discard];
     if (!pool.length) return out;
 
-    // 它下回合最多能拿到的牌 = 手牌 + 抽牌数。按分数取最好的那几张，
-    // 这样估的是「抽得最顺」的上界，而不是「整副牌都能用」的荒唐上界。
+    // 它下回合最多能拿到的牌 = 手牌 + 抽牌数。取「最好的那几张」当上界，
+    // 而不是「整副牌都能用」的荒唐上界。
     const handSize = Math.max(1, (e.drawN ?? 4) + this.decks.enemy.hand.length);
-    const remaining = pool
-      .slice()
-      .sort((a, b) => this.scoreCard('enemy', b.card) - this.scoreCard('enemy', a.card))
-      .slice(0, handSize);
+    /** 把「这一手牌照着真 AI 打一遍」算出来的伤害（上界与期望值共用这一份） */
+    const playOut = (hand) => this.planThreatDamage(hand);
+    const topN = (score) => pool.slice().sort((a, b) => score(b) - score(a)).slice(0, handSize);
 
+    /**
+     * **上界**：两种「最好的一手」都试一遍，取高的那个 ——
+     *   ① 按评分排（AI 自己挑牌的口味：它会留一张强化牌）；
+     *   ② 按伤害排（全是输出牌的那一手）。
+     * 只按评分排会漏掉「一手全是 285 的大招」这种情况（评分给状态 / 强化牌也加分），
+     * 实测出现过「最多 276 < 预计 349」这种自相矛盾的数。
+     */
+    const byScore = playOut(topN((c) => this.scoreCard('enemy', c.card)));
+    const byDamage = playOut(topN((c) => this.cardDamage('enemy', c.card, null)));
+    const best = byDamage.damage > byScore.damage ? byDamage : byScore;
+    out.damage = best.damage;
+    out.topName = best.topName;
+    out.topDamage = best.topDamage;
+    out.cards = best.cards;
+
+    /**
+     * **期望值**：同样是照着真 AI 打一遍，但手牌改成**随机抽**
+     * （敌人是随机抽牌的，「最顺的一手」只是上界，玩家真正想知道的是「大概会挨多少」）。
+     *
+     * 为什么不用真随机：这个数每次重画界面都会算一遍，随机会让它一直跳；
+     * 所以用一个**由回合数与牌堆状态推出来的种子**，同一回合内结果稳定。
+     * 抽样 32 次够稳（这个数只用来给玩家一个量级感，不需要精确）。
+     */
+    if (pool.length > handSize) {
+      let seed = ((this.turn * 2654435761) ^ (pool.length * 40503) ^ (this.enemy.hp * 7919) ^ (this.player.hp * 104729)) >>> 0;
+      const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+      const K = 32;
+      let sum = 0;
+      for (let k = 0; k < K; k += 1) {
+        const bag = pool.slice();
+        const hand = [];
+        for (let i = 0; i < handSize && bag.length; i += 1) {
+          hand.push(bag.splice(Math.floor(rand() * bag.length), 1)[0]);
+        }
+        sum += playOut(hand).damage;
+      }
+      out.expected = Math.round(sum / K);
+    } else {
+      // 整副牌都在手上：期望值就等于上界
+      out.expected = out.damage;
+    }
+    // 上界永远不该低于期望值（两种手牌都试过之后仍可能出现，兜一下）
+    out.damage = Math.max(out.damage, out.expected);
+    return out;
+  }
+
+  /**
+   * 「这一手牌按真 AI 的打法能造成多少伤害」——`predictEnemyThreat` 的上下界共用它。
+   *
+   * 逐条对齐 `enemyAct()`：① 精英 / 首领可能先手挂一张强化（用同一个 planEnemyTurn 判断）；
+   * ② 之后按评分贪心；③ 一回合最多一张非伤害牌；④ 出牌数按档位封顶。
+   * **只读**：不改任何战斗状态（用 over 这套临时参数模拟强化链）。
+   */
+  planThreatDamage(hand) {
+    const e = this.enemy;
     let ap = (e.apMax ?? 0) + (e.blockBonus ?? 0);
-    let plays = e.playMax ?? 0;
+    const cap = BALANCE.enemyPlaysCap?.[e.tier];
+    let plays = cap ? Math.min(e.playMax ?? 0, cap) : (e.playMax ?? 0);
+    const out = { damage: 0, topName: null, topDamage: 0, cards: 0 };
+    let over = null;
     let utility = 0;
+    let remaining = hand.slice();
+
+    // ① 先手那张非伤害牌：和 enemyAct 用同一个判断
+    if (this.wantsMaxDamage()) {
+      const plan = this.planEnemyTurn(remaining, ap);
+      if (plan.first) {
+        const entry = plan.first;
+        const { over: ov, apGain } = this.overridesAfter(entry.card);
+        over = { ...(over ?? {}), ...ov };
+        ap -= this.cardCost(entry) - apGain;
+        plays -= 1;
+        utility += 1;
+        out.cards += 1;
+        remaining = remaining.filter((c) => c !== entry);
+      }
+    }
+    // ② 之后按评分贪心，和 enemyAct 的主循环同一套
     let guard = 0;
     while (plays > 0 && guard++ < 12) {
       const cands = remaining
         .filter((c) => this.cardCost(c) <= ap)
-        .map((c) => ({ c, score: this.scoreCard('enemy', c.card), dmg: this.cardDamage('enemy', c.card) }))
+        .map((c) => ({ c, score: this.scoreCard('enemy', c.card), dmg: this.cardDamage('enemy', c.card, over) }))
         .sort((a, b) => b.score - a.score);
       if (!cands.length) break;
 
       let pick = cands[0];
       if (!pick.c.card.effects.some((eff) => eff.kind === 'damage')) {
-        // 与真实 AI 一致：一回合最多用一张非伤害牌
         if (utility >= 1) {
           const alt = cands.find((x) => x.dmg > 0);
           if (!alt) break;
@@ -1679,6 +1807,8 @@ export class Battle {
       out.damage += pick.dmg;
       out.cards += 1;
       if (pick.dmg > out.topDamage) { out.topDamage = pick.dmg; out.topName = pick.c.card.name; }
+      const { over: ov } = this.overridesAfter(pick.c.card);
+      if (Object.keys(ov).length) over = { ...(over ?? {}), ...ov };
       ap -= this.cardCost(pick.c);
       plays -= 1;
       remaining.splice(remaining.indexOf(pick.c), 1);

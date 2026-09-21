@@ -534,6 +534,39 @@ if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length
 }
 
 /**
+ * **「N 个回合后」的卡面文字必须和计时格数对得上**（3.0.1 加）。
+ *
+ * 这条规矩救了一次误判：用户报「两回合后发动的也包含本回合了」，量了一下发现
+ * 引擎是「打出它的那个回合不算、之后完整过去 N 个回合才生效」——
+ * 也就是卡面写「2 个回合后」时，引擎要等 3 格（`delay.turns` / `trigger.count` = 3）。
+ * 两套写法（「下回合开始时」= 1 格、「N 个回合后」= N+1 格）都是对的，
+ * 但**写错就会差一个回合**，而且玩家一眼就能看出来（这正是他报的那件事）。
+ * 所以这里把「卡面怎么写的」和「数据里几格」钉死：
+ *   · 写了「下回合开始时」→ 计时格数必须是 1；
+ *   · 写了「N 个回合后」  → 计时格数必须是 N + 1。
+ */
+{
+  const bad = [];
+  let n = 0;
+  for (const c of CARDS) {
+    const text = c.text ?? '';
+    const timers = (c.effects ?? []).filter((e) => e.kind === 'delay' || (e.kind === 'trigger' && (e.on ?? 'plays') === 'turn'));
+    if (!timers.length) continue;
+    const nextTurn = /下回合开始时/.test(text);
+    const m = text.match(/(\d+)\s*个回合后/);
+    if (!nextTurn && !m) { bad.push(`${c.name}：有「回合计时」的效果，卡面却没说清是下回合还是 N 个回合后`); continue; }
+    n += 1;
+    for (const e of timers) {
+      const cells = e.kind === 'delay' ? (e.turns ?? 1) : (e.count ?? 1);
+      if (nextTurn && cells !== 1) bad.push(`${c.name}：卡面写「下回合开始时」，数据却是 ${cells} 格`);
+      if (m && cells !== Number(m[1]) + 1) bad.push(`${c.name}：卡面写「${m[0]}」，数据应该是 ${Number(m[1]) + 1} 格（打出它的那个回合不算），现在是 ${cells} 格`);
+    }
+  }
+  if (bad.length) err(`「N 个回合后 / 下回合开始时」的卡面文字和计时格数对不上（${bad.length} 张）：${bad.slice(0, 5).join(' ｜ ')}`);
+  else note(`回合计时的卡 ${n} 张，卡面文字与计时格数一致（「下回合开始时」= 1 格、「N 个回合后」= N+1 格）`);
+}
+
+/**
  * 卡面里写死的**护盾公式系数**必须和引擎一致。
  *
  * 引擎算护盾是 `round(amount × (1 + 防御 ÷ 12))`（见 battle.js 的 case 'shield'），

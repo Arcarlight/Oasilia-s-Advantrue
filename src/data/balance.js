@@ -175,6 +175,24 @@ export const BALANCE = {
    */
   targetTurns: { mob: 2.0, normal: 2.5, elite: 3.0, boss: 3.5 },
 
+  /**
+   * **敌人一回合最多出几张牌**（3.0.1 加）。
+   *
+   * 起因（用户报的）：「玩了两把都在最后一关的精英怪那里被 400 伤害/回合推死」。
+   * 实测（tools/probe-elite-spike.mjs，第 6 章精英、玩家 470 血 / 防 44）：
+   *   敌人**每回合平均出 3.95 张牌**，出牌数分布 1/2/3/4/5/6/7 = 17/17/23/22/42/19/7，
+   *   也就是 40% 的回合打出 5 张以上；最凶的一回合打掉玩家 **417 点血（89% 满血）**，
+   *   每回合压力平均 35% —— 而这张表的设计目标是 17%。
+   *
+   * 为什么会这样：**敌人数值表是按「每回合 3 张牌」推出来的**
+   * （tools/check-balance.mjs 里那句 `const ENEMY_PLAYS = 3`），
+   * 但引擎给敌人的行动点上限和玩家一样是 8 点，配上 0~1 费的牌就能一口气打出 5~7 张。
+   * 表里的攻击力一直是对的，多出来的伤害全是「多打的那两三张牌」。
+   * 所以这里把出牌数**收回推导时的假设**：杂兵 / 较强 / 精英 3 张、首领 4 张
+   * （首领要留出「强化 + 两下输出」这种组合的空间）。
+   */
+  enemyPlaysCap: { mob: 3, normal: 3, elite: 3, boss: 4 },
+
   // 索引 = 章节（0~5）；数值 = 该章「中段节点」的基础值，再乘章内深度与玩家战力对齐系数
   /**
    * 敌人数值表。两条**硬规则**，改表之前先读：
@@ -479,7 +497,6 @@ export const BIOMES = {
     ],
     "ground": "#55483a",
     "accent": "#e8d9a0",
-    "bgm": "canyon",
     "shape": {
       "desc": "遗迹：事件多、精英中量，柱子后面常有东西",
       "rows": 9,
@@ -512,7 +529,6 @@ export const BIOMES = {
     ],
     "ground": "#3a4426",
     "accent": "#c8ff8a",
-    "bgm": "forest",
     "shape": {
       "desc": "菌林：事件与宝箱最多，路上怪事不断",
       "rows": 10,
@@ -545,7 +561,6 @@ export const BIOMES = {
     ],
     "ground": "#2e3a5e",
     "accent": "#ffe066",
-    "bgm": "cliff",
     "shape": {
       "desc": "雷台：战斗与精英最多，一路打上去",
       "rows": 10,
@@ -580,7 +595,6 @@ export const BIOMES = {
     ],
     "ground": "#2a4a5e",
     "accent": "#a8f0ff",
-    "bgm": "night",
     "shape": {
       "desc": "洞窟：宝箱最多（水晶里常嵌着东西），战斗也不少",
       "rows": 10,
@@ -640,13 +654,13 @@ export const BIOME_SLOTS = {
   ]
 };
 
-/** 新地图借用的 BGM（没写就用通用曲） */
-export const BIOME_BGM = {
-  "ruins": "canyon",
-  "fungal": "forest",
-  "storm": "cliff",
-  "crystal": "night"
-};
+/**
+ * 地图「借用别的曲子的场景」——写给「这张图暂时没有自己的曲子」用的。
+ * 现在 10 张地图**每一张都有自己的 map_/battle_/elite_ 三首**，所以这里是空的；
+ * 以前第 7~10 张图借过 canyon/forest/cliff/night，进不同的地图听到同一首，
+ * 而且那 12 首专属于它们的曲子永远放不出来（用户报的「从来没听到龍的交響楽」就是这个）。
+ */
+export const BIOME_BGM = {};
 
 export const RARITY = {
   "common": {

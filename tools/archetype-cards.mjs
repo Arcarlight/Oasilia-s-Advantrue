@@ -87,7 +87,7 @@ const NEW = [
     id: 'rock_blast', name: '岩石爆击', ap: 2, rarity: 'uncommon', types: ['岩石'], ico: 'ico-stone', fx: 'dirt_2',
     tags: ['timing'],
     text: '2 个回合后，造成 3 次 {d} 点伤害。',
-    effects: [{ kind: 'trigger', on: 'turn', count: 2, name: '岩石爆击', effects: [{ kind: 'damage', power: 95, hits: 3 }] }],
+    effects: [{ kind: 'trigger', on: 'turn', count: 3, name: '岩石爆击', effects: [{ kind: 'damage', power: 95, hits: 3 }] }],
   },
   {
     id: 'dig', name: '挖洞', ap: 2, rarity: 'rare', types: ['地面'], ico: 'ico-earthquake', fx: 'dirt_1',

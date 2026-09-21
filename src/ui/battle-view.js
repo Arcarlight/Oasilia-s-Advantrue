@@ -1388,8 +1388,11 @@ export class BattleScreen {
    */
   refreshIntent() {
     const b = this.battle;
-    // 悬停说明：这个胶囊到底在算什么（很多人第一眼会当成「他一定会打我这么多」）
-    this.intentEl.dataset.tip = t('对手下回合**最坏情况**能打出的伤害上界（拿它整副牌 + 下回合的行动点模拟出来的）。\n真抽到什么牌仍然随机，所以文案写「最多约」，不是断言。');
+    /**
+     * 悬停说明：这两个数分别是什么（很多人第一眼会当成「他一定会打我这么多」）。
+     * 3.0.1 起这里报**两个**数：预计（按随机抽牌平均）+ 最多（抽得最顺的上界）。
+     */
+    this.intentEl.dataset.tip = t('对手下回合能打掉你多少：\n**预计**是照它真实的出牌方式、按它随机抽牌平均出来的（做决策看这个数）。\n**最多**是它抽得最顺时的上界，很少真会发生。');
     if (b.over) {
       this.intentEl.className = 'intent calm';
       clear(this.intentEl).append(el('span', { class: 'ico-dice' }), el('span', { text: t('战斗结束') }));
@@ -1405,7 +1408,6 @@ export class BattleScreen {
     // 「拿预测结果当函数调」—— 直接 TypeError）。
     const threat = b.predictEnemyThreat();
     const hpNow = this.dispHp?.player ?? b.player.hp;
-    const pct = threat.damage / Math.max(1, hpNow);
     clear(this.intentEl);
     if (threat.damage <= 0) {
       this.intentEl.className = 'intent calm';
@@ -1415,16 +1417,28 @@ export class BattleScreen {
       );
       return;
     }
-    // 伤害已经够打死自己了，就把这个胶囊标成警告色
-    const deadly = threat.damage >= hpNow;
-    this.intentEl.className = `intent${deadly ? ' danger' : pct >= 0.3 ? ' warn' : ''}`;
-    this.intentEl.title = t('按对手整副牌 + 它下回合的行动点/出牌数估算的上界；它实际抽到什么牌是随机的。');
+    /**
+     * 两个数一起报（用户报过「这条非常不准」）：
+     *   · **预计**（expected）= 照真 AI 的打法、按它**随机抽牌**平均出来的伤害 —— 这才是玩家该拿来做决策的数；
+     *   · **最多**（damage）= 它抽得最顺时的上界。
+     * 只报上界的话，玩家会觉得「明明写着 300，我一共只挨了 80」；只报期望又藏掉了被一波带走的风险。
+     * 颜色按**预计**给（会打死你就是危险；只有上界够打死你则标「当心」）。
+     */
+    const rng = (n) => n;
+    const deadly = threat.expected >= hpNow;
+    const risky = !deadly && threat.damage >= hpNow;
+    const pct = threat.expected / Math.max(1, hpNow);
+    this.intentEl.className = `intent${deadly ? ' danger' : (risky || pct >= 0.3) ? ' warn' : ''}`;
     this.intentEl.append(
       el('span', { class: deadly ? 'ico-skull' : 'ico-sword' }),
       el('span', {
         text: deadly
-          ? t('危险：下回合最多 {d} 伤害，会被打倒', { d: threat.damage })
-          : t('下回合最多约 {d} 伤害{extra}', { d: threat.damage, extra: threat.topName ? t('（最狠：{name}）', { name: threat.topName }) : '' }),
+          ? t('危险：下回合约 {e} 伤害（最多 {d}），会被打倒', { e: rng(threat.expected), d: rng(threat.damage) })
+          : t('下回合预计 {e} 伤害（最多 {d}{extra}）', {
+            e: rng(threat.expected),
+            d: rng(threat.damage),
+            extra: threat.topName ? t(' · 最狠：{name}', { name: threat.topName }) : '',
+          }),
       }),
     );
   }

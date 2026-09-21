@@ -3879,7 +3879,7 @@ export const CARDS = [
       {
         "kind": "trigger",
         "on": "turn",
-        "count": 2,
+        "count": 3,
         "name": "岩石爆击",
         "effects": [
           {
@@ -7002,7 +7002,7 @@ export const CARDS = [
       {
         "kind": "trigger",
         "on": "turn",
-        "count": 2,
+        "count": 3,
         "name": "血崩",
         "effects": [
           {
@@ -7037,7 +7037,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "delay",
-        "turns": 2,
+        "turns": 3,
         "name": "悬岩",
         "effects": [
           {
