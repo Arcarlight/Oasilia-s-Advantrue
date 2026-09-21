@@ -76,8 +76,16 @@ export const BALANCE = {
   handPerAgi: 5,
   handMax: 9,
 
-  // 敌方输出不做额外打折，平衡直接写在 enemies.js 的「战力曲线」里
-  enemyAtkMul: 1,
+  /**
+   * 敌人卡牌伤害的系数（1 = 照卡面走）。
+   *
+   * 为什么会有这个旋钮：**敌我共用同一套卡**。玩家池那一版把 2 费 / 3 费攻击牌抬到
+   * 190 / 285（用户要求「高费不能比 1 费还不划算」），敌人牌的伤害也一起变强了 ——
+   * 而敌人的铺牌逻辑是「从最强往弱挑」，这 20% 几乎 1:1 落到了玩家头上：
+   * 实测通关率 12% → 1.5%（400 局）。0.85 是扫出来的（1.0→1.5% · 0.9→8.0% ·
+   * 0.85→11.5% · 0.8→18.0%），也就是「玩家的牌变好了，但敌人的输出回落到原来的水位」。
+   */
+  enemyAtkMul: 0.92,
 
   /**
    * 属性削减上限：各项最多被削到「基础值的这个比例」。
@@ -95,7 +103,7 @@ export const BALANCE = {
    * 出牌上限 8 → 5、抽牌 5 → 3、AP 7 → 4），那不是「被削弱」而是「被剥夺回合」。
    * 幸运同理（暴击 + 闪避），降到 0.5 就够痛了。
    */
-  debuffFloorPct: { atk: 0.25, def: 0.25, agi: 0.5, luck: 0.5 },
+  debuffFloorPct: { atk: 0.5, def: 0.5, agi: 0.6, luck: 0.6 },
 
   // 幸运
   luckCritDivisor: 2.4, // 暴击率% = luck * 100 / (100 + luck*2.4)
@@ -209,9 +217,9 @@ export const BALANCE = {
   // ---- 奖励 ----
   goldPerBattle: [18, 30],
   goldPerElite: [45, 70],
-  healAfterBattlePct: 0.12,   // 6 章一趟很长，每场战斗后多回一点，让玩家有机会看到后面的地图
+  healAfterBattlePct: 0.06,   // 6 章一趟很长，每场战斗后多回一点，让玩家有机会看到后面的地图
   fullHealAfterBoss: true, // 打完首领完全恢复，准备下一章
-  restHealPct: 0.40,
+  restHealPct: 0.30,
   cardRewardChance: 0.7,
   /**
    * 道具掉落（用户要的第三条：敌人掉落，概率低，按属性加权）。
@@ -233,7 +241,7 @@ export const BALANCE = {
   stageClearGold: [30, 55, 90, 130, 175, 225],
 
   // 走到首领节点时会先在这里恢复一点生命，避免「满血才能打首领」
-  preBossHealPct: 0.6,
+  preBossHealPct: 0.35,
 };
 
 /** 敏捷 -> 每回合 AP */

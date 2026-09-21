@@ -47,7 +47,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85,
+        "power": 90,
         "drainPct": 0.5
       }
     ],
@@ -68,7 +68,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "draw",
@@ -110,7 +110,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 55,
+        "power": 63,
         "hits": 3
       },
       {
@@ -137,8 +137,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
-        "ignoreDefPct": 0.3
+        "power": 190,
+        "ignoreDefPct": 0.5
       }
     ]
   },
@@ -181,8 +181,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85,
-        "ignoreDefPct": 0.5
+        "power": 90,
+        "ignoreDefPct": 0.7
       }
     ],
     "types": [
@@ -213,11 +213,11 @@ export const CARDS = [
     "rarity": "uncommon",
     "targeting": "self",
     "art": "magic_2",
-    "text": "回复最大生命的 20%，并获得护盾（随防御成长）。",
+    "text": "回复最大生命的 13%，并获得护盾（随防御成长）。",
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.2
+        "pct": 0.13
       },
       {
         "kind": "shield",
@@ -243,7 +243,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -287,7 +287,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -335,7 +335,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       }
     ],
     "types": [
@@ -353,7 +353,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 60,
+        "power": 71,
         "hits": 4
       },
       {
@@ -445,7 +445,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 180,
+        "power": 190,
         "plusShield": 1.2
       }
     ],
@@ -464,7 +464,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -489,7 +489,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       }
     ],
     "types": [
@@ -524,7 +524,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -548,7 +548,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "execThreshold": 0.4,
         "execBonus": 100
       }
@@ -638,7 +638,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -683,7 +683,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 40,
+        "power": 48,
         "hits": 4
       }
     ],
@@ -729,7 +729,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -771,7 +771,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 342
       },
       {
         "kind": "buff",
@@ -907,7 +907,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 2
       }
     ],
@@ -926,7 +926,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -1013,7 +1013,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -1036,7 +1036,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 2
       }
     ],
@@ -1077,7 +1077,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -1100,7 +1100,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 2
       },
       {
@@ -1124,7 +1124,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
+        "power": 285,
         "ignoreDefPct": 1
       }
     ],
@@ -1145,7 +1145,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 228,
         "recoilPct": 0.2
       }
     ],
@@ -1184,7 +1184,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 342
       },
       {
         "kind": "buff",
@@ -1240,7 +1240,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       }
     ],
     "types": [
@@ -1259,7 +1259,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       }
     ],
     "types": [
@@ -1302,7 +1302,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 20,
+        "power": 23,
         "hits": 4
       }
     ],
@@ -1321,7 +1321,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "execThreshold": 0.4,
         "execBonus": 115
       }
@@ -1342,7 +1342,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -1365,7 +1365,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "drainPct": 0.75
       }
     ],
@@ -1383,7 +1383,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85,
+        "power": 90,
         "drainPct": 0.5
       }
     ],
@@ -1402,7 +1402,7 @@ export const CARDS = [
       {
         "kind": "damage",
         "power": 450,
-        "ignoreDefPct": 0.5
+        "ignoreDefPct": 0.7
       }
     ],
     "exhaust": true,
@@ -1421,8 +1421,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85,
-        "ignoreDefPct": 0.5
+        "power": 90,
+        "ignoreDefPct": 0.7
       }
     ],
     "types": [
@@ -1441,7 +1441,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -1514,7 +1514,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -1556,7 +1556,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -1654,7 +1654,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -1674,7 +1674,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -1693,12 +1693,12 @@ export const CARDS = [
     "rarity": "epic",
     "targeting": "self",
     "art": "flask_full",
-    "text": "回复最大生命的 16%，并抽 1 张。使用后销毁。",
+    "text": "回复最大生命的 10%，并抽 1 张。使用后销毁。",
     "exhaust": true,
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.16
+        "pct": 0.1
       },
       {
         "kind": "draw",
@@ -1721,7 +1721,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "ignoreDefPct": 1
       }
     ],
@@ -1739,7 +1739,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -1765,7 +1765,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -1788,7 +1788,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -1833,7 +1833,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 228
       },
       {
         "kind": "buff",
@@ -1855,7 +1855,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "draw",
@@ -1876,7 +1876,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 55,
+        "power": 63,
         "hits": 3
       }
     ],
@@ -1894,7 +1894,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -1960,7 +1960,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "draw",
@@ -1983,7 +1983,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "drainPct": 0.5
       }
     ],
@@ -2003,7 +2003,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
+        "power": 342,
         "recoilPct": 0.1
       }
     ],
@@ -2021,7 +2021,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -2075,7 +2075,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -2097,7 +2097,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -2161,8 +2161,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
-        "ignoreDefPct": 0.3
+        "power": 190,
+        "ignoreDefPct": 0.5
       }
     ]
   },
@@ -2176,7 +2176,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -2201,7 +2201,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -2223,7 +2223,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85,
+        "power": 90,
         "bonusPerStack": {
           "status": [
             "poison",
@@ -2274,7 +2274,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -2298,7 +2298,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -2336,7 +2336,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -2359,7 +2359,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -2433,7 +2433,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 342
       },
       {
         "kind": "buff",
@@ -2521,8 +2521,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
-        "ignoreDefPct": 0.5
+        "power": 190,
+        "ignoreDefPct": 0.7
       }
     ],
     "types": [
@@ -2542,7 +2542,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -2563,7 +2563,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -2637,7 +2637,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 60,
+        "power": 86,
         "hits": 4
       },
       {
@@ -2660,7 +2660,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "drainPct": 0.6
       },
       {
@@ -2703,11 +2703,11 @@ export const CARDS = [
     "rarity": "uncommon",
     "targeting": "self",
     "art": "flask_full",
-    "text": "回复 22 点 HP，并回复 1 点 AP。",
+    "text": "回复 15 点 HP，并回复 1 点 AP。",
     "effects": [
       {
         "kind": "heal",
-        "amount": 22
+        "amount": 15
       },
       {
         "kind": "ap",
@@ -2724,15 +2724,15 @@ export const CARDS = [
     "ap": 2,
     "rarity": "epic",
     "targeting": "self",
-    "text": "回复最大生命的 45%，并回复 2 点 AP。使用后销毁。",
+    "text": "回复最大生命的 30%，并回复 1 点 AP。使用后销毁。",
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.45
+        "pct": 0.3
       },
       {
         "kind": "ap",
-        "n": 2
+        "n": 1
       }
     ],
     "exhaust": true,
@@ -2750,7 +2750,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -2776,7 +2776,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -2820,7 +2820,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -2846,7 +2846,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -3059,7 +3059,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -3078,11 +3078,11 @@ export const CARDS = [
     "ap": 2,
     "rarity": "rare",
     "targeting": "self",
-    "text": "回复最大生命的 30%，并清除自身所有负面。",
+    "text": "回复最大生命的 28%，并清除自身所有负面。",
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.3
+        "pct": 0.28
       },
       {
         "kind": "cleanse",
@@ -3106,8 +3106,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
-        "ignoreDefPct": 0.3
+        "power": 285,
+        "ignoreDefPct": 0.5
       }
     ]
   },
@@ -3121,7 +3121,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "bonusPerStack": {
           "status": "bleed",
           "per": 20,
@@ -3167,7 +3167,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 228,
         "recoilPct": 0.2
       }
     ],
@@ -3207,7 +3207,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "strength",
@@ -3247,8 +3247,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
-        "ignoreDefPct": 0.3
+        "power": 285,
+        "ignoreDefPct": 0.5
       }
     ],
     "exhaust": true,
@@ -3269,7 +3269,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 55,
+        "power": 63,
         "hits": 3
       }
     ]
@@ -3309,7 +3309,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 228
       },
       {
         "kind": "buff",
@@ -3332,7 +3332,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -3355,7 +3355,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -3374,11 +3374,11 @@ export const CARDS = [
     "rarity": "common",
     "targeting": "self",
     "art": "flask_half",
-    "text": "回复 22 点 HP。",
+    "text": "回复 14 点 HP。",
     "effects": [
       {
         "kind": "heal",
-        "amount": 22
+        "amount": 14
       }
     ],
     "types": [
@@ -3398,7 +3398,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -3421,7 +3421,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -3461,7 +3461,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -3485,7 +3485,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -3508,8 +3508,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
-        "ignoreDefPct": 0.3
+        "power": 190,
+        "ignoreDefPct": 0.5
       }
     ],
     "types": [
@@ -3599,7 +3599,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 2
       },
       {
@@ -3680,12 +3680,12 @@ export const CARDS = [
     "rarity": "epic",
     "targeting": "self",
     "art": "flask_full",
-    "text": "回复最大生命的 50%，并抽 2 张。使用后销毁。",
+    "text": "回复最大生命的 45%，并抽 2 张。使用后销毁。",
     "exhaust": true,
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.5
+        "pct": 0.45
       },
       {
         "kind": "draw",
@@ -3707,7 +3707,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 55,
+        "power": 63,
         "hits": 3
       }
     ],
@@ -3753,7 +3753,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -3777,7 +3777,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -3822,11 +3822,11 @@ export const CARDS = [
     "rarity": "uncommon",
     "targeting": "self",
     "art": "flask_full",
-    "text": "回复最大生命的 22%。",
+    "text": "回复最大生命的 15%。",
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.22
+        "pct": 0.15
       }
     ],
     "types": [
@@ -3921,7 +3921,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -3995,7 +3995,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 30,
+        "power": 36,
         "hits": 3
       },
       {
@@ -4061,7 +4061,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -4082,7 +4082,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -4108,7 +4108,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -4127,7 +4127,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -5068,7 +5068,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "buff",
@@ -5115,8 +5115,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
-        "ignoreDefPct": 0.5
+        "power": 285,
+        "ignoreDefPct": 0.7
       },
       {
         "kind": "status",
@@ -5138,7 +5138,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -5185,7 +5185,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -5208,7 +5208,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 120,
+        "power": 143,
         "hits": 2
       }
     ],
@@ -5227,7 +5227,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -5300,7 +5300,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -5323,7 +5323,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 2
       },
       {
@@ -5390,7 +5390,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 228
       },
       {
         "kind": "buff",
@@ -5419,7 +5419,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "status",
@@ -5475,11 +5475,11 @@ export const CARDS = [
     "ap": 1,
     "rarity": "uncommon",
     "targeting": "self",
-    "text": "回复最大生命的 25%，本场战斗攻击 +2。",
+    "text": "回复最大生命的 15%，本场战斗攻击 +2。",
     "effects": [
       {
         "kind": "heal",
-        "pct": 0.25
+        "pct": 0.15
       },
       {
         "kind": "buff",
@@ -5569,7 +5569,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -5612,7 +5612,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -5636,7 +5636,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235
+        "power": 285
       },
       {
         "kind": "buff",
@@ -5732,7 +5732,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
+        "power": 285,
         "bonusPerStack": {
           "status": [
             "poison",
@@ -5816,7 +5816,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 55,
+        "power": 63,
         "hits": 3
       },
       {
@@ -5922,7 +5922,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "status",
@@ -5962,7 +5962,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160,
+        "power": 190,
         "bonusIfDot": 90
       }
     ],
@@ -5983,7 +5983,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 228
       },
       {
         "kind": "selfDmg",
@@ -6002,7 +6002,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 160
+        "power": 190
       },
       {
         "kind": "status",
@@ -6048,7 +6048,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 80,
+        "power": 95,
         "hits": 3
       },
       {
@@ -6073,8 +6073,8 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 235,
-        "ignoreDefPct": 0.3
+        "power": 285,
+        "ignoreDefPct": 0.5
       }
     ],
     "types": [
@@ -6113,7 +6113,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 85
+        "power": 90
       },
       {
         "kind": "buff",
@@ -6176,7 +6176,7 @@ export const CARDS = [
     "effects": [
       {
         "kind": "damage",
-        "power": 120,
+        "power": 143,
         "hits": 2
       }
     ]

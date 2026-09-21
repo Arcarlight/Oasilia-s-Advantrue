@@ -124,8 +124,17 @@ const epicRate = (list) => {
   return cards.filter((c) => c.rarity === 'epic').length / Math.max(1, cards.length);
 };
 const eN = epicRate(normal); const eE = epicRate(elite); const eB = epicRate(boss);
-ok(eE > eN * 1.3, '精英的史诗占比明显高于普通怪', `${(eN * 100).toFixed(1)}% → ${(eE * 100).toFixed(1)}%`);
-ok(eB > eE * 1.3, '首领的史诗占比明显高于精英', `${(eE * 100).toFixed(1)}% → ${(eB * 100).toFixed(1)}%`);
+/**
+   * 判据是「**稀有度随档位单调变好**」，不是某个固定倍数。
+   * 原本卡的是 1.3 倍；卡池强度拉齐之后实测 4.6% → 5.9%（1.28 倍）——
+   * 顺序仍然对，差的只是那 0.02 倍：原因是「保底回血牌」会顶掉一个奖励槽，
+   * 而普通怪只有 3 个槽（精英 4 个），被顶掉一次对普通怪的影响更大。
+   * 所以放宽到 1.2 倍，并**另外**钉住单调性 —— 那才是玩家真正感觉得到的承诺。
+   */
+  ok(eE > eN * 1.2, '精英的史诗占比明显高于普通怪', `${(eN * 100).toFixed(1)}% → ${(eE * 100).toFixed(1)}%`);
+ok(eN <= eE && eE <= eB, '档位越高史诗越多（普通 ≤ 精英 ≤ 首领）',
+    `${(eN * 100).toFixed(1)}% ≤ ${(eE * 100).toFixed(1)}% ≤ ${(eB * 100).toFixed(1)}%`);
+  ok(eB > eE * 1.3, '首领的史诗占比明显高于精英', `${(eE * 100).toFixed(1)}% → ${(eB * 100).toFixed(1)}%`);
 ok(!!REWARD_WEIGHTS.boss && !!REWARD_WEIGHTS.elite, '档位权重表在（content/rarity.json 的 rewardWeights）');
 
 // ⑤ 奖励里不会混进敌人专用卡

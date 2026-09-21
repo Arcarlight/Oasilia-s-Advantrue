@@ -309,7 +309,7 @@ export const ITEMS = {
       "mods": [
         {
           "key": "healAfterBattlePct",
-          "add": 0.2
+          "add": 0.1
         }
       ]
     }
@@ -1042,7 +1042,7 @@ export const ITEMS = {
       "mods": [
         {
           "key": "healAfterBattlePct",
-          "add": 0.25
+          "add": 0.12
         }
       ]
     }

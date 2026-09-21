@@ -911,10 +911,10 @@ export const MOVE_POOLS = {
     "gyro_ball",
     "iron_tail",
     "sig_meteor_mash",
-    "dynamax_cannon",
     "doom_desire",
     "mob_stare",
-    "protect"
+    "protect",
+    "metal_sound"
   ],
   "kit_t_飞行": [
     "peck",

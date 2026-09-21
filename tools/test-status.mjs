@@ -183,10 +183,17 @@ const pick = (evs, type) => evs.filter((e) => e.type === type);
   check('腐蚀按基础防御的 30% 削弱', b.enemy.defMod === -3, 'defMod=' + b.enemy.defMod + '（11 × 30% ≈ 3）');
   const b2 = makeBattle({ enemy: { def: 11 } });
   b2.rng = () => 0.999;
-  // 下限 25%：def 11 最低只能削到 3 点（-8）
+  /**
+   * 削弱下限**跟着 BALANCE 走**（`debuffFloorPct`），别把数字写死 ——
+   * 下限本身就是平衡旋钮（削弱类卡太强时就是抬它：这一版从 25% 抬到了 50%）。
+   * 原来写死 25% 的那一版，调底线就误报，看起来像「削弱坏了」。
+   */
   for (let i = 0; i < 10; i++) b2.resolveCard('player', CARD_BY_ID.corrode);
-  check('削弱下限是基础值的 25%（不是一半）', effectiveDef(b2.enemy) === 3,
-    `防御 ${effectiveDef(b2.enemy)}（下限 ${Math.round(11 * debuffFloor('def'))}）`);
+  // 引擎的下限是 floor(基础值 × 比例)：11 × 0.5 = 5.5 → 5（取整方向由 clampDebuffs 决定）
+  const defFloor = Math.max(0, Math.floor(11 * debuffFloor('def')));
+  check('防御最多只能削到基础值的 ' + Math.round(debuffFloor('def') * 100) + '%',
+    effectiveDef(b2.enemy) === defFloor,
+    `防御 ${effectiveDef(b2.enemy)}（下限 ${defFloor}）`);
 
   // 敏捷单独一档：它管着 AP / 抽牌 / 出牌上限三件事，不能削到和防御一样深
   const b3 = makeBattle({ player: { agi: 10 } });

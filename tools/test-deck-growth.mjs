@@ -244,10 +244,19 @@ console.log('\n④ 奖励保底：既没有回血牌、也没有解状态牌时�
     const feed = () => [
       { ...CARD_BY_ID.tackle }, { ...CARD_BY_ID.bite }, { ...CARD_BY_ID.harden },
     ];
-    const stage0 = kindsOf(mk(7000, 0).withSustainPity(feed()));
+    const stage0Raw = mk(7000, 0).withSustainPity(feed());
     const stage1 = kindsOf(mk(7001, 1).withSustainPity(feed()));
-    ok(stage0.has('heal') && !stage0.has('cleanse'),
-      '第 1 章只触发回血保底，不触发解状态保底', `第 1 章拿到 ${[...stage0].join('/')}；第 2 章拿到 ${[...stage1].join('/')}`);
+    const stage0 = kindsOf(stage0Raw);
+    /**
+     * 判据要用「**动过几个槽位**」，不能看「结果里有没有 cleanse」：
+     * 回血保底可能挑到**既能回血又能解状态**的牌（月光 = 回复 28% + 清除负面），
+     * 那时第 1 章的结果里当然有 cleanse —— 但那是同一张牌，不是解状态保底被触发了。
+     * （第一版就是这么写的，卡池一调就误报。）
+     */
+    const touched0 = stage0Raw.filter((c, i) => c.id !== feed()[i].id).length;
+    ok(stage0.has('heal') && touched0 === 1,
+      '第 1 章只触发回血保底（只动一个槽位），解状态保底要第 2 章才开',
+      `第 1 章拿到 ${[...stage0].join('/')}（动了 ${touched0} 个槽位）；第 2 章拿到 ${[...stage1].join('/')}`);
     ok(stage1.has('heal') && stage1.has('cleanse'),
       '第 2 章起两条保底各占一个槽位，都在', `第 2 章拿到 ${[...stage1].join('/')}`);
   }
