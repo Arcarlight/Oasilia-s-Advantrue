@@ -1012,6 +1012,12 @@ function emitEvents(events) {  const list = events.map((ev) => {
     if (ev.hero) head.hero = ev.hero;
     if (ev.heroNot) head.heroNot = ev.heroNot;
     head.text = ev.text;
+    /**
+     * **主角专属改写版**（3.0.2）：`heroText: { atlas: '…' }` 原样带进生成文件 ——
+     * 用户要的是「给公共事件写一个暴飞龙版，而不是覆盖原来的」，所以原版正文照旧留着，
+     * 阿特拉斯那一份挂在这下面（界面上按这一局的主角挑，见 eventfx.js 的 pickHeroText）。
+     */
+    if (ev.heroText) head.heroText = ev.heroText;
     if (ev.once === false) head.once = false;
     const headLines = Object.entries(head).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n');
     const opts = ev.options.map((o) => '      eventOption(' + J(o).split('\n').map((l, i) => (i === 0 ? l : '      ' + l)).join('\n') + ')');

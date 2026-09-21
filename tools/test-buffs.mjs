@@ -21,6 +21,7 @@ globalThis.localStorage = {
 };
 
 const { Battle } = await imp('src/core/battle.js');
+const { BALANCE } = await imp('src/data/balance.js');
 const { CARD_BY_ID } = await imp('src/data/cards.js');
 
 let pass = 0;
@@ -282,32 +283,52 @@ group('⑥ 计时：卡面怎么写，就该怎么数（用户报的两个差一
   ok(b2.takeEvents().some((e) => e.type === 'timer'), '「下回合开始时」：下一个回合开始就生效（1 格，没被动过）');
 }
 
-// ---------------- ⑦ 敌方出牌数封顶（3.0.1：第 6 章精英 400 伤害/回合的根因） ----------------
-group('⑦ 敌人一回合的出牌数按档位封顶');
+// ---------------- ⑦ 敌人出牌不封顶 + 一回合伤害兜底（3.0.2） ----------------
+group('⑦ 敌人出牌不封顶，但一回合不许把玩家打死');
 {
   /**
-   * 玩法：给敌人**一手的 0 费牌**（撞击）+ 20 点行动点，让它随便打 ——
-   * 封顶只能靠「出牌数」，AP 管不住它（这正是 bug 的成因：AP 上限 8 点配 0 费牌能连打 7 张）。
-   * 然后数它这一轮到底打了几张。
+   * 用户实测的两句话（3.0.2）：
+   *   · 「怪出的牌这么少基本形成不了什么火候，回滚原先的卡牌限制」→ 出牌数**不封顶**；
+   *   · 「最后一关的精英怪 400 伤害/回合推死」→ 保留「一回合最多打掉玩家最大生命 X%」的兜底。
+   *
+   * 玩法：给敌人一手的 0 费牌 + 20 点行动点，让它随便打，然后数它这一轮打了几张。
    */
   const playsInOneTurn = (tier) => {
     const b = makeBattle({ deck: ['tackle'], enemyDeck: Array.from({ length: 9 }, () => 'tackle'), tier });
     b.start();
-    b.collectEvents = null;
     b.takeEvents();
     b.enemy.ap = 20;
     b.enemy.playsLeft = b.enemy.playMax;
     b.endTurn();
     return b.events.filter((e) => e.type === 'playCard' && e.side === 'enemy').length;
   };
-  const mob = playsInOneTurn('mob');
-  const normal = playsInOneTurn('normal');
   const elite = playsInOneTurn('elite');
-  const boss = playsInOneTurn('boss');
-  ok(mob <= 3, '杂兵：一回合最多 3 张', `${mob} 张`);
-  ok(normal <= 3, '较强：一回合最多 3 张', `${normal} 张`);
-  ok(elite <= 3, '精英：一回合最多 3 张（用户被 400 伤害推死就是这里没封顶）', `${elite} 张`);
-  ok(boss <= 4 && boss > elite, '首领宽松一档（4 张，留出「强化 + 输出」的组合）', `${boss} 张`);
+  ok(elite > 3, '出牌数不封顶：行动点够就能一直打（回归旧规则，敌人要有火候）', `精英一回合打了 ${elite} 张`);
+
+  /**
+   * 「对手抽得极顺」的那一回合仍然可能打到玩家七成以上的血 —— 兜底：
+   * **敌人的同一个回合最多打掉玩家最大生命的 BALANCE.enemyTurnDamageCapPct**。
+   */
+  {
+    const b = makeBattle({ deck: ['tackle'], enemyDeck: ['tackle'], tier: 'boss' });
+    b.start();
+    const cap = Math.round(b.player.maxHp * (BALANCE.enemyTurnDamageCapPct ?? 0.7));
+    /**
+     * ⚠ 不能调 `beginEnemyTurn()`：它会把敌人**整回合**跑完并交回玩家回合
+     * （第一版就是这么写的，于是后面这几下都算在「玩家的回合」里、根本不受限）。
+     */
+    b.active = 'enemy';
+    b._foeTurnDamage = 0;
+    for (let i = 0; i < 3; i += 1) b.applyDamage('player', 999, { source: 'enemy' });
+    const taken = b.player.maxHp - b.player.hp;
+    ok(taken <= cap + 1, '敌人的同一回合最多打掉玩家最大生命的 70%', `掉了 ${taken} / 上限 ${cap}`);
+    ok(!b.over, '因此「满血进场被一回合带走」不会发生');
+    // 玩家的回合照常能被打死（只限敌人的回合）
+    b.active = 'player';
+    b._foeTurnDamage = 0;
+    b.applyDamage('player', 9999, { source: 'enemy' });
+    ok(b.player.hp <= 0, '玩家的回合不受这条限制（该赢该输照旧）');
+  }
 }
 
 console.log(`\n强化 / 预约 / 敌方贪心的回归测试：通过 ${pass}，失败 ${fail}`);

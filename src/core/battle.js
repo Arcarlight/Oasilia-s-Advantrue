@@ -812,13 +812,38 @@ export class Battle {
      */
     const plays = src.playedIds?.[card.id] ?? 0;
     const echo = plays > 0 ? (this.buffValue(sourceKey, 'echo') || 0) : 0;
-    if (echo > 0) {
-      opts = { ...opts, powerMul: 1 + echo, stackMul: 1 + echo };
-      this.emitLogged(
-        { type: 'echo', side: sourceKey, id: card.id, times: plays + 1, mul: 1 + echo },
-        t('回响：这是第 {n} 次打出「{card}」，威力与层数 ×{mul}。', { n: plays + 1, card: card.name, mul: (1 + echo).toFixed(1).replace(/\.0$/, '') }),
-        sourceKey === 'player' ? 'good' : 'bad'
-      );
+    /**
+     * **「威力提升」强化（grantBuff power）在这里落地**（3.0.2 修的死代码）。
+     *
+     * ⚠ 这张牌以前**一点作用都没有**：`grantBuff power` 挂在身上、界面也画了胶囊，
+     * 但伤害路径从头到尾没有读过它 —— 「剑舞」写着「攻击牌威力 +70%（持续 2 回合）」，
+     * 实际只生效了「本场战斗威力 +40%」那一半；更糟的是「龙星群」拿它当主要卖点，
+     * 于是那张史诗牌只剩「自身攻击 -30%」在生效，成了**净负收益**
+     * （实测 6 回合总伤害 -30%）。用户报的「百分比加威力的卡太强大 / 说不清有没有用」，
+     * 量下来有一部分正是这类牌。
+     *
+     * 现在：倍率 = (1 + 回响) × (1 + 威力提升%)，和道具加成、回响一样乘在最后。
+     */
+    const powBuff = (this.buffValue(sourceKey, 'power') || 0) / 100;
+    const mul = (1 + echo) * (1 + powBuff);
+    if (mul !== 1) {
+      opts = { ...opts, powerMul: mul, stackMul: 1 + echo };
+      if (powBuff > 0) {
+        this.emitLogged(
+          { type: 'buffApply', side: sourceKey, buff: 'power', mul },
+          t('「{label}」生效：这一张牌的威力 ×{mul}。', {
+            label: t(BUFF_INFO.power.name), mul: mul.toFixed(2).replace(/\.?0+$/, ''),
+          }),
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+      }
+      if (echo > 0) {
+        this.emitLogged(
+          { type: 'echo', side: sourceKey, id: card.id, times: plays + 1, mul: 1 + echo },
+          t('回响：这是第 {n} 次打出「{card}」，威力与层数 ×{mul}。', { n: plays + 1, card: card.name, mul: (1 + echo).toFixed(1).replace(/\.0$/, '') }),
+          sourceKey === 'player' ? 'good' : 'bad'
+        );
+      }
     }
     src.playedIds = src.playedIds ?? {};
     src.playedIds[card.id] = plays + 1;
@@ -1276,6 +1301,27 @@ export class Battle {
 
   applyDamage(key, dmg, meta = {}) {
     const s = this[key];
+    /**
+     * **敌人的一回合不许把玩家一次打死**（3.0.1）。
+     *
+     * 用户报过「最后一关的精英怪 400 伤害/回合推死」。出牌数**不封顶**
+     * （3.0.1 试过封顶，用户实测觉得敌人打得太少、没有火候，要求回滚），
+     * 所以「对手抽得极顺」的那几个回合仍然能打到玩家最大生命的 70~89%，
+     * 于是「满血进场、一回合见底」这种事偶尔还会发生。这一条是**兜底**：
+     * 敌人**同一个回合**里对玩家造成的总伤害最多是玩家最大生命的
+     * `BALANCE.enemyTurnDamageCapPct`（0.7），多出来的部分会被吃掉并写进战斗日志。
+     *
+     * 为什么只针对「敌人的回合」：玩家自己的失误（开怪前血就不满、不带药）该照常受罚，
+     * 而「看不见对手手牌、被一波带走」是**没有对策空间**的，那是设计问题不是难度。
+     * 玩家的持续伤害（中毒 / 灼伤）在自己的回合开始结算，不受这条限制。
+     */
+    let capped = false;
+    if (key === 'player' && this.active === 'enemy') {
+      const cap = Math.round(this.player.maxHp * (BALANCE.enemyTurnDamageCapPct ?? 1));
+      const left = Math.max(0, cap - (this._foeTurnDamage ?? 0));
+      if (dmg > left) { dmg = left; capped = true; }
+      this._foeTurnDamage = (this._foeTurnDamage ?? 0) + dmg;
+    }
     let left = dmg;
     let absorbed = 0;
     if (s.shield > 0) {
@@ -1316,6 +1362,13 @@ export class Battle {
       key === 'player' ? 'bad' : 'good'
     );
     this.checkDeath();
+    if (capped && key === 'player' && !this.over) {
+      this.emitLogged(
+        { type: 'damageCap', side: 'player', amount: dmg },
+        t('{name} 咬牙撑住了 —— 对手这一回合已经打不动更多了。', { name: s.name }),
+        'good'
+      );
+    }
   }
 
   checkDeath() {
@@ -1381,14 +1434,18 @@ export class Battle {
     else e.shield = 0;
     e.ap = e.apMax + e.blockBonus;
     e.blockBonus = 0;
+    /** 敌人这一回合已经打掉玩家多少（见 applyDamage 里的「一回合不许打死」兜底） */
+    this._foeTurnDamage = 0;
     /**
-     * 每回合能出几张牌：**按档位封顶**（见 BALANCE.enemyPlaysCap 的说明）。
-     * 不封的话，敌人拿着和玩家一样的 8 点行动点、配上 0~1 费的牌，
-     * 一回合能打 5~7 张（实测第 6 章精英每回合平均 3.95 张、最凶一回合打掉玩家 89% 血）——
-     * 而敌人数值表是按「每回合 3 张」推的。这里把它收回来。
+     * 每回合能出几张牌：**回到「有多少行动点就打几张」的原始规则**。
+     *
+     * 3.0.1 一度加过一档「杂兵 / 精英 3 张、首领 4 张」的封顶（当时是为了压住
+     * 「一回合 400 伤害」），但用户实测下来觉得**敌人打得太少、完全没有火候**，
+     * 要求回滚（见 3.0.2 的更新日志）。现在改成：出牌数不封顶，
+     * 「敌人一回合不许把玩家打死」那条兜底（BALANCE.enemyTurnDamageCapPct）保留 ——
+     * 敌人照样能连打、能叠强化，但不会在玩家看不见手牌的情况下把人一波带走。
      */
-    const cap = BALANCE.enemyPlaysCap?.[e.tier];
-    e.playsLeft = cap ? Math.min(e.playMax, cap) : e.playMax;
+    e.playsLeft = e.playMax;
     this.emit({ type: 'turnStart', side: 'enemy', turn: this.turn, ap: e.ap });
     this.tickStatuses('enemy');
     if (this.over) return;
@@ -1688,7 +1745,7 @@ export class Battle {
    * ⚠ 用户报过「这条非常不准」—— 根因是它和 `enemyAct()` **各写了一套**：
    *   ① 老版本按 `scoreCard` 选牌、却不把「先挂强化」算进去 ——
    *      于是「过热（+120 力量）之后再打两张」这种回合会被低估一大截；
-   *   ② 它用的是 `e.playMax`，而真 AI 现在按档位封顶（BALANCE.enemyPlaysCap）；
+   *   ② 它没有把「这一回合总共能打几张」和真 AI 对齐；
    *   ③ 真 AI 一回合最多用一张非伤害牌、而且精英 / 首领可能先手挂强化。
    * 现在这里逐条对齐 `enemyAct()` 的执行顺序（强化 → 再按评分贪心出牌），
    * 并且**用同一个 `cardDamage` 在同一个模拟状态上累加** —— 两套逻辑从此只有一份。
@@ -1756,14 +1813,14 @@ export class Battle {
    * 「这一手牌按真 AI 的打法能造成多少伤害」——`predictEnemyThreat` 的上下界共用它。
    *
    * 逐条对齐 `enemyAct()`：① 精英 / 首领可能先手挂一张强化（用同一个 planEnemyTurn 判断）；
-   * ② 之后按评分贪心；③ 一回合最多一张非伤害牌；④ 出牌数按档位封顶。
+   * ② 之后按评分贪心；③ 一回合最多一张非伤害牌（出牌数不封顶，和真 AI 一致）。
    * **只读**：不改任何战斗状态（用 over 这套临时参数模拟强化链）。
    */
   planThreatDamage(hand) {
     const e = this.enemy;
     let ap = (e.apMax ?? 0) + (e.blockBonus ?? 0);
-    const cap = BALANCE.enemyPlaysCap?.[e.tier];
-    let plays = cap ? Math.min(e.playMax ?? 0, cap) : (e.playMax ?? 0);
+    // 出牌数不封顶（和 enemyAct 一致：有多少行动点就打几张）
+    let plays = e.playMax ?? 0;
     const out = { damage: 0, topName: null, topDamage: 0, cards: 0 };
     let over = null;
     let utility = 0;

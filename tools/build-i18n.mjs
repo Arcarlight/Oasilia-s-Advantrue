@@ -110,7 +110,7 @@ async function collectContentStrings() {
     if (v && typeof v === 'object') for (const s of Object.values(v)) addDeep(s, where);
   };
   const { I18N_TABLES, I18N_WORD_TABLES = {}, I18N_LISTS = {} } = await import(new URL('../src/core/i18n-tables.js', import.meta.url).href);
-  const { CONTENT_FIELDS, entriesOf, optionTextNodes } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
+  const { CONTENT_FIELDS, entriesOf, optionTextNodes, heroDictStrings } = await import(new URL('../src/core/i18n.js', import.meta.url).href);
 
   for (const [kind, list] of Object.entries(I18N_TABLES)) {
     const fields = CONTENT_FIELDS[kind];
@@ -126,9 +126,18 @@ async function collectContentStrings() {
         add(opt.label, where);
         add(opt.hint, where);
         add(opt.text, where);
+        /**
+         * **主角专属改写版**（`heroText / heroLabel / heroHint`，3.0.2）：
+         * 它们藏在选项和结果块里（不在 CONTENT_FIELDS 管得到的层级），
+         * 这里不收的话，给阿特拉斯写的那一份在日 / 英下会原样显示中文。
+         */
+        for (const s of heroDictStrings(opt)) add(s, where);
         // 结果文案与随机分支各自的文案：藏在 eventOption() 的闭包里（对象上没有 text），
         // 顺着 `_spec` 找出来 —— 之前漏了它们整整 166 条，界面上一直是中文。
-        for (const node of optionTextNodes(opt)) add(node.text, where);
+        for (const node of optionTextNodes(opt)) {
+          add(node.text, where);
+          for (const s of heroDictStrings(node)) add(s, where);
+        }
       }
     }
   }

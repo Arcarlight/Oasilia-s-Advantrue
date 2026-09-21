@@ -13,6 +13,8 @@ import { ITEMS, itemArtUrl } from '../data/items.js';
 // 属性叫什么名字、道具怎么分类，都从引擎那一份问，别在界面里自己判断
 import { STAT_NAMES } from '../core/game.js';
 import { heldEntries, itemSellPrice } from '../core/item-rules.js';
+// 「按主角换一份」的事件文案（公共事件给阿特拉斯写的那些版本）在这里挑
+import { pickHeroText } from '../core/eventfx.js';
 // 效果说成一句人话的那一份表：手持栏 / 图鉴 / 掉落窗口都从这里取，避免各写一套说法
 import { holdLines, useLine } from '../core/itemtext.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
@@ -173,7 +175,12 @@ async function renderTitle(game) {
   const lockup = el('div', { class: 'title-lockup' });
   const faceBox = el('div', { class: 'title-portrait' });
   const names = el('div', { class: 'title-names' }, [
-    el('h1', { class: 'title-h1', text: t('沙漠精灵') }),
+    /**
+     * 标题跟着主角走（3.0.2 用户提的）：欧亚西莉亚是「沙漠精灵」，
+     * 阿特拉斯是「探寻的新月」—— 一条龙的名字不该套在另一条龙身上。
+     * 文案写在 content/heroes.json 的 `titleName` 里。
+     */
+    el('h1', { class: 'title-h1', text: t(hero?.titleName ?? '沙漠精灵') }),
     el('div', { class: 'title-h2', text: heroName }),
   ]);
   lockup.append(faceBox, names);
@@ -552,6 +559,11 @@ function renderEvent(game) {
   clear(host);
   const ev = game.event;
   const biome = BIOMES[game.data.map.biome] ?? BIOMES.desert;
+  /**
+   * 这一局的主角 id —— 事件的正文 / 选项标签 / 提示都可能是「按主角换一份」的
+   * （见 core/eventfx.js 的 pickHeroText）。
+   */
+  const heroId = game.data.hero;
 
   const screen = el('div', { class: `screen scene-screen scene-bg-${biome.key}` });
   const panel = el('div', { class: 'panel panel-paper scene-panel' });
@@ -561,7 +573,7 @@ function renderEvent(game) {
     el('span', { class: 'ico-question_mark', style: { width: '52px', height: '52px', color: '#8a5a2b' } }),
   ]));
   panel.append(el('h2', { class: 'panel-title', text: ev.name }));
-  panel.append(el('div', { class: 'scene-text', text: ev.text }));
+  panel.append(el('div', { class: 'scene-text', text: pickHeroText(ev, 'text', heroId) }));
 
   // 结果只从 game.eventResult 读，不在这里手动拼 DOM。
   // 这样「选完选项 → 显示结果 → 继续前进」全程都由状态驱动，
@@ -572,6 +584,7 @@ function renderEvent(game) {
 
   if (!result) {
     ev.options.forEach((o, i) => {
+      const hint = pickHeroText(o, 'hint', heroId);
       opts.append(el('button', {
         class: 'option',
         onClick: () => {
@@ -582,8 +595,8 @@ function renderEvent(game) {
           game.onChange?.(game);
         },
       }, [
-        el('span', { text: o.label }),
-        o.hint ? el('small', { text: o.hint }) : null,
+        el('span', { text: pickHeroText(o, 'label', heroId) }),
+        hint ? el('small', { text: hint }) : null,
       ]));
     });
   } else {

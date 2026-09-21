@@ -51,7 +51,8 @@ export const HEROES = [
         "hp": 1,
         "atk": 1
       }
-    }
+    },
+    "titleName": "沙漠精灵"
   },
   {
     "id": "atlas",
@@ -89,7 +90,8 @@ export const HEROES = [
         "atk": 1.06,
         "perStage": 0.015
       }
-    }
+    },
+    "titleName": "探寻的新月"
   }
 ];
 

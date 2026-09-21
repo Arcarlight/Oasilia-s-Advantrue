@@ -1377,8 +1377,17 @@ export class Game {
     /**
      * 首领那一条**不在这里加 bossKills** —— 它在 finishBattle 里（发掉落之前）就加过了。
      * 在这里再加一次的话，一个首领会给两个栏位。
+     *
+     * ⚠ **只有「这一章的最后一个首领」才推进章节**（3.0.1 修的严重 bug）。
+     * 阿特拉斯一章有两个首领（content/heroes.json 的 map.bosses = 2），
+     * 以前只要打赢的是首领就 nextStage()，于是**打完前半场那个首领就直接跳到了下一章**，
+     * 第二个首领永远见不到（用户报的「根本做不到一关打两个」）。
+     * 现在按「这一章已经打赢过几个首领」与「这一章一共几个首领」比：
+     * 还差一个就回地图继续走，最后一个才进下一章。
      */
-    if (wasBoss) {
+    const chapterBosses = Math.max(1, this.data?.map?.bosses ?? 1);
+    const beatenBosses = (this.data?.stageBosses ?? []).length;
+    if (wasBoss && beatenBosses >= chapterBosses) {
       this.nextStage();
     } else {
       this.phase = Phase.MAP;

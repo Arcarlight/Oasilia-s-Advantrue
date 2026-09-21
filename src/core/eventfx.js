@@ -106,9 +106,28 @@ function runBlock(block, game, vars) {
   let out = {};
   if (block.effects) out = { ...out, ...runBlock(block.effects, game, vars) };
   if (block.text) out.text = block.text;
+  // 「主角专属改写版」也要一路带上去（见 pickHeroText）
+  if (block.heroText) out.heroText = block.heroText;
   if (block.tone) out.tone = block.tone;
   if (block.special) out = { ...out, ...(runEffect({ special: block.special }, game, vars) ?? {}) };
   return out;
+}
+
+/**
+ * 取一句「按主角换」的文案（3.0.2）。
+ *
+ * 用户的要求：**公共事件不要为阿特拉斯覆盖掉原来的**，而是给它们再写一份暴飞龙版。
+ * 数据形状：正文挂 `heroText: { atlas: '…' }`、选项标签 `heroLabel`、选项提示 `heroHint`。
+ * 这里按这一局的主角挑一份，挑不到就退回原版（欧亚西莉亚那一份）。
+ *
+ * @param {object} obj     事件 / 选项 / 结果块
+ * @param {'text'|'label'|'hint'} field 取哪个字段
+ * @param {string} [heroId] 这一局的主角 id（不传 = 原版）
+ */
+export function pickHeroText(obj, field, heroId) {
+  const dict = obj?.[`hero${field[0].toUpperCase()}${field.slice(1)}`];
+  if (heroId && dict && typeof dict === 'object' && typeof dict[heroId] === 'string' && dict[heroId]) return dict[heroId];
+  return obj?.[field] ?? '';
 }
 
 function runEffect(eff, game, vars) {
@@ -241,12 +260,23 @@ export function eventOption(spec) {
   const opt = {
     label: spec.label,
     hint: spec.hint,
+    /** 「主角专属改写版」一起带上，界面按这一局的主角挑（见 pickHeroText） */
+    heroLabel: spec.heroLabel ?? null,
+    heroHint: spec.heroHint ?? null,
+    heroText: spec.heroText ?? null,
     run(game) {
       const vars = {};
       const res = runBlock(spec.effects ?? [], game, vars);
+      const heroId = game?.data?.hero;
       return {
-        // 文案在 runBlock / spec 里已被原地翻译（见 applyEventOptions），这里只填数值
-        text: renderText(res.text ?? spec.text ?? '', vars),
+        /**
+         * 文案在 runBlock / spec 里已被原地翻译（见 applyEventOptions），这里只填数值。
+         * 「主角专属改写版」也在这一步挑：`game` 就在手上，主角是谁只有运行时才知道。
+         */
+        text: renderText(pickHeroText(
+          { text: res.text ?? spec.text ?? '', heroText: res.heroText ?? spec.heroText ?? null },
+          'text', heroId,
+        ), vars),
         tone: res.tone ?? spec.tone ?? 'neutral',
       };
     },

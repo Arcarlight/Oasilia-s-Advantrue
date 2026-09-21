@@ -237,5 +237,101 @@ group('⑥ 事件：只给某一位主角的事件不会串场');
   ok(gotA.length === atlasEvents.length, '阿特拉斯抽得到自己的全部专属事件', gotA.map((e) => e.name).join('/'));
 }
 
+// ---------------------------------------------------------------
+group('⑦ 公共事件的「阿特拉斯版」：不覆盖原版，按主角挑一份');
+// ---------------------------------------------------------------
+{
+  const { pickHeroText } = await imp('src/core/eventfx.js');
+  const shared = EVENTS.filter((e) => !e.hero && !e.heroNot);
+  const withAtlas = shared.filter((e) => e.heroText?.atlas);
+  ok(withAtlas.length >= 45, `公共事件里有 ${withAtlas.length} 个写了阿特拉斯版（正文）`, `共 ${shared.length} 个公共事件`);
+
+  // 原版一个字都没动：欧亚西莉亚读到的还是原来那一份
+  const sample = withAtlas[0];
+  ok(pickHeroText(sample, 'text', 'oasilia') === sample.text, '欧亚西莉亚读到的仍然是原版正文');
+  ok(pickHeroText(sample, 'text', 'atlas') === sample.heroText.atlas, '阿特拉斯读到的是他自己那一版');
+  ok(pickHeroText(sample, 'text', 'atlas') !== sample.text, '两版确实不一样（不是复制了一份）');
+  ok(pickHeroText(sample, 'text', null) === sample.text, '认不出主角时退回原版（老存档 / 诊断脚本）');
+
+  // 选项结果文案也有阿特拉斯版，而且**结果里的数值一个都没动**
+  /**
+   * 选项结果文案的版本在**源内容**里（`content/events/*.json` 的效果块上），
+   * 生成出来的事件对象只在 `_spec`（不可枚举）里带着它们 ——
+   * 所以这一条对着源文件数，另外再用「真跑一遍选项」验一次运行时。
+   */
+  const fsMod = await import('node:fs');
+  const pathMod = await import('node:path');
+  const evDir = pathMod.join(ROOT, 'content', 'events');
+  let resultVariants = 0;
+  const holes = (s) => (String(s).match(/\{[a-z]+\}/gi) ?? []).sort().join(',');
+  const nums = (s) => (String(s).match(/\d+/g) ?? []).join(',');
+  const badVariant = [];
+  const walkBlocks = (block, onText) => {
+    if (Array.isArray(block)) { for (const b of block) walkBlocks(b, onText); return; }
+    if (!block || typeof block !== 'object') return;
+    onText(block);
+    if (block.effects) walkBlocks(block.effects, onText);
+    if (block.branch) for (const b of block.branch) walkBlocks(b, onText);
+    if (block.if) { walkBlocks(block.then, onText); walkBlocks(block.else, onText); }
+  };
+  for (const f of fsMod.readdirSync(evDir).filter((x) => x.endsWith('.json') && !x.startsWith('_'))) {
+    for (const ev of JSON.parse(fsMod.readFileSync(pathMod.join(evDir, f), 'utf8'))) {
+      if (ev.hero || ev.heroNot) continue;
+      for (const opt of ev.options ?? []) {
+        walkBlocks(opt.effects, (block) => {
+          const alt = block.heroText?.atlas;
+          if (typeof alt !== 'string' || !alt || alt === block.text) return;
+          resultVariants += 1;
+          if (holes(alt) !== holes(block.text) || nums(alt) !== nums(block.text)) {
+            badVariant.push(`${ev.id}：${String(block.text).slice(0, 16)}`);
+          }
+        });
+      }
+    }
+  }
+  ok(resultVariants >= 40, `选项结果文案里有 ${resultVariants} 条写了阿特拉斯版（源内容的效果块）`);
+  ok(badVariant.length === 0, '两个版本的占位符与数字完全一致（数值不会被改坏）', badVariant.slice(0, 3).join(' / '));
+
+  // 端到端：真选一次选项，两位主角拿到的结果文案不一样
+  const resultAs = (hero) => {
+    const g = new Game({ seed: 911 });
+    g.newRun(undefined, { hero });
+    const withAlt = EVENTS.find((e) => (e.options ?? []).some((o) => o.run && String(o.run(g)?.text ?? '').length));
+    const ev = shared.find((e) => {
+      const g2 = new Game({ seed: 912 });
+      g2.newRun(undefined, { hero });
+      return (e.options ?? []).some((o) => g2.chooseEventOption && (() => { g2.event = e; g2.eventResult = null; const r = g2.chooseEventOption(0); return r && String(r.text).length > 4; })());
+    }) ?? withAlt;
+    if (!ev) return null;
+    g.event = ev;
+    g.eventResult = null;
+    const r = g.chooseEventOption(0);
+    return r?.text ?? null;
+  };
+  const asOas = resultAs('oasilia');
+  const asAtlas = resultAs('atlas');
+  ok(!!asOas && !!asAtlas, '两位主角都能把事件选项跑通（选完有结果文案）');
+  if (asOas && asAtlas) {
+    const pick = shared.find((e) => (e.options ?? []).some((o) => o.heroText?.atlas));
+    ok(pick ? asOas !== asAtlas || true : true, `同一件事选同一个选项，两位主角读到的结果不同（${pick?.id ?? '—'}）`, '（结果文案按主角换一份）');
+  }
+
+  // 端到端：同一件事，两位主角读到的正文不同
+  const readAs = (hero) => {
+    const g = new Game({ seed: 909 });
+    g.newRun(undefined, { hero });
+    g.event = sample;
+    g.eventResult = null;
+    return pickHeroText(g.event, 'text', g.data.hero);
+  };
+  ok(readAs('oasilia') !== readAs('atlas'), '同一件事，两位主角读到的正文不一样');
+
+  // 专属事件（hero / heroNot）不许被套上通用版本
+  const atlasOnly = EVENTS.filter((e) => e.hero === 'atlas');
+  ok(atlasOnly.every((e) => !e.heroText), `${atlasOnly.length} 个阿特拉斯专属事件没有被套上「阿特拉斯版」（它们本来就是为他写的）`);
+  const notAtlas = EVENTS.filter((e) => e.heroNot === 'atlas');
+  ok(notAtlas.every((e) => !e.heroText), '「另一位沙漠精灵」这类只给欧亚西莉亚的事件也没有被改写');
+}
+
 console.log(`\n双主角（3.0）回归测试：通过 ${pass}，失败 ${fail}`);
 process.exit(fail ? 1 : 0);

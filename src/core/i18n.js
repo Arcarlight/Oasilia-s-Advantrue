@@ -118,7 +118,17 @@ export const CONTENT_FIELDS = {
   // 它以前不在字段表里，于是日 / 英模式下那一行一直是中文（同一类漏网：界面上看得见、
   // 清单里却没有）。加字段时记住：**凡是渲染出来的内容字段都要在这里登记**。
   enemy: ['name', 'lines', 'types', 'bossTitle', 'intro', 'voice'],
-  event: ['name', 'text'],
+  /**
+   * 事件：名字、正文，以及**主角专属改写版**（3.0.2）。
+   *
+   * 用户的要求：「给公共事件写一个暴飞龙版，而不是覆盖原来的」——
+   * 共享事件里主角自己那几句台词原本是照着欧亚西莉亚写的（萌系、话多），
+   * 阿特拉斯照着念很违和。所以这类事件的正文 / 选项标签 / 选项提示 / 结果文案
+   * 都可以再挂一份 `heroText / heroLabel / heroHint`（`{ atlas: '…' }`），
+   * 运行时按这一局的主角挑（见 eventfx.js 的 pickHeroText）。
+   * `heroText` 挂进字段表是为了让**嵌套小字典里的那些句子**也进待翻清单。
+   */
+  event: ['name', 'text', 'heroText'],
   // leave 是商店里那个「离开」按钮上的字（每位商人不一样：拍拍沙子走人 / 收下包裹…）
   merchant: ['name', 'role', 'greet', 'leave'],
   // 道具：名字、风味描述、以及**掉落属性**（drop 写的是中文属性名「一般 / 火 / 水…」，
@@ -142,7 +152,7 @@ export const CONTENT_FIELDS = {
    * 主角（3.0 起有两位）：名字 / 物种名 / 属性 / 特性 / 标题台词 / 通关提示 / 结局文案。
    * `ending` 是个小字典（{title, text}）—— 嵌套字典也要翻，见 translateValue 的说明。
    */
-  hero: ['name', 'speciesName', 'types', 'ability', 'quote', 'clearHint', 'ending'],
+  hero: ['name', 'speciesName', 'types', 'ability', 'titleName', 'quote', 'clearHint', 'ending'],
 };
 
 /**
@@ -249,6 +259,26 @@ export function optionTextNodes(opt, out = []) {
   return out;
 }
 
+/**
+ * 「主角专属改写版」：某一侧的文案按主角换一份（见 src/core/eventfx.js 的 pickHeroText）。
+ *
+ * 数据形状是 `heroText: { atlas: "…" }` —— **嵌套的小字典**。
+ * 交给 applyContentLang 的两个入口都得认（translateValue 会逐条翻，
+ * rememberZh 会深拷一份原文），这里只负责让**待翻清单**也收得到它们。
+ * 漏了这一条，新写的阿特拉斯台词在日 / 英下会原样显示中文。
+ */
+export function heroTextNodes(obj, out = []) {
+  if (!obj || typeof obj !== 'object') return out;
+  for (const f of ['heroText', 'heroLabel', 'heroHint']) {
+    const dict = obj[f];
+    if (dict && typeof dict === 'object') for (const v of Object.values(dict)) if (typeof v === 'string') out.push(v);
+  }
+  return out;
+}
+
+/** 同上，但要一个**字符串数组**（tools/build-i18n.mjs 收清单时用） */
+export const heroDictStrings = (obj) => heroTextNodes(obj, []);
+
 /** 翻译对象上的一个字符串字段；中文原文留在不可枚举的 _zh 里，切回来逐字恢复 */
 function translateField(obj, field) {
   if (!obj || typeof obj !== 'object') return { hit: 0, total: 0 };
@@ -263,18 +293,39 @@ function translateField(obj, field) {
   return { hit: next !== zhText ? 1 : 0, total: 1 };
 }
 
+/**
+ * 翻「主角专属改写版」那几个小字典（heroText / heroLabel / heroHint）。
+ * 每一条都按普通字符串翻，原文留在 `_zh` 里（和别的字段同一套规则）。
+ */
+function translateHeroDict(obj, field) {
+  const dict = obj?.[field];
+  if (!dict || typeof dict !== 'object') return 0;
+  if (!obj._zh) Object.defineProperty(obj, '_zh', { value: {}, enumerable: false, writable: true, configurable: true });
+  if (obj._zh[field] === undefined) obj._zh[field] = { ...dict };
+  const zh = obj._zh[field];
+  for (const k of Object.keys(dict)) {
+    const src = zh[k] ?? dict[k];
+    dict[k] = lang === DEFAULT_LANG ? src : t(src);
+  }
+  return Object.keys(dict).length;
+}
+
 function applyEventOptions(events) {
   let hit = 0;
   let total = 0;
   for (const ev of events ?? []) {
+    // 事件正文自己的「主角专属改写版」
+    translateHeroDict(ev, 'heroText');
     for (const opt of ev?.options ?? []) {
       if (!opt || typeof opt !== 'object') continue;
       for (const f of ['label', 'hint', 'text']) {
         const r = translateField(opt, f);
         hit += r.hit; total += r.total;
       }
+      for (const f of ['heroText', 'heroLabel', 'heroHint']) translateHeroDict(opt, f);
       // 结果文案与各分支文案（在 _spec 里的那些）
       for (const node of optionTextNodes(opt)) {
+        translateHeroDict(node, 'heroText');
         const r = translateField(node, 'text');
         hit += r.hit; total += r.total;
       }

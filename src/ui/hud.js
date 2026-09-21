@@ -35,7 +35,12 @@ export function renderHud(game) {
    * 它不在 JS 里重画（那个 span 是静态的），所以这里单独改一次。
    */
   const genderEl = document.getElementById('hud-gender');
-  if (genderEl) genderEl.textContent = heroById(d.hero)?.gender ?? '';
+  if (genderEl) {
+    const hero = heroById(d.hero);
+    genderEl.textContent = hero?.gender ?? '';
+    // ♀ 粉 / ♂ 蓝（颜色写在 style.css 的 .gender.male / .gender.female 里）
+    genderEl.className = `gender${hero?.gender === '♂' ? ' male' : hero?.gender === '♀' ? ' female' : ''}`;
+  }
   /**
    * 「物种 · 属性 · 特性」这一行**跟着主角走**（3.0 有两位主角）。
    * 以前这里是写死的一句 `t('{species} · 地面/龙 · 特性：飘浮')` ——

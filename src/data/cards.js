@@ -385,7 +385,7 @@ export const CARDS = [
     "ap": 1,
     "rarity": "rare",
     "targeting": "self",
-    "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +80%。使用后销毁。",
+    "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +25%。使用后销毁。",
     "effects": [
       {
         "kind": "selfDmg",
@@ -394,7 +394,7 @@ export const CARDS = [
       },
       {
         "kind": "strength",
-        "n": 80
+        "n": 25
       }
     ],
     "exhaust": true,
@@ -1234,7 +1234,7 @@ export const CARDS = [
     "rarity": "epic",
     "targeting": "enemy",
     "art": "star_1",
-    "text": "造成 {d} 点伤害；攻击牌威力 +100%（持续 2 回合）；自身攻击 -30%（本场战斗）。",
+    "text": "造成 {d} 点伤害；攻击牌威力 +70%（持续 2 回合）；自身攻击 -15%（本场战斗）。",
     "exhaust": true,
     "effects": [
       {
@@ -1244,13 +1244,13 @@ export const CARDS = [
       {
         "kind": "grantBuff",
         "buff": "power",
-        "n": 100,
+        "n": 70,
         "turns": 2
       },
       {
         "kind": "buff",
         "stat": "atk",
-        "pct": -0.3
+        "pct": -0.15
       }
     ],
     "types": [
@@ -2363,11 +2363,11 @@ export const CARDS = [
     "ap": 1,
     "rarity": "uncommon",
     "targeting": "self",
-    "text": "本场战斗攻击威力 +40%。抽 1 张。",
+    "text": "本场战斗攻击威力 +10%。抽 1 张。",
     "effects": [
       {
         "kind": "strength",
-        "n": 40
+        "n": 10
       },
       {
         "kind": "draw",
@@ -2737,11 +2737,11 @@ export const CARDS = [
     "ap": 2,
     "rarity": "epic",
     "targeting": "self",
-    "text": "本场战斗攻击威力 +150%，防御 -8。使用后销毁。",
+    "text": "本场战斗攻击威力 +45%，防御 -8。使用后销毁。",
     "effects": [
       {
         "kind": "strength",
-        "n": 150
+        "n": 45
       },
       {
         "kind": "buff",
@@ -3351,7 +3351,7 @@ export const CARDS = [
     "ap": 3,
     "rarity": "epic",
     "targeting": "enemy",
-    "text": "造成 {d} 点伤害，本场战斗攻击威力 +120%。使用后销毁。",
+    "text": "造成 {d} 点伤害，本场战斗攻击威力 +35%。使用后销毁。",
     "effects": [
       {
         "kind": "damage",
@@ -3359,7 +3359,7 @@ export const CARDS = [
       },
       {
         "kind": "strength",
-        "n": 120
+        "n": 35
       }
     ],
     "exhaust": true,
@@ -5674,17 +5674,17 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "self",
     "art": "sword",
-    "text": "攻击牌威力 +70%（持续 2 回合），本场战斗威力 +40%。",
+    "text": "攻击牌威力 +40%（持续 2 回合），本场战斗威力 +10%。",
     "exhaust": true,
     "effects": [
       {
         "kind": "strength",
-        "n": 40
+        "n": 10
       },
       {
         "kind": "grantBuff",
         "buff": "power",
-        "n": 70,
+        "n": 40,
         "turns": 2
       }
     ],

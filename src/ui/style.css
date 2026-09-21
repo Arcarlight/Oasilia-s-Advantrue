@@ -534,7 +534,14 @@ button { font-family: inherit; }
 .face-inline img { width: 40px; height: 40px; }
 .hud-ident { min-width: 96px; }
 .hud-name { font-weight: 700; font-size: 15px; }
+/**
+ * 性别符号跟着主角的性别上色（3.0 起有两位主角）：
+ *   ♀ 粉、♂ 蓝 —— 以前只有女主，这里写死了粉色，于是阿特拉斯名字旁边挂着一个粉 ♂（用户报的）。
+ * 颜色由 src/ui/hud.js 按 `content/heroes.json` 的 gender 挂类名决定。
+ */
 .hud-name .gender { color: #ff9ad0; font-weight: 700; }
+.hud-name .gender.male { color: #7fb8ff; }
+.hud-name .gender.female { color: #ff9ad0; }
 .hud-species { font-size: 11px; opacity: .68; }
 .hud-hp { width: 190px; }
 .hp-bar {
@@ -686,6 +693,16 @@ button { font-family: inherit; }
 }
 /* 飞行姿态：底下一圈椭圆影子，让「飞」看得出来（不然像悬在半空） */
 .title-hero { position: relative; margin-bottom: 2px; }
+/**
+ * 主视觉**居中**（3.0.2 用户报的「行走图偏左上」）。
+ *
+ * 原因：`canvas` 是行内元素，而精灵图的一帧里角色本身往往画在格子的左上角
+ * （PMD 的帧格子比角色大一圈），行内元素又带基线留白 ——
+ * 于是那一帧看起来既偏左、又比它该在的位置高一点，和下面那行标题对不齐。
+ * 这里让 canvas 变成块级 + 居中，并且**不留基线空隙**。
+ */
+.title-hero { display: flex; flex-direction: column; align-items: center; }
+.title-hero canvas { display: block; margin: 0 auto; vertical-align: top; }
 /**
  * 头图外圈那个**按钮**（3.0：点它切换主角）。
  * 它套在 .title-hero 外面，所以必须把按钮自身的样式清干净（背景 / 边框 / 内边距），
