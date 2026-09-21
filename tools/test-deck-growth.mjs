@@ -338,6 +338,52 @@ console.log('\n④ 奖励保底：既没有回血牌、也没有解状态牌时�
     ok(g.rest?.done !== true, '拒绝时**不消耗**这次营地机会（旧实现会白扔一次）');
     ok(g.data.deck.includes(epic.id), '牌还在卡组里（没被误删）');
   }
+
+  /**
+   * 用户后来报的（原话）：「冥想窗口虽然给了三种选择，但实际上不管选什么最后给的都是随机的」。
+   *
+   * 原因是候选名单的打分里带着 `this.rng() * 0.9` —— **每调用一次就重掷一次**：
+   * 界面上摆出来的三张是第一次算的，玩家点下去之后 restUpgrade 又算了一遍，
+   * 挑中的那张往往已经不在新名单里，于是走了兜底的 `?? cands[0]`（看起来就是随机给一张）。
+   *
+   * 上面那一段测试用的是 `cands[0].id`，**恰好**每次都还能对上，所以从来没抓住这个 bug。
+   * 这里改成：名单必须稳定，而且**三张各点一遍、点哪张就得给哪张**。
+   */
+  {
+    let unstable = 0;
+    let wrongPick = 0;
+    let checked = 0;
+    let sample = '';
+    for (let i = 0; i < 120; i++) {
+      const id = mk(6000 + i).data.deck[0];
+      const probe = mk(6100 + i);
+      const a = probe.upgradeCandidates(id).map((c) => c.id);
+      const b = probe.upgradeCandidates(id).map((c) => c.id);
+      if (a.join() !== b.join()) unstable += 1;
+      a.forEach((wantId, k) => {
+        const g2 = mk(6200 + i * 7 + k);
+        g2.data.deck = [id, 'tackle', 'harden'];
+        const res = g2.restUpgrade(id, wantId);
+        checked += 1;
+        if (res?.gained !== CARD_BY_ID[wantId]?.name) {
+          wrongPick += 1;
+          if (!sample) sample = `想要「${CARD_BY_ID[wantId]?.name}」却给了「${res?.gained ?? '（拒绝）'}」`;
+        }
+      });
+    }
+    ok(unstable === 0, '候选名单是确定的：同一张牌问两次得到同一份名单（界面摆的 = 引擎算的）',
+      `${unstable} 次抖动`);
+    ok(wrongPick === 0, '**玩家点哪张就给哪张**（不再偷偷换成名单第一张）',
+      `${checked} 次里给错 ${wrongPick} 次${sample ? `；例：${sample}` : ''}`);
+
+    // 传一张**不比它强**的牌 → 如实拒绝，不偷偷换成别的牌
+    const g3 = mk(7777);
+    const base = g3.data.deck[0];
+    const same = CARDS.find((c) => c.rarity === CARD_BY_ID[base].rarity && c.id !== base && !c.enemyOnly);
+    const bad = g3.restUpgrade(base, same.id);
+    ok(bad?.ok === false, '挑了一张不比它强的牌 → 如实拒绝（也不消耗机会）', bad?.text);
+    ok(g3.data.deck.includes(base) && g3.rest?.done !== true, '拒绝之后原牌还在、机会还留着');
+  }
 }
 
 console.log(`\n卡组增长回归测试：通过 ${pass}，失败 ${fail}`);

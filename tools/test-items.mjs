@@ -174,5 +174,43 @@ group('⑥ 道具图鉴记录');
     `${ITEMS[id].name}；seenItems ${meta.seenItems?.length ?? 0} 条`);
 }
 
+// ---------- ⑦ 首领掉落：这次打赢换来的栏位要先生效 ----------
+/**
+ * 用户报的原话：「打败 boss 之后要是掉落物品，虽然背包已经扩充，
+ * 但还是会提示拿不下要求丢东西」。
+ *
+ * 原因：`bossKills + 1` 写在「玩家点掉奖励页」的时候，而掉落是在那之前发的 ——
+ * 于是首领掉的东西按**扩容前**的上限判定，明明栏位要 +1 却说你拿不下。
+ * 现在 `bossKills + 1` 挪进 finishBattle（发掉落之前），掉落也提前在 finishBattle 里发。
+ */
+group('⑦ 首领掉落：先扩容再发掉落');
+{
+  g.newRun(1006);
+  const ids = Object.keys(ITEMS).slice(0, 3);
+  g.data.held = [...ids];                 // 3 件 = 开局上限，正好拿满
+  g.invalidateMods();
+  g.data.bossKills = 0;
+  g.data.stage = 2;
+  g.data.map = { ...g.data.map, biome: 'desert' };
+  ok(g.data.held.length === g.heldMax(), '前提：手上正好拿满（3 / 3）', `${g.data.held.length} / ${g.heldMax()}`);
+
+  g.startBattle('boss', 0, 'direct');
+  // 掉落是概率事件：这里打桩让它**必定**掉一件，测的才是"拿不拿得下"
+  g.rollItemDrop = () => ({ id: 'oran_berry', reason: 'random' });
+  g.battle.enemy.hp = 0;
+  g.battle.winner = 'player';
+  g.battle.over = true;
+  const r = g.finishBattle();
+
+  ok(g.data.bossKills === 1, '打赢首领当场就把栏位 +1（不等玩家点奖励页）', `bossKills = ${g.data.bossKills}`);
+  ok(g.heldMax() === 4, '上限真的变成 4', String(g.heldMax()));
+  ok(r?.itemDrop?.stored === true && r?.itemDrop?.overflow === false,
+    '首领掉的那件东西**收下了**（不再误报拿不下）',
+    `${ITEMS.oran_berry.name}：held ${g.data.held.length} / ${g.heldMax()}`);
+  ok(g.data.held.includes('oran_berry'), '东西真的在手上');
+  g.takeRewardCard(null);
+  ok(!g.awaitingOverflow, '奖励结清之后也没有遗留的「丢掉一件」提示');
+}
+
 console.log(`\n道具（手持）回归测试：通过 ${pass}，失败 ${fail}`);
 process.exit(fail ? 1 : 0);

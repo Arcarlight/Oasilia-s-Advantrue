@@ -53,6 +53,23 @@ function cardRoleOf(card) {
   return 'utility';
 }
 
+/**
+ * 固定的「抖动」：把一段文字映射到 [0, 0.9)。
+ *
+ * 冥想候选的打分要给同分的一堆牌排个先后，但**不能掷骰子** ——
+ * 名单要在「界面显示」和「玩家点下去之后引擎再算一遍」之间保持一致
+ * （见 upgradeCandidates 里的说明：以前用 rng() 掷，点哪张都是随机给一张）。
+ * 用 (原卡 id + 候选 id) 算出来的这个数，同一张牌永远是同一个值。
+ */
+function stableJitter(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i += 1) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 1000) / 1000 * 0.9;
+}
+
 // ================= 道具（手持道具） =================//
 // 这一版把「背包（id → 数量，无限格）」换成了**手持道具**：
 //   · 一局只有 3 个手持栏，每打赢一个 boss +1（heldMax()）；
@@ -1031,10 +1048,28 @@ export class Game {
      */
     const drop = this.rollItemDrop(b.enemy, ctx.kind);
 
+    /**
+     * 每打赢一个首领：手持栏 +1（用户定的规则）。
+     *
+     * ⚠ 时机很重要 —— 必须在**发这件掉落之前**加，因为首领掉的东西要享受到
+     * 这次打赢换来的那个新栏位。以前这一步写在「玩家点掉奖励页」的时候，
+     * 于是玩家会遇到用户报的那一幕：「背包已经扩充，但还是会提示拿不下要求丢东西」
+     * （按旧的 3/3 判定掉落，扩容的一格还没生效）。
+     */
+    if (ctx.kind === 'boss') d.bossKills = (d.bossKills ?? 0) + 1;
+
     this.reward = {
       win: true, gold, healed, cardChoices: choices,
       item: drop?.id ?? null,
       itemReason: drop?.reason ?? null,
+      /**
+       * 掉落**在这里就发**（不是等玩家点「拿卡」）。
+       *
+       * 两件事都靠它：① 掉落要有自己的一屏（见 ui/screens.js 的 renderItemDrop），
+       * 那一屏要显示真实结果（已收进手持栏 N/M，或者拿不下要丢一件）；
+       * ② 掉在手里的东西立刻进存档 —— 玩家在这一屏刷新页面也不会丢。
+       */
+      itemDrop: this.grantDrop(drop),
       isBoss: ctx.kind === 'boss',
       enemyName: b.enemy.name,
       growth, growthText,
@@ -1136,13 +1171,16 @@ export class Game {
   mockReward(kind = 'normal') {
     const growth = [{ stat: 'atk', amount: 1 }, { stat: 'maxHp', amount: 12 }];
     const isBoss = kind === 'boss';
+    const item = isBoss ? 'dragon_fang' : 'oran_berry';
     return {
       win: true,
       gold: isBoss ? 260 : kind === 'elite' ? 88 : 42,
       healed: 18,
       cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null),
-      item: isBoss ? 'dragon_fang' : 'oran_berry',
+      item,
       itemReason: isBoss ? 'type' : 'random',
+      // 掉落和真实战斗走同一条路（在这里就发），否则「捡到道具」那一屏会显示成没收到
+      itemDrop: this.grantDrop({ id: item, reason: isBoss ? 'type' : 'random' }),
       isBoss,
       enemyName: t('穿山鼠'),
       growth,
@@ -1185,28 +1223,49 @@ export class Game {
     return parts.join('，');
   }
 
+  /**
+   * 掉落道具的**发放**（打赢之后那一件）。
+   *
+   * 放在这里而不是「玩家点掉奖励页」的时候，是为了让掉落有自己的一屏
+   * （ui/screens.js 的 renderItemDrop）：那一屏要如实显示结果 ——
+   * 收下了（手持栏 3 / 4），还是拿不下（要丢掉一件）。
+   *
+   * @returns {{id:string, reason:string, stored:boolean, overflow:boolean, text:string}|null}
+   */
+  grantDrop(drop) {
+    if (!drop?.id) return null;
+    const res = this.giveItem(drop.id, 1);
+    return {
+      id: drop.id,
+      reason: drop.reason ?? 'random',
+      stored: !!res.stored,
+      overflow: !!res.overflow,
+      text: res.text ?? '',
+    };
+  }
+
   /** 奖励界面：拿卡 / 跳过 */
   takeRewardCard(cardId) {
     if (!this.reward) return;
     if (cardId) this.addCard(cardId);
     /**
-     * 掉落的那件道具：走 giveItem。
-     *
-     * 拿不下（手持栏满）时**不静默丢掉** —— 把 overflow 记在 `awaitingOverflow` 上，
-     * 由界面弹一个「丢掉哪一件」（用户要的规则：到达上限后可以选择丢掉一个）。
+     * 掉落的那件道具：正常情况**早在 finishBattle 里就发过了**（reward.itemDrop）。
+     * 这里只兜底「有 item 但没有 itemDrop」的调用方（调试用的 mockReward）——
+     * 免得那种路径下的道具静默消失。
      */
-    const itemId = this.reward.item;
-    let overflow = null;
-    if (itemId) {
-      const res = this.giveItem(itemId, 1);
-      if (res.overflow) overflow = { id: itemId, text: res.text };
+    let overflow = this.reward.itemDrop?.overflow ? { id: this.reward.item, text: this.reward.itemDrop.text } : null;
+    if (this.reward.item && !this.reward.itemDrop) {
+      const res = this.giveItem(this.reward.item, 1);
+      if (res.overflow) overflow = { id: this.reward.item, text: res.text };
     }
     const wasBoss = this.reward.isBoss;
     this.reward = null;
     this.awaitingOverflow = overflow;
+    /**
+     * 首领那一条**不在这里加 bossKills** —— 它在 finishBattle 里（发掉落之前）就加过了。
+     * 在这里再加一次的话，一个首领会给两个栏位。
+     */
     if (wasBoss) {
-      // 每打赢一个 boss：手持栏 +1（用户定的规则）
-      this.data.bossKills = (this.data.bossKills ?? 0) + 1;
       this.nextStage();
     } else {
       this.phase = Phase.MAP;
@@ -1370,7 +1429,15 @@ export class Game {
    *      （原来的牌是攻击牌就给攻击牌），卡组的形状不会被打乱；
    *   ③ 已经最高一档（史诗）→ 返回空数组，调用方要**如实拒绝**，而不是硬塞一张。
    *
-   * 打分排序（分数相同随机）：同用途 +2、刚好高一档 +1，再加一点随机扰动。
+   * 打分排序：同用途 +2、刚好高一档 +1，再加一点**固定**扰动（见下）。
+   *
+   * ⚠ 那份扰动以前是 `this.rng() * 0.9` —— **每次调用都重新掷**，于是同一个问题问两遍
+   * 会得到两份不一样的名单：界面上摆的 3 张是第一次的结果，玩家点下去之后
+   * `restUpgrade` 又算了一遍，挑中的那张往往已经不在新名单里，
+   * 于是走了兜底 `?? cands[0]` —— **点哪张都是"随机"给一张**（用户报的：
+   * 「冥想窗口虽然给了三种选择，但实际上不管选什么最后给的都是随机的」）。
+   * 现在扰动由 (原卡 id + 候选 id) 算出来，**同一张牌每次都得到同一份名单**：
+   * 界面摆什么、点下去就给什么。
    *
    * @returns {object[]} 最多 n 张候选（已按「更适合」排好序）
    */
@@ -1384,9 +1451,11 @@ export class Game {
     const higher = CARDS.filter((c) => !c.enemyOnly && RARITY_ORDER.indexOf(c.rarity) > tier);
     const scored = higher.map((c) => ({
       c,
-      score: (cardRoleOf(c) === role ? 2 : 0) + (c.rarity === nextTier ? 1 : 0) + this.rng() * 0.9,
+      score: (cardRoleOf(c) === role ? 2 : 0) + (c.rarity === nextTier ? 1 : 0) + stableJitter(cardId + '|' + c.id),
     }));
-    scored.sort((a, b) => b.score - a.score);
+    // 分数相同时也按 id 兜底排一下，保证顺序**完全确定**（sort 本身是稳定排序，
+    // 但显式带上 id 更保险：以后改排序实现也不会让名单抖）
+    scored.sort((a, b) => (b.score - a.score) || a.c.id.localeCompare(b.c.id));
     return scored.slice(0, n).map((s) => s.c);
   }
 
@@ -1404,6 +1473,8 @@ export class Game {
     const idx = this.data.deck.indexOf(cardId);
     if (idx < 0) return null;
     const cands = this.upgradeCandidates(cardId);
+    /** 原来那张牌的稀有度档位（校验玩家挑的那张是不是真的更强要用它） */
+    const tier = RARITY_ORDER.indexOf(card.rarity);
     if (!cands.length) {
       /**
        * 换不出更强的牌 —— **不消耗这次机会**，如实说清楚。
@@ -1416,7 +1487,20 @@ export class Game {
         }),
       };
     }
-    const better = cands.find((c) => c.id === newId) ?? cands[0];
+    /**
+     * 用玩家挑的那一张。
+     *
+     * ⚠ 这里以前是 `cands.find((c) => c.id === newId) ?? cands[0]` —— 名单每次重算
+     * （当时打分里带 rng），找不到就**默默换成别的牌**，玩家看起来就是"点哪张都随机"。
+     * 现在名单是确定的（不会找不到），并且这里再核一次：挑中的那张只要确实更强就用它，
+     * 万一真对不上（名单变了 / 传了个别的 id）也**不偷偷换牌** —— 宁可如实报错。
+     */
+    const picked = newId ? CARD_BY_ID[newId] : null;
+    const pickedOk = !!picked && !picked.enemyOnly && RARITY_ORDER.indexOf(picked.rarity) > tier;
+    if (newId && !pickedOk) {
+      return { ok: false, text: t('那张牌换不了「{name}」—— 冥想只给比它更强的牌，这次机会先留着。', { name: card.name }) };
+    }
+    const better = pickedOk ? picked : cands[0];
     this.data.deck.splice(idx, 1);
     this.addCard(better.id);
     this.rest.upgraded = true;

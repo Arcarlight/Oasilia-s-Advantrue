@@ -87,6 +87,34 @@ export function cardRoles(card) {
 }
 
 /**
+ * 专家模式那一行数字（设置里开，默认关）；关着或这张牌没有可标的数字 → null。
+ *
+ * 抽出来是因为**不止卡面要用**：商店的货架上画的不是整张卡面（只有名字 + 描述），
+ * 于是「商店里卖的卡看不到专家模式的数据」（用户报的）。现在货架那一行也挂这一份，
+ * 数字与悬停说明和卡面完全一致。
+ */
+export function expertChipsNode(card) {
+  if (!expertEnabled()) return null;
+  const s = expertStats(card);
+  const chips = [];
+  const add = (label, tip) => chips.push(el('span', { class: 'card-expert-chip', dataset: { tip } }, [label]));
+  if (s.power > 0) add(t('威力 {n}%', { n: s.power }), t('卡面印的威力（攻击力百分比），和你的属性无关。'));
+  if (s.damage > 0) {
+    add(s.hits > 1 ? t('伤害 {per}×{hits}={total}', { per: s.per, hits: s.hits, total: s.damage }) : t('伤害 {n}', { n: s.damage }),
+      t('按当前攻击 {atk} 与对手防御 {def} 结算出来的实际伤害。\n伤害 = 攻击 × 威力% × {K} ÷ ({K} + 对手防御)。', { atk: cardTextContext().atk, def: cardTextContext().def, K: BALANCE.armorK }));
+  }
+  if (s.shield > 0) {
+    add(t('护盾 {n}', { n: s.shield }),
+      t('实际护盾（吃你自己的防御 {def}）：{formula}', { def: s.selfDef, formula: t('基数 × (1 + 防御 ÷ 12)') }));
+  }
+  if (s.draw > 0) add(t('抽牌 {n}', { n: s.draw }), t('打出后额外抽几张。'));
+  if (s.ap > 0) add(t('回 AP {n}', { n: s.ap }), t('打出后返还的行动点。'));
+  if (s.stacks > 0) add(t('状态 {n} 层', { n: s.stacks }), t('这张牌给对手（或自己）挂上的状态层数合计。'));
+  if (s.damage > 0 && s.cost > 0) add(t('每 AP {n}', { n: s.perAp }), t('每 1 点行动点打出多少伤害 —— 比较两张牌贵不贵看这个。'));
+  return chips.length ? el('div', { class: 'card-expert' }, chips) : null;
+}
+
+/**
  * 生成一张卡牌 DOM。
  * @param {object} card CARDS 里的一项
  * @param {{size?:'sm'|'md'|'lg', disabled?:boolean, selected?:boolean, onClick?:Function,
@@ -172,26 +200,14 @@ export function cardEl(card, opts = {}) {
    * 专家模式：把这张牌背后的数字直接标在卡面上（用户在设置里开，默认关）。
    * 放的是**算出来的**值（当前攻防下的伤害 / 护盾），不是文案里的占位数字 ——
    * 描述里那句「造成 13 点伤害」是同一份推导，所以两边不会打架。
+   *
+   * 这一行是 `expertChipsNode()` 拼的，所以**商店货架**上（那里画的不是整张卡面）
+   * 也能挂上同一套数字 —— 用户要的就是「商店里卖的卡也看得到专家模式的数据」。
    */
-  if (expertEnabled()) {
-    const s = expertStats(card);
-    const chips = [];
-    const add = (label, tip) => chips.push(el('span', { class: 'card-expert-chip', dataset: { tip } }, [label]));
-    if (s.power > 0) add(t('威力 {n}%', { n: s.power }), t('卡面印的威力（攻击力百分比），和你的属性无关。'));
-    if (s.damage > 0) {
-      add(s.hits > 1 ? t('伤害 {per}×{hits}={total}', { per: s.per, hits: s.hits, total: s.damage }) : t('伤害 {n}', { n: s.damage }),
-        t('按当前攻击 {atk} 与对手防御 {def} 结算出来的实际伤害。\n伤害 = 攻击 × 威力% × {K} ÷ ({K} + 对手防御)。', { atk: cardTextContext().atk, def: cardTextContext().def, K: BALANCE.armorK }));
-    }
-    if (s.shield > 0) {
-      add(t('护盾 {n}', { n: s.shield }),
-        t('实际护盾（吃你自己的防御 {def}）：{formula}', { def: s.selfDef, formula: t('基数 × (1 + 防御 ÷ 12)') }));
-    }
-    if (s.draw > 0) add(t('抽牌 {n}', { n: s.draw }), t('打出后额外抽几张。'));
-    if (s.ap > 0) add(t('回 AP {n}', { n: s.ap }), t('打出后返还的行动点。'));
-    if (s.stacks > 0) add(t('状态 {n} 层', { n: s.stacks }), t('这张牌给对手（或自己）挂上的状态层数合计。'));
-    if (s.damage > 0 && s.cost > 0) add(t('每 AP {n}', { n: s.perAp }), t('每 1 点行动点打出多少伤害 —— 比较两张牌贵不贵看这个。'));
-    if (chips.length) node.classList.add('expert');
-    if (chips.length) node.append(el('div', { class: 'card-expert' }, chips));
+  const expertRow = expertChipsNode(card);
+  if (expertRow) {
+    node.classList.add('expert');
+    node.append(expertRow);
   }
 
   /**

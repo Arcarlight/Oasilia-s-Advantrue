@@ -2,7 +2,7 @@
 // 弹窗类界面（卡组、背包、帮助、设置）在 overlays.js 里。
 
 import { el, clear, toast, modal, floatAt, richText } from './dom.js';
-import { cardEl, CARD_ART } from './cards.js';
+import { cardEl, CARD_ART, expertChipsNode } from './cards.js';
 import { resolveCardText } from './cardtext.js';
 import { createAnim, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion } from '../core/portraits.js';
@@ -13,6 +13,8 @@ import { ITEMS, itemArtUrl } from '../data/items.js';
 // 属性叫什么名字、道具怎么分类，都从引擎那一份问，别在界面里自己判断
 import { STAT_NAMES } from '../core/game.js';
 import { heldEntries, itemSellPrice } from '../core/item-rules.js';
+// 效果说成一句人话的那一份表：手持栏 / 图鉴 / 掉落窗口都从这里取，避免各写一套说法
+import { holdLines, useLine } from '../core/itemtext.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
@@ -777,6 +779,24 @@ const RARITY_LABEL = { common: '普通', uncommon: '精良', rare: '稀有', epi
 // ============================================================
 // 商店
 // ============================================================
+/**
+ * 货架上一件道具的**作用**（一句话一行）。
+ *
+ * 说法的唯一来源是 core/itemtext.js —— 手持栏、图鉴、掉落窗口、这里全都问它，
+ * 所以同一件东西在四个地方不会出现四种解释。
+ */
+function shopItemEffect(id) {
+  const item = ITEMS[id];
+  if (!item) return null;
+  const lines = item.kind === 'hold' ? holdLines(item) : [useLine(item)].filter(Boolean);
+  if (!lines.length) return null;
+  const box = el('div', { class: 'shop-eff' }, [
+    el('span', { class: `held-kind ${item.kind}`, text: item.kind === 'hold' ? t('持有') : t('可用') }),
+  ]);
+  for (const line of lines) box.append(el('span', { class: 'shop-eff-line', text: line }));
+  return box;
+}
+
 function renderShop(game) {
   const host = document.getElementById('stage');
   clear(host);
@@ -871,6 +891,17 @@ function renderShop(game) {
          * 就会原样印出两个星号。商店 / 事件里发的牌也会走到这条路上，所以统一过一遍富文本。
          */
         el('p', { html: card ? richText(resolveCardText(card)) : richText(s.desc ?? '') }),
+        /**
+         * 道具那一行：把**作用**写出来（持有型列持有效果、使用型列那一句使用效果）。
+         * 以前货架上只有一句风味描述 —— 玩家站在摊子前看不出这件东西干什么，
+         * 得先买回去再翻手持栏（用户报的：「物品也看不到具体作用」）。
+         */
+        s.kind === 'item' ? shopItemEffect(s.id) : null,
+        /**
+         * 专家模式：商店里卖的卡也挂上同一行数字（卡面那份是 expertChipsNode 拼的）。
+         * 货架画的不是整张卡面，所以以前这里看不到任何专家数据（用户报的）。
+         */
+        card ? expertChipsNode(card) : null,
         el('div', { class: 'row' }, [
           el('span', { class: 'price' }, [el('span', { class: 'ico-money' }), String(s.price)]),
           el('button', {
@@ -1004,6 +1035,121 @@ function renderShop(game) {
 }
 
 // ============================================================
+// 捡到道具（掉落单独一屏）
+// ============================================================
+/**
+ * 「捡到道具」。
+ *
+ * 用户的原话：「打完怪后掉落物品的提示过小，可以单独为其做一个窗口，
+ * 而不是和结算画面堆在同一个窗口内」。
+ *
+ * 所以这一屏只干一件事：把这件东西**看清楚** —— 大图、名字、是「拿着就生效」还是
+ * 「战斗外使用」、它到底干什么（效果一句一行，来自 core/itemtext.js，和手持栏 / 图鉴同一份说法）、
+ * 以及它是怎么掉出来的（属性对上的掉落 / 运气掉落）。
+ *
+ * 顺序：掉落 → 「收下」 → 战斗结算（拿卡那屏）。奖励页里那枚小胶囊已经删掉了。
+ */
+function renderItemDrop(game) {
+  const host = document.getElementById('stage');
+  clear(host);
+  const drop = game.reward?.itemDrop;
+  if (!drop) return null;                       // 没有掉落就不该走到这一屏
+  const item = ITEMS[drop.id];
+  if (!item) return null;                       // 内容改过 / 旧存档：宁可跳过也不要画一屏空的
+
+  const screen = el('div', { class: 'screen drop-screen scene-bg-desert' });
+  const panel = el('div', { class: 'panel panel-paper scene-panel drop-panel' });
+  screen.append(panel);
+
+  panel.append(el('h2', { class: 'panel-title', text: t('捡到了道具') }));
+
+  // 大图：道具自己的 png，摆在正中间，下面一行名字 + 类别
+  const artBox = el('div', { class: 'drop-art' });
+  artBox.append(el('img', { class: 'drop-art-img', src: itemArtUrl(drop.id), alt: item.name, draggable: false }));
+  panel.append(artBox);
+  panel.append(el('div', { class: 'drop-name-row' }, [
+    el('span', { class: 'drop-name', text: item.name }),
+    el('span', {
+      class: `held-kind ${item.kind}`,
+      text: item.kind === 'hold' ? t('持有') : t('可用'),
+      dataset: { tip: item.kind === 'hold'
+        ? t('拿在手上就一直生效。')
+        : t('放着不生效，只能在战斗外使用。') },
+    }),
+    el('span', { class: `drop-rarity rarity-${item.rarity}` }, [t(RARITY_LABEL[item.rarity] ?? item.rarity)]),
+  ]));
+
+  /**
+   * 效果：一句一行。持有型列持有效果（可能多条），使用型列那一句使用效果。
+   * 这里是玩家第一次见到这件东西，**必须说清它干什么** —— 以前只在奖励页写了个名字，
+   * 玩家得自己去翻手持栏 / 图鉴才知道。
+   */
+  const effLines = item.kind === 'hold' ? holdLines(item) : [useLine(item)].filter(Boolean);
+  const effBox = el('div', { class: 'drop-eff' });
+  if (effLines.length) {
+    effBox.append(el('div', { class: 'drop-eff-title', text: item.kind === 'hold' ? t('拿在手上生效：') : t('战斗外使用：') }));
+    for (const line of effLines) effBox.append(el('div', { class: 'drop-eff-line' }, [el('span', { class: 'drop-eff-dot' }), el('span', { text: line })]));
+  } else {
+    effBox.append(el('div', { class: 'drop-eff-title', text: t('这件东西的效果还没写清楚（内容缺效果）。') }));
+  }
+  panel.append(effBox);
+
+  panel.append(el('div', { class: 'drop-desc', text: t(item.desc) }));
+
+  // 它是怎么掉出来的：属性对上的掉落特别标一下（打毒系更容易掉毒系东西）
+  panel.append(el('div', { class: 'drop-source' }, [
+    el('span', { class: drop.reason === 'type' ? 'ico-star' : 'ico-arrow_up' }),
+    el('span', {
+      text: drop.reason === 'type'
+        ? t('这只对手的属性正好对得上 —— 属性掉落。')
+        : t('这一件纯粹是运气。'),
+    }),
+  ]));
+
+  /** 手持栏那一行：收下了就报数，没放下就给一条出路（丢掉一件再收） */
+  const heldRow = el('div', { class: 'drop-held' });
+  if (drop.stored) {
+    heldRow.append(el('span', { class: 'reward-pill' }, [
+      el('span', { class: 'ico-check' }),
+      t('已收进手持栏（{n} / {max}）', { n: game.data.held.length, max: game.heldMax() }),
+    ]));
+  } else {
+    heldRow.append(el('span', { class: 'reward-pill' }, [
+      el('span', { class: 'ico-cross' }),
+      t('手持栏满了（{n} / {max}）—— 得先丢掉一件才拿得下。', { n: game.data.held.length, max: game.heldMax() }),
+    ]));
+    heldRow.append(el('button', {
+      class: 'btn btn-sm',
+      onClick: () => {
+        audio.ui('open');
+        /**
+         * 直接把这件事交给「丢掉哪一件」那个弹窗（手持栏那套规则只有那一处实现）。
+         * 先把它标记成已处理，免得玩家点掉奖励页的时候**再问一遍**。
+         */
+        drop.overflow = false;
+        game.awaitingOverflow = { id: drop.id, text: drop.text };
+        showHeldOverflow(game);
+      },
+    }, [el('span', { class: 'ico-trash' }), el('span', { text: t('丢掉一件，收下它') })]));
+  }
+  panel.append(heldRow);
+
+  panel.append(el('div', { class: 'reward-row' }, [
+    el('button', {
+      class: 'btn btn-primary',
+      onClick: () => {
+        audio.ui('confirm');
+        drop.seen = true;            // 这一屏看过一次就够，接着走战斗结算
+        game.changed();
+      },
+    }, [el('span', { class: 'ico-check' }), el('span', { text: t('收下，去结算') })]),
+  ]));
+
+  host.append(screen);
+  return screen;
+}
+
+// ============================================================
 // 战斗奖励
 // ============================================================
 function renderReward(game) {
@@ -1022,23 +1168,12 @@ function renderReward(game) {
   if (r.healed > 0) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-heal' }), t('战后恢复 +{n} HP', { n: r.healed })]));
   if (r.growthText) pills.append(el('span', { class: 'reward-pill' }, [el('span', { class: 'ico-arrow_up' }), t('成长：{text}', { text: r.growthText })]));
   /**
-   * 掉落 / 开出来的道具：用道具自己的图（assets/items/<id>.png），不用图标类名。
+   * 掉落 / 开出来的道具**不在这里显示**了。
    *
-   * 一行说明它**是哪一类**（持有型拿到就一直生效、使用型只能战斗外用），
-   * 免得玩家看到「获得 毒针」还得自己去翻手持栏看它干什么。
+   * 以前它是一枚小胶囊挤在这块结算里（名字 + 一句类别），用户反馈「提示过小」，
+   * 现在掉落有自己的一屏（renderItemDrop）在前面 —— 大图、效果、出处都说得清。
+   * 这一屏只留金币 / 回复 / 成长和选卡。
    */
-  if (r.item) {
-    const it = ITEMS[r.item];
-    const kindNote = it?.kind === 'hold'
-      ? t('（持有：拿在手上一直生效）')
-      : t('（可用：战斗外使用）');
-    // 属性对上的掉落特别标一下 —— 这是「打毒系更容易掉毒系东西」给玩家的反馈
-    const typeNote = r.itemReason === 'type' ? t(' · 属性掉落') : '';
-    pills.append(el('span', { class: 'reward-pill reward-pill-item', dataset: { tip: `${it?.name ?? r.item}：${it?.desc ?? ''}` } }, [
-      el('img', { class: 'reward-item-art', src: itemArtUrl(r.item), alt: it?.name ?? r.item, draggable: false }),
-      `${t('获得 {name}', { name: it?.name ?? r.item })}${kindNote}${typeNote}`,
-    ]));
-  }
   panel.append(pills);
 
   if (r.cardChoices?.length) {
@@ -1225,4 +1360,4 @@ function titleCodexBtn(ico, label, sub, onClick) {
 }
 
 /* 导出：src/ui/ui.js 与 src/ui/battle-view.js 要用（写法对齐 src/ui/hud.js）*/
-export { renderTitle, renderMap, renderEvent, renderChest, renderRest, renderShop, renderReward, renderGameOver, renderVictory };
+export { renderTitle, renderMap, renderEvent, renderChest, renderRest, renderShop, renderReward, renderItemDrop, renderGameOver, renderVictory };

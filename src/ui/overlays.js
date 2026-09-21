@@ -11,7 +11,7 @@ import { BALANCE, apFromAgi, drawFromAgi, handFromAgi, playsFromAgi, critChance,
 // heldEntries / heldCount / itemUseEffect / sumHeldMods：手持道具（谁在手上、能不能用、
 // 加起来是什么效果）全部由引擎那一份判断说了算，界面不再自己抄一遍规则。
 import { heldEntries, itemUseEffect } from '../core/item-rules.js';
-import { modLabel } from '../core/itemtext.js';
+import { modLabel, holdLines, useLine } from '../core/itemtext.js';
 import { ITEMS, itemArtUrl } from '../data/items.js';
 import { CARD_BY_ID, CARDS } from '../data/cards.js';
 // 说明页里「一共几章」也从地图生成器现问，别再手写（曾经写成「三章」，而实际是 6 章）
@@ -239,6 +239,18 @@ export function showHeldOverflow(game) {
 // ============================================================
 // 手持道具（这一版把「背包」换成了它，见 content/items.json 的 _comment）
 // ============================================================
+/**
+ * 一件道具的**作用**，一句一行；没有可说的效果 → null。
+ * 说法的唯一来源是 core/itemtext.js（商店货架 / 掉落窗口 / 图鉴都从那里取）。
+ */
+function heldEffectBox(item) {
+  const lines = item.kind === 'hold' ? holdLines(item) : [useLine(item)].filter(Boolean);
+  if (!lines.length) return null;
+  const box = el('div', { class: 'shop-eff' });
+  for (const line of lines) box.append(el('span', { class: 'shop-eff-line', text: line }));
+  return box;
+}
+
 export function showItems(game) {
   const wrap = el('div', {});
   const body = el('div', {});
@@ -313,6 +325,11 @@ export function showItems(game) {
             el('span', { class: `held-kind ${item.kind}`, text: item.kind === 'hold' ? t('持有') : t('可用') }),
           ]),
           el('p', { text: t(item.desc) }),
+          /**
+           * 它到底干什么：一句一行（和商店货架、掉落窗口、图鉴同一份说法）。
+           * 以前这一栏只有风味描述 —— 玩家拿着一件东西，要打开图鉴才知道效果。
+           */
+          heldEffectBox(item),
           el('div', { class: 'row' }, [
             eff
               ? el('button', {

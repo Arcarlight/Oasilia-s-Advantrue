@@ -6,6 +6,19 @@
   const errors = [];
   window.addEventListener('error', (e) => errors.push(String(e.message)));
   window.addEventListener('unhandledrejection', (e) => errors.push('promise: ' + (e.reason && e.reason.message)));
+  /** 场景名（断言里用得到：界面到底停在哪一屏） */
+  const screen = () => { const s = document.querySelector('#stage .screen'); return s ? s.className : '空'; };
+  /**
+   * 掉落道具是**单独一屏**（.drop-screen，点「收下，去结算」才走结算页）。
+   * 打赢有概率掉落，所以每条奖励断言前面都要先把它点掉，否则量到的是掉落页。
+   */
+  const clearDrop = async () => {
+    const b = [...document.querySelectorAll('.drop-screen .btn')].pop();
+    if (!b) return false;
+    b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wait(400);
+    return true;
+  };
 
   try {
     // 1) 标题 -> 新游戏
@@ -62,7 +75,9 @@
         g.battle.over = true;
         g.finishBattle();
         await wait(350);
-        const before = { phase: g.phase, current: window.__oasisUI.current, rewardScreen: !!document.querySelector('.reward-screen') };
+        // 打赢有概率掉道具，掉落是**单独一屏**，先点掉它才看得到结算页
+        const dropped = await clearDrop();
+        const before = { phase: g.phase, current: window.__oasisUI.current, dropScreen: dropped, rewardScreen: !!document.querySelector('.reward-screen') };
         // 把「界面认为自己在哪一屏」故意写错 —— 复现那个 bug 的触发条件
         if (lie) window.__oasisUI.current = 'map';
         const deckBefore = g.data.deck.length;
@@ -119,11 +134,15 @@
       }
       let reach = 0;
       while (g.phase === 'battle' && reach++ < 120) await wait(100);
+      /**
+       * 掉落是单独一屏：打赢如果掉了东西，先看到的是「捡到道具」。
+       * 这一条也要顺带把它点掉（顺便就断言了它点得掉、点完能到结算页）。
+       */
+      const dropSeen = await clearDrop();
       const hasReward = !!document.querySelector('.reward-screen');
-      log('真打赢一场（不自己调 finishBattle）→ phase=' + g.phase, '奖励页？' + hasReward, '回合数=' + turn);
+      log('真打赢一场（不自己调 finishBattle）→ phase=' + g.phase, '掉落页？' + dropSeen, '奖励页？' + hasReward, '回合数=' + turn);
       if (g.phase !== 'reward' || !hasReward) {
-        errors.push('战斗打赢之后没进奖励页（phase=' + g.phase + '，还在' +
-          (document.querySelector('#stage .screen') ? document.querySelector('#stage .screen').className : '空屏') + '）');
+        errors.push('战斗打赢之后没进奖励页（phase=' + g.phase + '，还在' + screen() + '）');
       } else {
         const deckBefore = g.data.deck.length;
         const card = document.querySelector('.reward-cards .card');
@@ -135,6 +154,36 @@
       }
     } catch (e) {
       errors.push('battleWin: ' + e.message);
+    }
+
+    /**
+     * 3.7) **掉落道具要单独一屏**（用户要的：「掉落物品的提示过小，可以单独为其做一个窗口」）。
+     *
+     * 用「奖励」那个调试场景的假奖励：它必定带一件掉落，所以这一条是确定性的，
+     * 不依赖「这次到底掉没掉」。要钉的是这一屏**内容齐不齐、点得掉不掉**。
+     */
+    try {
+      window.__oasisAuto({ scene: 'reward' });
+      await wait(600);
+      const haveDrop = !!document.querySelector('.drop-screen');
+      const effCount = document.querySelectorAll('.drop-eff-line').length;
+      log('捡到道具那一屏：', haveDrop ? '在' : '不在',
+        '｜大图', !!document.querySelector('.drop-art-img'),
+        '｜效果条', effCount,
+        '｜收下按钮', !!document.querySelector('.drop-screen .btn-primary'));
+      if (!haveDrop) errors.push('掉落没有单独一屏（.drop-screen 不存在）');
+      else {
+        if (!document.querySelector('.drop-art-img')) errors.push('掉落屏上没有道具大图');
+        if (!effCount) errors.push('掉落屏上没有写清这件东西的作用');
+        const btn = document.querySelector('.drop-screen .btn-primary');
+        if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(450);
+        if (document.querySelector('.drop-screen')) errors.push('掉落屏点「收下」之后没有换屏');
+        if (!document.querySelector('.reward-screen')) errors.push('掉落屏之后没有进结算页');
+        log('  收下之后 → phase=' + g.phase, '屏幕=' + screen());
+      }
+    } catch (e) {
+      errors.push('dropScreen: ' + e.message);
     }
 
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
@@ -174,6 +223,28 @@
       } catch (e) {
         errors.push(scene + ': ' + e.message);
       }
+    }
+
+    // 5.5) 商店：专家模式下卖场里的卡要有数字，道具要写清作用（用户报过这两样都看不到）
+    try {
+      const { setExpertEnabled } = await import('/src/core/expert.js');
+      setExpertEnabled(true);
+      window.__oasisAuto({ scene: 'shop', stage: 1 });
+      await wait(600);
+      const rows = [...document.querySelectorAll('.shop-item')];
+      const cardRows = rows.filter((r) => r.querySelector('.shop-ap')).length;
+      const chips = [...document.querySelectorAll('.shop-item .card-expert-chip')].map((n) => n.textContent);
+      const effs = [...document.querySelectorAll('.shop-item .shop-eff-line')].map((n) => n.textContent);
+      const kinds = [...document.querySelectorAll('.shop-item .held-kind')].map((n) => n.textContent);
+      log('商店 · 专家模式：卡牌行', cardRows, '｜卡上数字胶囊', chips.length, '｜道具作用胶囊', effs.length);
+      log('  例：数字', chips.slice(0, 4).join(' / ') || '（无）', '｜作用', effs.slice(0, 3).join(' / ') || '（无）');
+      if (!cardRows) errors.push('商店货架上没有卡牌行（这一条断言就没有意义了）');
+      if (cardRows && !chips.length) errors.push('商店货架上的卡看不到专家模式的数据');
+      if (!effs.length) errors.push('商店货架上的道具看不到作用说明');
+      if (!kinds.length) errors.push('商店货架上的道具没有标「持有 / 可用」');
+      setExpertEnabled(false);
+    } catch (e) {
+      errors.push('shopExpert: ' + e.message);
     }
 
     // 6) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容

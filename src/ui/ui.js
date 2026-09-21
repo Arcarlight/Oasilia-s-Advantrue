@@ -7,7 +7,7 @@ import { showDeck, showItems, showHelp, showSettings } from './overlays.js';
 import { showEnemyCodex, showCardCodex } from './codex.js';
 import {
   renderTitle, renderMap, renderEvent, renderChest, renderRest,
-  renderShop, renderReward, renderGameOver, renderVictory,
+  renderShop, renderReward, renderItemDrop, renderGameOver, renderVictory,
 } from './screens.js';
 import { audio } from '../core/audio.js';
 import { bgmKeyFor } from '../core/bgm.js';
@@ -261,6 +261,15 @@ export class UI {
           break;
         }
         this.current = 'reward';
+        /**
+         * 掉落道具**先单独过一屏**（用户要的：掉落提示太小，别和结算挤在一个窗口里）。
+         * 这一屏只放这一件东西 —— 大图、效果、出处、有没有收进手持栏；
+         * 点「收下」把 `drop.seen` 一标记，下一次重画就走下面的结算页。
+         */
+        if (g.reward.itemDrop && !g.reward.itemDrop.seen) {
+          renderItemDrop(g);
+          break;
+        }
         renderReward(g);
         break;
       case 'gameover':

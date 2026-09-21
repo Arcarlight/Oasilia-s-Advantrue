@@ -3196,8 +3196,64 @@ input, textarea { cursor: text !important; }
 .shop-sell-name { font-size: 13px; }
 /* 手持栏满了的选择框（overlays.js 的 showHeldOverflow） */
 .held-slot-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; font-size: 13px; }
-.reward-pill-item { display: inline-flex; align-items: center; gap: 6px; }
-.reward-item-art { width: 22px; height: 22px; image-rendering: pixelated; }
+
+/* ============================================================
+   「捡到道具」单独一屏（screens.js 的 renderItemDrop）
+   ------------------------------------------------------------
+   用户要的：打完怪掉的那件东西以前是奖励页里的一枚小胶囊，太小看不清 ——
+   现在它自己占一屏：大图 + 名字 + 类别 + 效果 + 出处 + 有没有收进手持栏。
+   ============================================================ */
+.drop-screen { align-items: center; justify-content: center; }
+.drop-panel { max-width: 560px; text-align: center; }
+.drop-art {
+  display: flex; align-items: center; justify-content: center;
+  margin: 6px auto 10px;
+  width: 168px; height: 168px;
+  border-radius: 50%;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(255, 226, 160, .22), rgba(255, 226, 160, 0) 70%);
+  box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .22);
+}
+.drop-art-img { width: 112px; height: 112px; image-rendering: pixelated; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .45)); }
+.drop-name-row { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+/**
+ * 名字用 --accent-deep，不是 --accent-2：这一屏是**浅色羊皮纸**面板，
+ * 亮金（--accent-2，为深色背景调的）压米黄几乎读不出来 —— 第一次截图就是那样，
+ * 名字「龙之牙」淡得看不清（同样的坑 .panel-title 的注释里也记着）。
+ */
+.drop-name { font-family: var(--font-title); font-size: 22px; letter-spacing: .06em; color: var(--accent-deep); text-shadow: 0 1px 0 rgba(255, 255, 255, .45); }
+.drop-rarity {
+  font-size: 11px; padding: 1px 8px; border-radius: 999px; letter-spacing: .06em;
+  color: var(--rarity-ink, #4a3524);
+  box-shadow: inset 0 0 0 1px currentColor; opacity: .9;
+}
+.drop-eff {
+  margin: 0 auto 10px; padding: 10px 12px; max-width: 460px; text-align: left;
+  border-radius: var(--r-md);
+  background: rgba(74, 53, 36, .10);
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 30, .22);
+}
+.drop-eff-title { font-size: 12px; letter-spacing: .08em; color: #6b4a2a; margin-bottom: 6px; }
+.drop-eff-line { display: flex; align-items: flex-start; gap: 7px; font-size: 14px; line-height: 1.7; color: var(--ink); }
+.drop-eff-dot { margin-top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-deep); flex: 0 0 auto; }
+.drop-desc { font-size: 13.5px; line-height: 1.7; margin-bottom: 8px; color: var(--ink); opacity: .82; }
+.drop-source { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; color: var(--ink); opacity: .78; margin-bottom: 10px; }
+.drop-held { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+/* 商店货架 / 手持栏里那件道具「干什么」（screens.js 的 shopItemEffect、overlays.js 的 heldEffectBox） */
+.shop-eff { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+/**
+ * 货架是**浅色羊皮纸**：这里的墨色要按纸面来（.card-expert-chip 已经处理过，
+ * 但「可用 / 持有」那两枚胶囊的配色是给深色手持栏调的亮色 —— 压在米黄上几乎看不见）。
+ */
+.shop-eff-line {
+  font-size: 12px; padding: 1px 8px; border-radius: 999px;
+  background: rgba(74, 53, 36, .10);
+  color: #4a3524;
+  box-shadow: inset 0 0 0 1px rgba(74, 53, 36, .22);
+}
+.shop-item:not(.held-item) .shop-eff .held-kind.hold { color: #1f5c8f; }
+.shop-item:not(.held-item) .shop-eff .held-kind.use { color: #8a5a12; }
+.held-item .shop-eff-line { background: rgba(255, 255, 255, .07); color: #ffe6b8; box-shadow: inset 0 0 0 1px rgba(232, 207, 162, .2); }
 
 /* ---- 道具图鉴（codex.js 的 showItemCodex / showItemDetail）----
    规则和敌人图鉴一样：没拿过 = 压暗剪影 + ？？？。道具的图是 48×48 的 png，
