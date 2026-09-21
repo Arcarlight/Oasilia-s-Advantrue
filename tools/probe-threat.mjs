@@ -85,6 +85,21 @@ for (let i = 0; guard < runs * 12 && rows.length < runs * 4; i += 1) {
 }
 
 const withReal = rows.filter((r) => r.real > 0 || r.predict > 0);
+const avg = (a) => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0);
+const median = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)] ?? 0; };
+/**
+ * ⚠ 「实际」= 玩家侧收到的伤害事件之和：**被护盾吃掉的部分、被闪掉的那一下都不在里面**，
+ * 所以会出现「预计 300 → 实际 13」这种（那一回合玩家顶着一面大盾）。
+ * 看准确度请以中位数为准，别盯极值。
+ */
+console.log(`第 ${stage + 1} 章 ${tier}（主角 ${HERO ?? 'oasilia'}）：比对 ${withReal.length} 个回合`);
+for (const [key, label] of [['expected', '预计（界面主显）'], ['predict', '最多（上界）']]) {
+  const rs = withReal.filter((x) => x[key] > 0).map((x) => x.real / x[key]);
+  const sortedR = [...rs].sort((a, b) => a - b);
+  const u = withReal.filter((x) => x.real > x[key] * 1.15).length;
+  const o = withReal.filter((x) => x.real < x[key] * 0.85).length;
+  console.log(`  ${label}：预测 / 实际 中位 ${median(rs).toFixed(2)} · 平均 ${avg(rs).toFixed(2)} · p10 ${sortedR[Math.floor(sortedR.length * 0.1)]?.toFixed(2)} · p90 ${sortedR[Math.floor(sortedR.length * 0.9)]?.toFixed(2)}（低估 ${u} · 高估 ${o} / ${withReal.length}）`);
+}
 const under = withReal.filter((r) => r.real > r.expected * 1.15);
 console.log('  低估最狠的 8 个回合（对着「预计」比）：');
 for (const r of under.slice().sort((a, b) => (b.real - b.expected) - (a.real - a.expected)).slice(0, 8)) {
