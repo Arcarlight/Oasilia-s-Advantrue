@@ -2,6 +2,7 @@
   "_comment": "两位主角（3.0）：欧亚西莉亚（沙漠蜻蜓）与阿特拉斯（暴飞龙）。这份文件是主角的**唯一数据源** —— 名字 / 物种 / 初始属性 / 标题台词 / 结局文案 / 这一章的难度与地图形状，全在这里，node tools/build-content.mjs 生成 src/data/heroes.js。",
   "_unlock_note": "unlock 写成 'clear:<heroId>' = 用那个主角通关一次之后才可选（界面上会写明条件）。阿特拉斯解锁后可以打普通难度；无尽模式还要**用阿特拉斯通关一次**（见 endlessUnlock）。",
   "_map_note": "map.rowsMul = 一关的行数倍率（阿特拉斯是 2：路径变成两倍长）；map.bosses = 一关几个首领（2 = 两个，且保证两只不重样）；map.enemy = 这一局敌人的额外倍率（难度曲线抬一点）。",
+  "_rewards_note": "rewards = 这位主角的**收益倍率**（用户要的「阿特拉斯这边更难，但他更容易拿到道具、卡牌收益更好」）。不写就是全部 ×1（欧亚西莉亚那一份就是基准，故意不写）。四个旋钮：itemDropMul = 打赢后掉道具的概率倍率；goldMul = 战斗金币倍率（金币=商店里的道具与卡，同一条收益链路）；rarityMul = 奖励卡稀有度权重倍率（普通/精良/稀有/史诗各乘一次，>1 就是这一档更常见）。实测见 tools/probe-hero-rewards.mjs。",
   "order": [
     "oasilia",
     "atlas"
@@ -77,9 +78,19 @@
         "rowsMul": 2,
         "bosses": 2,
         "enemy": {
-          "hp": 1.08,
-          "atk": 1.06,
+          "hp": 1.21,
+          "atk": 1.16,
           "perStage": 0.015
+        }
+      },
+      "rewards": {
+        "itemDropMul": 1.7,
+        "goldMul": 1.15,
+        "rarityMul": {
+          "common": 0.7,
+          "uncommon": 0.85,
+          "rare": 1.45,
+          "epic": 1.9
         }
       },
       "titleName": "探寻的新月"

@@ -1,12 +1,14 @@
 // 双主角（3.0）的回归测试。
 //
-// 覆盖六件事，全是「写错了也能跑、但玩家一眼就看出不对」的那类：
+// 覆盖八件事，全是「写错了也能跑、但玩家一眼就看出不对」的那类：
 //   ① 阿特拉斯的解锁条件（用欧亚西莉亚通关一次）与无尽模式按主角分开解锁；
 //   ② 开局：属性 / 名字 / 物种 / **开局卡组**跟着主角走，`d.hero` 记在存档里；
 //   ③ 抽卡池按主角切：欧亚西莉亚的池子里不会出现阿特拉斯的牌（反之亦然）；
 //   ④ 一章的形状：阿特拉斯两倍长、**两个首领且不重样**、结局首领只在最后一章最后一次出场；
 //   ⑤ 难度：主角倍率与无尽倍率**相乘**（欧亚西莉亚本体一个数都不动）；
-//   ⑥ 事件：只给某一位主角的事件不会发给另一位。
+//   ⑥ 事件：只给某一位主角的事件不会发给另一位；
+//   ⑦ 公共事件的「阿特拉斯版」：不覆盖原版，按主角挑一份；
+//   ⑧ 收益倍率：他更难，但他掉得更多、奖励卡更好（3.0.3 的「难度与补偿成对」）。
 //
 // 用法: node tools/test-heroes.mjs
 import path from 'node:path';
@@ -331,6 +333,101 @@ group('⑦ 公共事件的「阿特拉斯版」：不覆盖原版，按主角挑
   ok(atlasOnly.every((e) => !e.heroText), `${atlasOnly.length} 个阿特拉斯专属事件没有被套上「阿特拉斯版」（它们本来就是为他写的）`);
   const notAtlas = EVENTS.filter((e) => e.heroNot === 'atlas');
   ok(notAtlas.every((e) => !e.heroText), '「另一位沙漠精灵」这类只给欧亚西莉亚的事件也没有被改写');
+}
+
+// ---------------------------------------------------------------
+group('⑧ 收益倍率：他更难，但他这边掉得更多、奖励卡更好（3.0.3）');
+// ---------------------------------------------------------------
+{
+  /**
+   * 用户原话：「让阿特拉斯的通关率略低于欧亚西莉亚就可以，虽然阿特拉斯这边更难，
+   * 但是可以让阿特拉斯这边更容易获得道具、更好的卡牌收益。」
+   *
+   * 难度那一半（通关率）只能靠模拟量（tools/probe-hero-rewards.mjs）；
+   * 这一组钉的是**可判定的那一半**：倍率在不在、有没有真的接到引擎上。
+   * 接不上的失败方式特别隐蔽 —— 数据里写得好好的，`finishBattle` 里忘了乘一下，
+   * 于是「说好的补偿」根本不存在，而所有体检都是绿的。
+   */
+  const { heroRewardMul, heroRewardWeights } = await imp('src/data/heroes.js');
+  const { REWARD_WEIGHTS } = await imp('src/data/balance.js');
+
+  const rwO = heroRewardMul('oasilia');
+  ok(rwO.itemDrop === 1 && rwO.gold === 1 && Object.values(rwO.rarity).every((x) => x === 1),
+    '欧亚西莉亚的收益倍率全是 ×1（本体基准一位数都没动）', JSON.stringify(rwO));
+  const rwA = heroRewardMul('atlas');
+  ok(rwA.itemDrop > 1, `阿特拉斯掉道具更勤（掉落概率 ×${rwA.itemDrop}）`);
+  ok(rwA.gold > 1, `阿特拉斯的战斗金币更多（×${rwA.gold} —— 商店里的道具与卡也在这条链上）`);
+  ok(rwA.rarity.epic > 1 && rwA.rarity.rare > 1 && rwA.rarity.common < 1,
+    '阿特拉斯的奖励卡稀有度更高（常见压下去、稀有与史诗抬起来）', JSON.stringify(rwA.rarity));
+
+  const wA = heroRewardWeights('atlas', REWARD_WEIGHTS.normal);
+  ok(Object.keys(wA).length === Object.keys(REWARD_WEIGHTS.normal).length && Object.values(wA).every((v) => v > 0),
+    '乘完之后四档稀有度都在（缺一档就是那一档静默变回 ×1）', Object.keys(wA).join('/'));
+  ok(wA.epic > REWARD_WEIGHTS.normal.epic && wA.common < REWARD_WEIGHTS.normal.common,
+    '同一档敌人：阿特拉斯那张权重表确实偏稀有',
+    `史诗 ${REWARD_WEIGHTS.normal.epic} → ${wA.epic} · 常见 ${REWARD_WEIGHTS.normal.common} → ${wA.common}`);
+  const wO = heroRewardWeights('oasilia', REWARD_WEIGHTS.normal);
+  ok(Object.entries(wO).every(([k, v]) => v === REWARD_WEIGHTS.normal[k]),
+    '欧亚西莉亚那份档位权重原样返回（「精英与首领给的卡更好」这条承诺不受影响）');
+
+  // 端到端：两位主角真各打 300 场普通怪，看掉落率与奖励卡的史诗占比
+  {
+    // 定种子：不然「抽到哪些场次」每次都不一样（test-reward.mjs 也踩过这个坑）
+    let seed = 0x2545F491;
+    Math.random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    const autoPlay = (b) => {
+      let guard = 0;
+      while (!b.over && guard++ < 200) {
+        if (b.active === 'player') {
+          const hand = b.hand('player');
+          const best = hand.map((c) => ({ c, s: b.scoreCard('player', c.card) })).sort((a, x) => x.s - a.s)[0];
+          if (!best || best.s <= 0) break;
+          if (!b.playCard(best.c.uid).ok) break;
+          b.takeEvents();
+        }
+        b.endTurn();
+        b.takeEvents();
+      }
+    };
+    const sample = (hero, n) => {
+      let fought = 0; let drops = 0; const cards = [];
+      for (let i = 0; i < n; i += 1) {
+        const g = new Game({ seed: 6100 + i * 37 });
+        g.newRun(undefined, { hero });
+        /**
+         * 两位主角用**同一套数值**打同一档敌人：差别只该来自收益倍率。
+         * 数值给得很足（第 1 章、碾压级），因为这一条量的是奖励不是胜负 ——
+         * 数值给得刚好能赢的话，阿特拉斯那 1.21 倍会把他自己的样本打成个位数胜场，
+         * 于是「掉落率」这种比值统计量全成了噪声（第一版就是这么红的：300 场只赢了 1 场）。
+         */
+        Object.assign(g.data, { atk: 200, def: 120, maxHp: 1200, hp: 1200, agi: 20, luck: 8, stage: 0 });
+        const b = g.startBattle('normal', 0, 'direct');
+        autoPlay(b);
+        if (b.winner !== 'player') continue;
+        const r = g.finishBattle();
+        fought += 1;
+        if (r?.itemDrop) drops += 1;
+        cards.push(...(r?.cardChoices ?? []));
+      }
+      return {
+        fought, drops, cards,
+        dropRate: drops / Math.max(1, fought),
+        epicRate: cards.filter((c) => c.rarity === 'epic').length / Math.max(1, cards.length),
+      };
+    };
+    const so = sample('oasilia', 300);
+    const sa = sample('atlas', 300);
+    ok(so.fought >= 250 && sa.fought >= 250, '两位主角都打够了样本', `${so.fought} / ${sa.fought} 场`);
+    ok(sa.dropRate > so.dropRate + 0.04, '真打一遍：阿特拉斯的掉落率明显更高',
+      `${(so.dropRate * 100).toFixed(1)}% → ${(sa.dropRate * 100).toFixed(1)}%（同一档敌人、同一套玩家数值）`);
+    ok(sa.epicRate > so.epicRate * 1.4, '真打一遍：阿特拉斯奖励卡里的史诗明显更多',
+      `${(so.epicRate * 100).toFixed(1)}% → ${(sa.epicRate * 100).toFixed(1)}%`);
+  }
+
+  // 难度那一半：倍率确实抬上去了（通关率的绝对值由模拟脚本量，见 docs/HERO-ATLAS-PROGRESS.md）
+  const shape = heroMapShape('atlas');
+  ok(shape.enemy.hp > 1.15 && shape.enemy.atk > 1.1, '阿特拉斯的敌人倍率明显更高（难度那一半）',
+    `hp ×${shape.enemy.hp} · atk ×${shape.enemy.atk} · 每章再 ×${1 + shape.enemy.perStage}`);
 }
 
 console.log(`\n双主角（3.0）回归测试：通过 ${pass}，失败 ${fail}`);

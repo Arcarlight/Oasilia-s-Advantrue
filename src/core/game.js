@@ -3,7 +3,7 @@
 
 import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, RARITY, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
 import { CARD_BY_ID, STARTER_DECK, rollCard, rollCards, CARDS, playerPool } from '../data/cards.js';
-import { HEROES, HERO_ORDER, heroById, heroOf, starterDeckFor, heroMapShape, heroEnemyMul, DEFAULT_HERO_ID } from '../data/heroes.js';
+import { HEROES, HERO_ORDER, heroById, heroOf, starterDeckFor, heroMapShape, heroEnemyMul, heroRewardMul, heroRewardWeights, DEFAULT_HERO_ID } from '../data/heroes.js';
 import { ITEMS, ITEM_ART, STARTER_ITEMS } from '../data/items.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount, endlessRowBonus, endlessBranchBonus } from '../data/mapgen.js';
@@ -1118,8 +1118,13 @@ export class Game {
     this.meta = save.noteEnemies([b.enemy?.id ?? this.battleContext?.enemyDef?.id], { slain: true });
     const ctx = this.battleContext;
     const rewardMult = ctx.scaled.rewardMult ?? 1;
+    /**
+     * 主角收益倍率（content/heroes.json 的 rewards；不写的那位是全部 ×1）。
+     * 阿特拉斯那一份就是「他的敌人更硬，所以他这边掉得更多、奖励更好」里的后半句。
+     */
+    const rw = heroRewardMul(d.hero);
     const range = ctx.kind === 'boss' ? BALANCE.goldPerElite : ctx.kind === 'elite' ? BALANCE.goldPerElite : BALANCE.goldPerBattle;
-    const gold = Math.round(this.rng.int(range[0], range[1]) * rewardMult);
+    const gold = Math.round(this.rng.int(range[0], range[1]) * rewardMult * rw.gold);
     d.gold += gold;
     const heal = Math.round(d.maxHp * BALANCE.healAfterBattlePct);
     const healed = this.heal(heal);
@@ -1136,7 +1141,12 @@ export class Game {
     // 「越稀有越小」，于是打完首领和打完路边小怪抽到的史诗占比都是 3.5%，
     // 玩家一眼就看出来了（「boss 和精英给的卡并没有更好」）。现在档位表说了算。
     const tierKey = ctx.kind === 'boss' ? 'boss' : ctx.kind === 'elite' ? 'elite' : 'normal';
-    const weights = REWARD_WEIGHTS[tierKey] ?? null;
+    /**
+     * 档位权重 × 主角收益倍率（见 data/heroes.js 的 heroRewardWeights）。
+     * 阿特拉斯那一份把常见往下压、把稀有与史诗往上抬 —— 他打的仗本来就是别人的两倍多，
+     * 数量上的优势已经够大了，这里补的是**质量**：同样的精英，他更容易看到稀有以上的选项。
+     */
+    const weights = heroRewardWeights(d.hero, REWARD_WEIGHTS[tierKey] ?? null);
     /**
      * 精英与首领**必定出卡**。
      *
@@ -1196,12 +1206,19 @@ export class Game {
    *   · 基础概率很低：普通 8%、精英 18%、首领 35%（BALANCE.itemDropChance）；
    *   · 掉什么：从**这件敌人的属性**对应的掉落物里挑，权重 ×4（BALANCE.itemDropTypeWeight）——
    *     所以打毒系更容易掉毒针、剧毒宝珠；其余道具也能掉，只是权重低得多；
-   *   · 稀有度也参与权重（epic 比 common 罕见）。
+   *   · 稀有度也参与权重（epic 比 common 罕见）；
+   *   · 这一整套再乘主角收益倍率（rewards.itemDropMul）—— 阿特拉斯掉得比欧亚西莉亚勤。
    *
    * @returns {{id:string, reason:'type'|'random'}|null}
    */
   rollItemDrop(enemy, kind = 'normal') {
-    const chance = { mob: BALANCE.itemDropChance?.mob ?? 0.08, normal: BALANCE.itemDropChance?.normal ?? 0.08, elite: BALANCE.itemDropChance?.elite ?? 0.18, boss: BALANCE.itemDropChance?.boss ?? 0.35 }[kind] ?? 0.08;
+    const base = { mob: BALANCE.itemDropChance?.mob ?? 0.08, normal: BALANCE.itemDropChance?.normal ?? 0.08, elite: BALANCE.itemDropChance?.elite ?? 0.18, boss: BALANCE.itemDropChance?.boss ?? 0.35 }[kind] ?? 0.08;
+    /**
+     * 主角收益倍率（rewards.itemDropMul）——「阿特拉斯这边更容易获得道具」就是这一行。
+     * 上限 0.95：留着那 5% 的不确定性，不然首领那一档（0.45 × 1.7 = 0.77）再往上拧一点
+     * 就会变成「必掉」，而「必掉」和「大概率掉」在玩家那边的体感是两回事。
+     */
+    const chance = Math.min(0.95, base * heroRewardMul(this.data?.hero).itemDrop);
     if (!this.rng.chance(chance)) return null;
     const types = new Set(enemy?.types ?? []);
     const TYPE_W = BALANCE.itemDropTypeWeight ?? 4;
@@ -1285,7 +1302,7 @@ export class Game {
       win: true,
       gold: isBoss ? 260 : kind === 'elite' ? 88 : 42,
       healed: 18,
-      cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null, this.data?.hero),
+      cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], heroRewardWeights(this.data?.hero, REWARD_WEIGHTS[kind] ?? null), this.data?.hero),
       item,
       itemReason: isBoss ? 'type' : 'random',
       // 掉落和真实战斗走同一条路（在这里就发），否则「捡到道具」那一屏会显示成没收到

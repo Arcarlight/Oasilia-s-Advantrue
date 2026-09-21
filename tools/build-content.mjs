@@ -738,6 +738,25 @@ function validateHeroes(doc, cards, species) {
     if (!m || !Number.isFinite(m.rowsMul) || m.rowsMul < 1) err(`${at} 缺 map.rowsMul（一关的行数倍率，≥1）`);
     if (!m || !Number.isFinite(m.bosses) || m.bosses < 1) err(`${at} 缺 map.bosses（一关几个首领，≥1）`);
     if (m?.enemy && (!Number.isFinite(m.enemy.hp) || !Number.isFinite(m.enemy.atk))) err(`${at} 的 map.enemy 要写 hp / atk 两个数字`);
+    /**
+     * 收益倍率（rewards）。不写就是全部 ×1（基准），写了就逐项卡住数字 ——
+     * 这几个字段的失败方式是**静默的**：写错名字（ratingMul）或者漏一档稀有度，
+     * 游戏照样跑，只是「说好的收益更高」根本没发生，而这一点在界面上看不出来。
+     */
+    const rw = h?.rewards;
+    if (rw != null) {
+      for (const k of ['itemDropMul', 'goldMul']) {
+        if (rw[k] != null && !(Number.isFinite(rw[k]) && rw[k] > 0)) err(`${at} 的 rewards.${k} 必须是正数（现在是 ${JSON.stringify(rw[k])}）`);
+      }
+      for (const k of Object.keys(rw)) {
+        if (!['itemDropMul', 'goldMul', 'rarityMul'].includes(k)) err(`${at} 的 rewards 里有不认识的字段 ${k}（只有 itemDropMul / goldMul / rarityMul）`);
+      }
+      if (rw.rarityMul != null) {
+        for (const r of ['common', 'uncommon', 'rare', 'epic']) {
+          if (!Number.isFinite(rw.rarityMul[r]) || rw.rarityMul[r] <= 0) err(`${at} 的 rewards.rarityMul 缺 ${r}（四档都要写，缺一档就等于那一档 ×1 —— 这是静默失效）`);
+        }
+      }
+    }
     if (!h?.ending?.title || !h?.ending?.text) err(`${at} 缺 ending.title / ending.text（通关页那一段）`);
     if (ids.has(h?.id)) err(`主角 id 重复：${h.id}`);
     ids.add(h?.id);

@@ -86,9 +86,19 @@ export const HEROES = [
       "rowsMul": 2,
       "bosses": 2,
       "enemy": {
-        "hp": 1.08,
-        "atk": 1.06,
+        "hp": 1.21,
+        "atk": 1.16,
         "perStage": 0.015
+      }
+    },
+    "rewards": {
+      "itemDropMul": 1.7,
+      "goldMul": 1.15,
+      "rarityMul": {
+        "common": 0.7,
+        "uncommon": 0.85,
+        "rare": 1.45,
+        "epic": 1.9
       }
     },
     "titleName": "探寻的新月"
@@ -168,6 +178,50 @@ export function heroEnemyMul(id, stage = 0) {
   const e = heroMapShape(id).enemy;
   const k = 1 + (e.perStage ?? 0) * Math.max(0, stage);
   return { hp: (e.hp ?? 1) * k, atk: (e.atk ?? 1) * k };
+}
+
+// ---------------------------------------------------------------------------
+// 收益倍率（content/heroes.json 的 rewards）
+// ---------------------------------------------------------------------------
+
+/**
+ * 这位主角的收益倍率（不写 = 全部 ×1）。
+ *
+ * 用途是用户那条要求：「让阿特拉斯的通关率略低于欧亚西莉亚就可以，虽然阿特拉斯这边更难，
+ * 但是可以让阿特拉斯这边更容易获得道具、更好的卡牌收益。」
+ *
+ * 也就是说难度与收益是**两个方向同时拧**的：他的敌人更硬（map.enemy），
+ * 而他的掉落与奖励更好（rewards）。只有一边的话，要么他只是更难（玩家觉得被针对），
+ * 要么他只是更肥（难度白写）。所以这两组数字必须成对存在、成对调。
+ *
+ * 这里只负责**读**，怎么用见 core/game.js 的 finishBattle / rollItemDrop。
+ */
+export function heroRewardMul(id) {
+  const r = heroById(id)?.rewards ?? {};
+  const rm = r.rarityMul ?? {};
+  return {
+    itemDrop: r.itemDropMul ?? 1,
+    gold: r.goldMul ?? 1,
+    rarity: {
+      common: rm.common ?? 1,
+      uncommon: rm.uncommon ?? 1,
+      rare: rm.rare ?? 1,
+      epic: rm.epic ?? 1,
+    },
+  };
+}
+
+/**
+ * 把「按敌人档位的奖励稀有度权重表」按这位主角的收益倍率**乘一遍**。
+ *
+ * 为什么不换一张表：档位表（REWARD_WEIGHTS，来自 content/rarity.json）说的是
+ * 「精英与首领给的卡比路边小怪好」，那是**所有主角共用**的规则；
+ * 主角倍率说的是「同档位下这一位拿到的东西更好」。两者相乘，两句话都不会互相顶掉。
+ */
+export function heroRewardWeights(id, base) {
+  if (!base) return base;
+  const r = heroRewardMul(id).rarity;
+  return Object.fromEntries(Object.entries(base).map(([k, v]) => [k, v * (r[k] ?? 1)]));
 }
 
 // ---------------------------------------------------------------------------

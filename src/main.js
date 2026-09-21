@@ -10,6 +10,7 @@ import { applyDocumentTitle } from './ui/langswitch.js';
 import { audio } from './core/audio.js';
 import { toast } from './ui/dom.js';
 import { showDeck } from './ui/overlays.js';
+import { showChangelog } from './ui/changelog.js';
 import { initTips } from './ui/tips.js';
 import { setEncounterMode } from './ui/encounter.js';
 import { EVENTS } from './data/events.js';
@@ -116,6 +117,14 @@ async function boot() {
         return 'reward';
       }
       case 'deck': { showDeck(game); return 'deck'; }
+      /**
+       * `?scene=changelog`：直接弹更新日志。
+       *
+       * 这一页的文案是**列表里的裸字符串**（渲染时才过 t()），写错了不会崩、
+       * 体检也只核对版本号 —— 但它偏偏是玩家每批更新都会点开看的一屏。
+       * 给它一条截图 / 复看的路（`&lang=ja` 之类配合语言开关就能三语各拍一张）。
+       */
+      case 'changelog': { showChangelog(); return 'changelog'; }
       case 'gameover': game.phase = 'gameover'; ui.forceRerender(); return 'gameover';
       case 'victory': game.phase = 'victory'; ui.forceRerender(); return 'victory';
       default: return 'unknown';
