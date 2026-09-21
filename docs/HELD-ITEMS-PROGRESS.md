@@ -217,3 +217,12 @@ https://wiki.52poke.com/api.php?action=query&format=json&redirects=1&titles=<中
   我还是在新加的 `.drop-name` 上踩了一次 —— 截图里「龙之牙」淡得看不清。纸面上用 `var(--accent-deep)`，
   墨色用 `#4a3524` / `var(--ink)`。同理，给深色面板调的胶囊配色（如 `.held-kind.use` 的亮金）
   搬到货架上也要单独覆盖一层。
+* **「卡在某一屏」的治法：兜底 + 把现场记下来**（v2.8）。用户报了两次同类问题
+  （先是卡在奖励页，后是卡在战场上），两次都**没能在常规路径下复现** ——
+  靠读代码猜代价太大，所以做三层：① 战斗看门狗在「战斗已结束 + 演出停下 + 还没结算」
+  时自己补一次 `settle()`；② `settle()` 整段 try/catch，出错就把错误写进
+  `window.__oasisLastError`（带 `where`）并硬推 phase；③ `ui.render()` 拆成
+  `render()`（兜底：换屏抛错 → 记 `window.__oasisRenderError` → 退回地图）+ `renderPhase()`。
+  ⚠ 兜底会把异常藏起来，所以 **smoke 第 9 条断言整趟跑完这两个变量必须为空** ——
+  没有这条，以后真出问题门禁也只会显示全绿（这次正是「全绿但玩家卡住」）。
+  下次再遇到同类问题，让玩家按 F12 念一下 `window.__oasisLastError` 就能定位。
