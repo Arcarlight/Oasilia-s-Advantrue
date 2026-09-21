@@ -186,6 +186,30 @@
       errors.push('dropScreen: ' + e.message);
     }
 
+    /**
+     * 3.8) **战斗结束后没人结算 → 看门狗必须自己收尾**。
+     *
+     * 用户第二次报「boss 战又卡住了」：现场是 0 血的敌人 + 意图胶囊写着「战斗结束」，
+     * 手牌和「结束回合」全都点不动（引擎会说「战斗已经结束了」）—— 也就是
+     * 「出牌尾巴上那一句 settle()」没有跑到（哪一步抛了异常、或者被中途打断）。
+     * 这一条故意把战斗置成已结束、**谁都不去结算**，看界面能不能自己走出去。
+     */
+    try {
+      window.__oasisAuto({ scene: 'battle', stage: 1 });
+      await wait(800);
+      g.battle.enemy.hp = 0;
+      g.battle.winner = 'player';
+      g.battle.over = true;
+      // 故意不调 finishBattle / settle：模拟结算没跑到
+      await wait(2600);
+      const recovered = window.__oasisSettleRecover ?? 0;
+      log('故意不结算 → phase=' + g.phase, '屏幕=' + screen(), '看门狗补结算次数=' + recovered);
+      if (g.phase === 'battle') errors.push('战斗已经结束却还停在战场上（看门狗没有补结算）');
+      if (!recovered) errors.push('看门狗没有记录到「补结算」这一步');
+    } catch (e) {
+      errors.push('settleRecover: ' + e.message);
+    }
+
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
     try {
       const audioMod = await import('/src/core/audio.js');
@@ -302,6 +326,20 @@
     };
     log('DOM checks', JSON.stringify(checks));
     if (!checks.hudCodexBtn) errors.push('HUD 上没有图鉴按钮（#btn-codex）');
+
+    /**
+     * 9) **页面这一趟不许留下任何被吞掉的错误**。
+     *
+     * UI 现在有几处兜底（换屏失败退回地图、结算失败硬推 phase）—— 兜底能把玩家救回来，
+     * 但也**会把错误藏起来**：那些地方如果不在这里断言，门禁就再也看不到它们了。
+     * 所以整趟跑完必须一句都没记下。
+     */
+    log('兜底记录：换屏错误 =', JSON.stringify(window.__oasisRenderError ?? null),
+      '｜未捕获 =', JSON.stringify(window.__oasisLastError ?? null),
+      '｜看门狗补结算 =', window.__oasisSettleRecover ?? 0);
+    if (window.__oasisRenderError) errors.push('换屏过程中出过错（已兜底）：' + window.__oasisRenderError.message);
+    if (window.__oasisLastError) errors.push('页面里出现过未捕获的错误：' + window.__oasisLastError.message);
+
     log('ERRORS=' + JSON.stringify(errors));
     log('SMOKE_OK');
   } catch (e) {

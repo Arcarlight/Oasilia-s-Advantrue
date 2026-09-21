@@ -127,8 +127,43 @@ export class UI {
     });
   }
 
-  /** 根据 game.phase 渲染 */
+  /**
+   * 按 game.phase 换屏（**带兜底**）。
+   *
+   * 换屏这一步出错 = 玩家卡在上一屏、点什么都没反应（用户报过两次，
+   * 现场分别是「打完 boss 停在奖励页」和「打完 boss 停在战场上」）。
+   * 所以这里不把异常往外扔：记现场 → 告诉玩家 → 硬退回地图（地图是唯一的枢纽，
+   * 玩家的这一局还能继续走）。真正的修法当然是把那个异常找出来，
+   * 但「先保证玩家不会被卡住」这件事不能等 —— 而且报错记下来了下次就能定位。
+   */
   render() {
+    try {
+      this.renderPhase();
+    } catch (err) {
+      console.error('[oasis] 换屏出错：', err);
+      window.__oasisRenderError = {
+        at: new Date().toISOString(),
+        phase: this.game?.phase ?? null,
+        message: String(err?.message ?? err),
+        stack: String(err?.stack ?? ''),
+      };
+      try {
+        if (this.game?.data) {
+          this.game.phase = 'map';
+          this.current = null;
+          renderMap(this.game);
+          renderHud(this.game);
+          this.current = 'map';
+        }
+      } catch (err2) {
+        console.error('[oasis] 退回地图也失败了：', err2);
+      }
+      toast(t('这一屏出了点问题，已经把你带回地图。'), 'bad');
+    }
+  }
+
+  /** 根据 game.phase 渲染 */
+  renderPhase() {
     const g = this.game;
     const phase = g.phase;
 

@@ -184,6 +184,23 @@ export class BattleScreen {
     if (this._watchdog) return;
     this._eventAt = Date.now();
     this._watchdog = setInterval(() => {
+      /**
+       * ① **战斗已经结束、却还挂在战场上**（用户报的「打完 boss 卡在战场上」）。
+       *
+       * 正常路径是出牌 / 结束回合的尾巴上 `if (battle.over) settle()`。只要那一步因为
+       * 任何原因没跑到（演出被打断、某处抛异常、看门狗中途清过 busy…），玩家就会永远
+       * 停在这一屏：敌人 0 血、意图胶囊写着「战斗结束」，手牌点击全被引擎拒绝
+       * （`playCard` 会说「战斗已经结束了」），「结束回合」也早退 —— 无路可走。
+       *
+       * 所以这里当作**兜底**：只要战斗结束、演出已经停下（`!busy`）、又还没结算过，
+       * 就自己补一次结算。`settle()` 自己的 settled 标志保证不会重复。
+       */
+      if (this.battle?.over && !this.settled && !this.busy && this.mounted) {
+        console.warn('[oasis] 战斗已结束但还没结算 —— 看门狗补一次结算。');
+        window.__oasisSettleRecover = (window.__oasisSettleRecover ?? 0) + 1;
+        this.settle();
+        return;
+      }
       if (!this.busy) { this._eventAt = Date.now(); return; }
       const stalled = Date.now() - (this._eventAt ?? Date.now());
       if (stalled < 6000) return;
@@ -2084,12 +2101,37 @@ export class BattleScreen {
      *
      * ⚠⚠ `finishBattle()` **必须在**：它才是把 phase 从 battle 推到 reward / gameover 的那一步
      * （金币、成长、掉落卡都在里面）。改这里时曾经把它连同画屏一起删掉过一次 ——
-     * 后果是**每场战斗打完都停在战场上**（敌人已经 0 血、飘着「战斗结束」，
+     * 后果是**每场战斗打完都停在战场上**（敌人已经 0 血、意图胶囊写着「战斗结束」，
      * 但永远不进奖励页），用户当场就撞上了。画屏可以交给 UI，推进状态不行。
+     *
+     * ⚠⚠⚠ 整段还包了 try/catch：**结算这一步绝对不能把玩家留在战场上**。
+     * 用户后来又报过一次「boss 战又卡住了」，现场就是 0 血的敌人 + 一句「战斗结束」，
+     * 手牌和「结束回合」全都点不动（引擎会说「战斗已经结束了」）—— 也就是 settle 里
+     * 某一步抛了异常，而 `settled` 已经置位，看门狗也不会再补。
+     * 现在出错要①把错误原样记进 `window.__oasisLastError`（下次有人遇到，发这一行就能定位）、
+     * ②硬把 phase 推出去（奖励页拿不到就退回地图 —— 我那里的兜底也认这种情况）。
      */
-    this.game.finishBattle();
-    // 界面换屏一律交给 UI 按 phase 分发（它自己会记账），这里不再直接画屏
-    this.game.changed();
+    try {
+      this.game.finishBattle();
+      // 界面换屏一律交给 UI 按 phase 分发（它自己会记账），这里不再直接画屏
+      this.game.changed();
+    } catch (err) {
+      console.error('[oasis] 战斗结算出错：', err);
+      window.__oasisLastError = {
+        at: new Date().toISOString(),
+        message: String(err?.message ?? err),
+        stack: String(err?.stack ?? ''),
+        where: 'BattleScreen.settle',
+      };
+      try {
+        const g = this.game;
+        if (g.phase === 'battle') g.phase = g.battle?.winner === 'player' ? 'reward' : 'gameover';
+        g.changed();
+      } catch (err2) {
+        console.error('[oasis] 兜底换屏也失败了：', err2);
+      }
+      toast(t('结算出了点问题，已经把你带到下一屏。'), 'bad');
+    }
   }
 
   destroy() {
