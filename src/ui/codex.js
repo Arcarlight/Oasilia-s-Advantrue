@@ -34,6 +34,8 @@ import { save } from '../core/save.js';
 import { t } from '../core/i18n.js';
 import { audio } from '../core/audio.js';
 import { showCardDetail } from './carddetail.js';
+// 流派标签（图标 / 名字 / 说明）：图鉴里那一排「流派：」筛选按钮用它
+import { CARD_TAG_INFO } from './cardtags.js';
 
 /**
  * 击败次数 -> 奖牌档位（0 = 还没拿到牌）与档位表。
@@ -197,12 +199,53 @@ export function showCardCodex(game) {
   });
   body.append(ownerBar);
 
+  /**
+   * **按流派筛选**（v2.9961.1）：毒流 / 出血流 / 单次高伤 / 削弱流 / 强化流 / 蓄势流。
+   *
+   * 为什么要它：这些流派牌散在 284 张里，光靠翻根本看不出「强化流的牌到底有几张」——
+   * 用户就直接问过「你这真的加了能加 buff 的卡牌吗？」。加一排按钮之后，
+   * 点一下就能把该流派的牌全列出来（含每档稀有度各几张）。
+   */
+  const allTags = new Map();               // tag → 张数（只数玩家能拿到的）
+  for (const c of CARDS) {
+    if (c.enemyOnly) continue;
+    for (const k of c.tags ?? []) allTags.set(k, (allTags.get(k) ?? 0) + 1);
+  }
+  const tagItems = [...allTags.entries()]
+    .filter(([k]) => CARD_TAG_INFO[k])
+    .sort((a, b) => b[1] - a[1]);
+  let tag = 'all';
+  const tagBar = el('div', { class: 'sort-bar' }, [el('span', { class: 'sort-label', text: t('流派：') })]);
+  const tagTabs = [];
+  const mkTagTab = (key, label, count) => {
+    const tab = el('button', {
+      class: `sort-tab${key === tag ? ' active' : ''}`,
+      onClick: () => {
+        tag = key;
+        audio.ui('toggle');
+        for (const x of tagTabs) x.classList.toggle('active', x.dataset.tag === tag);
+        paint();
+      },
+    }, [count == null ? label : `${label} ${count}`]);
+    tab.dataset.tag = key;
+    tagBar.append(tab);
+    tagTabs.push(tab);
+    return tab;
+  };
+  mkTagTab('all', t('全部'), null);
+  for (const [k, n] of tagItems) {
+    const info = CARD_TAG_INFO[k];
+    mkTagTab(k, info.label(), n).dataset.tip = info.desc();
+  }
+  body.append(tagBar);
+
   const ownerFiltered = () => (owner === 'all' ? CARDS
     : owner === 'enemy' ? CARDS.filter((c) => c.enemyOnly)
       : CARDS.filter((c) => !c.enemyOnly));
+  const tagFiltered = () => (tag === 'all' ? ownerFiltered() : ownerFiltered().filter((c) => (c.tags ?? []).includes(tag)));
 
   const paint = () => {
-    fillCardGrid(grid, ownerFiltered(), { sortMode, deckIds });
+    fillCardGrid(grid, tagFiltered(), { sortMode, deckIds });
     sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint() ?? '';
   };
 
