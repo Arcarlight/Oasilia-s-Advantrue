@@ -376,6 +376,71 @@ const zeroCost = CARDS.filter((c) => c.ap === 0).length;
 if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length} 张，占比偏高（默认出战卡组会全是小牌）`);
 
 /**
+ * **卡面写的「无视对手 X% 防御」必须和效果里的 ignoreDefPct 一致**。
+ *
+ * 起因：v2.3 把无视防御抬高了（30%→50%、50%→70%），卡面文案却没有跟着改 ——
+ * 14 张牌的卡面写着 30%、实际按 50% 结算（反过来的也有）。玩家读到的字和打出来的
+ * 伤害对不上，是这一类里最不该有的错。
+ */
+{
+  const pctOf = (c) => {
+    const e = (c.effects ?? []).find((x) => x.ignoreDefPct);
+    return e ? Math.round(e.ignoreDefPct * 100) : null;
+  };
+  const bad = [];
+  for (const c of CARDS) {
+    const pct = pctOf(c);
+    if (pct === null) continue;
+    const m = (c.text ?? '').match(/无视对手\s*(全部|一半|\d+\s*%)?\s*的?防御/);
+    if (!m) { bad.push(`${c.name}：效果有无视防御，卡面一个字没提`); continue; }
+    const said = m[1] === '全部' ? 100 : m[1] === '一半' ? 50 : Number(String(m[1] ?? '').replace(/\s|%/g, ''));
+    if (said !== pct) bad.push(`${c.name}：卡面写 ${said}%、效果是 ${pct}%`);
+  }
+  if (bad.length) err(`卡面的「无视防御」百分比和效果对不上（${bad.length} 张）：${bad.slice(0, 5).join(' ｜ ')}`);
+}
+
+/**
+ * **玩家抽卡池里不许有「同费用 + 完全同效果」的重复卡**。
+ *
+ * 用户的原话：「为什么像啄这种卡还是能进入到抽卡池里？……这和撞击完全是一样的效果，
+ * 就没有必要加入玩家抽卡池污染卡池了。」
+ *
+ * 类型在这游戏里只是外观（battle.js 里没有任何属性倍率），所以「换个名字的同一张牌」
+ * 在玩法上就是同一张牌：抽卡奖励里出现它 = 一格白给（你开局就带着一模一样的那张）。
+ * 实测当时池子里有 35 组这样的重复（48 张多余）。去重见 tools/dedupe-pool-cards.mjs，
+ * 这条门禁保证以后新加的卡不会再长回来。
+ */
+{
+  const sigOf = (c) => `${c.ap}|${JSON.stringify(c.effects ?? [])}`;
+  const bySig = new Map();
+  for (const c of CARDS) {
+    if (c.enemyOnly) continue;
+    if (!bySig.has(sigOf(c))) bySig.set(sigOf(c), []);
+    bySig.get(sigOf(c)).push(c);
+  }
+  const dupGroups = [...bySig.values()].filter((g) => g.length > 1);
+  if (dupGroups.length) {
+    err(`玩家抽卡池里有 ${dupGroups.length} 组「同费用 + 完全同效果」的重复卡（玩家抽到等于拿到同一张牌）：`
+      + dupGroups.slice(0, 4).map((g) => g.map((c) => c.name).join('/')).join('、')
+      + `${dupGroups.length > 4 ? ' …' : ''} —— 只留一张给玩家，其余的标 enemyOnly`
+      + '（跑 node tools/dedupe-pool-cards.mjs --write，它会顺带保证每张被移出去的牌都还在敌人招式池里）');
+  }
+  /**
+   * 反过来也钉一条：**只给敌人用的牌必须真的有人会用**。
+   * 不然它会变成「图鉴里永远点不亮的死卡」（解锁条件是看见敌方打出，见 v2.4 的规则）。
+   */
+  const kitIds = new Set();
+  for (const ids of Object.values(MOVE_POOLS ?? {})) for (const id of ids) kitIds.add(id);
+  const sigIds = new Set();
+  for (const e of ENEMIES ?? []) for (const s of e.signature ?? []) sigIds.add(s);
+  const stray = CARDS.filter((c) => c.enemyOnly && !kitIds.has(c.id) && !sigIds.has(c.id));
+  if (stray.length) {
+    err(`有 ${stray.length} 张 enemyOnly 的牌既不在任何招式池、也不是谁的专属招（图鉴永远点不亮）：`
+      + stray.slice(0, 5).map((c) => c.name).join('、'));
+  }
+}
+
+/**
  * 卡面里写死的**护盾公式系数**必须和引擎一致。
  *
  * 引擎算护盾是 `round(amount × (1 + 防御 ÷ 12))`（见 battle.js 的 case 'shield'），

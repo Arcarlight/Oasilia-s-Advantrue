@@ -118,7 +118,7 @@
       "types": [
         "飞行"
       ],
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -166,7 +166,7 @@
       "rarity": "rare",
       "targeting": "enemy",
       "art": "slash_1",
-      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
+      "text": "造成 {d} 点伤害，无视对手 70% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -197,7 +197,8 @@
         }
       ],
       "ico": "ico-water",
-      "fx": "magic_2"
+      "fx": "magic_2",
+      "enemyOnly": true
     },
     {
       "id": "aqua_ring",
@@ -532,7 +533,8 @@
         }
       ],
       "ico": "ico-leaves",
-      "fx": "dirt_2"
+      "fx": "dirt_2",
+      "enemyOnly": true
     },
     {
       "id": "brick_break",
@@ -691,22 +693,20 @@
       "rarity": "rare",
       "targeting": "enemy",
       "art": "fist",
-      "text": "造成 {d} 点伤害，抽 1 张。",
+      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
       "effects": [
         {
           "kind": "damage",
-          "power": 30
-        },
-        {
-          "kind": "draw",
-          "n": 1
+          "power": 30,
+          "ignoreDefPct": 0.3
         }
       ],
       "ico": "ico-lightning",
       "fx": "spark_1",
       "types": [
         "钢"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "bullet_seed",
@@ -781,7 +781,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "charm",
@@ -996,7 +997,8 @@
       "fx": "slash_1",
       "types": [
         "恶"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "crush_grip",
@@ -1066,7 +1068,8 @@
       ],
       "types": [
         "幽灵"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "dark_pulse",
@@ -1111,7 +1114,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "defense_curl",
@@ -1161,7 +1165,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "discharge",
@@ -1230,7 +1235,8 @@
       "fx": "flare_1",
       "types": [
         "一般"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "double_kick",
@@ -1353,7 +1359,8 @@
       "fx": "slash_1",
       "types": [
         "龙"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "dragon_dance",
@@ -1490,7 +1497,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "dynamax_cannon",
@@ -1500,7 +1508,7 @@
       "targeting": "enemy",
       "ico": "ico-mace",
       "fx": "flare_1",
-      "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
+      "text": "造成 {d} 点伤害，无视对手 70% 防御。使用后销毁。",
       "effects": [
         {
           "kind": "damage",
@@ -1520,7 +1528,7 @@
       "rarity": "rare",
       "targeting": "enemy",
       "art": "magic_2",
-      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
+      "text": "造成 {d} 点伤害，无视对手 70% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -1532,7 +1540,8 @@
       "fx": "magic_1",
       "types": [
         "地面"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "earthquake",
@@ -1559,7 +1568,8 @@
       "fx": "dirt_2",
       "types": [
         "地面"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "ember",
@@ -1684,7 +1694,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "fairy_wind",
@@ -1761,7 +1772,8 @@
         }
       ],
       "ico": "ico-demon",
-      "fx": "magic_2"
+      "fx": "magic_2",
+      "enemyOnly": true
     },
     {
       "id": "fire_blast",
@@ -1933,7 +1945,8 @@
         }
       ],
       "ico": "ico-gear",
-      "fx": "light_1"
+      "fx": "light_1",
+      "enemyOnly": true
     },
     {
       "id": "focus_energy",
@@ -2007,7 +2020,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "freeze_dry",
@@ -2326,7 +2340,7 @@
       "types": [
         "岩石"
       ],
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -2335,7 +2349,8 @@
         }
       ],
       "ico": "ico-mace",
-      "fx": "dirt_1"
+      "fx": "dirt_1",
+      "enemyOnly": true
     },
     {
       "id": "headbutt",
@@ -2489,7 +2504,8 @@
         }
       ],
       "ico": "ico-water",
-      "fx": "magic_1"
+      "fx": "magic_1",
+      "enemyOnly": true
     },
     {
       "id": "hyper_beam",
@@ -2534,7 +2550,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "ice_fang",
@@ -2559,7 +2576,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "ice_shard",
@@ -2585,7 +2603,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "ice_wall",
@@ -2717,7 +2736,7 @@
       "rarity": "rare",
       "targeting": "enemy",
       "art": "shield",
-      "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
+      "text": "造成 {d} 点伤害，无视对手 70% 防御。使用后销毁。",
       "exhaust": true,
       "effects": [
         {
@@ -2984,7 +3003,8 @@
       "exhaust": true,
       "types": [
         "妖精"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "lunge",
@@ -3035,7 +3055,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "megahorn",
@@ -3355,7 +3376,7 @@
       "types": [
         "恶"
       ],
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -3501,7 +3522,8 @@
         }
       ],
       "ico": "ico-wind",
-      "fx": "slash_1"
+      "fx": "slash_1",
+      "enemyOnly": true
     },
     {
       "id": "phantom_force",
@@ -3512,7 +3534,7 @@
       "ico": "ico-night",
       "fx": "magic_2",
       "art": "magic_2",
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。使用后销毁。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
       "effects": [
         {
           "kind": "damage",
@@ -3523,7 +3545,8 @@
       "exhaust": true,
       "types": [
         "幽灵"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "pin_missile",
@@ -3543,7 +3566,8 @@
         }
       ],
       "ico": "ico-triple",
-      "fx": "dirt_2"
+      "fx": "dirt_2",
+      "enemyOnly": true
     },
     {
       "id": "plague",
@@ -3644,7 +3668,8 @@
       "fx": "magic_1",
       "types": [
         "毒"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "potion_berry",
@@ -3689,7 +3714,8 @@
         }
       ],
       "ico": "ico-diamond",
-      "fx": "light_1"
+      "fx": "light_1",
+      "enemyOnly": true
     },
     {
       "id": "precipice_blades",
@@ -3761,7 +3787,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "psychic",
@@ -3797,7 +3824,7 @@
       "targeting": "enemy",
       "ico": "ico-double",
       "fx": "magic_1",
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -3807,7 +3834,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "quick_attack",
@@ -4024,7 +4052,8 @@
       "fx": "dirt_1",
       "types": [
         "岩石"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "rock_polish",
@@ -4079,7 +4108,8 @@
       "fx": "dirt_2",
       "types": [
         "岩石"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "rock_throw",
@@ -4410,7 +4440,8 @@
         }
       ],
       "ico": "ico-leaves",
-      "fx": "dirt_1"
+      "fx": "dirt_1",
+      "enemyOnly": true
     },
     {
       "id": "shadow_ball",
@@ -4436,7 +4467,8 @@
       ],
       "types": [
         "幽灵"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "shadow_bone",
@@ -4460,7 +4492,8 @@
         }
       ],
       "ico": "ico-gravestone",
-      "fx": "magic_1"
+      "fx": "magic_1",
+      "enemyOnly": true
     },
     {
       "id": "shadow_punch",
@@ -4485,7 +4518,8 @@
       ],
       "types": [
         "幽灵"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "shadow_sneak",
@@ -4510,7 +4544,8 @@
       ],
       "types": [
         "幽灵"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "sig_ancient_beam",
@@ -5502,7 +5537,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "slash",
@@ -5535,7 +5571,7 @@
       "rarity": "epic",
       "targeting": "enemy",
       "art": "flask_half",
-      "text": "造成 {d} 点伤害，并给对手 3 层中毒，无视对手一半防御。使用后销毁。",
+      "text": "造成 {d} 点伤害，并给对手 3 层中毒，无视对手 70% 防御。使用后销毁。",
       "exhaust": true,
       "effects": [
         {
@@ -5629,7 +5665,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "solar_beam",
@@ -5801,7 +5838,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "super_luck",
@@ -5902,7 +5940,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "swords_dance",
@@ -6094,7 +6133,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "thunderbolt",
@@ -6120,7 +6160,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "total_suppression",
@@ -6337,7 +6378,8 @@
       "fx": "slash_1",
       "types": [
         "虫"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "u_turn",
@@ -6361,7 +6403,8 @@
       "fx": "trace_1",
       "types": [
         "虫"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "u_turn_dance",
@@ -6582,7 +6625,7 @@
       "ico": "ico-skull",
       "fx": "magic_2",
       "art": "magic_1",
-      "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+      "text": "造成 {d} 点伤害，无视对手 50% 防御。",
       "effects": [
         {
           "kind": "damage",
@@ -6592,7 +6635,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "wide_guard",
@@ -6702,7 +6746,8 @@
         }
       ],
       "ico": "ico-bug",
-      "fx": "slash_1"
+      "fx": "slash_1",
+      "enemyOnly": true
     }
   ]
 }

@@ -902,7 +902,8 @@ export const MOVE_POOLS = {
     "iron_tail",
     "sig_meteor_mash",
     "mob_guard",
-    "mob_stare"
+    "mob_stare",
+    "bullet_punch"
   ],
   "kit_t_钢_hi": [
     "metal_claw",

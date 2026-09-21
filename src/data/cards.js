@@ -133,7 +133,7 @@ export const CARDS = [
     "types": [
       "飞行"
     ],
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -177,7 +177,7 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "enemy",
     "art": "slash_1",
-    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
+    "text": "造成 {d} 点伤害，无视对手 70% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -204,7 +204,8 @@ export const CARDS = [
         "kind": "damage",
         "power": 30
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "aqua_ring",
@@ -511,7 +512,8 @@ export const CARDS = [
         "kind": "damage",
         "power": 30
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "brick_break",
@@ -658,20 +660,18 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "enemy",
     "art": "fist",
-    "text": "造成 {d} 点伤害，抽 1 张。",
+    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
     "effects": [
       {
         "kind": "damage",
-        "power": 30
-      },
-      {
-        "kind": "draw",
-        "n": 1
+        "power": 30,
+        "ignoreDefPct": 0.3
       }
     ],
     "types": [
       "钢"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "bullet_seed",
@@ -740,7 +740,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "charm",
@@ -937,7 +938,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "crush_grip",
@@ -1001,7 +1003,8 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "dark_pulse",
@@ -1042,7 +1045,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "defense_curl",
@@ -1088,7 +1092,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "discharge",
@@ -1151,7 +1156,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "double_kick",
@@ -1264,7 +1270,8 @@ export const CARDS = [
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "dragon_dance",
@@ -1389,7 +1396,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "dynamax_cannon",
@@ -1397,7 +1405,7 @@ export const CARDS = [
     "ap": 4,
     "rarity": "epic",
     "targeting": "enemy",
-    "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
+    "text": "造成 {d} 点伤害，无视对手 70% 防御。使用后销毁。",
     "effects": [
       {
         "kind": "damage",
@@ -1417,7 +1425,7 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "enemy",
     "art": "magic_2",
-    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
+    "text": "造成 {d} 点伤害，无视对手 70% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -1427,7 +1435,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "earthquake",
@@ -1452,7 +1461,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "ember",
@@ -1567,7 +1577,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "fairy_wind",
@@ -1638,7 +1649,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.2
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "fire_blast",
@@ -1796,7 +1808,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.3
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "focus_energy",
@@ -1864,7 +1877,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "freeze_dry",
@@ -2157,14 +2171,15 @@ export const CARDS = [
     "types": [
       "岩石"
     ],
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
     "effects": [
       {
         "kind": "damage",
         "power": 190,
         "ignoreDefPct": 0.5
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "headbutt",
@@ -2306,7 +2321,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.3
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "hyper_beam",
@@ -2347,7 +2363,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "ice_fang",
@@ -2370,7 +2387,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "ice_shard",
@@ -2394,7 +2412,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "ice_wall",
@@ -2516,7 +2535,7 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "enemy",
     "art": "shield",
-    "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
+    "text": "造成 {d} 点伤害，无视对手 70% 防御。使用后销毁。",
     "exhaust": true,
     "effects": [
       {
@@ -2761,7 +2780,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "妖精"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "lunge",
@@ -2808,7 +2828,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "megahorn",
@@ -3102,7 +3123,7 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -3234,7 +3255,8 @@ export const CARDS = [
         "kind": "damage",
         "power": 30
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "phantom_force",
@@ -3243,7 +3265,7 @@ export const CARDS = [
     "rarity": "epic",
     "targeting": "enemy",
     "art": "magic_2",
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。使用后销毁。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。使用后销毁。",
     "effects": [
       {
         "kind": "damage",
@@ -3254,7 +3276,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "幽灵"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "pin_missile",
@@ -3272,7 +3295,8 @@ export const CARDS = [
         "power": 63,
         "hits": 3
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "plague",
@@ -3365,7 +3389,8 @@ export const CARDS = [
     ],
     "types": [
       "毒"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "potion_berry",
@@ -3406,7 +3431,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "precipice_blades",
@@ -3472,7 +3498,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "psychic",
@@ -3504,7 +3531,7 @@ export const CARDS = [
     "ap": 2,
     "rarity": "rare",
     "targeting": "enemy",
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -3514,7 +3541,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "quick_attack",
@@ -3713,7 +3741,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "rock_polish",
@@ -3764,7 +3793,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "rock_throw",
@@ -4069,7 +4099,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "shadow_ball",
@@ -4093,7 +4124,8 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "shadow_bone",
@@ -4115,7 +4147,8 @@ export const CARDS = [
         "status": "bleed",
         "stacks": 2
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "shadow_punch",
@@ -4138,7 +4171,8 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "shadow_sneak",
@@ -4161,7 +4195,8 @@ export const CARDS = [
     ],
     "types": [
       "幽灵"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "sig_ancient_beam",
@@ -5079,7 +5114,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "slash",
@@ -5110,7 +5146,7 @@ export const CARDS = [
     "rarity": "epic",
     "targeting": "enemy",
     "art": "flask_half",
-    "text": "造成 {d} 点伤害，并给对手 3 层中毒，无视对手一半防御。使用后销毁。",
+    "text": "造成 {d} 点伤害，并给对手 3 层中毒，无视对手 70% 防御。使用后销毁。",
     "exhaust": true,
     "effects": [
       {
@@ -5196,7 +5232,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "solar_beam",
@@ -5354,7 +5391,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "super_luck",
@@ -5447,7 +5485,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "swords_dance",
@@ -5623,7 +5662,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "thunderbolt",
@@ -5647,7 +5687,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "total_suppression",
@@ -5846,7 +5887,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "u_turn",
@@ -5868,7 +5910,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "u_turn_dance",
@@ -6069,7 +6112,7 @@ export const CARDS = [
     "rarity": "rare",
     "targeting": "enemy",
     "art": "magic_1",
-    "text": "造成 {d} 点伤害，无视对手 30% 的防御。",
+    "text": "造成 {d} 点伤害，无视对手 50% 防御。",
     "effects": [
       {
         "kind": "damage",
@@ -6079,7 +6122,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "wide_guard",
@@ -6179,7 +6223,8 @@ export const CARDS = [
         "power": 143,
         "hits": 2
       }
-    ]
+    ],
+    "enemyOnly": true
   }
 ];
 
