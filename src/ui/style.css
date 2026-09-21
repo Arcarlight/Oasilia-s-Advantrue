@@ -686,6 +686,30 @@ button { font-family: inherit; }
 }
 /* 飞行姿态：底下一圈椭圆影子，让「飞」看得出来（不然像悬在半空） */
 .title-hero { position: relative; margin-bottom: 2px; }
+/**
+ * 头图外圈那个**按钮**（3.0：点它切换主角）。
+ * 它套在 .title-hero 外面，所以必须把按钮自身的样式清干净（背景 / 边框 / 内边距），
+ * 不然浏览器默认按钮会给这块主视觉描一圈灰边 —— 主角看起来像贴在一张纸条上。
+ */
+.title-hero-btn {
+  display: block; width: 100%; padding: 0; border: 0; background: none;
+  color: inherit; font: inherit; cursor: pointer;
+  border-radius: var(--r-lg);
+}
+.title-hero-btn:hover .title-hero canvas { filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .5)) brightness(1.08); }
+.title-hero-btn:active .title-hero canvas { transform: scale(.97); }
+.title-hero-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+/* 头图旁那行「点头图换主角」：一排小胶囊，锁着的时候压暗并换成锁图标 */
+.hero-swap-hint {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 8px; padding: 5px 12px; border-radius: 999px;
+  font-size: 12.5px; line-height: 1.4; text-align: center;
+  background: rgba(255, 255, 255, .08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
+  color: #ffe9c8;
+}
+.hero-swap-hint .ico-change { color: var(--accent-2); }
+.hero-swap-hint.locked { opacity: .68; }
 .title-hero::after {
   content: "";
   position: absolute;
@@ -2555,6 +2579,30 @@ input, textarea { cursor: text !important; }
   text-shadow: 0 4px 0 #8a5a12, 0 10px 30px rgba(0, 0, 0, .7);
   letter-spacing: .1em;
 }
+/**
+ * 通关页比标题页**内容多得多**：结局正文（5~8 行）+ 收尾台词 + 两条解锁横幅 +
+ * 10 个数据格 + 3 个按钮。3.0 加上「新主角解锁」那条之后，900px 高的窗口里
+ * 右边的按钮会被挤到屏幕外（截图里能看到「再来一次」只剩一半）。
+ * 所以这一屏单独压一档纵向间距和主视觉尺寸 —— 只有这一屏，标题页不动。
+ */
+.victory-screen .title-inner {
+  gap: clamp(10px, 2vw, 34px);
+  padding-top: clamp(6px, 1.2vh, 16px);
+  padding-bottom: clamp(6px, 1.2vh, 16px);
+}
+.victory-screen .title-hero canvas { max-height: 15vh; }
+.victory-screen h1 { font-size: clamp(26px, 4.4vw, 46px); margin-bottom: 2px; }
+.victory-screen .title-quote { margin: 4px auto; line-height: 1.62; }
+.victory-screen .unlock-banner { margin-top: 6px; padding: 6px 12px; font-size: 12.5px; }
+.victory-screen .run-stats {
+  /* 数据格那一排按**这一栏的宽度**排（不是写死的 620px）：写死的话右栏只有 ~480px，
+     第 4 格会被切掉一半（截图里右边那条窄缝就是它）。列宽放到 104px，一栏排得下 4 格。 */
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  margin: 8px 0;
+  gap: 8px;
+}
+.victory-screen .run-stat { padding: 7px; }
 .run-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -3403,6 +3451,22 @@ input, textarea { cursor: text !important; }
   box-shadow: inset 0 0 0 1px rgba(201, 168, 255, .45);
   color: #e6dcff;
 }
+/* 通关记录里「这一局用的哪位主角」（3.0）：暖色，和无尽的紫色区分开 */
+.rec-badge.hero {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255, 197, 110, .16);
+  box-shadow: inset 0 0 0 1px rgba(255, 197, 110, .4);
+  color: #ffe6bd;
+}
+/* 「新主角解锁了」那条：和「无尽模式解锁」并列，但换成暖色（换人而不是换模式） */
+.unlock-banner-hero {
+  background: rgba(255, 197, 110, .14);
+  box-shadow: inset 0 0 0 1px rgba(255, 197, 110, .42);
+  color: #ffe6bd;
+}
+.unlock-banner-hero .ico-change { color: var(--accent-2); }
+/* 通关页那第二段（主角的收尾台词）：比正文弱一档，别和结局正文抢 */
+.title-quote-soft { opacity: .78; font-size: clamp(13px, 1.35vw, 15.5px); }
 
 /* ---- 口吻台词：**头像 + 对话框**（用户给的版式）----
    头像用 PMD 头像（portraits），左边一列；右边是标题 + 对话框 + 一行小字。

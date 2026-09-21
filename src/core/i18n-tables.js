@@ -10,6 +10,7 @@
 
 import { applyContentLang } from './i18n.js';
 import { CARDS } from '../data/cards.js';
+import { HEROES } from '../data/heroes.js';
 import { ITEMS } from '../data/items.js';
 import { EVENTS } from '../data/events.js';
 import { MERCHANTS } from '../data/merchants.js';
@@ -37,6 +38,12 @@ export const I18N_TABLES = {
   rarity: RARITY,
   status: STATUS_INFO,
   player: BALANCE.player,  // 主角的名字与物种名（「欧亚西莉亚 · 沙漠蜻蜓」）
+  /**
+   * 两位主角各自的记录（名字 / 物种 / 台词 / 结局文案）。
+   * `player` 那条留着是因为界面上还有几处只读 `BALANCE.player`（卡面预览的参照属性等），
+   * 它和 `hero` 的第一条是同一份数值 —— 门禁（tools/check-content.mjs）会钉住这一点。
+   */
+  hero: HEROES,
   node: NODE_TYPES,        // 地图节点：野生宝可梦 / 商队 / 营地…（名字与悬停说明）
 };
 

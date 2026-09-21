@@ -10,6 +10,7 @@ import { el, clear, modal, toast } from './dom.js';
 import { cardEl } from './cards.js';
 import { CARD_BY_ID } from '../data/cards.js';
 import { ENEMY_BY_ID } from '../data/enemies.js';
+import { heroById } from '../data/heroes.js';
 import { BIOMES } from '../data/balance.js';
 import { save, HISTORY_MAX } from '../core/save.js';
 import { t, currentLang } from '../core/i18n.js';
@@ -180,6 +181,17 @@ function recordRow(entry) {
       class: 'rec-badge endless',
       dataset: { tip: t('无尽模式：没有终点，走到哪算哪。') },
     }, [t('无尽')]) : null,
+    /**
+     * **这一局用的哪位主角**（3.0）。记录只存 id（名字会跟着语言改写，存名字会被冻结成
+     * 写完那一局时的语言），这里按当前语言现查 —— 和卡组 / 地图同一条规矩。
+     */
+    (() => {
+      const h = heroById(entry.hero);
+      return h ? el('div', {
+        class: 'rec-badge hero',
+        dataset: { tip: t('{name}（{species}）的挑战', { name: h.name, species: h.speciesName }) },
+      }, [el('span', { class: entry.hero === 'atlas' ? 'ico-demon' : 'ico-star', style: { width: '12px', height: '12px' } }), t(h.name)]) : null;
+    })(),
     main,
     el('button', {
       class: 'btn btn-sm btn-ghost',

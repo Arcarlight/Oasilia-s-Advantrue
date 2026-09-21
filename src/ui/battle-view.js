@@ -13,6 +13,8 @@ import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
 import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
 import { TIERS } from '../data/enemies.js';
+// 主角记录（3.0）：战斗面板上「性别 物种 / 属性 · 特性」那一行按主角走
+import { heroById } from '../data/heroes.js';
 import { t } from '../core/i18n.js';
 // 属性短标签 / 悬停说明放在纯数据模块里（待翻清单靠扫源码收，见那个文件的说明）。
 // 读取处照旧 t(STAT_SHORT.…)、t(STAT_TIP[label], { … })。
@@ -418,6 +420,9 @@ export class BattleScreen {
     this.enemyPlay = el('div', { class: 'play-zone enemy-play' });
     this.enemyFighter = el('div', { class: 'fighter fighter-enemy' }, [this.enemyCard, this.enemyBody, this.enemyPlay]);
 
+    /** 这一局的主角（性别 / 物种 / 属性 / 特性那一行靠它） */
+    const hero = heroById(this.game.data.hero) ?? {};
+
     // ---- 我方 ----
     this.playerHpFill = el('i', { style: { width: '100%' } });
     this.playerHpText = el('b', { text: `${b.player.hp} / ${b.player.maxHp}` });
@@ -431,9 +436,15 @@ export class BattleScreen {
         el('div', { class: 'fighter-info' }, [
           el('div', { class: 'fighter-name' }, [
             el('span', { text: this.game.data.name }),
-            el('span', { class: 'tier', text: t('♀ 沙漠蜻蜓') }),
+            /**
+             * 「性别 + 物种」那一小行**跟着主角走**（3.0 有两位主角）。
+             * 以前写死成「♀ 沙漠蜻蜓 / 地面 / 龙 · 特性：飘浮」——
+             * 换成阿特拉斯（♂ 暴飞龙 · 龙/飞行 · 威吓）之后，战斗面板上那一行会公然写错。
+             * 数据取自 content/heroes.json（经 src/data/heroes.js）。
+             */
+            el('span', { class: 'tier', text: `${hero.gender ?? ''} ${hero.speciesName ?? ''}`.trim() }),
           ]),
-          el('div', { class: 'fighter-types', text: t('地面 / 龙 · 特性：飘浮') }),
+          el('div', { class: 'fighter-types', text: `${(hero.types ?? []).join(' / ')} · ${t('特性：{ability}', { ability: hero.ability ?? '' })}` }),
         ]),
       ]),
       this.playerShield,

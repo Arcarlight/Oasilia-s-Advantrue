@@ -35,6 +35,15 @@ const { BGM_FILES } = await import('../src/core/bgm.js').catch(() => ({ BGM_FILE
 const { STATUS_INFO } = await import('../src/core/battle.js');
 const { CONTENT_FIELDS, entriesOf } = await import('../src/core/i18n.js');
 const { optionTextNodes } = await import('../src/core/i18n.js');
+// 主角（3.0）：卡池与流派都要**按主角分别**体检，所以这里要一份名单
+const { HEROES, HERO_ORDER, HERO_STARTERS, heroMapShape } = await import('../src/data/heroes.js');
+
+/**
+ * 一位主角能拿到的牌。**和 src/data/cards.js 的 playerPool 是同一条规则** ——
+ * 这里重写一次是为了让体检脚本不依赖 DOM / 运行时模块，但两处的判据必须一致：
+ * 敌人专用谁都拿不到；`heroOnly` 只给那一位；其余共用。
+ */
+const poolOf = (heroId) => CARDS.filter((c) => !c.enemyOnly && (!c.heroOnly || c.heroOnly === heroId));
 
 const stageCount = STAGE_BIOME.length;
 
@@ -377,27 +386,39 @@ if (merchantMissing) warn(`跑 & tools/fetch-content.ps1 可以把缺的头像�
  *
  * 卡片的 `tags` 就是流派标签（毒 / 出血 / 单次高伤 / 削弱 / 强化 / 蓄势）。
  * 这里对每个标签逐个稀有度数一遍，缺哪一档就报出来 —— 光靠人眼盯卡池一定会漏。
+ *
+ * 3.0 起还要**按主角分别**数（两位主角的池子不一样），并且多一条硬要求：
+ * 用户说「保证所有流派卡牌数一致」—— 所以六个流派的总数必须完全相同（现在都是 14）。
  */
 {
   const RARITY_ORDER = Object.keys(RARITY);
   /** 认识的流派标签（和 src/ui/cardtags.js 的 CARD_TAG_INFO 一一对应）——写成别的就等于没标签 */
   const KNOWN_TAGS = ['poison', 'bleed', 'burst', 'weaken', 'buff', 'timing'];
-  const tagMap = new Map();
-  for (const c of CARDS) {
-    if (c.enemyOnly) continue;
-    for (const tag of c.tags ?? []) {
-      if (!KNOWN_TAGS.includes(tag)) err(`卡牌「${c.name}」的流派标签 ${tag} 不在名单里（${KNOWN_TAGS.join('/')}）—— 界面上不会显示、也不会计入流派覆盖`);
-      if (!tagMap.has(tag)) tagMap.set(tag, {});
-      const row = tagMap.get(tag);
-      row[c.rarity] = (row[c.rarity] ?? 0) + 1;
+  for (const hero of HERO_ORDER) {
+    const pool = poolOf(hero);
+    const tagMap = new Map();
+    for (const c of pool) {
+      for (const tag of c.tags ?? []) {
+        if (!KNOWN_TAGS.includes(tag)) err(`卡牌「${c.name}」的流派标签 ${tag} 不在名单里（${KNOWN_TAGS.join('/')}）—— 界面上不会显示、也不会计入流派覆盖`);
+        if (!tagMap.has(tag)) tagMap.set(tag, {});
+        const row = tagMap.get(tag);
+        row[c.rarity] = (row[c.rarity] ?? 0) + 1;
+      }
     }
-  }
-  const lines = [...tagMap.entries()].map(([tag, row]) => `${tag} ${RARITY_ORDER.map((r) => row[r] ?? 0).join('/')}`);
-  note(`流派 × 稀有度（${RARITY_ORDER.join('/')}）：${lines.join(' · ')}`);
-  for (const [tag, row] of tagMap) {
-    const missing = RARITY_ORDER.filter((r) => !(row[r] > 0));
-    if (missing.length) {
-      err(`流派「${tag}」在 ${missing.join(' / ')} 这几档上一张牌都没有 —— 抽不到就组不起来（用户点名要避免的）`);
+    const lines = [...tagMap.entries()].map(([tag, row]) => `${tag} ${RARITY_ORDER.map((r) => row[r] ?? 0).join('/')}`);
+    const totals = KNOWN_TAGS.map((tag) => [tag, RARITY_ORDER.reduce((s, r) => s + (tagMap.get(tag)?.[r] ?? 0), 0)]);
+    note(`${hero} 的流派 × 稀有度（${RARITY_ORDER.join('/')}）：${lines.join(' · ')} · 各流派共 ${totals.map(([t, n]) => `${t} ${n}`).join('/')}`);
+    for (const [tag, row] of tagMap) {
+      const missing = RARITY_ORDER.filter((r) => !(row[r] > 0));
+      if (missing.length) {
+        err(`${hero}：流派「${tag}」在 ${missing.join(' / ')} 这几档上一张牌都没有 —— 抽不到就组不起来（用户点名要避免的）`);
+      }
+    }
+    // 六个流派**张数一致**（用户 3.0 的原话：「保证所有流派卡牌数一致」）
+    const nums = totals.map(([, n]) => n);
+    const lo = Math.min(...nums); const hi = Math.max(...nums);
+    if (lo !== hi) {
+      err(`${hero}：六个流派的张数不一致（${totals.map(([t, n]) => `${t} ${n}`).join(' / ')}）—— 用户要求一致，少的往 14 张补（见 tools/hero-atlas-cards.mjs）`);
     }
   }
 }
@@ -448,18 +469,41 @@ if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length
  */
 {
   const sigOf = (c) => `${c.ap}|${JSON.stringify(c.effects ?? [])}`;
-  const bySig = new Map();
-  for (const c of CARDS) {
-    if (c.enemyOnly) continue;
-    if (!bySig.has(sigOf(c))) bySig.set(sigOf(c), []);
-    bySig.get(sigOf(c)).push(c);
+  /**
+   * ⚠ 3.0 起这条门禁**按主角分别**查：两位主角允许有「改名字、效果完全一样」的牌
+   * （用户明确说的：「可以设置成改名字但效果相同的卡牌」），
+   * 那一对**不能同时出现在同一个池子里** —— 所以同一个池子里还是不许有重复。
+   */
+  for (const hero of HERO_ORDER) {
+    const bySig = new Map();
+    for (const c of poolOf(hero)) {
+      if (!bySig.has(sigOf(c))) bySig.set(sigOf(c), []);
+      bySig.get(sigOf(c)).push(c);
+    }
+    const dupGroups = [...bySig.values()].filter((g) => g.length > 1);
+    if (dupGroups.length) {
+      err(`${hero} 的抽卡池里有 ${dupGroups.length} 组「同费用 + 完全同效果」的重复卡（玩家抽到等于拿到同一张牌）：`
+        + dupGroups.slice(0, 4).map((g) => g.map((c) => c.name).join('/')).join('、')
+        + `${dupGroups.length > 4 ? ' …' : ''} —— 只留一张给玩家，其余的标 enemyOnly`
+        + '（跑 node tools/dedupe-pool-cards.mjs --write，它会顺带保证每张被移出去的牌都还在敌人招式池里）');
+    }
   }
-  const dupGroups = [...bySig.values()].filter((g) => g.length > 1);
-  if (dupGroups.length) {
-    err(`玩家抽卡池里有 ${dupGroups.length} 组「同费用 + 完全同效果」的重复卡（玩家抽到等于拿到同一张牌）：`
-      + dupGroups.slice(0, 4).map((g) => g.map((c) => c.name).join('/')).join('、')
-      + `${dupGroups.length > 4 ? ' …' : ''} —— 只留一张给玩家，其余的标 enemyOnly`
-      + '（跑 node tools/dedupe-pool-cards.mjs --write，它会顺带保证每张被移出去的牌都还在敌人招式池里）');
+  /** 跨主角的「改名同效」是**允许的**，但顺手列出来，免得哪天误以为是漏网 */
+  {
+    const bySig = new Map();
+    for (const c of CARDS) {
+      if (c.enemyOnly || !c.heroOnly) continue;
+      if (!bySig.has(sigOf(c))) bySig.set(sigOf(c), []);
+      bySig.get(sigOf(c)).push(c);
+    }
+    let pairs = 0;
+    for (const [, g] of bySig) {
+      for (const x of g) {
+        const twin = CARDS.find((c) => c.id !== x.id && !c.enemyOnly && c.heroOnly !== x.heroOnly && sigOf(c) === sigOf(x));
+        if (twin) pairs += 1;
+      }
+    }
+    if (pairs) note(`主角专属牌里有 ${pairs} 张和另一位主角的牌「同费用 + 同效果」（用户允许的改名同效：${CARDS.filter((c) => c.heroOnly).map((c) => c.name).join(' / ')}）`);
   }
   /**
    * 反过来也钉一条：**只给敌人用的牌必须真的有人会用**。
@@ -473,6 +517,19 @@ if (zeroCost / CARDS.length > 0.45) warn(`0 费卡有 ${zeroCost}/${CARDS.length
   if (stray.length) {
     err(`有 ${stray.length} 张 enemyOnly 的牌既不在任何招式池、也不是谁的专属招（图鉴永远点不亮）：`
       + stray.slice(0, 5).map((c) => c.name).join('、'));
+  }
+  /**
+   * **主角专属牌必须真的能拿到**：要么在他自己的开局卡组里，要么在他的抽卡池里
+   * （`heroOnly` 写错一个字，那张牌就谁都见不到 —— 图鉴里永远是个问号）。
+   */
+  for (const c of CARDS.filter((x) => x.heroOnly)) {
+    if (!HERO_ORDER.includes(c.heroOnly)) { err(`卡牌「${c.name}」的 heroOnly=${c.heroOnly} 不是一位主角`); continue; }
+    const inPool = poolOf(c.heroOnly).some((x) => x.id === c.id);
+    const inDeck = (HERO_STARTERS[c.heroOnly] ?? []).includes(c.id);
+    if (!inPool || !inDeck) {
+      // 只要在池子里就抽得到（boss / 精英奖励那一档），所以这里只要求「在池子里」
+      if (!inPool) err(`主角专属牌「${c.name}」不在 ${c.heroOnly} 的抽卡池里（谁都拿不到）`);
+    }
   }
 }
 
@@ -568,6 +625,56 @@ for (const [name, pool] of Object.entries(MOVE_POOLS)) {
 }
 for (const id of STARTER_DECK) if (!CARDS.find((c) => c.id === id)) err(`初始卡组的 ${id} 不存在`);
 for (const id of STARTER_DECK) if (CARDS.find((c) => c.id === id)?.enemyOnly) err(`初始卡组里有敌人专用牌 ${id}`);
+
+/**
+ * ---------- 4a-2. 主角（3.0）----------
+ *
+ * 三件事会**静默出错**，所以都要钉住：
+ *   ① `content/heroes.json` 里欧亚西莉亚那一份和 `BALANCE.player` 各写一遍的话，
+ *      改了一边忘了另一边 —— 标题页写「攻击 16」、战斗里按 18 打；
+ *   ② 一位主角的开局卡组是不是**真的能拿到**（牌 id 写错 → 开局少一张，谁都发现不了）；
+ *   ③ 一关的行数倍率 / 首领数是不是合法（写成 0 会生成空地图、卡死在第一屏）。
+ */
+{
+  const { BALANCE: B } = await import('../src/data/balance.js');
+  const p0 = HEROES.find((h) => h.id === HERO_ORDER[0]);
+  if (!p0) err('content/heroes.json 的第一位主角不见了');
+  else {
+    const pairs = [['name', p0.name, B.player.name], ['species', p0.species, B.player.species],
+      ['speciesName', p0.speciesName, B.player.speciesName],
+      ['atk', p0.atk, B.player.atk], ['def', p0.def, B.player.def], ['maxHp', p0.maxHp, B.player.maxHp],
+      ['agi', p0.agi, B.player.agi], ['luck', p0.luck, B.player.luck]];
+    const diff = pairs.filter(([, a, b]) => a !== b);
+    if (diff.length) {
+      err(`content/heroes.json 的 ${p0.id} 和 src/data/balance.js 的 BALANCE.player 对不上：`
+        + diff.map(([k, a, b]) => `${k} ${a} vs ${b}`).join('、')
+        + '（BALANCE.player 是界面上几处兜底读的参照值，两处必须一致）');
+    }
+  }
+  for (const h of HEROES) {
+    const shape = heroMapShape(h.id);
+    if (shape.rowsMul < 1) err(`主角 ${h.id} 的 map.rowsMul 必须 ≥1`);
+    if (shape.bosses < 1) err(`主角 ${h.id} 的 map.bosses 必须 ≥1`);
+    if (shape.bosses > 3) warn(`主角 ${h.id} 一关有 ${shape.bosses} 个首领（内容里每张地图的首领池够吗？）`);
+    const deck = HERO_STARTERS[h.id] ?? [];
+    if (deck.length < 5) err(`主角 ${h.id} 的开局卡组只有 ${deck.length} 张`);
+    for (const id of deck) {
+      const c = CARDS.find((x) => x.id === id);
+      if (!c) err(`主角 ${h.id} 的开局卡组里有不存在的卡 ${id}`);
+      else if (c.heroOnly && c.heroOnly !== h.id) err(`主角 ${h.id} 的开局卡组里有别人的专属牌 ${id}`);
+    }
+    // 开局卡组至少要有一张 0 费牌（一回合都打不出去的开局是坏体验）
+    if (!deck.some((id) => CARDS.find((c) => c.id === id)?.ap === 0)) warn(`主角 ${h.id} 的开局卡组里一张 0 费牌都没有`);
+  }
+  /** 每张地图的首领池要够「一关两个首领」用（不然两个首领必然重样） */
+  const maxBosses = Math.max(...HEROES.map((h) => heroMapShape(h.id).bosses));
+  if (maxBosses > 1) {
+    for (const biome of Object.keys(BIOMES)) {
+      const n = ENEMIES.filter((e) => e.biome === biome && e.tier === 'boss').length;
+      if (n < maxBosses) err(`地图 ${biome} 只有 ${n} 个首领，但有一位主角一关要打 ${maxBosses} 个 —— 两个首领必然重样`);
+    }
+  }
+}
 if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   warn('没有任何「清除属性下降」的卡牌 —— 削弱是永久叠加的，玩家会缺少解法');
 }

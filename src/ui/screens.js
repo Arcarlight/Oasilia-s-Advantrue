@@ -18,6 +18,8 @@ import { holdLines, useLine } from '../core/itemtext.js';
 import { NODE_TYPES, nodeName, stageCount } from '../data/mapgen.js';
 import { save } from '../core/save.js';
 import { t, LANGS, currentLang } from '../core/i18n.js';
+// 两位主角（3.0）：标题页的头图 / 台词 / 结局 / 解锁条件全从这里读
+import { HEROES, DEFAULT_HERO_ID, heroById, isHeroUnlocked, isHeroEndlessUnlocked } from '../data/heroes.js';
 import { changeLanguage } from './langswitch.js';
 import { showDeck, showItems, showHelp, showSettings, showHeldOverflow } from './overlays.js';
 // 标题页的三块收藏 / 战绩页：卡牌图鉴、敌人图鉴、通关记录（游戏内也能开敌人图鉴）
@@ -117,19 +119,57 @@ async function renderTitle(game) {
   const right = el('div', { class: 'title-right' });
   inner.append(left, right);
 
+  /**
+   * **头条头图 = 切换主角的按钮**（用户要的：点主界面的头图换主角）。
+   *
+   * 3.0 有两位主角：欧亚西莉亚（沙漠蜻蜓）一开始就能用；阿特拉斯（暴飞龙）
+   * **要用欧亚西莉亚通关一次**才解锁（条件写在 content/heroes.json 的 unlock 里）。
+   * 没解锁时头图旁边也写清楚条件 —— 藏起来的话，玩家永远不知道还有第二位主角。
+   */
+  const hero = heroById(game.titleHeroId);
+  const others = HEROES.filter((h) => h.id !== hero?.id);
+  const nextHero = others.find((h) => isHeroUnlocked(h, meta)) ?? others[0] ?? null;
+  const othersUnlocked = !!nextHero && isHeroUnlocked(nextHero, meta);
+  const swapHint = nextHero
+    ? (othersUnlocked
+      ? t('点头图，主角换成 {name}', { name: nextHero.name })
+      : t('还有一位主角，走完{name}的路便会现身', { name: hero?.name ?? '' }))
+    : '';
+
   const heroBox = el('div', { class: 'title-hero' });
-  left.append(heroBox);
+  const heroBtn = el('button', {
+    class: 'title-hero-btn',
+    /** 头图本身就是一个按钮（键盘 / 屏幕阅读器也能切主角），悬停提示走全站那套 data-tip */
+    dataset: { tip: swapHint },
+    onClick: () => {
+      if (!nextHero) return;
+      if (!othersUnlocked) {
+        audio.ui('bad');
+        toast(t('还没解锁 —— 用{name}通关一次，就能换成{other}。', { name: hero?.name ?? '', other: nextHero.name }), 'bad');
+        return;
+      }
+      audio.ui('confirm');
+      game.titleHeroId = nextHero.id;
+      game.changed();
+    },
+  }, [heroBox]);
+  left.append(heroBtn);
   try {
     /**
-     * 标题用的行走图：**朝右的飞行动画**（FlapAround），像在往前飞一样。
+     * 标题用的行走图：**朝右的动画**，像在往前飞一样。
      * 底下配一层椭圆阴影（CSS 的 .title-hero::after），不然「飞」看着像悬在半空。
+     * 动画名写在 content/heroes.json 的 `titleAnim` 里：沙漠蜻蜓是 FlapAround，
+     * 暴飞龙是 Float（它那套素材里没有 FlapAround）—— 写死在代码里的话，
+     * 第二位主角一上场就会因为「没有这个动画」而一片空白。
      */
-    const hero = await createAnim('flygon', { anim: 'FlapAround', scale: 4.2, fps: 10, dir: DIR.RIGHT });
-    heroBox.append(hero);
+    const art = await createAnim(hero?.species ?? 'flygon', {
+      anim: hero?.titleAnim ?? 'Idle', scale: hero?.titleScale ?? 4.2, fps: 10, dir: DIR.RIGHT,
+    });
+    heroBox.append(art);
   } catch { /* ignore */ }
 
   // 头图 + 标题排成一行：头图放在标题左边当「主视觉」
-  const heroName = BALANCE.player.name;
+  const heroName = hero?.name ?? '';
   const lockup = el('div', { class: 'title-lockup' });
   const faceBox = el('div', { class: 'title-portrait' });
   const names = el('div', { class: 'title-names' }, [
@@ -139,14 +179,15 @@ async function renderTitle(game) {
   lockup.append(faceBox, names);
   left.append(lockup);
   // 头图原生只有 40x40，放大到 64px（整数倍）最清晰
-  createPortrait('flygon', { emotion: 'happy', size: 64, alt: heroName }).then((img) => {
+  createPortrait(hero?.species ?? 'flygon', { emotion: 'happy', size: 64, alt: heroName }).then((img) => {
     if (img) faceBox.append(img);
   });
 
-  left.append(el('p', {
-    class: 'title-quote',
-    text: t('「凡是听见沙子唱歌的人，最后都留在了沙里。」\n——你是{name}，一只雌性沙漠蜻蜓。沙海深处有个声音在叫你，你决定去看看。', { name: heroName }),
-  }));
+  /**
+   * 标题页这一句**跟着主角走**：文案写在 content/heroes.json 的 `quote` 里
+   * （{name} 现填），加第三位主角时不用回来改这个文件。
+   */
+  left.append(el('p', { class: 'title-quote', text: t(hero?.quote ?? '', { name: heroName }) }));
 
   const hasSave = !!save.readRun();
   const menu = el('div', { class: 'title-menu' });
@@ -159,25 +200,32 @@ async function renderTitle(game) {
     el('button', {
       class: hasSave ? 'btn btn-lg' : 'btn btn-primary btn-lg',
       onClick: () => { audio.ui('confirm'); game.newRun(); },
-    }, [el('span', { class: 'ico-star' }), el('span', { text: t('开始新的冒险') })]),
+    }, [
+      el('span', { class: 'ico-star' }),
+      el('span', { text: t('开始新的冒险') }),
+      // 用哪一位主角写在按钮上：点了才发现「怎么是暴飞龙」是最糟的体验
+      el('span', { class: 'btn-sub', text: t('（{name}）', { name: heroName }) }),
+    ]),
     /**
      * **无尽模式：单独一个入口**（用户明确要求「不要和普通模式合并，而是有另一个入口」）。
      *
-     * 规则：通关一次正片之后解锁。未解锁时按钮就在那儿但点不动，
+     * 解锁条件分两句（3.0）：欧亚西莉亚通关解锁无尽（老规则）；
+     * 而「阿特拉斯通关后，可以选择阿特拉斯进行普通难度的挑战和无尽模式的挑战」——
+     * 也就是**用现在这位主角通过一次关**才解锁。未解锁时按钮就在那儿但点不动，
      * 并直接写明解锁条件 —— 藏起来的话，玩家永远不知道还有这个模式。
      * 无尽局在引擎里是 `newRun(seed, { endless: true })`：地图分叉 +1、敌人略微加压、
      * 过了第 6 章复利变强，永远不会出现结局页，目标只有「走到第几章」。
      */
     (() => {
-      const meta = save.readMeta();
-      const unlocked = !!meta.endlessUnlocked;
-      const best = meta.endlessBest ?? 0;
+      const m = save.readMeta();
+      const unlocked = isHeroEndlessUnlocked(hero, m);
+      const best = m.endlessBest ?? 0;
       return el('button', {
         class: `btn btn-lg endless-btn${unlocked ? '' : ' locked'}`,
         disabled: !unlocked,
         dataset: unlocked
           ? { tip: t('无尽模式：地图岔路更多、敌人更强，一路走下去 —— 看你能走到第几章。') }
-          : { tip: t('通关一次正片之后解锁。') },
+          : { tip: t('用{name}通关一次正片之后解锁。', { name: heroName }) },
         onClick: () => { audio.ui('confirm'); game.newRun(undefined, { endless: true }); },
       }, [
         el('span', { class: unlocked ? 'ico-infinity' : 'ico-lock' }),
@@ -210,6 +258,18 @@ async function renderTitle(game) {
     }, [t('导入存档 JSON')]),
   );
   right.append(menu);
+
+  /**
+   * 头图旁边那一行小字：**明说「这里可以点」**。
+   * 悬停提示（data-tip）玩家不一定会去悬停，而「点主角换人」是 3.0 的主功能，
+   * 界面上没有一处文字提到它就等于没做。
+   */
+  if (swapHint) {
+    right.append(el('div', { class: `hero-swap-hint${othersUnlocked ? '' : ' locked'}` }, [
+      el('span', { class: othersUnlocked ? 'ico-change' : 'ico-lock', style: { width: '16px', height: '16px' } }),
+      el('span', { text: swapHint }),
+    ]));
+  }
 
   /**
    * 标题页第二排：通关记录 / 卡牌图鉴 / 敌人图鉴。
@@ -1295,32 +1355,54 @@ function renderVictory(game) {
   const host = document.getElementById('stage');
   clear(host);
   const d = game.data;
+  const meta = save.readMeta();
+  const hero = heroById(d?.hero);
+  const others = HEROES.filter((h) => h.id !== hero?.id);
+  const locked = others.filter((h) => !isHeroUnlocked(h, meta));
   const screen = el('div', { class: 'screen victory-screen' });
   const inner = el('div', { class: 'title-inner' });
   screen.append(inner);
 
   const heroBox = el('div', { class: 'title-hero' });
   inner.append(heroBox);
-  createAnim(d.slug, { anim: 'FlapAround', scale: 3, fps: 10, dir: DIR.DOWN_RIGHT })
+  createAnim(d.slug, { anim: hero?.titleAnim ?? 'FlapAround', scale: 3, fps: 10, dir: DIR.DOWN_RIGHT })
     .then((a) => heroBox.append(a))
     .catch(() => {});
 
   inner.append(el('div', { class: 'title-illo' }, [
     el('span', { class: 'ico-award', style: { width: '54px', height: '54px', color: '#f0b95c' } }),
   ]));
-  inner.append(el('h1', { text: t('你走到了沙的尽头') }));
+  /**
+   * 结局文案**跟着主角走**（content/heroes.json 的 ending）。
+   * 欧亚西莉亚那一版是「你走到了沙的尽头」；阿特拉斯那一版是他追出去、
+   * 在沙的尽头遇见她、两条龙一起回家 —— 用户口述的剧情。
+   */
+  inner.append(el('h1', { text: t(hero?.ending?.title ?? '你走到了沙的尽头') }));
   inner.append(el('p', {
     class: 'title-quote',
-    text: t('夜砂墓原的尽头不是墙，是一片什么都没有的平地。\n绿色细胞拼成的脸慢慢散开，落回沙里。\n「……好吧。你走得够远了，沙漠的孩子。」\n\n{name} 展开翅膀，第一次觉得风是干净的。', { name: d.name }),
+    text: t(hero?.ending?.text ?? '', { name: d.name }),
   }));
+  /** 这一位主角通关时那句专属台词（通关页也是「他/她」说最后一句的地方） */
+  if (hero?.clearHint) inner.append(el('p', { class: 'title-quote title-quote-soft', text: t(hero.clearHint) }));
+
   /**
-   * 通关页顺带报一下解锁：**无尽模式**（用户要的「通关第一次后解锁」）。
-   * 放在这里而不是只放标题页 —— 玩家刚通关，正是告诉他「还有得玩」的时候。
+   * 通关页顺带报一下解锁 —— 玩家刚通关，正是告诉他「还有得玩」的时候：
+   *   · 第一位主角通关：解锁**另一位主角**（点头图切换）与**无尽模式**；
+   *   · 另一位主角通关：无尽模式里也能用他。
    */
-  inner.append(el('div', { class: 'unlock-banner' }, [
-    el('span', { class: 'ico-infinity', style: { width: '22px', height: '22px' } }),
-    el('span', { text: t('通关达成 —— 标题页多了一个「无尽模式」入口：岔路更多、敌人更强，看你能走到第几章。') }),
-  ]));
+  const banner = el('div', { class: 'unlock-banner' });
+  banner.append(el('span', { class: 'ico-infinity', style: { width: '22px', height: '22px' } }));
+  banner.append(el('span', {
+    // 这条文案沿用 2.x 那一句（译文已经在了，不为了排版再换一次 key）
+    text: t('通关达成 —— 标题页多了一个「无尽模式」入口：岔路更多、敌人更强，看你能走到第几章。'),
+  }));
+  inner.append(banner);
+  for (const h of locked) {
+    const row = el('div', { class: 'unlock-banner unlock-banner-hero' });
+    row.append(el('span', { class: 'ico-change', style: { width: '22px', height: '22px' } }));
+    row.append(el('span', { text: t('{name}，那只{species}，如今也动身了。\n回标题页点一下头图，就能换人来走——这条路更长，一章有两个首领在等。', { name: h.name, species: h.speciesName }) }));
+    inner.append(row);
+  }
 
   inner.append(el('div', { class: 'run-stats' }, [
     statBox(t('推进章节'), t('{n} / {total} 通关', { n: stageCount(), total: stageCount() })),

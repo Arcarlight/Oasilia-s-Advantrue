@@ -285,7 +285,70 @@ const SCRIPT = `
       errors.push('shopExpert: ' + e.message);
     }
 
-    // 6) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容
+    // 6) **点头图切换主角**（3.0 的主功能）：锁着时不换人、解锁后换得动、换完这一屏真的变了
+    try {
+      g.phase = 'title';
+      window.__oasisUI.forceRerender();
+      await wait(500);
+      const readH2 = () => ((document.querySelector('.title-h2') || {}).textContent || '');
+      /**
+       * 先把跨局记录**改成「一次都没通关」**再测第一段：冒烟用的是固定的浏览器 profile，
+       * 上一趟跑留下的 localStorage 会让「阿特拉斯已经解锁」—— 那样第一段断言就是假的。
+       */
+      const metaRaw = JSON.parse(localStorage.getItem('oasis_desert_spirit_meta_v1') || '{}');
+      delete metaRaw.clearedHeroes; delete metaRaw.heroCleared; delete metaRaw.hero;
+      metaRaw.endlessUnlocked = false;
+      localStorage.setItem('oasis_desert_spirit_meta_v1', JSON.stringify(metaRaw));
+      g.phase = 'title';
+      g.titleHeroId = 'oasilia';
+      window.__oasisUI.forceRerender();
+      await wait(500);
+      const beforeHero = readH2();
+      const heroBtn = document.querySelector('.title-hero-btn');
+      const hint = document.querySelector('.hero-swap-hint');
+      log('头图按钮 =', !!heroBtn, '｜切换提示 =', !!(hint && hint.textContent.trim()), '｜', hint ? hint.textContent.trim() : '');
+      if (!heroBtn) errors.push('标题页的头图不是可点的按钮（.title-hero-btn）—— 点它换主角这条功能就没了');
+      if (!hint || !hint.textContent.trim()) errors.push('标题页没有「点头图换主角」的提示');
+      if (heroBtn) heroBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(300);
+      log('锁着时点头图 ->', beforeHero, '→', readH2());
+      if (readH2() !== beforeHero) errors.push('阿特拉斯还没解锁，点头图却把人换了');
+      const meta = JSON.parse(localStorage.getItem('oasis_desert_spirit_meta_v1') || '{}');
+      meta.clearedHeroes = [...new Set([...(meta.clearedHeroes || []), 'oasilia'])];
+      meta.heroCleared = Object.assign({}, meta.heroCleared || {}, { oasilia: true });
+      meta.endlessUnlocked = true;
+      localStorage.setItem('oasis_desert_spirit_meta_v1', JSON.stringify(meta));
+      // 通关之后回到标题页会**重新渲染**（真实流程：通关页点「回到标题」）；
+      // 这一次画出来的头图旁边就该写着「点头图换主角：阿特拉斯」了
+      g.phase = 'title';
+      window.__oasisUI.forceRerender();
+      await wait(500);
+      const hint2 = document.querySelector('.hero-swap-hint');
+      log('解锁后的切换提示 =', hint2 ? hint2.textContent.trim() : '(没有)');
+      const heroBtn2 = document.querySelector('.title-hero-btn');
+      if (heroBtn2) heroBtn2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(700);
+      log('通关后点头图 ->', beforeHero, '→', readH2());
+      if (readH2() === beforeHero) errors.push('欧亚西莉亚通关之后点头图没有换成阿特拉斯');
+      const heroCanvas = document.querySelector('.title-hero canvas');
+      log('阿特拉斯的头图 =', !!heroCanvas, heroCanvas ? heroCanvas.width + 'x' + heroCanvas.height : '');
+      if (!heroCanvas) errors.push('换成阿特拉斯之后头图没了（动画名 / 素材对不上）');
+      g.newRun(undefined, { hero: 'atlas' });
+      await wait(400);
+      log('阿特拉斯开局：', g.data.slug, '｜卡组', g.data.deck.length, '张｜一行', g.data.map.rows, '行｜首领', g.data.map.nodes.filter((n) => n.type === 'boss').length, '个');
+      if (g.data.slug !== 'salamence') errors.push('阿特拉斯那一局的物种不是暴飞龙：' + g.data.slug);
+      if (g.data.map.rows < 16) errors.push('阿特拉斯一章没有两倍长：' + g.data.map.rows + ' 行');
+      if (g.data.map.nodes.filter((n) => n.type === 'boss').length !== 2) errors.push('阿特拉斯一章不是两个首领');
+      g.phase = 'title';
+      g.titleHeroId = 'oasilia';
+      window.__oasisUI.forceRerender();
+      await wait(300);
+      if (readH2() !== beforeHero) errors.push('换回欧亚西莉亚失败：' + readH2());
+    } catch (e) {
+      errors.push('heroSwitch: ' + e.message);
+    }
+
+    // 7) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容
     //    （不该只活在专门的诊断脚本里 —— 冒烟是每次改完都会跑的那一道）
     try {
       g.phase = 'title';

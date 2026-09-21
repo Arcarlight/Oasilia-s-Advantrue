@@ -40,7 +40,7 @@ export const save = {
     const fallback = {
       bestDistance: 0, bestStage: 0, runs: 0, wins: 0, kills: 0, unlocked: false,
       seenCards: [], seenEnemies: [], slainEnemies: [], history: [], heardBgm: [], seenItems: [],
-      slainCount: {}, facedCount: {},
+      slainCount: {}, facedCount: {}, clearedHeroes: [], heroCleared: {}, hero: 'oasilia',
     };
     try {
       const raw = localStorage.getItem(META_KEY);
@@ -69,6 +69,21 @@ export const save = {
        */
       if (meta.endlessUnlocked !== true) meta.endlessUnlocked = !!meta.endlessUnlocked;
       if (!Number.isFinite(meta.endlessBest)) meta.endlessBest = 0;
+      /**
+       * **主角（3.0 起有两位）**：
+       *   hero            标题页点头图选的那位（下一次开局的默认主角）
+       *   clearedHeroes   谁通过关（数组）—— 另一位主角的解锁条件就是它
+       *   heroCleared     谁通过关（id → true）—— 无尽模式按主角分开解锁
+       *
+       * 老存档的补法：**已经通关过**（`unlocked === true`，那是 3.0 之前的通关标记，
+       * 当时只有欧亚西莉亚）就补成「欧亚西莉亚通关过」。不补的话，老玩家升级到 3.0
+       * 会发现新主角锁着，得再通一次关 —— 那不是他要的结果。
+       */
+      if (!Array.isArray(meta.clearedHeroes)) meta.clearedHeroes = meta.unlocked === true ? ['oasilia'] : [];
+      if (!meta.heroCleared || typeof meta.heroCleared !== 'object') {
+        meta.heroCleared = meta.clearedHeroes.includes('oasilia') ? { oasilia: true } : {};
+      }
+      if (typeof meta.hero !== 'string' || !meta.hero) meta.hero = meta.clearedHeroes.includes('atlas') ? 'atlas' : 'oasilia';
       // 击败**次数**（id -> 次数）：图鉴的奖牌（5 / 15 / 25 / 50 次）靠它。
       // 老存档没有这份计数，此时图鉴按「slainEnemies 里有 = 打赢过 1 次」算（见 codex.js）。
       if (!meta.slainCount || typeof meta.slainCount !== 'object') meta.slainCount = {};

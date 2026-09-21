@@ -74,7 +74,8 @@ export const CARDS = [
         "kind": "draw",
         "n": 1
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "acid_armor",
@@ -171,6 +172,9 @@ export const CARDS = [
     ],
     "types": [
       "超能"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -346,7 +350,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "heroOnly": "oasilia"
   },
   {
     "id": "blizzard",
@@ -467,7 +472,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "body_slam",
@@ -648,6 +654,9 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -710,7 +719,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "calm_mind",
@@ -947,7 +957,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "crunch",
@@ -1172,7 +1183,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "钢"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "double_edge",
@@ -1212,7 +1224,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "heroOnly": "oasilia"
   },
   {
     "id": "draco_meteor",
@@ -1280,6 +1293,9 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "龙"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -1298,7 +1314,8 @@ export const CARDS = [
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "dragon_claw",
@@ -1431,7 +1448,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "draining_kiss",
@@ -1469,7 +1487,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "钢"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "earth_power",
@@ -1797,7 +1816,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "flame_charge",
@@ -1957,7 +1977,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "frost_breath",
@@ -2237,7 +2258,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "heroOnly": "oasilia"
   },
   {
     "id": "head_smash",
@@ -2633,7 +2655,8 @@ export const CARDS = [
     ],
     "types": [
       "钢"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "iron_tail",
@@ -3227,7 +3250,8 @@ export const CARDS = [
         "power": 285,
         "ignoreDefPct": 0.5
       }
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "night_slash",
@@ -3727,6 +3751,9 @@ export const CARDS = [
     ],
     "types": [
       "虫"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -3896,6 +3923,9 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -4210,8 +4240,7 @@ export const CARDS = [
       "一般"
     ],
     "tags": [
-      "weaken",
-      "buff"
+      "weaken"
     ]
   },
   {
@@ -5561,6 +5590,9 @@ export const CARDS = [
     ],
     "types": [
       "一般"
+    ],
+    "tags": [
+      "buff"
     ]
   },
   {
@@ -5703,7 +5735,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "heroOnly": "oasilia"
   },
   {
     "id": "tail_whip",
@@ -6184,7 +6217,8 @@ export const CARDS = [
     ],
     "types": [
       "毒"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "volt_tackle",
@@ -6251,7 +6285,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "enemyOnly": true
   },
   {
     "id": "whirlpool",
@@ -6706,6 +6741,568 @@ export const CARDS = [
     ],
     "enemyOnly": false,
     "targeting": "enemy"
+  },
+  {
+    "id": "atlas_charge",
+    "name": "暴冲",
+    "ap": 0,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "造成 {d} 点伤害。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 30
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_bite",
+    "name": "噬咬",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "恶"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "造成 {d} 点伤害。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 90
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_scales",
+    "name": "鳞甲",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "获得护盾（随防御成长，约 9 + 防御×0.75）。",
+    "effects": [
+      {
+        "kind": "shield",
+        "amount": 9,
+        "scaleWithDef": true
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_wingbeat",
+    "name": "翼连击",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "格斗"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "连续 2 次造成 {d} 点伤害。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 45,
+        "hits": 2
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_roar",
+    "name": "龙威",
+    "ap": 1,
+    "rarity": "uncommon",
+    "types": [
+      "龙"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "给对手 2 层虚弱，本场战斗自身攻击 +2。",
+    "effects": [
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 2
+      },
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "amount": 2
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_dive",
+    "name": "俯冲",
+    "ap": 2,
+    "rarity": "rare",
+    "types": [
+      "飞行"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "造成 {d} 点伤害（无视对手 40% 的防御）。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 190,
+        "ignoreDefPct": 0.4
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_steadfast",
+    "name": "稳守",
+    "ap": 1,
+    "rarity": "rare",
+    "types": [
+      "一般"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "获得护盾（随防御成长），抽 1 张。",
+    "effects": [
+      {
+        "kind": "shield",
+        "amount": 14,
+        "scaleWithDef": true
+      },
+      {
+        "kind": "draw",
+        "n": 1
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "atlas_homeward",
+    "name": "归途",
+    "ap": 3,
+    "rarity": "epic",
+    "types": [
+      "龙"
+    ],
+    "heroOnly": "atlas",
+    "tags": [],
+    "text": "造成 {d} 点伤害，并回复最大生命的 12%。",
+    "effects": [
+      {
+        "kind": "damage",
+        "power": 285
+      },
+      {
+        "kind": "heal",
+        "pct": 0.12
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "bleed_wait",
+    "name": "藏锋",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "恶"
+    ],
+    "tags": [
+      "timing",
+      "bleed"
+    ],
+    "text": "下回合开始时给对手 2 层出血。",
+    "effects": [
+      {
+        "kind": "delay",
+        "turns": 1,
+        "name": "藏锋",
+        "effects": [
+          {
+            "kind": "status",
+            "status": "bleed",
+            "stacks": 2
+          }
+        ]
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "bleed_chase",
+    "name": "追咬",
+    "ap": 2,
+    "rarity": "uncommon",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "timing",
+      "bleed"
+    ],
+    "text": "打出这张牌之后，再打出 2 张牌时造成 {d} 点伤害，并给对手 1 层出血。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 2,
+        "name": "追咬",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 120
+          },
+          {
+            "kind": "status",
+            "status": "bleed",
+            "stacks": 1
+          }
+        ]
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "bleed_avalanche",
+    "name": "血崩",
+    "ap": 3,
+    "rarity": "rare",
+    "types": [
+      "龙"
+    ],
+    "tags": [
+      "timing",
+      "bleed"
+    ],
+    "text": "2 个回合后，连续 3 次造成 {d} 点伤害，并给对手 2 层出血。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "turn",
+        "count": 2,
+        "name": "血崩",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 130,
+            "hits": 3
+          },
+          {
+            "kind": "status",
+            "status": "bleed",
+            "stacks": 2
+          }
+        ]
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "weaken_wait",
+    "name": "悬岩",
+    "ap": 2,
+    "rarity": "rare",
+    "types": [
+      "岩石"
+    ],
+    "tags": [
+      "timing",
+      "weaken"
+    ],
+    "text": "2 个回合后造成 {d} 点伤害，并让对手防御 -4。",
+    "effects": [
+      {
+        "kind": "delay",
+        "turns": 2,
+        "name": "悬岩",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 190
+          },
+          {
+            "kind": "buff",
+            "stat": "def",
+            "amount": -4,
+            "target": "enemy"
+          }
+        ]
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "burst_wait",
+    "name": "蓄势爆发",
+    "ap": 4,
+    "rarity": "epic",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "timing",
+      "burst"
+    ],
+    "text": "打出这张牌之后，再打出 2 张牌时造成 {d} 点伤害。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 2,
+        "name": "蓄势爆发",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 480
+          }
+        ]
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "guard_wait",
+    "name": "蓄甲",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "timing"
+    ],
+    "text": "下回合开始时获得护盾（随防御成长）。",
+    "effects": [
+      {
+        "kind": "delay",
+        "turns": 1,
+        "name": "蓄甲",
+        "effects": [
+          {
+            "kind": "shield",
+            "amount": 12,
+            "scaleWithDef": true
+          }
+        ]
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "tempo_draw",
+    "name": "数拍",
+    "ap": 1,
+    "rarity": "common",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "timing"
+    ],
+    "text": "打出这张牌之后，再打出 3 张牌时抽 2 张。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 3,
+        "name": "数拍",
+        "effects": [
+          {
+            "kind": "draw",
+            "n": 2
+          }
+        ]
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "power_wait",
+    "name": "龙吼",
+    "ap": 2,
+    "rarity": "uncommon",
+    "types": [
+      "龙"
+    ],
+    "tags": [
+      "timing"
+    ],
+    "text": "下回合开始时攻击牌威力 +60%（持续 2 回合），抽 1 张。",
+    "effects": [
+      {
+        "kind": "delay",
+        "turns": 1,
+        "name": "龙吼",
+        "effects": [
+          {
+            "kind": "grantBuff",
+            "buff": "power",
+            "n": 60,
+            "turns": 2
+          },
+          {
+            "kind": "draw",
+            "n": 1
+          }
+        ]
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "ap_wait",
+    "name": "沙漏",
+    "ap": 3,
+    "rarity": "epic",
+    "types": [
+      "一般"
+    ],
+    "tags": [
+      "timing"
+    ],
+    "text": "打出这张牌之后，再打出 2 张牌时行动点上限 +2（持续 3 回合），抽 2 张。",
+    "effects": [
+      {
+        "kind": "trigger",
+        "on": "plays",
+        "count": 2,
+        "name": "沙漏",
+        "effects": [
+          {
+            "kind": "grantBuff",
+            "buff": "apMax",
+            "n": 2,
+            "turns": 3
+          },
+          {
+            "kind": "draw",
+            "n": 2
+          }
+        ]
+      }
+    ],
+    "targeting": "self",
+    "enemyOnly": false
+  },
+  {
+    "id": "weaken_press",
+    "name": "压势",
+    "ap": 1,
+    "rarity": "uncommon",
+    "types": [
+      "恶"
+    ],
+    "tags": [
+      "weaken"
+    ],
+    "text": "给对手 1 层虚弱，并让对手防御 -3。",
+    "effects": [
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 1
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "amount": -3,
+        "target": "enemy"
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "weaken_bind",
+    "name": "岩钉",
+    "ap": 2,
+    "rarity": "uncommon",
+    "types": [
+      "岩石"
+    ],
+    "tags": [
+      "weaken"
+    ],
+    "text": "让对手防御 -35%、敏捷 -3。",
+    "effects": [
+      {
+        "kind": "buff",
+        "stat": "def",
+        "pct": -0.35,
+        "target": "enemy"
+      },
+      {
+        "kind": "buff",
+        "stat": "agi",
+        "amount": -3,
+        "target": "enemy"
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
+  },
+  {
+    "id": "weaken_crush",
+    "name": "崩防",
+    "ap": 3,
+    "rarity": "epic",
+    "types": [
+      "恶"
+    ],
+    "tags": [
+      "weaken"
+    ],
+    "text": "让对手攻击 -4、防御 -4，并给对手 2 层虚弱。",
+    "effects": [
+      {
+        "kind": "buff",
+        "stat": "atk",
+        "amount": -4,
+        "target": "enemy"
+      },
+      {
+        "kind": "buff",
+        "stat": "def",
+        "amount": -4,
+        "target": "enemy"
+      },
+      {
+        "kind": "status",
+        "status": "weak",
+        "stacks": 2
+      }
+    ],
+    "targeting": "enemy",
+    "enemyOnly": false
   }
 ];
 
@@ -7848,6 +8445,86 @@ export const CARD_ART = {
   "sand_burst": {
     "ico": "ico-wind",
     "fx": "smoke_1"
+  },
+  "atlas_charge": {
+    "ico": "ico-fist",
+    "fx": "dirt_1"
+  },
+  "atlas_bite": {
+    "ico": "ico-dagger",
+    "fx": "slash_1"
+  },
+  "atlas_scales": {
+    "ico": "ico-shield",
+    "fx": "trace_1"
+  },
+  "atlas_wingbeat": {
+    "ico": "ico-double",
+    "fx": "slash_1"
+  },
+  "atlas_roar": {
+    "ico": "ico-audio_waves",
+    "fx": "light_1"
+  },
+  "atlas_dive": {
+    "ico": "ico-arrow_down_blue",
+    "fx": "trace_01"
+  },
+  "atlas_steadfast": {
+    "ico": "ico-shield_02",
+    "fx": "light_1"
+  },
+  "atlas_homeward": {
+    "ico": "ico-heart",
+    "fx": "star_01"
+  },
+  "bleed_wait": {
+    "ico": "ico-heart_break_02",
+    "fx": "smoke_1"
+  },
+  "bleed_chase": {
+    "ico": "ico-sword",
+    "fx": "slash_1"
+  },
+  "bleed_avalanche": {
+    "ico": "ico-triple",
+    "fx": "slash_1"
+  },
+  "weaken_wait": {
+    "ico": "ico-stone",
+    "fx": "dirt_1"
+  },
+  "burst_wait": {
+    "ico": "ico-meteor",
+    "fx": "flare_1"
+  },
+  "guard_wait": {
+    "ico": "ico-shield",
+    "fx": "light_1"
+  },
+  "tempo_draw": {
+    "ico": "ico-card",
+    "fx": "magic_1"
+  },
+  "power_wait": {
+    "ico": "ico-arrow_up_red",
+    "fx": "spark_02"
+  },
+  "ap_wait": {
+    "ico": "ico-action_points",
+    "fx": "magic_2"
+  },
+  "weaken_press": {
+    "ico": "ico-arrow_down_blue",
+    "fx": "smoke_1"
+  },
+  "weaken_bind": {
+    "ico": "ico-dagger",
+    "fx": "trace_02"
+  },
+  "weaken_crush": {
+    "ico": "ico-mace",
+    "fx": "dirt_2"
   }
 };
 
@@ -7876,19 +8553,34 @@ function weightedPick(pool) {
 }
 
 /**
+ * **玩家能拿到的牌**，按主角分开算（3.0 的双主角）。
+ *
+ * 两位主角各有一套开局基础牌，允许「改名字、效果完全一样」——
+ * 这种一对**不能同时出现在一个池子里**（抽到和自己开局带的一模一样的牌 = 白给一格，
+ * 就是用户点名过的「污染卡池」）。所以池子按主角切：
+ *   · `enemyOnly` 的牌谁都拿不到；
+ *   · 标了 `heroOnly: '<某人>'` 的牌只给那一位；
+ *   · 其余共用。
+ *
+ * 不传主角就只给「共用」的那批（诊断脚本、图鉴的横向统计用它）。
+ */
+export function playerPool(heroId = null) {
+  return CARDS.filter((c) => !c.enemyOnly && (heroId ? (!c.heroOnly || c.heroOnly === heroId) : !c.heroOnly));
+}
+
+/**
  * 按稀有度权重抽一张卡（排除 exclude 里的 id）；敌人专用牌不会进玩家的奖励池。
  *
  * @param {number} rarityBoost 稀有度加成系数（事件 / 商店用）
  * @param {string[]} exclude    不要抽到的卡 id
  * @param {object|null} weights 显式稀有度权重（战斗奖励按敌人档位给的那张表）；
  *                              给了它就完全按它抽，不再叠 rarityBoost
+ * @param {string|null} heroId  这一局的主角（决定 `heroOnly` 的牌进不进池子）
  */
-export function rollCard(rarityBoost = 0, exclude = [], weights = null) {
+export function rollCard(rarityBoost = 0, exclude = [], weights = null, heroId = null) {
   const pool = [];
-  for (const card of CARDS) {
+  for (const card of playerPool(heroId)) {
     if (exclude.includes(card.id)) continue;
-    // 敌人专用弱招（content/cards.json 里 enemyOnly: true）只给敌人用，别发给玩家
-    if (card.enemyOnly) continue;
     const base = weights ? (weights[card.rarity] ?? 0) : RARITY[card.rarity].weight;
     if (!base) continue;
     /**
@@ -7907,11 +8599,11 @@ export function rollCard(rarityBoost = 0, exclude = [], weights = null) {
 }
 
 /** 随机抽 n 张不重复的卡 */
-export function rollCards(n, rarityBoost = 0, exclude = [], weights = null) {
+export function rollCards(n, rarityBoost = 0, exclude = [], weights = null, heroId = null) {
   const out = [];
   const used = [...exclude];
   for (let i = 0; i < n; i++) {
-    const c = rollCard(rarityBoost, used, weights);
+    const c = rollCard(rarityBoost, used, weights, heroId);
     out.push(c);
     used.push(c.id);
   }

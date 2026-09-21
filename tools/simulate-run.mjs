@@ -23,6 +23,11 @@ const ONLY_FIRST_STAGE = process.argv.includes('--stage1');
 const ENDLESS = process.argv.includes('--endless');
 
 const TOTAL = Number(process.argv[2] ?? 400);
+/**
+ * `--hero=atlas`：用阿特拉斯那一套模拟（开局卡组 / 属性 / 两倍长的一章 / 两个首领 /
+ * 更高的难度倍率全都跟着换）。不传就是欧亚西莉亚（本体基准）。
+ */
+const HERO = (process.argv.find((a) => a.startsWith('--hero=')) ?? '').slice(7) || null;
 
 function autoPlay(b) {
   let g = 0;
@@ -87,7 +92,7 @@ const stats = { win: 0, dead: 0, floors: [], stages: [], death: new Map(), stage
 
 for (let i = 0; i < TOTAL; i++) {
   const game = new Game({ seed: 120000 + i * 271 });
-  game.newRun(undefined, ENDLESS ? { endless: true } : {});
+  game.newRun(undefined, ENDLESS ? { endless: true, hero: HERO ?? undefined } : { hero: HERO ?? undefined });
   let guard = 0;
   while (guard++ < 400) {
     if (game.phase === 'map') {
@@ -206,7 +211,7 @@ if (ENDLESS) {
   process.exit(0);
 }
 
-console.log(`\n=== 全流程模拟（${TOTAL} 局；会喝药、会挑路线）===`);
+console.log(`\n=== 全流程模拟（${TOTAL} 局 · ${HERO ?? 'oasilia'}；会喝药、会挑路线）===`);
 console.log(`  通关率      ${((stats.win / TOTAL) * 100).toFixed(1)}%`);
 console.log(`  平均到第几章 ${avg(stats.stages.map((s) => s + 1))} / ${stageCount()}`);
 console.log(`  平均步数     ${avg(stats.floors)}`);

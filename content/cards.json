@@ -55,7 +55,8 @@
         }
       ],
       "ico": "ico-stone",
-      "fx": "dirt_2"
+      "fx": "dirt_2",
+      "enemyOnly": true
     },
     {
       "id": "acid_armor",
@@ -160,6 +161,9 @@
       "fx": "spark_1",
       "types": [
         "超能"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -351,7 +355,8 @@
       "fx": "slash_1",
       "types": [
         "恶"
-      ]
+      ],
+      "heroOnly": "oasilia"
     },
     {
       "id": "blizzard",
@@ -482,7 +487,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "body_slam",
@@ -679,6 +685,9 @@
       "fx": "twirl_1",
       "types": [
         "格斗"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -747,7 +756,8 @@
       ],
       "types": [
         "草"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "calm_mind",
@@ -1004,7 +1014,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "crunch",
@@ -1249,7 +1260,8 @@
       "exhaust": true,
       "types": [
         "钢"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "double_edge",
@@ -1293,7 +1305,8 @@
       "fx": "slash_1",
       "types": [
         "格斗"
-      ]
+      ],
+      "heroOnly": "oasilia"
     },
     {
       "id": "draco_meteor",
@@ -1365,6 +1378,9 @@
       "exhaust": true,
       "types": [
         "龙"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -1385,7 +1401,8 @@
       "fx": "flare_1",
       "types": [
         "龙"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "dragon_claw",
@@ -1530,7 +1547,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "draining_kiss",
@@ -1572,7 +1590,8 @@
       "exhaust": true,
       "types": [
         "钢"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "earth_power",
@@ -1928,7 +1947,8 @@
       "fx": "dirt_2",
       "types": [
         "地面"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "flame_charge",
@@ -2102,7 +2122,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "frost_breath",
@@ -2406,7 +2427,8 @@
       "fx": "trace_1",
       "types": [
         "一般"
-      ]
+      ],
+      "heroOnly": "oasilia"
     },
     {
       "id": "head_smash",
@@ -2836,7 +2858,8 @@
       "fx": "spark_1",
       "types": [
         "钢"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "iron_tail",
@@ -3482,7 +3505,8 @@
         }
       ],
       "ico": "ico-demon_02",
-      "fx": "magic_1"
+      "fx": "magic_1",
+      "enemyOnly": true
     },
     {
       "id": "night_slash",
@@ -4026,6 +4050,9 @@
       "fx": "twirl_1",
       "types": [
         "虫"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -4209,6 +4236,9 @@
       ],
       "types": [
         "岩石"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -4549,8 +4579,7 @@
         "一般"
       ],
       "tags": [
-        "weaken",
-        "buff"
+        "weaken"
       ]
     },
     {
@@ -6010,6 +6039,9 @@
       "fx": "star_1",
       "types": [
         "一般"
+      ],
+      "tags": [
+        "buff"
       ]
     },
     {
@@ -6164,7 +6196,8 @@
       "fx": "dirt_1",
       "types": [
         "一般"
-      ]
+      ],
+      "heroOnly": "oasilia"
     },
     {
       "id": "tail_whip",
@@ -6687,7 +6720,8 @@
       ],
       "types": [
         "毒"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "volt_tackle",
@@ -6760,7 +6794,8 @@
       ],
       "types": [
         "水"
-      ]
+      ],
+      "enemyOnly": true
     },
     {
       "id": "whirlpool",
@@ -7251,6 +7286,608 @@
       ],
       "enemyOnly": false,
       "targeting": "enemy"
+    },
+    {
+      "id": "atlas_charge",
+      "name": "暴冲",
+      "ap": 0,
+      "rarity": "common",
+      "types": [
+        "一般"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-fist",
+      "fx": "dirt_1",
+      "tags": [],
+      "text": "造成 {d} 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_bite",
+      "name": "噬咬",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "恶"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-dagger",
+      "fx": "slash_1",
+      "tags": [],
+      "text": "造成 {d} 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 90
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_scales",
+      "name": "鳞甲",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "一般"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-shield",
+      "fx": "trace_1",
+      "tags": [],
+      "text": "获得护盾（随防御成长，约 9 + 防御×0.75）。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 9,
+          "scaleWithDef": true
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_wingbeat",
+      "name": "翼连击",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "格斗"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-double",
+      "fx": "slash_1",
+      "tags": [],
+      "text": "连续 2 次造成 {d} 点伤害。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 45,
+          "hits": 2
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_roar",
+      "name": "龙威",
+      "ap": 1,
+      "rarity": "uncommon",
+      "types": [
+        "龙"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-audio_waves",
+      "fx": "light_1",
+      "tags": [],
+      "text": "给对手 2 层虚弱，本场战斗自身攻击 +2。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": 2
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_dive",
+      "name": "俯冲",
+      "ap": 2,
+      "rarity": "rare",
+      "types": [
+        "飞行"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-arrow_down_blue",
+      "fx": "trace_01",
+      "tags": [],
+      "text": "造成 {d} 点伤害（无视对手 40% 的防御）。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 190,
+          "ignoreDefPct": 0.4
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_steadfast",
+      "name": "稳守",
+      "ap": 1,
+      "rarity": "rare",
+      "types": [
+        "一般"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-shield_02",
+      "fx": "light_1",
+      "tags": [],
+      "text": "获得护盾（随防御成长），抽 1 张。",
+      "effects": [
+        {
+          "kind": "shield",
+          "amount": 14,
+          "scaleWithDef": true
+        },
+        {
+          "kind": "draw",
+          "n": 1
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "atlas_homeward",
+      "name": "归途",
+      "ap": 3,
+      "rarity": "epic",
+      "types": [
+        "龙"
+      ],
+      "heroOnly": "atlas",
+      "ico": "ico-heart",
+      "fx": "star_01",
+      "tags": [],
+      "text": "造成 {d} 点伤害，并回复最大生命的 12%。",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 285
+        },
+        {
+          "kind": "heal",
+          "pct": 0.12
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "bleed_wait",
+      "name": "藏锋",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "恶"
+      ],
+      "tags": [
+        "timing",
+        "bleed"
+      ],
+      "ico": "ico-heart_break_02",
+      "fx": "smoke_1",
+      "text": "下回合开始时给对手 2 层出血。",
+      "effects": [
+        {
+          "kind": "delay",
+          "turns": 1,
+          "name": "藏锋",
+          "effects": [
+            {
+              "kind": "status",
+              "status": "bleed",
+              "stacks": 2
+            }
+          ]
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "bleed_chase",
+      "name": "追咬",
+      "ap": 2,
+      "rarity": "uncommon",
+      "types": [
+        "一般"
+      ],
+      "tags": [
+        "timing",
+        "bleed"
+      ],
+      "ico": "ico-sword",
+      "fx": "slash_1",
+      "text": "打出这张牌之后，再打出 2 张牌时造成 {d} 点伤害，并给对手 1 层出血。",
+      "effects": [
+        {
+          "kind": "trigger",
+          "on": "plays",
+          "count": 2,
+          "name": "追咬",
+          "effects": [
+            {
+              "kind": "damage",
+              "power": 120
+            },
+            {
+              "kind": "status",
+              "status": "bleed",
+              "stacks": 1
+            }
+          ]
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "bleed_avalanche",
+      "name": "血崩",
+      "ap": 3,
+      "rarity": "rare",
+      "types": [
+        "龙"
+      ],
+      "tags": [
+        "timing",
+        "bleed"
+      ],
+      "ico": "ico-triple",
+      "fx": "slash_1",
+      "text": "2 个回合后，连续 3 次造成 {d} 点伤害，并给对手 2 层出血。",
+      "effects": [
+        {
+          "kind": "trigger",
+          "on": "turn",
+          "count": 2,
+          "name": "血崩",
+          "effects": [
+            {
+              "kind": "damage",
+              "power": 130,
+              "hits": 3
+            },
+            {
+              "kind": "status",
+              "status": "bleed",
+              "stacks": 2
+            }
+          ]
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "weaken_wait",
+      "name": "悬岩",
+      "ap": 2,
+      "rarity": "rare",
+      "types": [
+        "岩石"
+      ],
+      "tags": [
+        "timing",
+        "weaken"
+      ],
+      "ico": "ico-stone",
+      "fx": "dirt_1",
+      "text": "2 个回合后造成 {d} 点伤害，并让对手防御 -4。",
+      "effects": [
+        {
+          "kind": "delay",
+          "turns": 2,
+          "name": "悬岩",
+          "effects": [
+            {
+              "kind": "damage",
+              "power": 190
+            },
+            {
+              "kind": "buff",
+              "stat": "def",
+              "amount": -4,
+              "target": "enemy"
+            }
+          ]
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "burst_wait",
+      "name": "蓄势爆发",
+      "ap": 4,
+      "rarity": "epic",
+      "types": [
+        "一般"
+      ],
+      "tags": [
+        "timing",
+        "burst"
+      ],
+      "ico": "ico-meteor",
+      "fx": "flare_1",
+      "text": "打出这张牌之后，再打出 2 张牌时造成 {d} 点伤害。",
+      "effects": [
+        {
+          "kind": "trigger",
+          "on": "plays",
+          "count": 2,
+          "name": "蓄势爆发",
+          "effects": [
+            {
+              "kind": "damage",
+              "power": 480
+            }
+          ]
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "guard_wait",
+      "name": "蓄甲",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "一般"
+      ],
+      "tags": [
+        "timing"
+      ],
+      "ico": "ico-shield",
+      "fx": "light_1",
+      "text": "下回合开始时获得护盾（随防御成长）。",
+      "effects": [
+        {
+          "kind": "delay",
+          "turns": 1,
+          "name": "蓄甲",
+          "effects": [
+            {
+              "kind": "shield",
+              "amount": 12,
+              "scaleWithDef": true
+            }
+          ]
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "tempo_draw",
+      "name": "数拍",
+      "ap": 1,
+      "rarity": "common",
+      "types": [
+        "一般"
+      ],
+      "tags": [
+        "timing"
+      ],
+      "ico": "ico-card",
+      "fx": "magic_1",
+      "text": "打出这张牌之后，再打出 3 张牌时抽 2 张。",
+      "effects": [
+        {
+          "kind": "trigger",
+          "on": "plays",
+          "count": 3,
+          "name": "数拍",
+          "effects": [
+            {
+              "kind": "draw",
+              "n": 2
+            }
+          ]
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "power_wait",
+      "name": "龙吼",
+      "ap": 2,
+      "rarity": "uncommon",
+      "types": [
+        "龙"
+      ],
+      "tags": [
+        "timing"
+      ],
+      "ico": "ico-arrow_up_red",
+      "fx": "spark_02",
+      "text": "下回合开始时攻击牌威力 +60%（持续 2 回合），抽 1 张。",
+      "effects": [
+        {
+          "kind": "delay",
+          "turns": 1,
+          "name": "龙吼",
+          "effects": [
+            {
+              "kind": "grantBuff",
+              "buff": "power",
+              "n": 60,
+              "turns": 2
+            },
+            {
+              "kind": "draw",
+              "n": 1
+            }
+          ]
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "ap_wait",
+      "name": "沙漏",
+      "ap": 3,
+      "rarity": "epic",
+      "types": [
+        "一般"
+      ],
+      "tags": [
+        "timing"
+      ],
+      "ico": "ico-action_points",
+      "fx": "magic_2",
+      "text": "打出这张牌之后，再打出 2 张牌时行动点上限 +2（持续 3 回合），抽 2 张。",
+      "effects": [
+        {
+          "kind": "trigger",
+          "on": "plays",
+          "count": 2,
+          "name": "沙漏",
+          "effects": [
+            {
+              "kind": "grantBuff",
+              "buff": "apMax",
+              "n": 2,
+              "turns": 3
+            },
+            {
+              "kind": "draw",
+              "n": 2
+            }
+          ]
+        }
+      ],
+      "targeting": "self",
+      "enemyOnly": false
+    },
+    {
+      "id": "weaken_press",
+      "name": "压势",
+      "ap": 1,
+      "rarity": "uncommon",
+      "types": [
+        "恶"
+      ],
+      "tags": [
+        "weaken"
+      ],
+      "ico": "ico-arrow_down_blue",
+      "fx": "smoke_1",
+      "text": "给对手 1 层虚弱，并让对手防御 -3。",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "weaken_bind",
+      "name": "岩钉",
+      "ap": 2,
+      "rarity": "uncommon",
+      "types": [
+        "岩石"
+      ],
+      "tags": [
+        "weaken"
+      ],
+      "ico": "ico-dagger",
+      "fx": "trace_02",
+      "text": "让对手防御 -35%、敏捷 -3。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "def",
+          "pct": -0.35,
+          "target": "enemy"
+        },
+        {
+          "kind": "buff",
+          "stat": "agi",
+          "amount": -3,
+          "target": "enemy"
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
+    },
+    {
+      "id": "weaken_crush",
+      "name": "崩防",
+      "ap": 3,
+      "rarity": "epic",
+      "types": [
+        "恶"
+      ],
+      "tags": [
+        "weaken"
+      ],
+      "ico": "ico-mace",
+      "fx": "dirt_2",
+      "text": "让对手攻击 -4、防御 -4，并给对手 2 层虚弱。",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atk",
+          "amount": -4,
+          "target": "enemy"
+        },
+        {
+          "kind": "buff",
+          "stat": "def",
+          "amount": -4,
+          "target": "enemy"
+        },
+        {
+          "kind": "status",
+          "status": "weak",
+          "stacks": 2
+        }
+      ],
+      "targeting": "enemy",
+      "enemyOnly": false
     }
   ]
 }

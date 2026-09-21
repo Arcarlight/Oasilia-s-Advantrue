@@ -214,10 +214,16 @@ export class UI {
 
     switch (phase) {
       case 'title': {
-        if (this.current === 'title') return;
+        /**
+         * 「已经在标题页了就不重画」这条优化要**放过一种情况**：玩家点了头图换主角
+         * （3.0 的双主角）。换人只改了 game.titleHeroId，屏幕必须跟着重画 ——
+         * 以前只认 `this.current === 'title'`，于是点头图会一点反应都没有。
+         */
+        if (this.current === 'title' && this._titleHero === (g.titleHeroId ?? null)) return;
         this.teardownBattle();
         hideHud();
         this.current = 'title';
+        this._titleHero = g.titleHeroId ?? null;
         renderTitle(g);
         break;
       }

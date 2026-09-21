@@ -4,6 +4,7 @@ import { el, clear } from './dom.js';
 import { createPortrait } from '../core/portraits.js';
 import { t } from '../core/i18n.js';
 import { apFromAgi, drawFromAgi, playsFromAgi, critChance, dodgeChance, BALANCE } from '../data/balance.js';
+import { heroById } from '../data/heroes.js';
 
 /**
  * 记录已经挂好的头像节点，避免每次刷新 HUD 都重建 <img>。
@@ -28,7 +29,23 @@ export function renderHud(game) {
   if (!nameEl || !hpFill || !stats) return; // 界面结构变了就安静退出，别把整个游戏搞崩
 
   nameEl.textContent = d.name;
-  speciesEl.textContent = t('{species} · 地面/龙 · 特性：飘浮', { species: d.speciesName });
+  /**
+   * 名字旁边的性别符号（index.html 里那个 `.gender`）以前是**写死的 ♀** ——
+   * 换成阿特拉斯（♂）之后，HUD 上会写着「阿特拉斯 ♀」。
+   * 它不在 JS 里重画（那个 span 是静态的），所以这里单独改一次。
+   */
+  const genderEl = document.getElementById('hud-gender');
+  if (genderEl) genderEl.textContent = heroById(d.hero)?.gender ?? '';
+  /**
+   * 「物种 · 属性 · 特性」这一行**跟着主角走**（3.0 有两位主角）。
+   * 以前这里是写死的一句 `t('{species} · 地面/龙 · 特性：飘浮')` ——
+   * 换成暴飞龙（龙/飞行、威吓）之后那一行就会公然写错。
+   */
+  speciesEl.textContent = t('{species} · {types} · 特性：{ability}', {
+    species: d.speciesName,
+    types: (heroById(d.hero)?.types ?? []).join('/'),
+    ability: heroById(d.hero)?.ability ?? '',
+  });
 
   const pct = Math.max(0, (d.hp / d.maxHp) * 100);
   hpFill.style.width = `${pct}%`;

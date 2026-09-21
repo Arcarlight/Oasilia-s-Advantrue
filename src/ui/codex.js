@@ -20,6 +20,7 @@ import { el, clear, modal } from './dom.js';
 import { cardEl } from './cards.js';
 import { SORT_MODES, sortCards, groupLabel, cardPowerTotal, resolveCardText } from './cardtext.js';
 import { CARDS, CARD_BY_ID } from '../data/cards.js';
+import { heroById } from '../data/heroes.js';
 // 道具图鉴（手持道具）：数据 + 效果说人话的那一份表 + 卖出价（引擎算的）
 import { ITEMS, itemArtUrl } from '../data/items.js';
 import { holdLines, useLine } from '../core/itemtext.js';
@@ -116,6 +117,14 @@ export function fillCardGrid(container, cards, { sortMode = 'default', deckIds =
      * 不是「拿到手」。不标的话，玩家会以为这 40 张自己也能抽到。
      */
     if (card.enemyOnly) badges.push(t('仅敌人可用'));
+    /**
+     * **主角专属牌**（3.0）：告诉玩家「这张只有那一位主角抽得到」。
+     * 不标的话，欧亚西莉亚的玩家会一直等一张永远不会出现在自己奖励里的牌。
+     */
+    if (card.heroOnly) {
+      const h = heroById(card.heroOnly);
+      if (h) badges.push(t('专属：{name}', { name: h.name }));
+    }
     if (state === 'new') badges.push(t('未获得'));
     else if (state === 'seen') badges.push(t('曾拿过'));
     const node = cardEl(card, {

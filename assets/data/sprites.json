@@ -2802,6 +2802,14 @@
     "frames": 80,
     "src": "animdata"
    },
+   "Float": {
+    "fw": 48,
+    "fh": 48,
+    "cols": 4,
+    "rows": 8,
+    "frames": 32,
+    "src": "animdata"
+   },
    "Hurt": {
     "fw": 72,
     "fh": 80,

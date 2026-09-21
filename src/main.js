@@ -1,6 +1,7 @@
 // 入口：加载素材元数据 → 建游戏 → 建 UI → 进标题。
 
 import { Game } from './core/game.js';
+import { save } from './core/save.js';
 import { loadSpriteMeta } from './core/sprites.js';
 import { generateMap } from './data/mapgen.js';
 import { music } from './core/bgm.js';
@@ -62,7 +63,9 @@ async function boot() {
   window.__oasisAuto = (opts = {}) => {
     const { scene = 'title', seed = 20240607, floor = 0, stage = 0 } = opts;
     if (scene === 'title') { game.phase = 'title'; ui.forceRerender(); return 'title'; }
-    if (!game.data) game.newRun(seed);
+    // 主角：opts.hero > URL 上的 ?hero= > 跨局记录里选的那位（见 newRun）
+    const hero = opts.hero ?? params.get('hero') ?? undefined;
+    if (!game.data) game.newRun(seed, hero ? { hero } : {});
     /**
      * `&biome=<key>` 把这一章换成指定地图（配合 `&stage=N`）——
      * 现在中间 4 章是**随机**地图（`d.biomes` 序列），想看某张图就得能指定它。
@@ -123,6 +126,42 @@ async function boot() {
 
   // 支持 ?scene=battle 之类的直接定位，方便截图与手动检查
   const params = new URLSearchParams(location.search);
+  /**
+   * `?hero=atlas` 指定主角（截图 / 诊断用）。
+   *
+   * 两位主角（3.0）之后，标题页那屏、开局卡组、一章多长全都跟着主角走 ——
+   * 想看阿特拉斯那一版，就必须能**在不改玩家记录**的前提下指定他。
+   * 所以这里只改 Game 上的「标题页正在展示谁」，**不写盘**（`meta.hero` 不动）。
+   */
+  const heroParam = params.get('hero');
+  if (heroParam) game._titleHeroId = heroParam;
+  /**
+   * `?unlock=1` 伪造成「欧亚西莉亚已经通关」——截图 / 诊断要用解锁之后的样子
+   * （头图上写着「点头图，主角换成 阿特拉斯」），但**不写玩家的存档**：
+   * 只在内存里给这份 meta 打补丁，刷掉页面就没了。
+   */
+  if (params.get('unlock') === '1') {
+    game.meta = {
+      ...game.meta,
+      unlocked: true,
+      endlessUnlocked: true,
+      clearedHeroes: [...new Set([...(game.meta.clearedHeroes ?? []), 'oasilia'])],
+      heroCleared: { ...(game.meta.heroCleared ?? {}), oasilia: true },
+    };
+  }
+  /**
+   * `?lock=1` 反过来：**在内存里**把「谁通关过」清空，拍「刚玩、什么都还没解锁」的样子
+   * （头图旁边写着解锁条件、通关页上挂着「新主角解锁」那条横幅）。同样不写盘。
+   */
+  if (params.get('lock') === '1') {
+    /**
+     * 这一条**会写盘**，和上面那两个不一样 —— 因为「刚玩的样子」必须让 `save.readMeta()`
+     * 也这么认为：通关页 / 标题页读的是那份**存档里的**记录（不是 game.meta 那个副本），
+     * 只改内存的话截图里还是会显示「已解锁」。
+     */
+    save.patchMeta({ unlocked: false, endlessUnlocked: false, clearedHeroes: [], heroCleared: {} });
+    game.meta = { ...game.meta, unlocked: false, endlessUnlocked: false, clearedHeroes: [], heroCleared: {} };
+  }
   /**
    * 遭遇演出（地图 → 战斗的过场）默认只在「玩家从地图走过去撞见的」战斗里出现。
    * ?enc=1 让所有入口都演（遭遇演出自己的诊断脚本用它，因为它是直接 startBattle 的），

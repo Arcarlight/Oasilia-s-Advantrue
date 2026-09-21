@@ -138,6 +138,11 @@ export const CONTENT_FIELDS = {
   status: ['name', 'desc'],
   tier: ['name'],
   player: ['name', 'speciesName'],
+  /**
+   * 主角（3.0 起有两位）：名字 / 物种名 / 属性 / 特性 / 标题台词 / 通关提示 / 结局文案。
+   * `ending` 是个小字典（{title, text}）—— 嵌套字典也要翻，见 translateValue 的说明。
+   */
+  hero: ['name', 'speciesName', 'types', 'ability', 'quote', 'clearHint', 'ending'],
 };
 
 /**
@@ -157,10 +162,21 @@ export function entriesOf(list, fields) {
   return Object.values(list);
 }
 
-/** 翻一个值：字符串直接查表，字符串数组逐个查表，别的原样返回 */
+/**
+ * 翻一个值：字符串直接查表，字符串数组逐个查表，**嵌套的小字典逐条查表**，别的原样返回。
+ *
+ * 嵌套字典（`{title, text}` 这种）以前是原样返回的 —— 于是主角的结局文案
+ * （`hero.ending`）在日 / 英模式下永远是中文。待翻清单那边（build-i18n 的 addDeep）
+ * 一直是递归收集的，所以清单里有、运行时却没改写：两边必须用同一套规则。
+ */
 function translateValue(v) {
   if (typeof v === 'string') return lang === DEFAULT_LANG ? v : t(v);
   if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' && lang !== DEFAULT_LANG ? t(x) : x));
+  if (v && typeof v === 'object') {
+    const out = {};
+    for (const [k, x] of Object.entries(v)) out[k] = translateValue(x);
+    return out;
+  }
   return v;
 }
 
@@ -172,6 +188,8 @@ function rememberZh(obj, fields) {
     const v = obj[f];
     if (typeof v === 'string') zh[f] = v;
     else if (Array.isArray(v)) zh[f] = [...v];
+    // 嵌套的小字典要**深拷一份**：原地改写会把 _zh 里那份一起改掉（第二遍就翻不回来了）
+    else if (v && typeof v === 'object') zh[f] = JSON.parse(JSON.stringify(v));
   }
   Object.defineProperty(obj, '_zh', { value: zh, enumerable: false, writable: true, configurable: true });
 }

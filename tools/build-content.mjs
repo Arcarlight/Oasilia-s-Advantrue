@@ -50,6 +50,12 @@ async function loadAll() {
    */
   const itemsData = await readJson(path.join(CONTENT, 'items.json'));
   const itemArt = await readJson(path.join(ROOT, 'assets', 'data', 'items.json')).catch(() => ({ items: {} }));
+  /**
+   * 主角（3.0 起有两位）：名字 / 物种 / 初始属性 / 标题台词 / 结局文案 / 这一局的地图形状。
+   * 欧亚西莉亚那一份必须和 `src/data/balance.js` 的 BALANCE.player 对得上（门禁在
+   * tools/check-content.mjs），所以这里不复制她的数值到别处。
+   */
+  const heroes = await readJson(path.join(CONTENT, 'heroes.json'));
   const enemies = await readJson(path.join(CONTENT, 'enemies.json'));
   const biomes = await readJson(path.join(CONTENT, 'biomes.json'));
   const eventsDir = path.join(CONTENT, 'events');
@@ -74,7 +80,7 @@ async function loadAll() {
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice, itemsData, itemArt };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice, itemsData, itemArt, heroes };
 }
 
 // ============================================================
@@ -162,7 +168,7 @@ async function resolveIcons(registry, componentCategory) {
   return out;
 }
 
-function validateCards(data, iconNames) {
+function validateCards(data, iconNames, heroIds = null) {
   const { cards, items, starterDeck } = data;
   if (!Array.isArray(cards)) return err('cards.json 缺少 cards 数组');
   const ids = new Set();
@@ -182,6 +188,16 @@ function validateCards(data, iconNames) {
      */
     if (!Array.isArray(c.types) || !c.types.length) err(`${at} 缺 types（这张牌是什么属性？比如 ["地面"]）`);
     else for (const t of c.types) if (!POKEMON_TYPES.includes(t)) err(`${at} 的 types 里有未知属性 ${t}（要用官方简称：超能不是超能力）`);
+    /**
+     * `heroOnly`：**只发给某一位主角**的牌（3.0 的双主角）。
+     * 两位主角可以有「改名同效」的牌（用户明确允许），但那一对不能同时出现在同一个池子里 ——
+     * 所以池子按主角分开算（见 src/data/cards.js 的 playerPool），门禁也是按主角分别查重。
+     */
+    if (c.heroOnly != null) {
+      if (typeof c.heroOnly !== 'string' || !c.heroOnly) err(`${at} 的 heroOnly 必须是主角 id 字符串`);
+      else if (heroIds && !heroIds.has(c.heroOnly)) err(`${at} 的 heroOnly=${c.heroOnly} 不是一位主角（见 content/heroes.json）`);
+      if (c.enemyOnly) err(`${at} 同时标了 heroOnly 与 enemyOnly（只给敌人用的牌不需要 heroOnly）`);
+    }
     for (const eff of c.effects ?? []) {
       if (!ENGINE_EFFECT_KINDS.includes(eff.kind)) err(`${at} 用了引擎不认识的效果 kind=${eff.kind}`);
       if (eff.kind === 'buff') {
@@ -675,6 +691,105 @@ async function writeBlock(relPath, name, body, syntax = 'js') {
   return next !== src;
 }
 
+/**
+ * 主角体检（content/heroes.json）。
+ *
+ * 每一位主角都会变成「开局那一局的全部设定」—— 名字、物种、属性、开局卡组、这一章多长、
+ * 几个首领、难度的额外倍率。这些字段写错时**游戏照样能跑**（默认值兜底），
+ * 于是错误会以「阿特拉斯长得像沙漠蜻蜓」「点了没反应」这种样子出现。所以逐条卡住。
+ */
+function validateHeroes(doc, cards, species) {
+  const list = doc?.heroes;
+  if (!Array.isArray(list) || list.length < 1) return err('content/heroes.json 缺 heroes 数组');
+  const ids = new Set();
+  for (const h of list) {
+    const at = `主角「${h?.id ?? '?'}」`;
+    for (const k of ['id', 'name', 'species', 'speciesName', 'dex', 'ability', 'gender', 'quote', 'clearHint']) {
+      if (!h?.[k]) err(`${at} 缺字段 ${k}`);
+    }
+    for (const k of ['atk', 'def', 'maxHp', 'agi', 'luck']) {
+      if (!Number.isFinite(h?.[k]) || h[k] <= 0) err(`${at} 的 ${k} 必须是正数（现在是 ${JSON.stringify(h?.[k])}）`);
+    }
+    if (!/^\d{4}$/.test(String(h?.dex ?? ''))) err(`${at} 的 dex 必须是 4 位数字（现在是 ${h?.dex}）`);
+    if (!Array.isArray(h?.types) || !h.types.length) err(`${at} 缺 types`);
+    else for (const t of h.types) if (!POKEMON_TYPES.includes(t)) err(`${at} 的 types 里有未知属性 ${t}`);
+    // 物种必须存在，而且属性 / 图鉴号要和 species.json 一致（两处各写一份必然有一天对不上）
+    const sp = h?.species ? species?.[h.species] : null;
+    if (h?.species && !sp) {
+      err(`${at} 的 species=${h.species} 不在 content/species.json 里（素材脚本也读那份表）`);
+    } else if (sp) {
+      if (String(sp.dex) !== String(h.dex)) err(`${at} 的 dex=${h.dex} 和 species.json 的 ${sp.dex} 对不上`);
+      const a = [...(h.types ?? [])].sort().join('/');
+      const b = [...(sp.types ?? [])].sort().join('/');
+      if (a !== b) err(`${at} 的 types=${a} 和 species.json 的 ${b} 对不上`);
+      if (sp.name && sp.name !== h.speciesName) err(`${at} 的 speciesName=${h.speciesName} 和 species.json 的 ${sp.name} 对不上`);
+    }
+    // 解锁条件只有两种写法：不锁 / 用某个主角通关一次
+    if (h?.unlock != null && !/^clear:[\w-]+$/.test(String(h.unlock))) {
+      err(`${at} 的 unlock=${JSON.stringify(h.unlock)} 不认识（只能是 null 或 "clear:<主角 id>"）`);
+    }
+    if (h?.unlock && !list.some((x) => x.id === String(h.unlock).slice(6))) {
+      err(`${at} 的 unlock 指向了不存在的主角 ${h.unlock}`);
+    }
+    if (h?.endlessUnlock != null && h.endlessUnlock !== 'clear-self') {
+      err(`${at} 的 endlessUnlock=${JSON.stringify(h.endlessUnlock)} 不认识（只能是 null 或 "clear-self"）`);
+    }
+    const m = h?.map;
+    if (!m || !Number.isFinite(m.rowsMul) || m.rowsMul < 1) err(`${at} 缺 map.rowsMul（一关的行数倍率，≥1）`);
+    if (!m || !Number.isFinite(m.bosses) || m.bosses < 1) err(`${at} 缺 map.bosses（一关几个首领，≥1）`);
+    if (m?.enemy && (!Number.isFinite(m.enemy.hp) || !Number.isFinite(m.enemy.atk))) err(`${at} 的 map.enemy 要写 hp / atk 两个数字`);
+    if (!h?.ending?.title || !h?.ending?.text) err(`${at} 缺 ending.title / ending.text（通关页那一段）`);
+    if (ids.has(h?.id)) err(`主角 id 重复：${h.id}`);
+    ids.add(h?.id);
+  }
+  // order 必须把每一位主角都列上（标题页切换主角的顺序就是它）
+  const order = doc?.order;
+  if (!Array.isArray(order) || order.length !== list.length || !list.every((h) => order.includes(h.id))) {
+    err(`content/heroes.json 的 order（${JSON.stringify(order)}）必须把 ${list.length} 位主角都列上，不重不漏`);
+  }
+  // 开局卡组：id 必须存在、不能是敌人专用牌、至少 5 张
+  const byId = new Map((cards ?? []).map((c) => [c.id, c]));
+  for (const [heroId, deck] of Object.entries(doc?.starters ?? {})) {
+    if (heroId.startsWith('_')) continue;
+    if (!ids.has(heroId)) { err(`starters 里的 ${heroId} 不是一位主角`); continue; }
+    if (!Array.isArray(deck) || deck.length < 5) { err(`${heroId} 的开局卡组至少要 5 张（现在是 ${deck?.length}）`); continue; }
+    for (const id of deck) {
+      const c = byId.get(id);
+      if (!c) { err(`${heroId} 的开局卡组里有不存在的卡 ${id}`); continue; }
+      if (c.enemyOnly) err(`${heroId} 的开局卡组里有敌人专用牌 ${id}`);
+      if (c.heroOnly && c.heroOnly !== heroId) err(`${heroId} 的开局卡组里有别的流派专属牌 ${id}（heroOnly=${c.heroOnly}）`);
+    }
+  }
+  return ids;
+}
+
+/**
+ * 主角数据（src/data/heroes.js）。
+ * 开局卡组一起生成：欧亚西莉亚那份来自 content/cards.json 的 starterDeck（她的卡组一直写在那里），
+ * 其余主角来自 content/heroes.json 的 starters —— 这样 STARTER_DECK 与 HERO_STARTERS
+ * 不会各写一份。
+ */
+function emitHeroes(doc, starterDeck, heroIds) {
+  const starters = { [doc.order[0]]: starterDeck };
+  for (const [heroId, deck] of Object.entries(doc.starters ?? {})) {
+    if (heroId.startsWith('_')) continue;
+    starters[heroId] = deck;
+  }
+  const heroes = doc.order.map((id) => doc.heroes.find((h) => h.id === id)).filter(Boolean);
+  void heroIds;
+  return [
+    'export const HERO_ORDER = ' + J(doc.order) + ';',
+    '',
+    '/** 主角记录（content/heroes.json 生成）。字段含义见那个 JSON 的 _comment。 */',
+    'export const HEROES = ' + J(heroes) + ';',
+    '',
+    'export const HERO_BY_ID = Object.fromEntries(HEROES.map((h) => [h.id, h]));',
+    '',
+    '/** 每位主角的开局卡组（id 数组，可以有重复） */',
+    'export const HERO_STARTERS = ' + J(starters) + ';',
+  ].join('\n');
+}
+
 const J = (v) => JSON.stringify(v, null, 2);
 
 function emitCards(cards, starterDeck) {
@@ -884,6 +999,13 @@ function emitMerchants(merchants) {
 function emitEvents(events) {  const list = events.map((ev) => {
     const head = { id: ev.id, name: ev.name };
     if (ev.biome) head.biome = ev.biome;
+    /**
+     * **只给某一位主角的事件**（3.0）：`hero` / `heroNot` 原样带进生成文件 ——
+     * src/core/game.js 的 startEvent 按这一局的主角过滤。漏带的话事件会对所有人出现
+     * （「另一位沙漠精灵」那一条就是这样在阿特拉斯那一局里变成 bug 的）。
+     */
+    if (ev.hero) head.hero = ev.hero;
+    if (ev.heroNot) head.heroNot = ev.heroNot;
     head.text = ev.text;
     if (ev.once === false) head.once = false;
     const headLines = Object.entries(head).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n');
@@ -927,7 +1049,8 @@ for (const [component, category] of Object.entries(data.iconDraft?.category_over
 const icons = await resolveIcons(data.icons, iconCategory);
 const iconNameSet = new Set(icons.map((i) => i.name));
 
-const cardIds = validateCards(data.cards, iconNameSet);
+const heroIds = validateHeroes(data.heroes, data.cards.cards, data.species.species);
+const cardIds = validateCards(data.cards, iconNameSet, heroIds);
 validateSpecies(data.species, data.enemies.enemies);
 // 传进去的 data 要带上卡表与物种表：属性的硬校验（池子里不许混异系卡、每只怪至少一张本系）靠它们
 validateEnemies({ ...data.enemies, cardList: data.cards.cards }, cardIds, Object.keys(data.biomes.biomes), data.species.species);
@@ -949,6 +1072,7 @@ if (errors.length) {
 const changed = [];
 if (!CHECK_ONLY) {
   if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.starterDeck))) changed.push('src/data/cards.js');
+  if (await writeBlock('src/data/heroes.js', 'HEROES', emitHeroes(data.heroes, data.cards.starterDeck, heroIds))) changed.push('src/data/heroes.js');
   if (await writeBlock('src/data/items.js', 'ITEMS', emitItems(data.itemsData, data.itemArt?.items))) changed.push('src/data/items.js');
   if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}, data.enemyVoice?.voice ?? {}))) changed.push('src/data/enemies.js');
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');

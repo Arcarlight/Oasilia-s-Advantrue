@@ -2,7 +2,8 @@
 // 所有玩家数据都在 game.data 里，可序列化（存档直接用 JSON.stringify）。
 
 import { BALANCE, BIOMES, BIOME_SLOTS, STAGE_BIOME, RARITY, REWARD_WEIGHTS, apFromAgi, drawFromAgi, handFromAgi, critChance, dodgeChance } from '../data/balance.js';
-import { CARD_BY_ID, STARTER_DECK, rollCard, rollCards, CARDS } from '../data/cards.js';
+import { CARD_BY_ID, STARTER_DECK, rollCard, rollCards, CARDS, playerPool } from '../data/cards.js';
+import { HEROES, HERO_ORDER, heroById, heroOf, starterDeckFor, heroMapShape, heroEnemyMul, DEFAULT_HERO_ID } from '../data/heroes.js';
 import { ITEMS, ITEM_ART, STARTER_ITEMS } from '../data/items.js';
 import { ENEMIES, ENEMY_BY_ID, poolFor, scaleEnemy } from '../data/enemies.js';
 import { generateMap, nextNodes, startNodes, nodeById, NODE_TYPES, stageCount, endlessRowBonus, endlessBranchBonus } from '../data/mapgen.js';
@@ -107,17 +108,26 @@ export class Game {
   /**
    * 开一局。
    * @param {number} [seed]
-   * @param {{endless?:boolean}} [opts] `endless: true` = 无尽模式（标题页那个单独入口）。
-   *   无尽局从第 1 章起就是另一个模式：地图分叉 +1、敌人略微加压，过了正片复利变强，
-   *   而且**永远不会有结局页** —— 目标只有「看能走到第几章」。
+   * @param {{endless?:boolean, hero?:string}} [opts]
+   *   · `endless: true` = 无尽模式（标题页那个单独入口）；无尽局从第 1 章起就是另一个模式：
+   *     地图分叉 +1、敌人略微加压，过了正片复利变强，而且**永远不会有结局页**。
+   *   · `hero: '<主角 id>'` = 用哪一位主角开局（3.0 起有两位）。不传就用跨局记录里
+   *     选好的那位（标题页点头图切换，存在 meta.hero 里），再没有就退回第一位。
+   *     这一位主角决定：名字 / 物种 / 初始属性 / **开局卡组** / 抽卡池 / 一关多长、几个首领、
+   *     敌人额外倍率（阿特拉斯那套「两倍长 + 双首领 + 更狠」就在 content/heroes.json 里）。
    */
   newRun(seed, opts = {}) {
     const endless = !!opts.endless;
     if (seed != null) this.rng = makeRng(seed);
-    const p = BALANCE.player;
+    const p = heroById(opts.hero ?? this.titleHeroId ?? DEFAULT_HERO_ID);
+    const shape = heroMapShape(p?.id ?? DEFAULT_HERO_ID);
+    /** 这一局的主角 id：存档 / 抽卡池 / 结局页 / 记录页都读它 */
+    const heroId = p?.id ?? DEFAULT_HERO_ID;
     this.usedEvents = [];
     this.data = {
       seed: this.rng.seed,
+      /** 主角 id（3.0）：`d.hero` 是这一局所有「按主角分」的分支的唯一依据 */
+      hero: heroId,
       name: p.name,
       slug: p.species,
       speciesName: p.speciesName,
@@ -128,7 +138,7 @@ export class Game {
       agi: p.agi,
       luck: p.luck,
       gold: 60,
-      deck: [...STARTER_DECK],
+      deck: [...starterDeckFor(heroId)],
       /**
        * **手持道具**（用户要的机制）：一个 id 数组，可以有重复（同名多件）。
        * 上限 = heldMax() = 3 + 本局打赢的 boss 数。开局的几件在下面 giveItem 进去。
@@ -136,6 +146,12 @@ export class Game {
       held: [],
       /** 本局打赢过几个 boss —— 手持栏 +1 的依据（见 heldMax） */
       bossKills: 0,
+      /**
+       * **这一章打过哪些首领**（按顺序）。一关两个首领时靠它保证「两只不重样」，
+       * 以及判断「现在打的是不是本章最后一个首领」（结局首领只在那一刻出场）。
+       * 换章时清空（见 nextStage）。
+       */
+      stageBosses: [],
       relics: [],
       battleDeck: null,
       /**
@@ -182,7 +198,7 @@ export class Game {
     }
     this.data.biomes = biomes;
     // 无尽模式：地图更宽（分叉 +1）从第 1 章就生效 —— 这是这个模式的手感
-    this.data.map = generateMap(0, this.rng, biomes[0], endless ? { branchBonus: endlessBranchBonus(0), rowBonus: endlessRowBonus(0) } : {});
+    this.data.map = this.makeMap(0, endless);
     this.phase = Phase.MAP;
     // 开局道具（content/items.json 的 starter）：走 giveItem，所以「拿不下」也不会静默丢掉
     for (const [id, n] of Object.entries(STARTER_ITEMS ?? {})) this.giveItem(id, n);
@@ -193,16 +209,35 @@ export class Game {
   }
 
   /**
+   * 生成某一章的地图：**按这一局的主角**取形状（行数倍率 / 一关几个首领），
+   * 再叠上无尽模式那两条加成。
+   *
+   * 阿特拉斯那套「一章两倍长 + 两个首领」就落在这里：`map.rowsMul: 2`、`map.bosses: 2`，
+   * 两个首领保证不重样（见 startBattle 的 stageBosses）。
+   * 以前这句生成散在 newRun / nextStage 两处各写一遍，加第三个参数就会漏一处。
+   */
+  makeMap(stage, endless = this.isEndless()) {
+    const d = this.data;
+    const shape = heroMapShape(d?.hero ?? DEFAULT_HERO_ID);
+    const opts = { rowsMul: shape.rowsMul, bosses: shape.bosses };
+    if (endless) {
+      opts.branchBonus = endlessBranchBonus(stage);
+      opts.rowBonus = endlessRowBonus(stage);
+    }
+    return generateMap(stage, this.rng, d?.biomes?.[stage], opts);
+  }
+
+  /**
    * 本局的玩家名与物种名**跟着语言走**。
    *
-   * 这两个字段在开新一局时是从 BALANCE.player 上**抄下来**的副本（存档里要留着），
+   * 这两个字段在开新一局时是从主角记录上**抄下来**的副本（存档里要留着），
    * 于是「开着中文开了一局、中途切成日语」之后，副本还停在中文 ——
    * 结算页那句「{name} 展开翅膀」就会在满屏日语里冒出一个中文名字（用户截图报过）。
    * 切语言时调一次这里，从 `_zh`（中文原文）重新取一次当前语言的写法。
    */
   syncPlayerLang() {
-    const p = BALANCE.player;
-    if (!this.data) return;
+    const p = heroOf(this.data) ?? heroById(DEFAULT_HERO_ID);
+    if (!this.data || !p) return;
     const zhOf = (f) => (p._zh?.[f] ?? p[f]);
     if (this.data.name != null) this.data.name = t(zhOf('name'));
     if (this.data.speciesName != null) this.data.speciesName = t(zhOf('speciesName'));
@@ -446,14 +481,14 @@ export class Game {
 
   /** 事件专用：直接塞一张随机卡进卡组并返回卡对象 */
   offerRandomCard(boost = 0) {
-    const card = rollCard(boost, this.data.deck);
+    const card = rollCard(boost, this.data.deck, null, this.data.hero);
     this.addCard(card.id);
     return card;
   }
 
   offerCardOfRarity(rarities = ['rare'], boost = 0.5) {
     for (let i = 0; i < 200; i++) {
-      const card = rollCard(boost, []);
+      const card = rollCard(boost, [], null, this.data.hero);
       if (rarities.includes(card.rarity)) {
         this.addCard(card.id);
         return card;
@@ -518,18 +553,28 @@ export class Game {
     d.stage += 1;
     /**
      * 走到正片尽头（第 6 章的首领之后）：
-     *   · **普通模式** → 结局页，并且**解锁无尽模式**（用户指定的解锁条件）；
+     *   · **普通模式** → 结局页，并且解锁「另一位主角」与**无尽模式**（用户指定的解锁条件）；
      *   · **无尽模式** → 继续往下走（第 7、8、9… 章），敌人按 BALANCE.endless 复利变强。
      *     无尽模式是**另一个入口**（标题页单独一个按钮），不是普通模式打完成这样 ——
      *     这一点用户专门强调过。
      */
     if (!d.endless && d.stage >= campaign) {
       this.phase = Phase.VICTORY;
+      const heroId = d.hero ?? DEFAULT_HERO_ID;
       this.meta = save.patchMeta({
         wins: (this.meta.wins ?? 0) + 1,
         unlocked: true,
         bestStage: campaign,
         endlessUnlocked: true,
+        /**
+         * 通关记在**这一位主角**头上（3.0）：
+         *   · `clearedHeroes` 是谁通过关（另一位主角的解锁条件就是它的第一条）；
+         *   · `heroCleared`  这一位主角通没通过关（无尽模式的门槛：用这位主角打通过一次）。
+         * 只用一个布尔的话，「阿特拉斯通过关」会把欧亚西莉亚的无尽模式也一起解锁，
+         * 反过来也一样 —— 这两位的手感完全不同，通关记录必须分开记。
+         */
+        clearedHeroes: [...new Set([...(this.meta.clearedHeroes ?? []), heroId])],
+        heroCleared: { ...(this.meta.heroCleared ?? {}), [heroId]: true },
       });
       // 通关也记一条（注意 d.stage 这时已经越界了，runSummary 里会夹回章节总数）
       this.meta = save.recordRun(this.runSummary(true));
@@ -559,10 +604,12 @@ export class Game {
         d.biomes.push(this.rng.pick(pool.length ? pool : Object.keys(BIOME_SLOTS)));
       }
     }
-    d.map = generateMap(d.stage, this.rng, d.biomes?.[d.stage],
-      d.endless ? { branchBonus: endlessBranchBonus(d.stage), rowBonus: endlessRowBonus(d.stage) } : {});
+    d.map = this.makeMap(d.stage, d.endless);
     d.nodeId = null;
     d.floor = 0;
+    // 新的一章：首领账本清零（一关两个首领时靠它保证不重样）
+    d.stageBosses = [];
+    d.bossCount = 0;
     this.phase = Phase.MAP;
     const over = d.endless && d.stage >= campaign;
     this.message = {
@@ -578,6 +625,43 @@ export class Game {
   /** 这一局是不是无尽模式（标题页那个单独入口开出来的局） */
   isEndless() {
     return !!this.data?.endless;
+  }
+
+  /**
+   * **标题页正在展示哪位主角**（3.0 的双主角：点标题页的头图切换）。
+   *
+   * 它同时是「下一次开局的默认主角」——点一下就写进跨局记录（`meta.hero`），
+   * 关掉页面再回来还是他。为什么放在 Game 上而不是标题页自己的局部变量：
+   * 换屏的记账在 UI 层，UI 需要知道「这次重画是不是因为换了主角」（见 ui.js 的 title 分支），
+   * 两边读同一个状态才不会一个换了一个没换。
+   */
+  get titleHeroId() {
+    return this._titleHeroId ?? this.meta?.hero ?? DEFAULT_HERO_ID;
+  }
+
+  set titleHeroId(id) {
+    if (!id) return;
+    this._titleHeroId = id;
+    this.meta = save.patchMeta({ hero: id });
+  }
+
+  /** 标题页现在展示的那位主角记录 */
+  titleHero() {
+    return heroById(this.titleHeroId);
+  }
+
+  /**
+   * 这一局敌人的**额外倍率** = 主角那一条（content/heroes.json 的 map.enemy）
+   * × 无尽模式那一条。
+   *
+   * 为什么分成两半：用户要求「本体平衡是基准」（欧亚西莉亚 ×1，一个数都不动），
+   * 同时给了阿特拉斯「难度曲线也会变高一些」（他自己那条），
+   * 而无尽模式本来就有自己的一套复利。三件事各自独立，乘起来才不会互相干扰。
+   */
+  enemyMul(stage = this.data?.stage ?? 0) {
+    const e = this.endlessEnemyMul(stage);
+    const h = heroEnemyMul(this.data?.hero ?? DEFAULT_HERO_ID, stage);
+    return { hp: e.hp * h.hp, atk: e.atk * h.atk };
   }
 
   /**
@@ -611,6 +695,8 @@ export class Game {
       win: !!win,
       /** 这一局是不是无尽模式（记录页会给它打一个标记：「无尽 · 第 N 章」） */
       endless: !!d.endless,
+      /** 这一局用的哪位主角（只存 id，名字渲染时按当前语言现查） */
+      hero: d.hero ?? DEFAULT_HERO_ID,
       seed: d.seed ?? null,
       // 通关时 d.stage 已经加到越界（等于章节总数），所以夹回来
       stage: Math.min(d.stage + 1, stageCount()),
@@ -903,21 +989,44 @@ export class Game {
     let enemyDef;
     if (kind === 'boss') {
       const bosses = poolFor(biome, 'boss');
-      // 最后一章要把「结局首领」（content/enemies.json 里标了 final 的那个）请出来，
-      // 不然 zygarde 永远不会出场——以前固定取 bosses[0]，标了 final 的那只被跳过了。
+      /**
+       * **一关可以有两个首领**（阿特拉斯那套：content/heroes.json 的 map.bosses = 2）。
+       * 两条规矩：
+       *   · `final` 那只（夜砂墓原的结局首领）**只出现在最后一章的最后一个首领位**，
+       *     否则它会在前半场就出场，把结局提前演掉；
+       *   · **同一章里两个首领不重样** —— `d.stageBosses` 记着这一章打过谁，选的时候排掉。
+       */
+      const totalBosses = Math.max(1, d.map?.bosses ?? 1);
+      const fought = d.stageBosses ?? (d.stageBosses = []);
+      const isChapterFinal = fought.length + 1 >= totalBosses;
       const isFinalStage = stage >= stageCount() - 1;
-      const chosen = isFinalStage ? bosses.find((b) => b.final) : null;
-      // 章节首领也走「本局没见过优先」（池子里有两只的时候，不会连着两章撞上同一只）
-      enemyDef = chosen ?? (isFinalStage ? bosses[0] : this.rollEnemyFor('boss'))
-        ?? poolFor(biome, 'elite')[0] ?? ENEMIES[ENEMIES.length - 1];
+      let chosen = null;
+      if (isFinalStage && isChapterFinal) chosen = bosses.find((b) => b.final) ?? null;
+      if (!chosen) {
+        const notFinal = bosses.filter((b) => !b.final);
+        const pool = (notFinal.length ? notFinal : bosses).filter((b) => !fought.includes(b.id));
+        const use = pool.length ? pool : (notFinal.length ? notFinal : bosses);
+        // 章节首领也走「本局没见过优先」（池子里有两只的时候，不会连着两章撞上同一只）
+        const seen = this.metSpecies();
+        const fresh = use.filter((e) => !seen.has(e.slug));
+        chosen = this.rng.pick(fresh.length ? fresh : use) ?? use[0] ?? null;
+      }
+      enemyDef = chosen ?? poolFor(biome, 'elite')[0] ?? ENEMIES[ENEMIES.length - 1];
+      // 记进「本章打过谁」的账本（重样门禁与「第二个首领更难」都靠它）
+      if (enemyDef?.id && !fought.includes(enemyDef.id)) fought.push(enemyDef.id);
     } else {
       enemyDef = this.rollEnemyFor(kind);
     }
     if (!enemyDef) enemyDef = ENEMIES[ENEMIES.length - 1];
+    // 首领也要记进「这一局见过谁」的账本（以前只有 rollEnemyFor 那条路会记）
+    if (kind === 'boss') {
+      if (!Array.isArray(d.metEnemies)) d.metEnemies = [];
+      if (enemyDef.id && !d.metEnemies.includes(enemyDef.id)) d.metEnemies.push(enemyDef.id);
+    }
 
     const scaled = scaleEnemy(enemyDef, stage, nodeIdx, {
       atk: d.atk, def: d.def, maxHp: d.maxHp, agi: d.agi,
-    }, this.endlessEnemyMul(stage));
+    }, this.enemyMul(stage));
     // 敌人卡组：从招式池里抽 9 张，并限制「单场平均威力」，
     // 免得同一回合抽到三张大地震把玩家直接秒掉（平衡细节见 tools/check-balance.mjs）
     const deck = this.buildEnemyDeck(enemyDef.deck ?? ['tackle'], kind, scaled, enemyDef.signature ?? []);
@@ -1039,7 +1148,7 @@ export class Game {
      */
     const getCard = ctx.kind === 'boss' || ctx.kind === 'elite' || this.rng.chance(BALANCE.cardRewardChance);
     const slots = ctx.kind === 'boss' || ctx.kind === 'elite' ? 4 : 3;
-    const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights), weights) : [];
+    const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights, d.hero), weights) : [];
 
     /**
      * 掉落道具（用户要的第三条）：**打赢之后有概率掉，而且按敌人的属性加权** ——
@@ -1150,7 +1259,7 @@ export class Game {
     };
     const swapInto = (test) => {
       if (slot < 0) return false;
-      const pool = CARDS.filter((c) => !c.enemyOnly && !used.has(c.id) && test(c));
+      const pool = playerPool(this.data?.hero).filter((c) => !used.has(c.id) && test(c));
       if (!pool.length) return false;
       const pick = pickWeighted(pool);
       used.add(pick.id);
@@ -1176,7 +1285,7 @@ export class Game {
       win: true,
       gold: isBoss ? 260 : kind === 'elite' ? 88 : 42,
       healed: 18,
-      cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null),
+      cardChoices: rollCards(isBoss || kind === 'elite' ? 4 : 3, 0, [], REWARD_WEIGHTS[kind] ?? null, this.data?.hero),
       item,
       itemReason: isBoss ? 'type' : 'random',
       // 掉落和真实战斗走同一条路（在这里就发），否则「捡到道具」那一屏会显示成没收到
@@ -1278,8 +1387,20 @@ export class Game {
   // ================= 事件 =================
 
   startEvent() {
-    const pool = eventsFor(this.data.map.biome).filter((e) => !this.usedEvents.includes(e.id));
-    const ev = pool.length ? this.rng.pick(pool) : this.rng.pick(eventsFor(this.data.map.biome));
+    /**
+     * **只给某一位主角的事件**（3.0）：`hero: 'atlas'` / `heroNot: 'atlas'`。
+     *
+     * 起因：旧事件里有几条**通篇按欧亚西莉亚写**（例如「另一位沙漠精灵」里
+     * 「半空中悬着另一只沙漠蜻蜓。她比你小一点」「你也是……欧亚西莉亚？」）——
+     * 换成阿特拉斯之后那几句就不成立了。用户的要求是「不用全改，只让阿特拉斯这边的事件不一样」，
+     * 所以旧事件加 `heroNot: 'atlas'` 挡住，另写阿特拉斯专属的那几个。
+     * 过滤放在挑事件这一处（而不是每个选项里判一次），漏不掉。
+     */
+    const heroId = this.data.hero ?? DEFAULT_HERO_ID;
+    const fits = (e) => (!e.hero || e.hero === heroId) && (!e.heroNot || e.heroNot !== heroId);
+    const valid = eventsFor(this.data.map.biome).filter(fits);
+    const pool = valid.filter((e) => !this.usedEvents.includes(e.id));
+    const ev = pool.length ? this.rng.pick(pool) : this.rng.pick(valid.length ? valid : eventsFor(this.data.map.biome));
     this.usedEvents.push(ev.id);
     this.event = ev;
     this.eventResult = null;
@@ -1323,7 +1444,7 @@ export class Game {
       d.gold += gold;
       chest = { kind: 'gold', gold, text: t('一整袋金币，还有几颗碎宝石。\n「沉是沉了点，不过我不嫌弃。」\n金币 +{gold}。', { gold }) };
     } else if (roll < 0.74) {
-      const card = rollCard(0.5, []);
+      const card = rollCard(0.5, [], null, this.data?.hero);
       this.addCard(card.id);
       const gold = this.rng.int(15, 35);
       d.gold += gold;
@@ -1448,7 +1569,7 @@ export class Game {
     if (tier < 0 || tier >= RARITY_ORDER.length - 1) return [];   // 已经最高一档：没得换
     const role = cardRoleOf(card);
     const nextTier = RARITY_ORDER[tier + 1];
-    const higher = CARDS.filter((c) => !c.enemyOnly && RARITY_ORDER.indexOf(c.rarity) > tier);
+    const higher = playerPool(this.data?.hero).filter((c) => RARITY_ORDER.indexOf(c.rarity) > tier);
     const scored = higher.map((c) => ({
       c,
       score: (cardRoleOf(c) === role ? 2 : 0) + (c.rarity === nextTier ? 1 : 0) + stableJitter(cardId + '|' + c.id),
@@ -1496,7 +1617,7 @@ export class Game {
      * 万一真对不上（名单变了 / 传了个别的 id）也**不偷偷换牌** —— 宁可如实报错。
      */
     const picked = newId ? CARD_BY_ID[newId] : null;
-    const pickedOk = !!picked && !picked.enemyOnly && RARITY_ORDER.indexOf(picked.rarity) > tier;
+    const pickedOk = !!picked && !picked.enemyOnly && (!picked.heroOnly || picked.heroOnly === this.data?.hero) && RARITY_ORDER.indexOf(picked.rarity) > tier;
     if (newId && !pickedOk) {
       return { ok: false, text: t('那张牌换不了「{name}」—— 冥想只给比它更强的牌，这次机会先留着。', { name: card.name }) };
     }
@@ -1546,7 +1667,7 @@ export class Game {
     };
 
     const stock = [];
-    const cards = rollCards(p.cards, p.rarityBoost, []);
+    const cards = rollCards(p.cards, p.rarityBoost, [], null, this.data?.hero);
     for (const c of cards) {
       const base = { common: 42, uncommon: 66, rare: 92, epic: 130 }[c.rarity] ?? 50;
       stock.push({

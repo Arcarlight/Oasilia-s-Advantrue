@@ -734,7 +734,8 @@ export const MOVE_POOLS = {
     "drain_punch",
     "storm_throw",
     "mob_guard",
-    "mob_stare"
+    "mob_stare",
+    "cross_chop"
   ],
   "kit_t_格斗_hi": [
     "mach_punch",
@@ -903,7 +904,8 @@ export const MOVE_POOLS = {
     "sig_meteor_mash",
     "mob_guard",
     "mob_stare",
-    "bullet_punch"
+    "bullet_punch",
+    "dynamax_cannon"
   ],
   "kit_t_钢_hi": [
     "metal_claw",

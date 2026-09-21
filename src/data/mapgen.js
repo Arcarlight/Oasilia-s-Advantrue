@@ -71,8 +71,10 @@ export function endlessBranchBonus(stage) {
  * @param {Function} rng
  * @param {string} [biomeKey] 这一章用哪张地图 —— 开局时抽好的序列（`game.data.biomes`）说了算。
  *   不传就退回默认顺序 STAGE_BIOME（诊断脚本、老存档都还能跑）。
- * @param {{branchBonus?:number, rowBonus?:number}} [opts] 覆盖分叉 / 行数加成
- *   （无尽模式与诊断脚本用；不传就按章节自动算）
+ * @param {{branchBonus?:number, rowBonus?:number, rowsMul?:number, bosses?:number}} [opts]
+ *   覆盖分叉 / 行数 / 形状（无尽模式与诊断脚本用；不传就按章节自动算）。
+ *   `rowsMul` = 行数倍率（阿特拉斯是 2：一章的路变成两倍长）；
+ *   `bosses` = 这一章几个首领（2 时第二个落在正中，两个首领**保证不重样**，见 game.js）。
  */
 export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   const biome = BIOMES[biomeKey] ?? BIOMES[STAGE_BIOME[stage] ?? 'night'];
@@ -80,9 +82,31 @@ export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   // 密林事件多、盐海商店多、峭壁精英多、终章又长又狠。缺配置就用全局默认。
   const shape = biome.shape ?? {};
   const branchBonus = opts.branchBonus ?? branchBonusFor(stage);
-  const rows = (shape.rows ?? BALANCE.map.rowsPerStage) + (opts.rowBonus ?? 0);
+  const rowsMul = Math.max(1, Math.round(opts.rowsMul ?? 1));
+  const bossCount = Math.max(1, Math.round(opts.bosses ?? 1));
+  const rows = Math.max(4, Math.round((shape.rows ?? BALANCE.map.rowsPerStage) * rowsMul) + (opts.rowBonus ?? 0)) + (bossCount - 1);
   const weights = shape.nodeWeights ?? { battle: 52, elite: 9, event: 18, chest: 13, shop: 8 };
-  const guarantee = shape.guarantee ?? { chest: 2, shop: 1, rest: 1 };
+  /**
+   * 保底数量跟着行数一起放大：一章两倍长、两倍多的战斗，补给点还是原来那几个的话
+   * 后半段就只剩「硬扛」了（怪会越打越强，营地却还是 1 个）。倍率取整。
+   */
+  const guaranteeBase = shape.guarantee ?? { chest: 2, shop: 1, rest: 1 };
+  const guarantee = Object.fromEntries(Object.entries(guaranteeBase).map(([k, v]) => [k, Math.round(v * rowsMul)]));
+  /**
+   * **首领行**：一关几个首领就均匀铺在几行上，最后一个一定在结尾。
+   *   1 个 → 最后一行；2 个 → 正中和最后一行（「一关两个 BOSS」）。
+   * 每个首领的前一行固定是营地（打之前能补血），再前一行是「准备节点」。
+   */
+  const bossRows = new Set();
+  for (let i = 1; i <= bossCount; i += 1) bossRows.add(Math.min(rows - 1, Math.max(1, Math.round((i * (rows - 1)) / bossCount))));
+  bossRows.add(rows - 1);
+  /** 首领前一行的「准备节点」：营地；再前一行：战斗 / 精英 / 事件 / 宝箱 */
+  const restRows = new Set();
+  const prepRows = new Set();
+  for (const br of bossRows) {
+    if (br - 1 > 0) restRows.add(br - 1);
+    if (br - 2 > 0 && !bossRows.has(br - 2)) prepRows.add(br - 2);
+  }
 
   /** @type {{id:string,row:number,col:number,type:string,next:string[],x:number,y:number}[]} */
   const nodes = [];
@@ -92,7 +116,8 @@ export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   const maxB = Math.max(minB, BALANCE.map.maxBranches + branchBonus);
 
   for (let r = 0; r < rows; r++) {
-    const cols = r === rows - 1 ? 1 : rng.int(minB, maxB);
+    // 首领行只有一个节点（就是那个首领）；其余行按这一章的分叉宽度抽
+    const cols = bossRows.has(r) ? 1 : rng.int(minB, maxB);
     const row = [];
     for (let c = 0; c < cols; c++) {
       const id = `s${stage}r${r}n${c}`;
@@ -143,12 +168,12 @@ export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   // 权重表来自 content/biomes.json 的 shape.nodeWeights（转成 rng.weighted 需要的 [权重, 值] 形式）
   const w = Object.entries(weights).filter(([, v]) => v > 0).map(([k, v]) => [v, k]);
   for (const n of nodes) {
-    if (n.row === rows - 1) { n.type = 'boss'; continue; }
+    if (bossRows.has(n.row)) { n.type = 'boss'; continue; }
     if (n.row === 0) { n.type = 'battle'; continue; }
     let t;
     // 首领前一行固定给「准备节点」：营地或商队，让玩家有补血/补货的机会
-    if (n.row === rows - 2) t = 'rest';
-    else if (n.row === rows - 3) t = rng.weighted([[52, 'battle'], [20, 'elite'], [18, 'event'], [10, 'chest']]);
+    if (restRows.has(n.row)) t = 'rest';
+    else if (prepRows.has(n.row)) t = rng.weighted([[52, 'battle'], [20, 'elite'], [18, 'event'], [10, 'chest']]);
     else if (n.row <= 2) t = rng.weighted([[70, 'battle'], [30, 'event']]);
     else t = rng.weighted(w);
     n.type = t;
@@ -157,15 +182,15 @@ export function generateMap(stage, rng, biomeKey = null, opts = {}) {
   // 保底数量（每张地图自己定：宝箱 / 商店 / 营地）
   for (const [type, n] of Object.entries(guarantee)) ensureCount(nodes, type, n, rng);
 
-  return { stage, biome: biome.key, rows, nodes, gridIds: grid.map((row) => row.map((n) => n.id)), branchBonus };
+  return { stage, biome: biome.key, rows, nodes, gridIds: grid.map((row) => row.map((n) => n.id)), branchBonus, rowsMul, bosses: bossCount };
 }
 
-/** 保证某种节点至少出现 n 次 */
+/** 保证某种节点至少出现 n 次（首领行不算候选 —— 那里必须是首领） */
 function ensureCount(nodes, type, n, rng) {
-  const candidates = nodes.filter((x) => x.row > 0 && x.row < nodes.length - 1 && x.type !== 'boss');
+  const candidates = nodes.filter((x) => x.row > 0 && x.type !== 'boss');
   let have = candidates.filter((x) => x.type === type).length;
   let guard = 0;
-  while (have < n && guard++ < 50) {
+  while (have < n && guard++ < 80) {
     const pool = candidates.filter((x) => x.type === 'battle');
     if (!pool.length) break;
     const pick = rng.pick(pool);
