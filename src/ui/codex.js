@@ -105,6 +105,15 @@ export function fillCardGrid(container, cards, { sortMode = 'default', deckIds =
     if (sortMode === 'damage') badges.push(t('威力 {n}%', { n: cardPowerTotal(card) }));
     const n = copies.get(card.id) ?? 0;
     if (state === 'deck' && n > 1) badges.push(`×${n}`);
+    /**
+     * 只给敌人用的牌（`enemyOnly`）单独标一行「仅敌人可用」。
+     *
+     * 为什么不干脆从图鉴里删掉它们：玩家在战斗里**看得见**敌方出这些牌
+     * （「扬起沙尘！」那种），图鉴里留着一栏才讲得通 ——
+     * 而且它们的解锁条件是「**看见就解锁**」（见 battle.js 的 onCardPlayed），
+     * 不是「拿到手」。不标的话，玩家会以为这 40 张自己也能抽到。
+     */
+    if (card.enemyOnly) badges.push(t('仅敌人可用'));
     if (state === 'new') badges.push(t('未获得'));
     else if (state === 'seen') badges.push(t('曾拿过'));
     const node = cardEl(card, {
@@ -114,6 +123,7 @@ export function fillCardGrid(container, cards, { sortMode = 'default', deckIds =
     });
     // 没拿过的卡压暗：图鉴里「全亮」会让玩家以为这些都算已收集（用户反馈）
     if (state === 'new') node.classList.add('card-unowned');
+    if (card.enemyOnly) node.classList.add('card-enemy-only');
     container.append(node);
   }
 }
@@ -157,8 +167,42 @@ export function showCardCodex(game) {
   });
   sortBar.append(sortHint);
 
+  /**
+   * 「只看玩家能拿到的 / 只看仅敌人可用的」——用户要的「在图鉴里分类」。
+   *
+   * 为什么值得单独一个筛选：图鉴一共 273 张，其中 **40 张只给敌人用**；
+   * 玩家想盘点「我还能抽到哪些」时，这 40 张会一直混在里面（而且它们标着「未获得」，
+   * 永远拿不到，看着像收集不完）。加这一排之后两边都能一眼看全。
+   */
+  const OWNER_TABS = [
+    { key: 'all', label: t('全部') },
+    { key: 'player', label: t('玩家可用') },
+    { key: 'enemy', label: t('仅敌人可用') },
+  ];
+  let owner = 'all';
+  const ownerBar = el('div', { class: 'sort-bar' }, [el('span', { class: 'sort-label', text: t('分类：') })]);
+  const ownerTabs = OWNER_TABS.map((o) => {
+    const tab = el('button', {
+      class: `sort-tab${o.key === owner ? ' active' : ''}`,
+      onClick: () => {
+        owner = o.key;
+        audio.ui('toggle');
+        for (const x of ownerTabs) x.classList.toggle('active', x.dataset.owner === owner);
+        paint();
+      },
+    }, [o.label]);
+    tab.dataset.owner = o.key;
+    ownerBar.append(tab);
+    return tab;
+  });
+  body.append(ownerBar);
+
+  const ownerFiltered = () => (owner === 'all' ? CARDS
+    : owner === 'enemy' ? CARDS.filter((c) => c.enemyOnly)
+      : CARDS.filter((c) => !c.enemyOnly));
+
   const paint = () => {
-    fillCardGrid(grid, CARDS, { sortMode, deckIds });
+    fillCardGrid(grid, ownerFiltered(), { sortMode, deckIds });
     sortHint.textContent = SORT_MODES.find((m) => m.key === sortMode)?.hint() ?? '';
   };
 
@@ -167,6 +211,7 @@ export function showCardCodex(game) {
     el('h4', { text: t('怎么看这一页') }),
     el('ul', {}, [
       el('li', { text: t('亮着的卡 = 已经拿到过；灰掉并标着「未获得」的还没见过。') }),
+      el('li', { text: t('标着「仅敌人可用」的牌你抽不到 —— 在战斗里**看见敌方打出**它就解锁（图鉴会记下来）。') }),
       el('li', { text: t('卡牌图鉴是跨局的：开新一局也照样记着。') }),
       el('li', { text: t('点任意一张卡，看完整说明、效果明细和关键词解释。') }),
       el('li', { text: t('想看「这一局正带着什么」，去游戏里的卡组一览（按 D）。') }),

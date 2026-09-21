@@ -63,6 +63,15 @@ export function showCardDetail(card, opts = {}) {
       el('span', { class: 'detail-chip', text: cardTag(card) }),
       dmg ? el('span', { class: 'detail-chip', text: t('当前伤害 {dmg}', { dmg }) }) : null,
       card.exhaust ? el('span', { class: 'detail-chip', text: t('用后销毁') }) : null,
+      /**
+       * 只给敌人用的牌：**详情里也要标出来**（用户要求）。
+       * 图鉴里能翻到这 40 张（玩家在战斗里看得见敌方出招），但不标的话
+       * 玩家会一直等它出现在奖励里 —— 它永远不会出现。
+       */
+      card.enemyOnly ? el('span', {
+        class: 'detail-chip enemy-only',
+        dataset: { tip: t('这张牌只出现在敌人手里，玩家拿不到。图鉴里看见敌方打出过就会解锁。') },
+      }, [t('仅敌人可用')]) : null,
     ]),
     el('div', { class: 'detail-desc', html: richHTML(resolveCardText(card)) }),
   ]);

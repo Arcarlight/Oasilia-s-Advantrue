@@ -918,6 +918,17 @@ export class Game {
        * 每开一场战斗都重新算一次，所以中途捡到 / 丢掉 / 卖掉的道具立刻反映到下一场。
        */
       mods: this.heldMods(),
+      /**
+       * 图鉴：**看见敌方出招**就把这张牌记成「见过」。
+       *
+       * 卡牌图鉴里有 40 张 `enemyOnly` 的牌，玩家永远抽不到 —— 按用户定的规则，
+       * 它们的解锁条件是「看到就解锁」而不是「拿到手」。玩家自己打的牌不用在这里记：
+       * `save()` 已经会把卡组里的牌记进图鉴。
+       */
+      onCardPlayed: (side, cardId) => {
+        if (side !== 'enemy' || !cardId) return;
+        this.meta = save.noteCards([cardId]);
+      },
       player: {
         name: d.name, slug: d.slug,
         hp: d.hp, maxHp: d.maxHp,

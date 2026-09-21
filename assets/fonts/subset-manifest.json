@@ -1,6 +1,6 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了",
-  "textSha256": "7814aca97cd2ceb5c8584d7718ee83d6b27fac6938e441040809d8fbabcfc92e",
+  "textSha256": "c0c140b3cd2f434422258d06af75edd097f063c4f7da8d294d1b74951a8ff134",
   "chars": 2920,
   "fonts": [
     {
@@ -43,7 +43,7 @@
     "stillMissing": "═⟨⟩️🥇"
   },
   "ja": {
-    "textSha256": "883e47751e678851c0e0eb6f2738c27d0cb2ba32fc62e727e0be2e157cad31b4",
+    "textSha256": "7278ff34a11c1fe3c3dcfb026715f3fdcc0bb7e2ab87fde7ee03fa9a5b67e058",
     "chars": 1527,
     "fonts": [
       {

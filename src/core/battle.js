@@ -222,6 +222,15 @@ export class Battle {
      * 上面那几个 modAdd / modMul / modFlag 对它就是 0 / 1 / false。
      */
     this.mods = cfg.mods ?? {};
+    /**
+     * 「哪一方打了哪张牌」的回调（由 game.js 传进来）。
+     *
+     * 为什么需要：卡牌图鉴里有 **40 张只给敌人用的牌**（`enemyOnly`）——
+     * 玩家永远抽不到，所以它们的解锁条件不能是「拿到手」，而应该是「在战斗里看见它出招」。
+     * 用户定的规则：「只给敌人用的卡可以设置成看到就在图片里解锁」。
+     * 钩子放在这里而不是事件流里：事件流是给界面放演出用的，会被 takeEvents 消费掉。
+     */
+    this.onCardPlayed = cfg.onCardPlayed ?? null;
 
     const p = cfg.player;
     this.player = cloneSide({
@@ -538,6 +547,9 @@ export class Battle {
     this.player.playsLeft -= 1;
     d.hand.splice(idx, 1);
     this.emitLogged({ type: 'playCard', side: 'player', id: card.id, name: card.name, cost }, t('{name} 使用了「{card}」。', { name: this.player.name, card: card.name }));
+    // 通知外面「哪一方打了哪张牌」：图鉴靠它把**只给敌人用的牌**记成「见过」
+    // （玩家永远拿不到那 40 张，所以它们的解锁条件是「在战斗里看见它出招」，见 game.js 的 startBattle）
+    this.onCardPlayed?.('player', card.id);
     this.resolveCard('player', card, opts);
 
     // 使用后的去向：销毁区 or **弃牌堆**
@@ -1133,6 +1145,8 @@ export class Battle {
       e.playsLeft -= 1;
       this.decks.enemy.hand.splice(this.decks.enemy.hand.indexOf(pick.c), 1);
       this.emitLogged({ type: 'playCard', side: 'enemy', id: pick.c.card.id, name: pick.c.card.name, cost: this.cardCost(pick.c) }, t('{name} 使用了「{card}」。', { name: e.name, card: pick.c.card.name }));
+      // 玩家**看见敌方出招** → 图鉴把这张牌记成「见过」（只给敌人用的牌就靠这一条解锁）
+      this.onCardPlayed?.('enemy', pick.c.card.id);
       // 非攻击卡要让人看清，稍作停顿由 UI 处理
       this.resolveCard('enemy', pick.c.card, {});
       if (pick.c.card.exhaust) {

@@ -225,6 +225,44 @@ console.log('通关记录 / 图鉴回归测试：');
   ok(ids.size === ENEMIES.length, '敌人 id 不重复（否则图鉴会出现两格同样的记录）');
 }
 
+/**
+ * 「仅敌人可用」的卡（enemyOnly）：玩家永远抽不到，所以**解锁条件是看见敌方打出**（用户定的规则）。
+ * 这里钉住三件事：① 它们不进玩家抽奖池；② 敌方打出之后会被记进「见过」；③ 图鉴里能看到它们。
+ */
+{
+  const bench = CARDS.filter((c) => c.enemyOnly);
+  ok(bench.length > 0, `有一批只给敌人用的牌（${bench.length} 张）`);
+  const { rollCard } = await import('../src/data/cards.js');
+  let leaked = 0;
+  for (let i = 0; i < 400; i++) if (rollCard(0, []).enemyOnly) leaked += 1;
+  ok(leaked === 0, '抽奖池里绝不会抽到「仅敌人可用」的牌', `400 次里 ${leaked} 次`);
+
+  // 开一场战斗，让敌人真的打出几张牌，看图鉴有没有记下来
+  const g = new Game({ seed: 31337 });
+  g.newRun(31337);
+  const before = new Set(save.readMeta().seenCards ?? []);
+  const benchIds = new Set(bench.map((c) => c.id));
+  g.startBattle('normal', 0, 'direct');
+  const playedBench = [];
+  for (let turn = 0; turn < 12 && !g.battle.over; turn++) {
+    if (g.battle.active !== 'enemy') g.battle.endTurn();
+    if (g.battle.over) break;
+    g.battle.enemyAct();
+    for (const ev of g.battle.takeEvents()) {
+      if (ev.type === 'playCard' && ev.side === 'enemy' && benchIds.has(ev.id)) playedBench.push(ev.id);
+    }
+  }
+  const after = new Set(save.readMeta().seenCards ?? []);
+  const learned = [...after].filter((id) => !before.has(id) && benchIds.has(id));
+  ok(learned.length > 0,
+    '敌方打出的「仅敌人可用」牌会被记进图鉴（看见就解锁，不用拿到手）',
+    `本局敌方打出 ${playedBench.length} 张这类牌，图鉴新记住 ${learned.length} 张：${learned.slice(0, 4).map((id) => CARD_BY_ID[id]?.name).join('/')}`);
+
+  // 图鉴的「已见」判定：记过之后就不再是「未获得」
+  ok(codexStateOf(learned[0], new Set(), after) === 'seen',
+    '记过之后图鉴里是「曾拿过」（不再压暗）', CARD_BY_ID[learned[0]]?.name);
+}
+
 if (fails.length) {
   console.error(`\n通关记录 / 图鉴回归测试：失败 ${fails.length} 条`);
   for (const f of fails) console.error(`  ✗ ${f}`);

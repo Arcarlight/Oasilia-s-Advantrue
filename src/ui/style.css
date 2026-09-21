@@ -3230,6 +3230,17 @@ input, textarea { cursor: text !important; }
 .item-detail-info p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.7; opacity: .92; }
 .item-src { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.8; opacity: .9; }
 
+/* ---- 只给敌人用的卡（图鉴里的分类与标注）----
+   这 40 张玩家抽不到，所以图鉴里要一眼看得出：卡面描一条红边 + 详情里一个胶囊。
+   它们的解锁条件是「在战斗里看见敌方打出」（见 battle.js 的 onCardPlayed）。 */
+.card-enemy-only { box-shadow: inset 0 0 0 1px rgba(255, 143, 122, .45); }
+.detail-chip.enemy-only {
+  color: #ffb0a0;
+  box-shadow: inset 0 0 0 1px rgba(255, 143, 122, .5);
+  background: rgba(255, 143, 122, .12);
+  letter-spacing: .04em;
+}
+
 /* ---- 无尽模式（用户要的另一个入口）----
    标题页多一个按钮：未解锁时点不动、直接写着解锁条件；通关一次之后亮起来，
    副标题显示「最远 第 N 章」—— 这个模式的成绩就是距离。 */
