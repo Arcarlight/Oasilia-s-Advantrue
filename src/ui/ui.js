@@ -189,7 +189,16 @@ export class UI {
       case 'map': {
         this.teardownBattle();
         renderHud(g);
-        if (this.current === 'map' && !g.mapDirty) {
+        /**
+         * 「已经在地图上了就只刷 HUD」这个优化必须**同时确认地图屏真的在屏幕上**。
+         *
+         * 以前这里只信 `this.current === 'map'`，而 `mapDirty` 从来没被置位过 ——
+         * 于是只要 `this.current` 因为任何原因（例如某个界面自己往 #stage 里画了一屏，
+         * 没走这里的记账）和实际屏幕对不上，地图就再也不重画了：
+         * 玩家看到的是上一屏（实测就是奖励页）永远关不掉，而状态其实早就推进了。
+         * 现在按 DOM 实际内容判断 —— 对不上就重画，界面不会留孤儿屏。
+         */
+        if (this.current === 'map' && !g.mapDirty && this.stage.querySelector('.map-screen')) {
           // 地图结构没变，只需要刷新 HUD
           renderHud(g);
           return;
@@ -237,6 +246,20 @@ export class UI {
       case 'reward':
         this.teardownBattle();
         renderHud(g);
+        /**
+         * 奖励已经领走（`game.reward` 为空）却还在这一屏：**不要画一屏点不动的奖励页**。
+         *
+         * 这是上面那个「卡在奖励页」bug 的最后一道保险：奖励页画出来时会把
+         * `takeRewardCard` 挂上去，而那个函数一进门就是 `if (!this.reward) return;` ——
+         * 奖励对象没了，那一屏上的任何按钮都会变成哑巴。此时直接按地图重画，
+         * 玩家的这一局还能继续往下走（状态早就推进过去了）。
+         */
+        if (!g.reward) {
+          this.current = 'map';
+          renderMap(g);
+          renderHud(g);
+          break;
+        }
         this.current = 'reward';
         renderReward(g);
         break;

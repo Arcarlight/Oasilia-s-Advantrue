@@ -177,3 +177,18 @@ https://wiki.52poke.com/api.php?action=query&format=json&redirects=1&titles=<中
   最后在 `itemtext.js` 的 `modLabel` 里加一句人话。
 * **改中文原文 = 改字典的键**：两本字典都以中文原文为键，改名字 / 改句子时要把键**搬过去**
   （旧键留着会变成「孤儿译文」，`check-content` 会列出来）。
+* **界面别自己往 `#stage` 里画屏**（v2.5 修的坑，很贵）：战斗界面结算时曾经自己
+  `import('./screens.js')` 调 `renderReward/renderGameOver` 直接画屏，绕过了 `UI.render()`
+  的换屏记账 `ui.current`。于是只要记账和实际屏幕对不上（实测 `ui.current === 'map'`），
+  奖励页就成了"没人认领"的一屏：点「拿卡」时引擎照常推进（卡进卡组、进下一章），
+  但重画在地图那一支被 `this.current === 'map' && !g.mapDirty` 的早退挡掉 ——
+  屏幕永远停在已经作废的奖励页，再点什么都不动（用户报的「打完 boss 卡在奖励页」）。
+  两条规矩：**① 换屏只走 `UI.render()` 按 phase 分发**（`mapDirty` 从来没被置位过，
+  所以那个早退现在还要额外确认 `.map-screen` 真的在屏幕上）；**② `reward` 为空时
+  绝不画奖励页**，直接退回地图。
+* **冒烟脚本里的断言以前是白写的**：`tools/smoke-check.mjs` 只找 `SMOKE_OK` 这一行，
+  页面里 `errors.push(...)` 出来的 `ERRORS=[...]` 没人看，退出码照样 0 ——
+  一键体检"全绿"而 bug 还在。现在 `smoke-check.mjs` 会解析 `ERRORS` 并以退出码 1 失败
+  （用「首领奖励页必须点得掉」那条断言 A/B 验过：去掉修复 → exit 1）。
+  加浏览器级断言就往 `smoke-check.mjs` 的内嵌 SCRIPT 里加，**别忘了它是个模板字符串**：
+  注释里不能出现反引号和 `${`。

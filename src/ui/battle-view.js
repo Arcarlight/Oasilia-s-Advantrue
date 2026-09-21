@@ -2072,14 +2072,20 @@ export class BattleScreen {
     if (this.settled) return;
     this.settled = true;
     await this.wait(PACE.settle);
-    this.game.finishBattle();
-    if (this.game.phase === 'reward') {
-      const { renderReward } = await import('./screens.js');
-      renderReward(this.game);
-    } else {
-      const { renderGameOver } = await import('./screens.js');
-      renderGameOver(this.game);
-    }
+    /**
+     * ⚠ 这里以前是**自己 import 出 renderReward / renderGameOver 直接画屏**的，
+     * 结果是玩家报的那个 bug：「打完 boss 卡在奖励页，点卡会进卡组但界面不关、点跳过也没用」。
+     *
+     * 原因：直接画屏绕过了 UI 的换屏记账（`ui.current`）。奖励页是"没人认领"的一屏 ——
+     * 只要这之前 UI 认为自己在别处（实际发生过：`ui.current === 'map'`），
+     * 玩家点「拿卡」时引擎照样把状态推进了（卡进卡组、进下一章），
+     * 但紧接着的重画在地图那一支被"已经在地图上了，只刷 HUD"的早退挡掉 ——
+     * 屏幕上就一直挂着这张已经作废的奖励页，再点什么都不动了（奖励已经被领走）。
+     *
+     * 现在只让引擎推状态，界面交给 UI 按 phase 统一分发（finishBattle 里已经 changed 过一次，
+     * 这一句是兜底：它同样走 UI 的记账，不会再留下孤儿屏）。
+     */
+    this.game.changed();
   }
 
   destroy() {

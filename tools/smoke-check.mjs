@@ -56,6 +56,56 @@ const SCRIPT = `
       log('phase after reward =', g.phase);
     }
 
+    /**
+     * 3.5) **首领奖励页必须点得掉**。
+     *
+     * 用户报的 bug：「打完 boss 会卡在这个页面，点卡会收入卡包但是不会关闭界面，
+     * 点击下方不拿卡也没用」。原因是奖励页由战斗界面自己 import 出来直接画在 #stage 上，
+     * 绕过了 UI 的换屏记账（ui.current）—— 一旦记账和实际屏幕对不上，
+     * 点卡时状态其实推进了（卡进卡组），但重画在地图那一支被「已经在地图上」的早退挡掉，
+     * 于是屏幕上永远挂着那张已经作废的奖励页，再点什么都不动。
+     *
+     * 所以这里把两件事都钉住：① 正常点卡必须换屏；② 故意把记账弄乱之后**也必须能自己恢复**。
+     */
+    try {
+      const bossReward = async (label, { lie }) => {
+        window.__oasisAuto({ scene: 'boss', stage: 2 });
+        await wait(500);
+        g.battle.enemy.hp = 0;
+        g.battle.winner = 'player';
+        g.battle.over = true;
+        g.finishBattle();
+        await wait(350);
+        const before = { phase: g.phase, current: window.__oasisUI.current, rewardScreen: !!document.querySelector('.reward-screen') };
+        // 把「界面认为自己在哪一屏」故意写错 —— 复现那个 bug 的触发条件
+        if (lie) window.__oasisUI.current = 'map';
+        const deckBefore = g.data.deck.length;
+        const card = document.querySelector('.reward-cards .card');
+        if (card) card.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(350);
+        const stuck = !!document.querySelector('.reward-screen');
+        log('首领奖励 ·', label, '| 点击前', JSON.stringify(before), '→ phase=' + g.phase,
+          'deck', deckBefore, '->', g.data.deck.length, '奖励页还在？' + stuck);
+        if (stuck) errors.push('首领奖励页没关掉（' + label + '）');
+        if (g.phase === 'reward') errors.push('首领奖励之后 phase 还是 reward（' + label + '）');
+        if (g.data.deck.length !== deckBefore + 1) errors.push('首领奖励点卡之后卡组没有 +1（' + label + '）');
+      };
+      await bossReward('正常点法', { lie: false });
+      await bossReward('界面记账被弄乱时', { lie: true });
+
+      // 奖励已经领走却还停在奖励屏：不能再画一屏「点不动的奖励页」，要退回地图
+      g.phase = 'reward';
+      g.reward = null;
+      window.__oasisUI.forceRerender();
+      await wait(300);
+      const dead = !!document.querySelector('.reward-screen');
+      log('reward 为空时的兜底 → phase=' + g.phase, '还在奖励页？' + dead,
+        '屏幕 =', document.querySelector('#stage .screen') ? document.querySelector('#stage .screen').className : '空');
+      if (dead) errors.push('reward 为空时又画了一屏点不动的奖励页');
+    } catch (e) {
+      errors.push('bossReward: ' + e.message);
+    }
+
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
     try {
       const audioMod = await import('/src/core/audio.js');
@@ -185,7 +235,27 @@ const code = await new Promise((r) => child.on('close', r));
 const lines = out.split(/\r?\n/).filter((l) => /\[smoke\]|Uncaught|TypeError|ReferenceError|SyntaxError|SMOKE_OK|FATAL/.test(l));
 console.log(`exit=${code}`);
 for (const l of lines) console.log('  ' + l.replace(/^.*INFO:CONSOLE:\d+\]\s*/, '').slice(0, 300));
-if (!lines.some((l) => l.includes('SMOKE_OK'))) {
+
+/**
+ * 失败要**真的失败**。
+ *
+ * 以前这里只找 SMOKE_OK 这一行，而脚本里那些断言（`errors.push(...)` → 最后打印
+ * `ERRORS=[...]`）全都没有人看 —— 冒烟测试就算抓到问题，退出码还是 0，
+ * 一键体检那边照样显示全绿。用户报的「打完 boss 卡在奖励页」就是这么漏出去的：
+ * 断言写在页面里，但没有任何一步会因为它变红。
+ */
+const failLines = [...lines, ...out.split(/\r?\n/)].filter((l) => /ERRORS=\[[^\]]/.test(l));
+if (failLines.length) {
+  console.log('\n✗ 冒烟测试里报了错：');
+  for (const l of failLines) console.log('  ' + l.replace(/^.*INFO:CONSOLE:\d+\]\s*/, '').slice(0, 900));
+}
+const notOk = !lines.some((l) => l.includes('SMOKE_OK'));
+if (notOk) {
   console.log('\n（没有看到 SMOKE_OK，原始输出片段：）');
   console.log(out.split(/\r?\n/).filter((l) => /CONSOLE/.test(l)).slice(0, 30).join('\n'));
 }
+if (failLines.length || notOk) {
+  console.error(`\n✗ 冒烟测试没过（${notOk ? '没跑到 SMOKE_OK' : ''}${failLines.length ? '页面里报了错' : ''}）。`);
+  process.exit(1);
+}
+console.log('\n✓ 冒烟测试通过（页面里 ERRORS 为空，且跑到了 SMOKE_OK）。');

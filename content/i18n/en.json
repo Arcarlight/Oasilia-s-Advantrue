@@ -612,6 +612,7 @@
   "便宜货商人": "Cheap Goods Merchant",
   "保护": "Protection",
   "保护：保命的那一类。": "Protection: the life-saving kind.",
+  "修一个**打完首领之后会卡住**的问题：战斗奖励那屏点「拿卡」或「跳过」都不会关掉，卡进了卡组、下一章其实已经开始，画面却停在奖励页不动（这一屏现在会正常关掉，界面也不会再留下关不掉的旧屏）。": "Fixed a **freeze after beating a boss**: on the battle reward screen neither \"take the card\" nor \"skip\" would close it — the card went into your deck and the next chapter had already started, but the display stayed frozen on the reward page (that screen now closes properly, and no unclosable old screen is left behind).",
   "修好了几个名字：「电飞鼠」「迭失棺」，还有「沙铃仙人掌」的日文写法。": "Fixed a few names: \"Emolga\", \"Cofagrigus\", and the Japanese spelling of \"Maractus\".",
   "修好了赤面龙、电龙这些新宝可梦的行走图（帧尺寸算错了，画面上会并排出现两只）。": "Fixed the walking sprites for new Pokémon like Druddigon and Ampharos (the frame size was wrong, so two of them showed up side by side).",
   "修好营地的**冥想**：换来的牌现在**一定比原来更强**（稀有度严格更高，而且优先给你同一种用途的牌，比如攻击牌换攻击牌），并且由你**从三张候选里挑一张**。": "Fixed the camp's **meditation**: the card you get is now **always stronger than before** (strictly higher rarity, same purpose preferred — attack for attack), and you **pick one of three candidates**.",

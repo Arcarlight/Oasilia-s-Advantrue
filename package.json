@@ -1,8 +1,8 @@
 {
   "name": "oasis-desert-spirit",
-  "version": "2.4",
+  "version": "2.5",
   "private": true,
-  "description": "沙漠蜻蜓 Oasis 的 2D 卡牌 roguelike（网页游戏）",
+  "description": "娌欐紶铚昏湏 Oasis 鐨?2D 鍗＄墝 roguelike锛堢綉椤垫父鎴忥級",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
