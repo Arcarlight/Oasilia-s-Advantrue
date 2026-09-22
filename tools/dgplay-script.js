@@ -50,17 +50,17 @@
     // 默认随手挑一张伤害牌，「咬住」多半是接触类的，看不到飞行的那道光。
     const want = params.get('card');
     const pool = b.decks.enemy.hand.length ? b.decks.enemy.hand : b.decks.enemy.draw;
-    let proto = (want ? pool.find((c) => c.card.id === want) : null)
-      || pool.find((c) => c.card.effects.some((e) => e.kind === 'damage'));
     /**
-     * `&card=<id>` 指的牌不在敌方牌组里时**现造一张**给对面打 ——
-     * 截图要看的是「这一套特效长什么样」，不该受这一场敌人带了什么牌的摆布
-     * （沙漠的怪多半不会放电，但「电系打过来会劈一道闪电」这件事得能拍出来）。
+     * ⚠ 顺序要紧：`&card=` 指定的牌**优先**（不在敌方牌组里就现造一张），
+     * 只有没指定时才随手挑一张伤害牌。第一版把手挑那条写在后面，
+     * 于是指定什么都被「牌组里那张伤害牌」顶掉了（拿它拍「电系的闪电」拍了半天拍不到）。
      */
+    let proto = want ? pool.find((c) => c.card.id === want) : null;
     if (want && !proto) {
       const { CARD_BY_ID } = await import('../src/data/cards.js');
       if (CARD_BY_ID[want]) proto = { card: CARD_BY_ID[want], uid: 'v9' };
     }
+    if (!proto) proto = pool.find((c) => c.card.effects.some((e) => e.kind === 'damage'));
     if (!proto) proto = pool[0];
     if (proto) b.decks.enemy.hand = [{ ...proto, uid: 'v1' }, { ...proto, uid: 'v2' }];
     b.enemy.apMax = 9; b.enemy.ap = 9; b.enemy.playMax = 9; b.enemy.playsLeft = 9;

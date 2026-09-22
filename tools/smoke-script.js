@@ -476,6 +476,38 @@
         // 两次出招只有远隔那一次会生成飞行物
         if (caught.length !== 1) errors.push('接触招也生成了飞行物（' + caught.length + ' 个，应该只有远隔那 1 个）');
         for (const n of document.querySelectorAll('.fx-projectile')) n.remove();
+
+        /**
+         * ③-c 出招 / 挨打**必须真的放出贴图特效**（3.1.4 的收尾）。
+         *
+         * 用户报过「怎么什么特效都没了」：那次查下来是两件事 ——
+         * ① 远隔类（111 张）只剩一道细光条飞出去，出手那一下几乎看不见；
+         * ② style.css 末尾那条全局的「降低动效」规则会把特效动画压成 0.001ms，
+         *    而 fxBurst 是**淡到 opacity 0 结束**的 —— 系统开了「减少动画」的玩家
+         *    会看到**一个特效都没有**（已经在 CSS 里补了静态兜底）。
+         * 所以这里钉住最朴素的一条：出一次招、挨一次打，场上都得出现 .fx-burst。
+         * 用 MutationObserver 抓（虚拟时间下它们转瞬就被摘掉了，事后查 DOM 是查不到的）。
+         */
+        const seen = [];
+        const mo2 = new MutationObserver((muts) => {
+          for (const m of muts) {
+            for (const n of m.addedNodes) {
+              if (n.nodeType === 1 && n.classList?.contains('fx-burst')) {
+                seen.push((n.style.getPropertyValue('--fx-color') || '?') + ' ' + (n.style.width || '?'));
+              }
+            }
+          }
+        });
+        mo2.observe(bsv.field, { childList: true, subtree: true });
+        await bsv.attackAnim('player', melee);
+        const afterAttack = seen.length;
+        await bsv.hitAnim({ side: 'player', amount: 7, absorbed: 0, crit: false }, bsv.playerBody, bsv.playerCard);
+        mo2.disconnect();
+        log('出招期间生成的特效数 =', afterAttack, '｜挨打之后累计 =', seen.length);
+        log('  例：' + seen.slice(0, 4).join(' ／ '));
+        if (!afterAttack) errors.push('出招那一下一个贴图特效都没有（.fx-burst）');
+        if (seen.length <= afterAttack) errors.push('挨打那一下一个命中特效都没有（.fx-burst）');
+        for (const n of document.querySelectorAll('.fx-burst')) n.remove();
       }
       const buffCard = Object.values(CARD_BY_ID).find((c) => (c.effects ?? []).some((e) => e.kind === 'shield'));
       for (const [label, card] of [['自身强化', buffCard]]) {

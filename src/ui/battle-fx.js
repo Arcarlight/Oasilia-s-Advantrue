@@ -30,6 +30,15 @@
 import { el } from './dom.js';
 
 /**
+ * `?fxfreeze=1`：把特效**定住不消失**（截图 / 诊断用）。
+ *
+ * 为什么要它：特效是一闪而过的，而 shot.mjs 跑在虚拟时间下、CSS 动画又不跟虚拟时间走
+ * （见 tools/shot.mjs 的说明）—— 普通截图根本拍不到「打中的那一下」。
+ * 定住之后可以把一次真实的命中拍下来看（而不是只能看 ?dgfxdemo=1 摆的那一套）。
+ */
+const FREEZE = typeof location !== 'undefined' && /[?&]fxfreeze=1/.test(location.search);
+
+/**
  * 属性 → 特效颜色。
  *
  * 用户点名了几个：「火是红色、格斗是粉红、龙是深蓝色、毒是紫色等等」——
@@ -110,10 +119,12 @@ export function burst(parent, fx, opts = {}) {
       '--fx-size': `${size}px`,
       mixBlendMode: blend,
       transform: flip ? 'scaleX(-1)' : '',
+      // ?fxfreeze=1：定住不淡出（截图用，见上面的说明）
+      ...(FREEZE ? { animation: 'none', opacity: '1' } : {}),
     },
   });
   parent.append(node);
-  setTimeout(() => node.remove(), ms + delay + 80);
+  if (!FREEZE) setTimeout(() => node.remove(), ms + delay + 80);
   return node;
 }
 

@@ -1227,6 +1227,18 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
   60% { translate: -3px 2px; }
 }
 
+/* ⚠ 「降低动效」下特效**不能变成什么都没有**。
+   style.css 末尾有一条全局规则（`*, *::before, *::after { animation-duration: .001ms !important }`），
+   而 .fx-burst 的关键帧是**淡到 opacity 0 结束**的 —— 动画被压成 0.001ms 之后，
+   元素直接停在结束帧：什么都不显示。实测（shot.mjs 默认就带 --force-prefers-reduced-motion）
+   整个特效层是完全不可见的，一版截图里「特效全没了」就是这个。
+   所以这里给一条兜底：降低动效时**不要动画**，让特效以一张静态图显示到节点被移除为止
+   （JS 到点会摘掉它，见 battle-fx.js），信息量保住、动作幅度为零。 */
+@media (prefers-reduced-motion: reduce) {
+  .fx-burst, .fx-projectile { animation: none !important; opacity: .85 !important; scale: 1 !important; }
+  .fx-projectile { translate: calc(var(--fx-dx, 0px) * .5) calc(var(--fx-dy, 0px) * .5); }
+}
+
 /* 强化 / 削弱的飘字（保留 float-text 的描边，只换颜色和辉光） */
 .float-buff   { color: #ffe9a8; font-size: 26px; text-shadow: 0 3px 0 rgba(0, 0, 0, .55), 0 0 12px rgba(255, 210, 90, .85); }
 .float-debuff { color: #dfb0ff; font-size: 24px; text-shadow: 0 3px 0 rgba(0, 0, 0, .55), 0 0 10px rgba(160, 90, 220, .7); }

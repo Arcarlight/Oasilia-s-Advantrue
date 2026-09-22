@@ -133,12 +133,14 @@ const PACE = {
    * 动作收场前的**定格**（3.1.4，用户：「受伤之类的动画放完就直接切回正常状态了，
    * 还是太突然，可以加一点缓冲时间」）。
    *
-   * 一次性动作（出招 / 受伤）本来就是「播完停在最后一帧」，以前是那一帧刚站稳就
-   * 立刻换回待机 —— 眼睛看到的是一张图被抽走、另一张图拍上来，中间没有停顿。
-   * 现在这一帧多留一会儿（打击感里的「命中停顿」也是这个道理），
-   * 换回待机时再让待机**从 60% 淡到 100%**（见 restoreIdleSoft），两件事合起来就不硬了。
+   * ⚠ 这个定格是**纯视觉的，不能占演出的时间线**。
+   * 第一版在 `attackAnim` / `hitAnim` 里 `await restore()`，于是每出一张牌都多等 240ms ——
+   * 用户立刻察觉了：「因为给角色切换动画加了延迟，导致出牌之后也要等一会」。
+   * 现在的规则是：定格**放在后面的空隙里**（下面这些毫秒比下一个事件到达的间隔短），
+   * 调用方**不要 await**；要是下一个事件来得更快，新动作开头的 `drop()` 会立刻把它收掉，
+   * 不会叠出第二张精灵图。
    */
-  restoreHold: 240,
+  restoreHold: 120,
   /** 待机回来的淡入时长（配合 restoreHold 用，别超过它的一半，不然会拖） */
   restoreFade: 150,
 };
@@ -2571,8 +2573,8 @@ export class BattleScreen {
    *
    * 这一条和「每张牌都带接触 / 远隔判定」是同一件事的两面：动作演的是 Shoot 还是 Attack
    * 由卡牌的判定决定（见 animForCard），特效也照着同一个判定走 ——
-   *   · 远隔：**一道流光从出手那一侧飞到对手身上**（trace 那族的流光条），自己这边只轻轻一亮；
-   *   · 接触：弧光朝对手那一侧甩出去 + 身体前冲（lunge）。
+   *   · 接触：弧光朝对手那一侧甩出去 + 身体前冲（lunge）；
+   *   · 远隔：**同一道弧光（小一号）+ 一道流光真的飞到对手身上**。
    * 以前不管远近，都只是在**自己身上**贴一张图，看起来远程招和近身招一模一样。
    * 颜色按卡牌的属性给（火红、毒紫、龙深蓝…），见 battle-fx.js 的 TYPE_TINT。
    */
@@ -2582,19 +2584,25 @@ export class BattleScreen {
     const ranged = this.animForCard(card) === 'Shoot';
     const tint = tintOf(card?.types);
     body.classList.add(side === 'player' ? 'lunge-player' : 'lunge-enemy');
-    // 攻击牌甩一道弧光（朝对手那一侧偏出去），纯变化牌不甩
     const isAttack = !!card?.effects?.some((e) => e.kind === 'damage');
-    if (isAttack && !ranged) {
-      const heavy = card.effects.some((e) => e.kind === 'damage' && (e.power ?? 0) >= 8);
+    const heavy = isAttack && card.effects.some((e) => e.kind === 'damage' && (e.power ?? 0) >= 8);
+    if (isAttack) {
       this.burstFx(body, heavy ? 'flare_1' : 'slash_1', {
         color: tint,
-        ms: 380,
+        // 远隔那一道小一号：它的重点是飞出去的那一发
+        size: fxSize(body, heavy ? 1.5 : ranged ? 1.1 : 1.25),
+        ms: heavy ? 460 : 400,
         rotate: side === 'player' ? -18 : 18,
         klass: side === 'player' ? 'fx-swing-right' : 'fx-swing-left',
       });
-    } else if (isAttack) {
-      // 远隔：先在手边亮一下（蓄势），再让光条飞过去
-      this.burstFx(body, 'star_05', { size: fxSize(body, 0.7), color: tint, ms: 260 });
+    }
+    if (isAttack && ranged) {
+      /**
+       * 远隔额外**把光打过去**。
+       * ⚠ 一开始这里只在手边放了颗小星芒（0.7 倍），弧光只留给接触类 ——
+       * 结果 111 张远隔牌的「出手」那一下几乎看不见（玩家反馈「怎么什么特效都没了」，
+       * 有一半是这里）。现在出手这道弧光两种都甩，远隔再多一发飞行物：两头都不空。
+       */
       this.flyFx(body, other, pickOne(['trace_02', 'trace_04', 'trace_05', 'trace_01']), {
         color: tint, ms: 320,
       });
@@ -2615,8 +2623,11 @@ export class BattleScreen {
     await this.wait(PACE.attack / 2);
     body.classList.remove('lunge-player', 'lunge-enemy');
     await this.wait(PACE.attack / 2);
-    // await：定格 + 淡回待机也算演出时间（见 PACE.restoreHold），不 await 的话它会被下一件事压住
-    await restore();
+    /**
+     * ⚠ 这里**不要 await**：定格是纯视觉的，不占演出的时间线（见 PACE.restoreHold 的说明）。
+     * 第一版 await 了，每出一张牌都多等一次定格 —— 用户立刻感觉「出牌之后要等一会」。
+     */
+    restore();
   }
 
   async hitAnim(ev, body, cardEl) {
@@ -2635,18 +2646,28 @@ export class BattleScreen {
     const hitTint = tintOf(CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types);
     const typeList = CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types ?? [];
     if (ev.absorbed > 0 && ev.amount <= 0) {
-      this.burstFx(body, 'magic_2', { color: '#8ce4ff', ms: 420, klass: 'fx-block' });
-      this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring fx-block', ms: 520, delay: 60 });
+      this.burstFx(body, 'magic_2', { color: '#8ce4ff', size: fxSize(body, 1.4), ms: 520, klass: 'fx-block' });
+      this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring fx-block', size: fxSize(body, 1.5), ms: 620, delay: 60 });
     } else {
+      /**
+       * ⚠ 命中特效的时长要**够看清**：一版只给了 360ms（乘上演出速度还可能更短），
+       * 玩家反馈「怎么什么特效都没了」—— 一半是它一闪就过去了。
+       * 现在普通命中 520ms、会心 680ms，尺寸也放大一档。
+       */
       this.burstFx(body, ev.crit ? 'star_09' : pickOne(['dirt_1', 'dirt_2']), {
         color: ev.crit ? '#ffdf7a' : hitTint,
-        ms: ev.crit ? 460 : 360,
+        size: fxSize(body, ev.crit ? 1.7 : 1.35),
+        ms: ev.crit ? 680 : 520,
         klass: ev.crit ? 'fx-impact-crit' : 'fx-impact',
       });
-      if (ev.crit) this.burstFx(body, 'flare_1', { color: hitTint, ms: 420, delay: 70 });
+      if (ev.crit) {
+        this.burstFx(body, 'flare_1', { color: hitTint, size: fxSize(body, 1.3), ms: 560, delay: 70 });
+      }
       // 电系打上来额外劈一道闪电（spark_01~07 是一族闪电弧，形状每次不一样）
       if (typeList.includes('电')) {
-        this.burstFx(body, pickOne(['spark_02', 'spark_04', 'spark_06']), { color: '#ffe23a', ms: 380, delay: 40 });
+        this.burstFx(body, pickOne(['spark_02', 'spark_04', 'spark_06']), {
+          color: '#ffe23a', size: fxSize(body, 1.5), ms: 520, delay: 40,
+        });
       }
     }
     const slug = ev.side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
@@ -2667,7 +2688,8 @@ export class BattleScreen {
      * 是叠在这个姿势上的。所以：打空了才还原，打死了就让它定格在受伤姿势上。
      */
     const dead = this.battle.over || (this.dispHp[ev.side] ?? 1) <= 0 || ev.lethal;
-    if (!dead) await restore();
+    // 同上：定格不占时间线，别 await（这一支前面已经等了 PACE.damage / PACE.crit）
+    if (!dead) restore();
   }
 
   async onBattleEnd(ev) {
