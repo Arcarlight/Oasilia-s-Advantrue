@@ -22,6 +22,12 @@ YShiWrittenSC-Regular.ttf
 XiaoshanCircle.ttf
 YOzBS_.otf
 
+# 装饰字体（3.0.5，用户提供：余繁离形体）——同样只是构建输入：
+# 只给战斗背景那层波浪花纹文字用，由 tools/subset-fonts.mjs 按
+# content/species-dex.json 里的图鉴文本裁成 92KB 的子集（YuFanLiXing-subset.woff2），
+# 运行时读的是子集。原始文件 1.2MB，线上站点用不到。
+余繁离形体.otf
+
 # Generation 9 Pack 的原始压缩包（58 MB）：只用来「生成」assets/gen9/ 里的立绘，
 # 而且是从 %TEMP% 解包后由 tools/import-gen9.mjs 挑图，运行时完全不读它。
 # 顺手加一条 *.rar 兜住别的素材包，免得再被 git add -A 卷进仓库。
