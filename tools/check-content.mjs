@@ -712,6 +712,42 @@ if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   warn('没有任何「清除属性下降」的卡牌 —— 削弱是永久叠加的，玩家会缺少解法');
 }
 
+// ---------- 4a. 削弱对手攻击的百分比上限 ----------
+/**
+ * 「削攻」是这一整套削弱牌里**最便宜**的收益，所以给它一条硬上限。
+ *
+ * 用户连着两批报同一类牌（上一批是「削弱敌人属性的卡非常强力」，这一批点名
+ * 「1 费减少对方 35% 属性的撒娇」）。实测（tools/probe-debuff-cards.mjs，
+ * 第 5 章精英、6 回合、同一串运气）：
+ *   · 撒娇 1 费 -35% 攻击 → 玩家**少挨 40% 的打**；
+ *   · 同样 1 费、同样「一次出牌永久生效」的长嚎 → 多打 21%；
+ *   · 1 费的防护牌变硬 → 少挨 5%。
+ * 同一条线（1~2 费、一次出牌）应该买到的是两成上下的量级，所以削攻一律封在 15%。
+ *
+ * **削减防御 / 敏捷不受这条限制**：减伤曲线是衰减的（armorK=40），
+ * -35% 防御实测只换来 +11% 输出，跟 -35% 攻击完全不是一个价钱。
+ * 这条对**双方**都成立 —— 敌方牌的 target:enemy 指的是玩家，
+ * 把玩家的攻击砍掉 35% 对玩家的伤害和把敌人的攻击砍掉 35% 一样大。
+ */
+{
+  const CAP = 0.15;
+  const over = [];
+  const seen = [];
+  for (const c of CARDS) {
+    for (const e of c.effects ?? []) {
+      if (e.kind !== 'buff' || e.stat !== 'atk' || e.pct == null || e.target !== 'enemy') continue;
+      seen.push(`${c.name} ${(e.pct * 100).toFixed(0)}%${c.enemyOnly ? '（敌）' : ''}`);
+      if (e.pct < -CAP) over.push(`${c.name}（${c.id}）${(e.pct * 100).toFixed(0)}%`);
+    }
+  }
+  if (over.length) {
+    err(`削攻百分比超过 ${CAP * 100}%：${over.join('、')}`
+      + '（实测 -35% 攻击 = 让对手少打你 40%，而 1 费的强化牌只值 +21%，不是一个量级）');
+  } else {
+    note(`削攻百分比上限 ${CAP * 100}%：${seen.join(' · ')}`);
+  }
+}
+
 // ---------- 4b. 敌人数值表的档位顺序 ----------
 /**
  * **攻击力必须逐档递增**（每一章都满足 杂兵 < 较强 < 精英 < 首领）。
@@ -1278,6 +1314,29 @@ if (BGM_FILES) {
         if (!/[\u4e00-\u9fa5]/.test(line)) err(`更新日志 v${e.version} 有一条不像中文原文：${line.slice(0, 24)}`);
       }
     }
+    /**
+     * 日期是**发布当天**，不是「上一条 + 1」。这条门禁是用户点出来的：
+     * 「你有没有发现你的更新日志日期都写到未来了？」
+     *
+     * 上一次的实情：一天里连着发了 2.3 → 3.0.3 十几个版本，而日期是按
+     * 「每天 +1」的序列手写的，于是最新三条直接跑到了明天、后天、大后天
+     * （玩家在更新日志里看到未来的日期）。根子是**凭感觉往前加**而不是读当天的日期。
+     * 所以这里钉两件事：① 不许有未来日期；② 越往下越旧（列表是新的在前）。
+     */
+    const today = new Date().toISOString().slice(0, 10);
+    const future = CHANGELOG.filter((e) => String(e.date) > today);
+    if (future.length) {
+      err(`更新日志里有 ${future.length} 条日期在未来（今天是 ${today}）：`
+        + future.map((e) => `v${e.version} ${e.date}`).join('、')
+        + ' —— 日期要写**发布当天**，别顺着上一条往上加');
+    }
+    const backwards = [];
+    for (let i = 1; i < CHANGELOG.length; i += 1) {
+      if (String(CHANGELOG[i].date) > String(CHANGELOG[i - 1].date)) {
+        backwards.push(`v${CHANGELOG[i - 1].version}(${CHANGELOG[i - 1].date}) → v${CHANGELOG[i].version}(${CHANGELOG[i].date})`);
+      }
+    }
+    if (backwards.length) err(`更新日志的日期不是越往下越旧：${backwards.join('、')}`);
     const newest = CHANGELOG[0];
     if (String(pkg.version) !== String(newest.version)) {
       err(`package.json 的 version（${pkg.version}）和更新日志最新一条（v${newest.version}）对不上 ——`

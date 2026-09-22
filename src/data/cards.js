@@ -783,12 +783,12 @@ export const CARDS = [
     "ap": 1,
     "rarity": "uncommon",
     "targeting": "enemy",
-    "text": "让对手攻击 -35%。",
+    "text": "让对手攻击 -15%。",
     "effects": [
       {
         "kind": "buff",
         "stat": "atk",
-        "pct": -0.35,
+        "pct": -0.15,
         "target": "enemy"
       }
     ],
@@ -4486,7 +4486,7 @@ export const CARDS = [
     "ap": 2,
     "rarity": "uncommon",
     "targeting": "enemy",
-    "text": "给对手 3 层中毒，并让对手攻击 -35%。",
+    "text": "给对手 3 层中毒，并让对手攻击 -15%。",
     "effects": [
       {
         "kind": "status",
@@ -4496,7 +4496,7 @@ export const CARDS = [
       {
         "kind": "buff",
         "stat": "atk",
-        "pct": -0.35,
+        "pct": -0.15,
         "target": "enemy"
       }
     ],
@@ -6618,7 +6618,7 @@ export const CARDS = [
     "tags": [
       "weaken"
     ],
-    "text": "造成 {d} 点伤害，对手攻击 -25%（按基础值）。",
+    "text": "造成 {d} 点伤害，对手攻击 -15%（按基础值）。",
     "effects": [
       {
         "kind": "damage",
@@ -6627,7 +6627,7 @@ export const CARDS = [
       {
         "kind": "buff",
         "stat": "atk",
-        "pct": -0.25,
+        "pct": -0.15,
         "target": "enemy"
       }
     ],

@@ -826,12 +826,12 @@
       "targeting": "enemy",
       "ico": "ico-heart",
       "fx": "twirl_03",
-      "text": "让对手攻击 -35%。",
+      "text": "让对手攻击 -15%。",
       "effects": [
         {
           "kind": "buff",
           "stat": "atk",
-          "pct": -0.35,
+          "pct": -0.15,
           "target": "enemy"
         }
       ],
@@ -4847,7 +4847,7 @@
       "targeting": "enemy",
       "ico": "ico-gravestone",
       "fx": "magic_1",
-      "text": "给对手 3 层中毒，并让对手攻击 -35%。",
+      "text": "给对手 3 层中毒，并让对手攻击 -15%。",
       "effects": [
         {
           "kind": "status",
@@ -4857,7 +4857,7 @@
         {
           "kind": "buff",
           "stat": "atk",
-          "pct": -0.35,
+          "pct": -0.15,
           "target": "enemy"
         }
       ],
@@ -7155,7 +7155,7 @@
       "tags": [
         "weaken"
       ],
-      "text": "造成 {d} 点伤害，对手攻击 -25%（按基础值）。",
+      "text": "造成 {d} 点伤害，对手攻击 -15%（按基础值）。",
       "effects": [
         {
           "kind": "damage",
@@ -7164,7 +7164,7 @@
         {
           "kind": "buff",
           "stat": "atk",
-          "pct": -0.25,
+          "pct": -0.15,
           "target": "enemy"
         }
       ],
