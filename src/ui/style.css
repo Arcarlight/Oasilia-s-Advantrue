@@ -44,6 +44,16 @@
   font-weight: 400;
   font-display: swap;
 }
+/* 装饰字体（3.0.5，用户提供的「余繁离形体」）：**只给战斗背景那层花纹文字用**。
+   它的汉字更像图案而不是字，所以适合当纹理；按 content/species-dex.json 里那 195 段
+   图鉴文本单独裁（92KB，覆盖 100% 的用字），所以它**不进正文那几套字体栈**。 */
+@font-face {
+  font-family: 'Oasis Decor';
+  src: url(../../assets/fonts/YuFanLiXing-subset.woff2) format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 /* 兜底字体：完整覆盖，子集里缺的字由它接住。
    字体文件放在 assets/fonts/，8.5MB 所以不内联进单文件构建之外的地方；
@@ -962,6 +972,43 @@ button { font-family: inherit; }
 .weather {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: .5;
 }
+
+/* ------------------------------------------------------------------
+   背景那层波浪花纹文字（3.0.5，用户要的）
+   「和背景颜色相近但勉强能看清的文本作为装饰」——
+   所以它不是白色也不是彩色，是**暖白、极低透明度**：在深色的上半片上像比背景亮一点的底纹，
+   在浅色的下半片上同样只是勉强能看清。字体是用户给的那套装饰字体（汉字像图案）。
+   变亮：同样的内容再画两份，各自用 radial-gradient 的 mask 圈住自己那一侧，
+   那一侧行动时把对应那份点亮（见 battle-view.js 的 decorAct）。
+   ------------------------------------------------------------------ */
+.battle-decor {
+  position: absolute; inset: 0;
+  pointer-events: none; overflow: hidden;
+  /* 别让浏览器给这层文字做抗锯齿之外的额外合成：它只是底纹 */
+  contain: paint;
+}
+.battle-decor svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  font-family: 'Oasis Decor', var(--font-hand);
+}
+.battle-decor text { letter-spacing: .06em; }
+.decor-base text { fill: rgba(255, 241, 216, .085); }
+.decor-glow text { fill: rgba(255, 247, 226, .175); }
+.decor-glow {
+  opacity: 0;
+  transition: opacity .55s ease;
+}
+/* 敌人那一半在右上、主角那一半在左下 —— 和战场上两只精灵的站位对齐 */
+.decor-glow-enemy {
+  -webkit-mask-image: radial-gradient(58% 44% at 74% 20%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(58% 44% at 74% 20%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+}
+.decor-glow-player {
+  -webkit-mask-image: radial-gradient(58% 44% at 26% 80%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(58% 44% at 26% 80%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+}
+.battle-screen[data-acting="enemy"] .decor-glow-enemy { opacity: 1; }
+.battle-screen[data-acting="player"] .decor-glow-player { opacity: 1; }
 .weather i {
   position: absolute;
   width: 2px; height: 2px;

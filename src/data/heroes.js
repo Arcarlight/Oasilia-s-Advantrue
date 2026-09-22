@@ -52,7 +52,8 @@ export const HEROES = [
         "atk": 1
       }
     },
-    "titleName": "沙漠精灵"
+    "titleName": "沙漠精灵",
+    "dexText": "因为位于自己卷起的沙暴中心，所以是很少现身于人前的宝可梦。"
   },
   {
     "id": "atlas",
@@ -101,7 +102,8 @@ export const HEROES = [
         "epic": 1.9
       }
     },
-    "titleName": "探寻的新月"
+    "titleName": "探寻的新月",
+    "dexText": "一直渴望能飞上天空，进化后身体上终于长出了翅膀的珍奇宝可梦。"
   }
 ];
 

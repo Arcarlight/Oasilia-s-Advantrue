@@ -210,6 +210,67 @@
       errors.push('settleRecover: ' + e.message);
     }
 
+    /**
+     * 3.5) 战斗背景那层波浪花纹文字（3.0.5）
+     *
+     * 这一条守的是「看上去像装饰、其实是个功能」的那部分：
+     *   · 花纹有没有真的铺上去 —— 而且铺的是**这一场敌人那个物种**的图鉴介绍；
+     *   · 那一侧行动时**只有它那半片**变亮（不是整屏一起亮，也不是永远不亮）。
+     * 后者只能靠 computed style 量：截图走的是虚拟时间，永远截不到「亮着」的那一瞬。
+     */
+    try {
+      window.__oasisAuto({ scene: 'battle', stage: 1 });
+      await wait(900);
+      const screenEl = document.querySelector('.battle-screen');
+      const decor = document.querySelector('.battle-decor');
+      const svgs = decor ? decor.querySelectorAll('svg') : [];
+      log('背景花纹：容器=' + !!decor, '图层数=' + svgs.length, '文字长度=' + (decor ? decor.textContent.length : 0));
+      if (!decor) errors.push('战斗背景没有花纹层（.battle-decor）');
+      if (svgs.length !== 3) errors.push('背景花纹应该是三份（底色 + 左右各一份高亮），实际 ' + svgs.length);
+      const enemiesMod = await import('/src/data/enemies.js');
+      const slug = window.__oasisUI.battleScreen.battle.enemy.slug;
+      const dexText = (enemiesMod.ENEMIES.find((e) => e.slug === slug) || {}).dexText || '';
+      if (!dexText) errors.push('这一场敌人的物种没有背景花纹文本：' + slug);
+      else if (decor && !decor.textContent.includes(dexText)) errors.push('背景花纹里没有这一场敌人的图鉴文本');
+      const glowE = document.querySelector('.decor-glow-enemy');
+      const glowP = document.querySelector('.decor-glow-player');
+      const opa = (n) => (n ? Number(getComputedStyle(n).opacity) : -1);
+      const bs = window.__oasisUI.battleScreen;
+      if (!screenEl || !glowE || !glowP || !bs) {
+        errors.push('背景花纹缺少高亮层');
+      } else {
+        /**
+         * ⚠ 这里必须用 decorPin（而不是直接写 dataset）：战斗自己的事件流
+         * 每出一条 turnStart / playCard 都会调 decorAct，而那条路带了
+         * 「停手 1.1 秒后自己淡回去」的定时器 —— 虚拟时间下那个定时器会立刻烧掉，
+         * 于是刚点亮就被清掉，量到的永远是 0（第一版就是这么红的）。
+         * 钉住之后由测试自己控制亮哪一侧。
+         */
+        bs.decorPin = 'enemy';
+        bs.screen.dataset.acting = 'enemy';
+        // 把过渡关掉再读：虚拟时间下 CSS 过渡不推进，读到的会永远是起点值 0
+        for (const n of [glowE, glowP]) n.style.transition = 'none';
+        await wait(200);
+        const onE = opa(glowE); const onP = opa(glowP);
+        bs.decorPin = 'player';
+        bs.screen.dataset.acting = 'player';
+        await wait(200);
+        const pE = opa(glowE); const pP = opa(glowP);
+        bs.decorPin = '';
+        bs.screen.dataset.acting = '';
+        await wait(200);
+        const baseE = opa(glowE); const baseP = opa(glowP);
+        for (const n of [glowE, glowP]) n.style.transition = '';
+        log('背景花纹变亮（敌/玩家）：敌人行动 ' + onE + '/' + onP
+          + ' · 玩家行动 ' + pE + '/' + pP + ' · 停手 ' + baseE + '/' + baseP);
+        if (!(onE > 0.9 && onP < 0.05)) errors.push('敌人行动时亮的应该只有敌人那半片（实测 ' + onE + '/' + onP + '）');
+        if (!(pP > 0.9 && pE < 0.05)) errors.push('玩家行动时亮的应该只有玩家那半片（实测 ' + pE + '/' + pP + '）');
+        if (!(baseE < 0.05 && baseP < 0.05)) errors.push('停手后两份高亮都该淡回去（实测 ' + baseE + '/' + baseP + '）');
+      }
+    } catch (e) {
+      errors.push('battleDecor: ' + e.message);
+    }
+
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
     try {
       const audioMod = await import('/src/core/audio.js');

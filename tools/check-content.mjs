@@ -748,6 +748,61 @@ if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   }
 }
 
+/**
+ * 图鉴里两处「说的不是同一件事」的文案（3.0.5，用户报的）。
+ *
+ * ① **简短介绍不能和出场台词撞车。**
+ *    用户：「现在有些宝可梦简短介绍和出场介绍还是一样的，也要改。」
+ *    实测确实有 5 只几乎逐字重复（小碎钻 / 超甲狂犀 / 未知图腾 / 大钢蛇 / 摔角鹰人）——
+ *    两条文案是两个作者、两个时间写的，光靠人对眼是发现不了的。
+ *    这里按**二元组重合度**量：改完最大 0.22，所以 0.45 就算撞车。
+ * ② **口吻台词是它在说话，不是别人在说它。**
+ *    用户：「『它可能会说』里用了『它』这个第三人称而不是这只宝可梦的第一人称。」
+ *    规则很简单也很够用：**一句里出现「它」却没出现「我」**，那句几乎一定是把自己的处境
+ *    写成了第三人称（实测 32 条全被这条抓到）。允许「它」指别的东西 ——
+ *    比如背上的蘑菇、风、沙暴 —— 那类句子里都有「我」。
+ */
+{
+  const bigrams = (s) => {
+    const t = String(s ?? '').replace(/[。，、！？「」…\s—：·\-]/g, '');
+    const set = new Set();
+    for (let i = 0; i < t.length - 1; i += 1) set.add(t.slice(i, i + 2));
+    return set;
+  };
+  const overlap = (a, b) => {
+    const A = bigrams(a); const B = bigrams(b);
+    if (!A.size || !B.size) return 0;
+    let hit = 0;
+    for (const x of A) if (B.has(x)) hit += 1;
+    return hit / (A.size + B.size - hit);
+  };
+  const dupes = [];
+  const thirdPerson = [];
+  for (const e of ENEMIES) {
+    for (const line of e.lines ?? []) {
+      const j = overlap(e.intro, line);
+      if (e.intro && j >= 0.45) dupes.push(`${e.name}（${Math.round(j * 100)}%）`);
+    }
+    for (const line of e.voice ?? []) {
+      if (String(line).includes('它') && !String(line).includes('我')) {
+        thirdPerson.push(`${e.name}：${line}`);
+      }
+    }
+  }
+  if (dupes.length) {
+    err(`这些敌人的「简短介绍」和「出场台词」几乎一样：${[...new Set(dupes)].join('、')}`
+      + '（各写各的：简短介绍可以照着图鉴文本的口吻写，出场台词是当场那一段画面）');
+  } else {
+    note('每只敌人的「简短介绍」与「出场台词」都不一样（重合度都低于 45%）');
+  }
+  if (thirdPerson.length) {
+    err(`这些口吻台词里出现「它」却没有「我」—— 那是把自己的处境写成了第三人称：`
+      + `${thirdPerson.slice(0, 4).join(' ｜ ')}${thirdPerson.length > 4 ? ` …（共 ${thirdPerson.length} 条）` : ''}`);
+  } else {
+    note('「它可能会这么说」的台词都是第一人称（出现「它」的句子都同时有「我」，指的是别的东西）');
+  }
+}
+
 // ---------- 4b. 敌人数值表的档位顺序 ----------
 /**
  * **攻击力必须逐档递增**（每一章都满足 杂兵 < 较强 < 精英 < 首领）。
@@ -880,8 +935,14 @@ if (BGM_FILES) {
     const files = [];
     for (const s of SCAN) await walk(path.join(ROOT, s.dir), s.ext, files);
     files.push(path.join(ROOT, 'index.html'));
+    /**
+     * 装饰文本（content/species-dex.json）**不进正文那几套子集**，所以重算指纹时也要摘掉 ——
+     * 两边（这里和 tools/subset-fonts.mjs）必须用同一条规则，否则指纹永远对不上。
+     */
+    const DECOR_FILE = path.join(ROOT, 'content', 'species-dex.json');
     const chars = new Set(ALWAYS.join(''));
     for (const f of files) {
+      if (f === DECOR_FILE) continue;
       for (const ch of await fs.readFile(f, 'utf8')) {
         const cp = ch.codePointAt(0);
         if (cp < 0x20 || (cp >= 0xe000 && cp <= 0xf8ff)) continue;
@@ -896,6 +957,36 @@ if (BGM_FILES) {
         + '跑一次 node tools/subset-fonts.mjs 重裁（不然新写的字会掉到兜底字体上）');
     } else {
       note(`字体子集与内容一致（${manifest.chars} 字，指纹 ${sha.slice(0, 12)}）`);
+    }
+    /**
+     * 装饰字体那一套：指纹跟着 content/species-dex.json 走（重新抓一次图鉴文本就得重裁），
+     * 而且**要求覆盖率 100%** —— 背景上那层花纹用的是同一个字形风格，
+     * 缺一个字就会冒出个别的字体写在里面，一眼就看得出「这行字里有一块不对」。
+     */
+    const decor = JSON.parse(await fs.readFile(DECOR_FILE, 'utf8').catch(() => 'null'));
+    if (manifest.decor) {
+      if (!decor) {
+        err('字体清单里有 decor 那一套，但 content/species-dex.json 不见了 —— 跑一次 node tools/fetch-species-dex.mjs');
+      } else {
+        const decorText = [...new Set(' 。，、·—「」（）…！？' + Object.values(decor.dex ?? {}).join(''))].join('');
+        const decorSha = createHash('sha256').update(decorText, 'utf8').digest('hex');
+        if (decorSha !== manifest.decor.textSha256) {
+          err(`装饰字体子集过期了：content/species-dex.json 改过（${manifest.decor.chars} 字 → ${decorText.length} 字）——`
+            + '跑一次 node tools/subset-fonts.mjs');
+        }
+        for (const f of manifest.decor.fonts) {
+          const p = path.join(ROOT, 'assets/fonts', f.out);
+          const st = await fs.stat(p).catch(() => null);
+          if (!st) err(`清单里列了装饰字体 ${f.out}，但 assets/fonts 里没有它`);
+          else if (st.size !== f.outBytes) err(`装饰字体 ${f.out} 的大小和清单对不上（${st.size} vs ${f.outBytes}）`);
+          if (f.missingCount) {
+            err(`装饰字体 ${f.out} 缺 ${f.missingCount} 个字：${f.missing}`
+              + '（背景花纹是同一个字形风格，缺字会掉到别的字体上，在一整片里露馅）');
+          }
+        }
+        note(`装饰字体：${manifest.decor.chars} 字 · 指纹 ${manifest.decor.textSha256.slice(0, 12)} ·`
+          + ` 覆盖 ${manifest.decor.fonts.map((f) => f.out).join('/')}`);
+      }
     }
     for (const f of manifest.fonts) {
       const p = path.join(ROOT, 'assets/fonts', f.out);
@@ -1261,7 +1352,12 @@ if (BGM_FILES) {
     ['node', Object.values(NODE_TYPES)],
   ];
   // 明确不翻 / 不是文案的字段
-  const SKIP = new Set(['id', 'slug', 'key', 'ico', 'fx', 'art', 'source', 'file', 'group', 'dex', 'en',
+  /**
+   * ⚠ `dexText` 是**故意不翻**的：那是战斗背景那层波浪花纹的文本，用户明说了
+   * 「日文和英文的背景文本都不用本地化，因为只是做个图案」——它在那儿是纹理不是内容。
+   * 所以它不进 CONTENT_FIELDS、也就不会出现在待翻清单里（见 ui/battle-decor.js）。
+   */
+  const SKIP = new Set(['id', 'slug', 'key', 'ico', 'fx', 'art', 'source', 'file', 'group', 'dex', 'dexText', 'en',
     '_note', '_fields_note', '_readme', 'generated_from', 'icon_pack', 'tone', 'special', 'service', 'mustItems',
     'biome', 'deck', 'rarity', 'targeting', 'bossTitle_en', 'effect', 'stat']);
   const leaks = [];

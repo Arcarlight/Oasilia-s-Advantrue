@@ -65,6 +65,25 @@ const JP_FONTS = [
   { src: 'YOzBS_.otf', out: 'YOzFont-subset.woff2', label: '日语手写（旁白 / 对白）' },
 ];
 
+/**
+ * 装饰字体（3.0.5，用户提供）：战斗背景那层波浪花纹文字。
+ *
+ * 它只画**一份文本** —— `content/species-dex.json` 里从 52wiki 抓来的图鉴介绍
+ * （用户：「文本可以直接采用52wiki上对应的宝可梦介绍」）。所以：
+ *   · 单独按那份文本裁，**不从正文那几套的字集里过** —— 那 1196 个字正文里一个都用不到，
+ *     混进正文子集只会让 SGHr / 文源 / 写意体白胖一圈；
+ *   · 它是**图案不是内容**（用户：「日文和英文的背景文本都不用本地化，因为只是做个图案」），
+ *     所以不参与多语言，日语模式也照样铺中文。
+ * 指纹单独记在清单的 `decor` 里，check-content 按它对账「子集过期」。
+ */
+const DECOR = {
+  src: '余繁离形体.otf',
+  out: 'YuFanLiXing-subset.woff2',
+  /** 这份文件里所有 `dex` 值就是装饰文字的全部内容 */
+  textFrom: 'content/species-dex.json',
+  label: '装饰（战斗背景花纹文字）',
+};
+
 /** 假名全表（平假名 + 片假名 + 常见的浊音/半浊音/拗音）—— 不留「以后新写的词缺字」这个坑 */
 const KANA = 'ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔ'
   + 'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶ'
@@ -118,8 +137,14 @@ const files = [];
 for (const s of SCAN) await walk(path.join(ROOT, s.dir), s.ext, files);
 for (const f of SCAN_FILES) files.push(path.join(ROOT, f));
 
+/**
+ * 装饰文本**不进正文那几套子集**（理由见 DECOR 的说明）：先把它从扫描结果里摘出来。
+ * ⚠ check-content 的第 7 节会重算同一份字集来对指纹，那边有一份**同样的摘除**，两边必须一致。
+ */
+const DECOR_FILE_ABS = path.join(ROOT, DECOR.textFrom);
 const chars = new Set(ALWAYS.join(''));
 for (const f of files) {
+  if (f === DECOR_FILE_ABS) continue;
   const text = await fs.readFile(f, 'utf8');
   for (const ch of text) {
     const cp = ch.codePointAt(0);
@@ -150,6 +175,22 @@ const jaText = [...jaChars].join('');
 const jaTextFile = path.join(os.tmpdir(), 'oasis-font-subset-ja.txt');
 await fs.writeFile(jaTextFile, jaText, 'utf8');
 console.log(`日语用字 ${jaChars.size} 个（假名全表 + content/i18n/ja.json 里的 ${new Set(jaSrc).size} 个字）`);
+
+// ---- 装饰那一套：只有 content/species-dex.json 里那些字（外加几个分隔符）----
+/**
+ * ⚠ 这里**不能**顺手把 ALWAYS 那套符号一起塞进去：装饰文字是「图鉴句子 + 分隔符」，
+ * 而这份字体没有 ▲☆０１ 之类的全角符号（64 个）。塞进去只会让覆盖率报告每次都说
+ * 「缺 64 个字」—— 那 64 个永远不会出现在花纹里，却会把真正的缺字淹掉。
+ * 所以这里只放**真的会用到**的字，覆盖率报告才是有意义的。
+ */
+const DECOR_SEP = ' 。，、·—「」（）…！？';
+const decorDoc = JSON.parse(await fs.readFile(path.join(ROOT, DECOR.textFrom), 'utf8'));
+const decorSrc = Object.values(decorDoc?.dex ?? {}).join('');
+const decorChars = new Set(`${DECOR_SEP}${decorSrc}`);
+const decorText = [...decorChars].join('');
+const decorTextFile = path.join(os.tmpdir(), 'oasis-font-subset-decor.txt');
+await fs.writeFile(decorTextFile, decorText, 'utf8');
+console.log(`装饰用字 ${decorChars.size} 个（${Object.keys(decorDoc?.dex ?? {}).length} 条图鉴文本，共 ${decorSrc.length} 字 + 分隔符）`);
 
 await fs.mkdir(OUT_DIR, { recursive: true });
 
@@ -240,6 +281,13 @@ for (const font of JP_FONTS) {
   if (info) jaProduced.push(info);
 }
 
+// ---- 装饰那一套（按装饰文本裁；它只有一份文件，所以顺带报一次缺字）----
+const decorProduced = [];
+for (const font of [DECOR]) {
+  const info = await cut(font, decorTextFile);
+  if (info) decorProduced.push(info);
+}
+
 // ---- 补丁子集：把「新字体缺、旧字体有」的那几个字单独裁出来 ----
 const mainOuts = produced.map((f) => path.join(OUT_DIR, f.out));
 let patchInfo = null;
@@ -280,6 +328,7 @@ if (mainOuts.length) {
   // ---- 清单：给 check-content.mjs 守住「内容改了要重跑」 ----
   const { createHash } = await import('node:crypto');
   const jaCov = jaProduced.length ? await coverage(jaProduced.map((f) => path.join(OUT_DIR, f.out)), jaTextFile) : {};
+  const decorCov = decorProduced.length ? await coverage(decorProduced.map((f) => path.join(OUT_DIR, f.out)), decorTextFile) : {};
   const manifest = {
     note: '由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了',
     textSha256: createHash('sha256').update(text, 'utf8').digest('hex'),
@@ -304,12 +353,32 @@ if (mainOuts.length) {
         missing: jaCov[f.out]?.missing ?? '',
       })),
     },
+    /**
+     * 装饰那一套：只有 content/species-dex.json 里的字。
+     * 指纹跟着**那份文本**走 —— 重新抓一次图鉴文本就得重跑一次这个脚本。
+     */
+    decor: {
+      textFrom: DECOR.textFrom,
+      textSha256: createHash('sha256').update(decorText, 'utf8').digest('hex'),
+      chars: decorChars.size,
+      fonts: decorProduced.map((f) => ({
+        out: f.out, src: f.src, label: f.label,
+        srcBytes: f.srcBytes, outBytes: f.outBytes,
+        codepoints: decorCov[f.out]?.codepoints ?? 0,
+        missingCount: (decorCov[f.out]?.missing ?? '').length,
+        missing: decorCov[f.out]?.missing ?? '',
+      })),
+    },
   };
   await fs.writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`  · 清单写入 assets/fonts/subset-manifest.json（中文指纹 ${manifest.textSha256.slice(0, 12)}`
-    + ` · 日语指纹 ${manifest.ja.textSha256.slice(0, 12)}）`);
+    + ` · 日语指纹 ${manifest.ja.textSha256.slice(0, 12)} · 装饰指纹 ${manifest.decor.textSha256.slice(0, 12)}）`);
   for (const f of manifest.ja.fonts) {
     if (f.missingCount) console.log(`    ⚠ 日语字体 ${f.out} 缺 ${f.missingCount} 个字：${f.missing.slice(0, 40)}`);
+  }
+  for (const f of manifest.decor.fonts) {
+    if (f.missingCount) console.log(`    ⚠ 装饰字体 ${f.out} 缺 ${f.missingCount} 个字：${f.missing.slice(0, 60)}`);
+    else console.log(`    ✓ 装饰字体覆盖了全部 ${manifest.decor.chars} 个字`);
   }
 }
 

@@ -12,9 +12,11 @@ import { STATUS_INFO, ALL_STATUSES, BUFF_INFO, computeHit, effectiveAtk, effecti
 import { CARD_BY_ID } from '../data/cards.js';
 // 演出速度相关的选项/读取放在 balance.js 里，设置弹窗也直接用它
 import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromAgi, BALANCE } from '../data/balance.js';
-import { TIERS } from '../data/enemies.js';
+import { TIERS, ENEMIES } from '../data/enemies.js';
 // 主角记录（3.0）：战斗面板上「性别 物种 / 属性 · 特性」那一行按主角走
 import { heroById } from '../data/heroes.js';
+// 背景那层波浪花纹文字（3.0.5）：文本来自 52wiki 的图鉴介绍，见 battle-decor.js 的说明
+import { battleDecor } from './battle-decor.js';
 import { t } from '../core/i18n.js';
 // 属性短标签 / 悬停说明放在纯数据模块里（待翻清单靠扫源码收，见那个文件的说明）。
 // 读取处照旧 t(STAT_SHORT.…)、t(STAT_TIP[label], { … })。
@@ -492,8 +494,7 @@ export class BattleScreen {
 
     this.battleBottom = el('div', { class: 'battle-bottom' }, [this.battleBar, this.handEl]);
 
-    this.weather = el('div', { class: 'weather' });
-    for (let i = 0; i < 40; i++) {
+    this.weather = el('div', { class: 'weather' });    for (let i = 0; i < 40; i++) {
       const p = Math.random();
       this.weather.append(el('i', {
         style: {
@@ -506,7 +507,30 @@ export class BattleScreen {
       }));
     }
 
+    /**
+     * 背景花纹的文字：敌人那一半用**这一场敌人物种**的图鉴介绍（52wiki 抓的），
+     * 主角那一半用**主角物种**的 —— 见 ui/battle-decor.js 的说明。
+     *
+     * 这里按 slug 查表，而不是让引擎把那条文本带进战斗对象：
+     * 装饰是界面的事，引擎不需要知道背景上铺了什么字。
+     * 兜底：万一某个物种缺文本（理论上体检已经拦住了），就用另一边的，别留一块空白。
+     */
+    const decorEnemy = ENEMIES.find((e) => e.slug === b.enemy?.slug)?.dexText ?? '';
+    const decorHero = hero?.dexText ?? '';
+    this.decor = battleDecor({
+      enemyText: decorEnemy,
+      playerText: decorHero,
+      fallback: decorEnemy || decorHero,
+    });
+
     this.field = el('div', { class: 'battle-field' }, [
+      /**
+       * 背景那层波浪花纹文字（3.0.5）。放在**最前面** = 垫在最底下：
+       * 天气粒子、两边角色、日志都盖在它上面（z-index 不需要，DOM 顺序就是层叠顺序，
+       * 而且它 pointer-events: none，不会挡任何点击）。
+       * 上半片是敌人那个物种的图鉴介绍、下半片是主角的 —— 谁的回合谁那半片亮一点。
+       */
+      this.decor,
       this.weather,
       this.enemyFighter,
       el('div', { class: 'battle-middle' }, [this.turnBadge, this.intentEl]),
@@ -516,6 +540,26 @@ export class BattleScreen {
 
     this.screen.append(this.field, this.battleBottom);
     this.host.append(this.screen);
+
+    /**
+     * 截图 / 诊断用：`?decor=player|enemy` 把某一侧的高亮**钉住**。
+     *
+     * 为什么需要它：这个高亮是「那一侧行动时亮起、停手后淡回去」的瞬时状态，
+     * 而截图（Edge 的 --virtual-time-budget）会把定时器一路快进到结束 ——
+     * 于是永远截不到「亮着」的那一帧，也就没法核对「到底亮了多少」。
+     * 钉住之后才能拿两张图逐区域比亮度（tools/measure-decor-glow.py）。
+     */
+    const pin = new URLSearchParams(location.search).get('decor');
+    if (pin === 'player' || pin === 'enemy') {
+      this.decorPin = pin;
+      this.screen.dataset.acting = pin;
+      /**
+       * 钉住的同时把过渡关掉：截图跑在虚拟时间下，**CSS 过渡不会推进**，
+       * 于是「刚点亮」的那一刻被冻在 opacity 0 上，截出来的图看起来像没生效。
+       * 关掉过渡之后读到的就是那条规则真正的目标值（1），截图也才是「亮着」的样子。
+       */
+      for (const n of this.screen.querySelectorAll('.decor-glow')) n.style.transition = 'none';
+    }
 
     // 先量一次场地（精灵缩放与出牌区位置都靠它），窗口变化时再量
     this.layoutBattle();
@@ -1593,6 +1637,26 @@ export class BattleScreen {
     if (box) setPortraitEmotion(box, slug, emotion);
   }
 
+  /**
+   * 背景花纹「这一侧行动了，它那半片微微亮一点」（3.0.5，用户要的）。
+   *
+   * 亮的是**它自己那半片**（敌人上半、主角下半），做法见 battle-decor.js：
+   * 高亮层平时 opacity 0，这里把 `data-acting` 挂到 .battle-screen 上，CSS 点亮对应那层。
+   * 每次行动都会**重新计时**（出牌比回合开始密集），停手一段时间后自己淡回去 ——
+   * 用户要的是「微微变亮，但又不会太过明显」，所以：
+   *   · 亮度只从 10% 提到 20%（不是闪一下，也不是持续发光）；
+   *   · 淡入淡出用 CSS 过渡（0.55s），没有硬切。
+   */
+  decorAct(side, holdMs = 1300) {
+    if (!this.screen || !side) return;
+    if (this.decorPin) { this.screen.dataset.acting = this.decorPin; return; }   // 截图用：钉住不动
+    this.screen.dataset.acting = side;
+    clearTimeout(this._decorTimer);
+    this._decorTimer = setTimeout(() => {
+      if (this.screen) this.screen.dataset.acting = '';
+    }, Math.max(400, holdMs * this.speedMul));
+  }
+
   async playEvent(ev) {
     // 看门狗的心跳：每推进一步就记一次时间，卡住时才看得出来（见 startWatchdog）
     this._eventAt = Date.now();
@@ -1613,6 +1677,8 @@ export class BattleScreen {
       case 'turnStart': {
         this.refreshTurn();
         this.refreshSide(ev.side);
+        // 轮到这一侧了：背景花纹先亮起它那半片（出牌时会再续一次，见 playCard 那一支）
+        this.decorAct(ev.side, 1100);
         /**
          * 回合过场（光带 + 立绘）**不 await**：它自己演完自己收场。
          *
@@ -1651,6 +1717,8 @@ export class BattleScreen {
       case 'playCard': {
         // 先把牌亮出来（对手用了什么牌是必须看得见的），再做出招动作
         this.pushLogLine(this.logOf(ev));
+        // 背景花纹：这一侧在动，它那半片亮一点（敌我同一套写法）
+        this.decorAct(ev.side, 1500);
         // AP 要**跟着出牌当场扣**：playEvent 开头已经把界面副本推进过了（disp.ap 已经减掉），
         // 这里立刻刷新 AP 栏，消耗动画就是「出牌瞬间」播；以前要等整批演出结束才刷，
         // 感觉像是「打完了才扣 AP」。

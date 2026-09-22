@@ -44,6 +44,11 @@ async function loadAll() {
   // 图鉴详情「它可能会这么说」的口吻台词（每只 3 句，tools/merge-enemy-voice.mjs 生成）
   const enemyVoice = await readJson(path.join(CONTENT, 'enemy-voice.json')).catch(() => ({ voice: {} }));
   /**
+   * 战斗背景那层波浪花纹文字的文本（3.0.5，tools/fetch-species-dex.mjs 从 52wiki 抓）。
+   * **故意不进多语言清单** —— 用户：「日文和英文的背景文本都不用本地化，因为只是做个图案」。
+   */
+  const speciesDex = await readJson(path.join(CONTENT, 'species-dex.json')).catch(() => ({ dex: {} }));
+  /**
    * 道具（手持道具）：**自己的文件**（content/items.json），不再塞在 cards.json 里。
    * 这一版道具从「背包里的消耗品」变成了有持有效果 / 战斗外使用两类的一等公民，
    * 和卡牌放一起只会让两边都难读。图尺寸表来自 assets/data/items.json（tools/import-items.mjs）。
@@ -80,7 +85,7 @@ async function loadAll() {
   // 真的是那个包里存在的图标（也顺便知道它属于哪个分类目录，好拼下载 URL）
   const iconCatalog = await readJson(path.join(ROOT, 'tools', 'icon-catalog.json')).catch(() => []);
   const iconDraft = await readJson(path.join(ROOT, 'tools', 'icon-semantics-draft.json')).catch(() => null);
-  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice, itemsData, itemArt, heroes };
+  return { cards, species, enemies, biomes, events, bgm, oggMap, bgmManifest, icons, iconCatalog, iconDraft, merchants, enemyIntro, enemyVoice, speciesDex, itemsData, itemArt, heroes };
 }
 
 // ============================================================
@@ -356,6 +361,36 @@ function validateSpecies(species, enemyList) {
   }
   for (const e of enemyList) if (!slugs.has(e.slug)) err(`敌人 ${e.id} 的 slug=${e.slug} 不在 species.json 里`);
   return slugs;
+}
+
+/**
+ * 战斗背景花纹文字的体检（content/species-dex.json，3.0.5）。
+ *
+ * 这份文本**只出现在战斗背景的那层花纹上**，缺一条的后果是「某个物种的花纹少一截」——
+ * 在 10% 上下的透明度下几乎看不出来。所以必须在这里卡住，不能指望眼睛：
+ *   · 敌人 / 主角用到的**每一个**物种都要有一条（少一条就是那块背景空着）；
+ *   · slug 必须是 species.json 里真有的（写错就是永远用不到的一条 + 一片空背景）；
+ *   · 太短的（< 8 字）大概是抓歪了（抓成了模板名或空段落）；
+ *   · 全角数字 / 字母要已经换成半角（装饰字体没有全角那一组，会掉到别的字形上）。
+ */
+function validateSpeciesDex(doc, species, enemyList, heroes) {
+  const dex = doc?.dex;
+  if (!dex || typeof dex !== 'object') { err('content/species-dex.json 缺 dex 这一张表'); return; }
+  const known = new Set(Object.keys(species ?? {}));
+  for (const slug of Object.keys(dex)) {
+    if (!known.has(slug)) err(`content/species-dex.json 里的 ${slug} 不是 species.json 里的物种（slug 写错了？）`);
+  }
+  const need = [...new Set([...enemyList.map((e) => e.slug), ...(heroes ?? []).map((h) => h.species)])];
+  for (const slug of need) {
+    const text = dex[slug];
+    if (!text) {
+      err(`物种 ${slug}（${species?.[slug]?.name ?? '?'}）没有背景花纹文本 —— 跑一次 node tools/fetch-species-dex.mjs`);
+      continue;
+    }
+    if (String(text).trim().length < 8) err(`物种 ${slug} 的背景花纹文本太短：${JSON.stringify(text)}`);
+    const full = /[\uff10-\uff19\uff21-\uff3a\uff41-\uff5a]/.exec(String(text));
+    if (full) err(`物种 ${slug} 的背景花纹文本里有全角「${full[0]}」—— 装饰字体没有全角数字/字母，抓取脚本里会换成半角`);
+  }
 }
 
 function validateEnemies(data, cardIds, biomeKeys, speciesMap = {}) {
@@ -788,13 +823,18 @@ function validateHeroes(doc, cards, species) {
  * 其余主角来自 content/heroes.json 的 starters —— 这样 STARTER_DECK 与 HERO_STARTERS
  * 不会各写一份。
  */
-function emitHeroes(doc, starterDeck, heroIds) {
+function emitHeroes(doc, starterDeck, heroIds, speciesDex = {}) {
   const starters = { [doc.order[0]]: starterDeck };
   for (const [heroId, deck] of Object.entries(doc.starters ?? {})) {
     if (heroId.startsWith('_')) continue;
     starters[heroId] = deck;
   }
-  const heroes = doc.order.map((id) => doc.heroes.find((h) => h.id === id)).filter(Boolean);
+  /**
+   * 主角记录里补一条 `dexText`：战斗背景下半片铺的是**主角自己那个物种**的图鉴文本。
+   * 上半片是敌人的（见 emitEnemies）—— 两半各铺各的，所以那一侧行动时变亮的才是「它的字」。
+   */
+  const heroes = doc.order.map((id) => doc.heroes.find((h) => h.id === id)).filter(Boolean)
+    .map((h) => (speciesDex[h.species] ? { ...h, dexText: speciesDex[h.species] } : h));
   void heroIds;
   return [
     'export const HERO_ORDER = ' + J(doc.order) + ';',
@@ -852,7 +892,7 @@ function emitItems(itemsData, artMeta) {
   ].join('\n');
 }
 
-function emitEnemies(tiers, movePools, enemies, species, intros = {}, voices = {}) {
+function emitEnemies(tiers, movePools, enemies, species, intros = {}, voices = {}, dexTexts = {}) {
   const list = enemies.map((e) => {
     // 物种信息（名称 / 图鉴号 / 属性）统一从 species.json 取，敌人条目里不再重复写一遍，
     // 也避免「加了敌人忘了写 types」这种缺失（战斗界面的属性行会直接崩）
@@ -864,6 +904,12 @@ function emitEnemies(tiers, movePools, enemies, species, intros = {}, voices = {
     lines.push(`    "name": ${JSON.stringify(sp.name ?? e.slug)},`);
     lines.push(`    "en": ${JSON.stringify(sp.en ?? '')},`);
     lines.push(`    "dex": ${JSON.stringify(String(sp.dex ?? ''))},`);
+    /**
+     * 战斗背景那层波浪花纹用的图鉴文本（content/species-dex.json，52wiki 抓的）。
+     * **不进多语言清单**（用户：「日文和英文的背景文本都不用本地化，因为只是做个图案」）——
+     * 所以 check-content 的「中文字段有没有登记」那张 SKIP 名单里专门点了它的名。
+     */
+    if (dexTexts[e.slug]) lines.push(`    "dexText": ${JSON.stringify(dexTexts[e.slug])},`);
     lines.push(`    "types": ${J(sp.types ?? [])},`);
     lines.push(`    "tier": ${JSON.stringify(e.tier)},`);
     lines.push(`    "biome": ${JSON.stringify(e.biome)},`);
@@ -1082,6 +1128,8 @@ const iconNameSet = new Set(icons.map((i) => i.name));
 const heroIds = validateHeroes(data.heroes, data.cards.cards, data.species.species);
 const cardIds = validateCards(data.cards, iconNameSet, heroIds);
 validateSpecies(data.species, data.enemies.enemies);
+// 战斗背景花纹文字：每个用到的物种都要有一条（3.0.5）
+validateSpeciesDex(data.speciesDex, data.species.species, data.enemies.enemies, data.heroes.heroes);
 // 传进去的 data 要带上卡表与物种表：属性的硬校验（池子里不许混异系卡、每只怪至少一张本系）靠它们
 validateEnemies({ ...data.enemies, cardList: data.cards.cards }, cardIds, Object.keys(data.biomes.biomes), data.species.species);
 validateBiomes(data.biomes, data.enemies.enemies);
@@ -1102,9 +1150,9 @@ if (errors.length) {
 const changed = [];
 if (!CHECK_ONLY) {
   if (await writeBlock('src/data/cards.js', 'CARDS', emitCards(data.cards.cards, data.cards.starterDeck))) changed.push('src/data/cards.js');
-  if (await writeBlock('src/data/heroes.js', 'HEROES', emitHeroes(data.heroes, data.cards.starterDeck, heroIds))) changed.push('src/data/heroes.js');
+  if (await writeBlock('src/data/heroes.js', 'HEROES', emitHeroes(data.heroes, data.cards.starterDeck, heroIds, data.speciesDex?.dex ?? {}))) changed.push('src/data/heroes.js');
   if (await writeBlock('src/data/items.js', 'ITEMS', emitItems(data.itemsData, data.itemArt?.items))) changed.push('src/data/items.js');
-  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}, data.enemyVoice?.voice ?? {}))) changed.push('src/data/enemies.js');
+  if (await writeBlock('src/data/enemies.js', 'ENEMIES', emitEnemies(data.enemies.tiers, data.enemies.movePools, data.enemies.enemies, data.species.species, data.enemyIntro?.intro ?? {}, data.enemyVoice?.voice ?? {}, data.speciesDex?.dex ?? {}))) changed.push('src/data/enemies.js');
   if (await writeBlock('src/data/balance.js', 'BIOMES', emitBiomes(data.biomes.stageOrder, data.biomes.biomes, await readJson(path.join(CONTENT, 'rarity.json'))))) changed.push('src/data/balance.js');
   if (await writeBlock('src/data/events.js', 'EVENTS', emitEvents(data.events))) changed.push('src/data/events.js');
   if (await writeBlock('src/data/merchants.js', 'MERCHANTS', emitMerchants(data.merchants))) changed.push('src/data/merchants.js');

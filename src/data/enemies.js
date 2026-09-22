@@ -1049,6 +1049,7 @@ export const ENEMIES = [
     "name": "穿山鼠",
     "en": "Sandshrew",
     "dex": "0027",
+    "dexText": "喜欢在干燥的沙地上滚来滚去，借此去掉身上的脏东西和水分。",
     "types": [
   "地面"
 ],
@@ -1065,6 +1066,7 @@ export const ENEMIES = [
     "name": "刺球仙人掌",
     "en": "Cacnea",
     "dex": "0331",
+    "dexText": "栖息在少雨的干燥地方。黄色的花朵1年绽放1次。",
     "types": [
   "草"
 ],
@@ -1081,6 +1083,7 @@ export const ENEMIES = [
     "name": "圆陆鲨",
     "en": "Gible",
     "dex": "0443",
+    "dexText": "以日光照不到的洞穴为巢。锐利的牙齿即使因磨损或冲击而脱落，也能在数天内重新长出。",
     "types": [
   "龙",
   "地面"
@@ -1098,6 +1101,7 @@ export const ENEMIES = [
     "name": "大颚蚁",
     "en": "Trapinch",
     "dex": "0328",
+    "dexText": "它在沙漠中建造的巢穴造型就像是研钵一样。一旦掉进去就再也逃不出来了。",
     "types": [
   "地面"
 ],
@@ -1114,6 +1118,7 @@ export const ENEMIES = [
     "name": "黑眼鳄",
     "en": "Sandile",
     "dex": "0551",
+    "dexText": "沙漠到了夜里会比较冷，因此它会潜伏到沙子深处，睡到太阳出来为止。",
     "types": [
   "地面",
   "恶"
@@ -1131,6 +1136,7 @@ export const ENEMIES = [
     "name": "沙河马",
     "en": "Hippopotas",
     "dex": "0449",
+    "dexText": "体型硕大而笨重，但由于会掘开土壤藏身其中，因此难以发现其踪迹。情绪激动时会从鼻中喷出沙子。",
     "types": [
   "地面"
 ],
@@ -1147,6 +1153,7 @@ export const ENEMIES = [
     "name": "沙丘娃",
     "en": "Sandygast",
     "dex": "0769",
+    "dexText": "死者的怨念附着在沙丘上，变成了宝可梦。很喜欢头上的小铲子。",
     "types": [
   "幽灵",
   "地面"
@@ -1164,6 +1171,7 @@ export const ENEMIES = [
     "name": "沙包蛇",
     "en": "Silicobra",
     "dex": "0843",
+    "dexText": "一边挖洞一边把吃掉的沙子储存在颈部的囊里。囊里面能装进8公斤的沙子。",
     "types": [
   "地面"
 ],
@@ -1180,6 +1188,7 @@ export const ENEMIES = [
     "name": "穿山王",
     "en": "Sandslash",
     "dex": "0028",
+    "dexText": "越是在湿度低的地方生活的穿山王，背上的尖刺摸起来就越是坚硬光滑。",
     "types": [
   "地面"
 ],
@@ -1196,6 +1205,7 @@ export const ENEMIES = [
     "name": "梦歌仙人掌",
     "en": "Cacturne",
     "dex": "0332",
+    "dexText": "到了夜间会开始活动。会找出并捉住那些因受不了沙漠炎热而精疲力竭的猎物。",
     "types": [
   "草",
   "恶"
@@ -1213,6 +1223,7 @@ export const ENEMIES = [
     "name": "天蝎",
     "en": "Gligar",
     "dex": "0207",
+    "dexText": "尾部尖端长有恐怖的巨针。会扑上猎物的脸，遮蔽其视线，再以尾针注入毒素取其性命。",
     "types": [
   "地面",
   "飞行"
@@ -1230,6 +1241,7 @@ export const ENEMIES = [
     "name": "沙螺蟒",
     "en": "Sandaconda",
     "dex": "0844",
+    "dexText": "蜷缩身体后从鼻孔里喷射出100公斤的沙子。没有了沙子就会变得很懦弱。",
     "types": [
   "地面"
 ],
@@ -1246,6 +1258,7 @@ export const ENEMIES = [
     "name": "尖牙陆鲨",
     "en": "Gabite",
     "dex": "0444",
+    "dexText": "虽然是种性情凶暴的宝可梦，但只要将它感兴趣的玻璃珠给它，它就会立刻变得温顺可亲。",
     "types": [
   "龙",
   "地面"
@@ -1263,6 +1276,7 @@ export const ENEMIES = [
     "name": "河马兽",
     "en": "Hippowdon",
     "dex": "0450",
+    "dexText": "性情急躁容易发怒。会引起夹带沙土的旋风，挫败敌人锐气后加以袭击。",
     "types": [
   "地面"
 ],
@@ -1280,6 +1294,7 @@ export const ENEMIES = [
     "name": "龙头地鼠",
     "en": "Excadrill",
     "dex": "0530",
+    "dexText": "有许多看似自然形成的洞窟其实都是龙头地鼠一阵乱钻之后留下来的。",
     "types": [
   "地面",
   "钢"
@@ -1298,13 +1313,14 @@ export const ENEMIES = [
     "name": "大钢蛇",
     "en": "Steelix",
     "dex": "0208",
+    "dexText": "凭借奇异的道具进化而成。全身涂满钢铁粒子，身躯极为坚硬，即便金刚石也无法伤其分毫。",
     "types": [
   "钢",
   "地面"
 ],
     "tier": "elite",
     "biome": "desert",
-    "intro": "沙面裂开，一条铁铸的身躯从底下顶上来。",
+    "intro": "全身覆满钢铁粒子，硬到据说连金刚石都伤不了它。靠一种奇异的道具进化成了这副模样。",
     "deck": MOVE_POOLS.kit_t_钢_hi,
     "signature": [ "sig_ancient_beam" ],
     "lines": [ "沙面裂开，一条铁铸的身躯从中升起。" ],
@@ -1316,13 +1332,14 @@ export const ENEMIES = [
     "name": "超甲狂犀",
     "en": "Rhyperior",
     "dex": "0464",
+    "dexText": "凭借奇异的道具进化而成。质地类似岩石的皮肤是由未知的物质构成，硬度之高即便是名刀也无法伤其分毫。",
     "types": [
   "地面",
   "岩石"
 ],
     "tier": "elite",
     "biome": "desert",
-    "intro": "沙被顶开一大片，那面像盾一样的肩膀先露了出来。",
+    "intro": "皮肤质地像岩石，成分至今没人说得清，硬到名刀也伤不了它。由一种奇异的道具进化而来。",
     "deck": MOVE_POOLS.kit_t_地面_hi,
     "signature": [ "sig_iron_tail_wall" ],
     "lines": [ "沙子被顶开一大片，那面像盾一样的肩膀先露了出来。" ],
@@ -1334,6 +1351,7 @@ export const ENEMIES = [
     "name": "重泥挽马",
     "en": "Mudsdale",
     "dex": "0750",
+    "dexText": "泥巴使它的蹄子变得比岩石还要坚硬，只要一击就能产生能够破坏卡车的威力。",
     "types": [
   "地面"
 ],
@@ -1351,6 +1369,7 @@ export const ENEMIES = [
     "name": "班基拉斯",
     "en": "Tyranitar",
     "dex": "0248",
+    "dexText": "拥有无论遭到任何攻击都能毫发无伤的身体，因此会不断向对手挑战。",
     "types": [
   "岩石",
   "恶"
@@ -1370,6 +1389,7 @@ export const ENEMIES = [
     "name": "化石翼龙",
     "en": "Aerodactyl",
     "dex": "0142",
+    "dexText": "它是一种古代的凶猛宝可梦。据说，就算运用当今最先进的科技，也无法将其完美复原。",
     "types": [
   "岩石",
   "飞行"
@@ -1389,6 +1409,7 @@ export const ENEMIES = [
     "name": "腕力",
     "en": "Machop",
     "dex": "0066",
+    "dexText": "身材如同小童，却身怀能轻易抛投巨汉的强健膂力。靠着举隆隆石努力将自己锻炼到更高境界。",
     "types": [
   "格斗"
 ],
@@ -1405,6 +1426,7 @@ export const ENEMIES = [
     "name": "熔岩虫",
     "en": "Slugma",
     "dex": "0218",
+    "dexText": "大量出现在火山地带。为了寻找温暖的地方，会慢吞吞地爬来爬去。",
     "types": [
   "火"
 ],
@@ -1421,6 +1443,7 @@ export const ENEMIES = [
     "name": "呆火驼",
     "en": "Numel",
     "dex": "0322",
+    "dexText": "会把灼热的熔岩储存在背上的驼峰里。一旦淋了雨，熔岩就会冷却，动作也会变得迟缓。",
     "types": [
   "火",
   "地面"
@@ -1438,6 +1461,7 @@ export const ENEMIES = [
     "name": "石丸子",
     "en": "Roggenrola",
     "dex": "0524",
+    "dexText": "几乎和铁一样硬，但要是长时间浸在水里，似乎就会稍微变软一些。",
     "types": [
   "岩石"
 ],
@@ -1454,6 +1478,7 @@ export const ENEMIES = [
     "name": "螺钉地鼠",
     "en": "Drilbur",
     "dex": "0529",
+    "dexText": "会将双掌上的爪子并拢，并让身体高速旋转，瞄准猎物冲过去。",
     "types": [
   "地面"
 ],
@@ -1470,6 +1495,7 @@ export const ENEMIES = [
     "name": "火红不倒翁",
     "en": "Darumaka",
     "dex": "0554",
+    "dexText": "能量之源是体内的火焰。如果火焰变小了，它马上就会睡着。",
     "types": [
   "火"
 ],
@@ -1486,6 +1512,7 @@ export const ENEMIES = [
     "name": "岩狗狗",
     "en": "Rockruff",
     "dex": "0744",
+    "dexText": "虽然很容易亲近，但是因为它喜欢乱咬，所以培育起来也很伤神。",
     "types": [
   "岩石"
 ],
@@ -1502,6 +1529,7 @@ export const ENEMIES = [
     "name": "烧火蚣",
     "en": "Sizzlipede",
     "dex": "0850",
+    "dexText": "靠储存在体内的可燃气体来发热。热度最高的是腹部的黄色部分。",
     "types": [
   "火",
   "虫"
@@ -1519,6 +1547,7 @@ export const ENEMIES = [
     "name": "熔岩蜗牛",
     "en": "Magcargo",
     "dex": "0219",
+    "dexText": "背上的壳很容易崩裂，体内循环着的高热火焰会时不时地喷发出来。",
     "types": [
   "火",
   "岩石"
@@ -1536,6 +1565,7 @@ export const ENEMIES = [
     "name": "阿柏怪",
     "en": "Arbok",
     "dex": "0024",
+    "dexText": "腹部的花纹看起来像一张可怕的脸。弱小的敌人只要看到这个花纹就会被吓跑。",
     "types": [
   "毒"
 ],
@@ -1552,6 +1582,7 @@ export const ENEMIES = [
     "name": "豪力",
     "en": "Machoke",
     "dex": "0067",
+    "dexText": "兼具强健肉体与持久耐力的强者。热爱锻炼，会主动协助进行开垦、建筑等工作。",
     "types": [
   "格斗"
 ],
@@ -1568,6 +1599,7 @@ export const ENEMIES = [
     "name": "尖牙笼",
     "en": "Carnivine",
     "dex": "0455",
+    "dexText": "虽是草木形态的宝可梦，但性情却是贪婪粗暴，会张开大口袭击猎物。",
     "types": [
   "草"
 ],
@@ -1584,6 +1616,7 @@ export const ENEMIES = [
     "name": "焚焰蚣",
     "en": "Centiskorch",
     "dex": "0851",
+    "dexText": "发热时的体温大约有800度。会像鞭子那样弯曲身体朝着敌人弹跳过去。",
     "types": [
   "火",
   "虫"
@@ -1601,6 +1634,7 @@ export const ENEMIES = [
     "name": "风速狗",
     "en": "Arcanine",
     "dex": "0059",
+    "dexText": "将猛烈燃烧的火焰缠绕在牙齿上扑向猎物。虽然体型很大，却能以灵巧的假动作戏弄敌手，那姿态就像是舞蹈一般。",
     "types": [
   "火"
 ],
@@ -1618,6 +1652,7 @@ export const ENEMIES = [
     "name": "喷火驼",
     "en": "Camerupt",
     "dex": "0323",
+    "dexText": "背上的驼峰火山每10年就会进行一次大喷发，但暴怒时也会喷发。",
     "types": [
   "火",
   "地面"
@@ -1636,6 +1671,7 @@ export const ENEMIES = [
     "name": "煤炭龟",
     "en": "Torkoal",
     "dex": "0324",
+    "dexText": "会在甲壳中燃烧煤炭产生能量。危急关头会喷出黑色的煤烟。",
     "types": [
   "火"
 ],
@@ -1653,6 +1689,7 @@ export const ENEMIES = [
     "name": "烈箭鹰",
     "en": "Talonflame",
     "dex": "0663",
+    "dexText": "主要以鸟宝可梦为食。会从羽毛的缝隙里喷出火花来威吓对手。",
     "types": [
   "火",
   "飞行"
@@ -1671,6 +1708,7 @@ export const ENEMIES = [
     "name": "隆隆岩",
     "en": "Golem",
     "dex": "0076",
+    "dexText": "岩石般的外壳每年会蜕皮一次。蜕下的石壳将会化作土块，撒进田里可以促进农作物的发育。",
     "types": [
   "岩石",
   "地面"
@@ -1689,6 +1727,7 @@ export const ENEMIES = [
     "name": "烈咬陆鲨",
     "en": "Garchomp",
     "dex": "0445",
+    "dexText": "以肉眼无法追上的迅疾速度翱翔天际的模样令人叹为观止。性情粗野，面对它时须保持戒备。",
     "types": [
   "龙",
   "地面"
@@ -1708,6 +1747,7 @@ export const ENEMIES = [
     "name": "庞岩怪",
     "en": "Gigalith",
     "dex": "0526",
+    "dexText": "由于拥有健壮的身体，有时可以在工地或采石场看到它和大王铜象还有人类一起工作。",
     "types": [
   "岩石"
 ],
@@ -1726,6 +1766,7 @@ export const ENEMIES = [
     "name": "独角虫",
     "en": "Weedle",
     "dex": "0013",
+    "dexText": "大量栖息在森林或草地里。头顶上长着约5厘米的尖锐小毒针。",
     "types": [
   "虫",
   "毒"
@@ -1743,6 +1784,7 @@ export const ENEMIES = [
     "name": "走路草",
     "en": "Oddish",
     "dex": "0043",
+    "dexText": "沐浴月光就会开始活动。为了四处散播种子会在夜晚到处走动。",
     "types": [
   "草",
   "毒"
@@ -1760,6 +1802,7 @@ export const ENEMIES = [
     "name": "喇叭芽",
     "en": "Bellsprout",
     "dex": "0069",
+    "dexText": "虽然体型瘦弱，但捕捉猎物时的动作却快到肉眼无法看清。",
     "types": [
   "草",
   "毒"
@@ -1777,6 +1820,7 @@ export const ENEMIES = [
     "name": "木守宫",
     "en": "Treecko",
     "dex": "0252",
+    "dexText": "在垂直的墙壁上也能轻快地攀爬。会用尾巴感知空气的湿度，以此来判断明天的天气。",
     "types": [
   "草"
 ],
@@ -1793,6 +1837,7 @@ export const ENEMIES = [
     "name": "藤藤蛇",
     "en": "Snivy",
     "dex": "0495",
+    "dexText": "如果沐浴在阳光下，就能比平时动作迅速。比起手，藤蔓用得更灵活。",
     "types": [
   "草"
 ],
@@ -1809,6 +1854,7 @@ export const ENEMIES = [
     "name": "种子铁球",
     "en": "Ferroseed",
     "dex": "0597",
+    "dexText": "会发射尖刺来保护自己。需要反复训练才能将尖刺准确地射中目标。",
     "types": [
   "草",
   "钢"
@@ -1826,6 +1872,7 @@ export const ENEMIES = [
     "name": "强颚鸡母虫",
     "en": "Grubbin",
     "dex": "0736",
+    "dexText": "强颚鸡母虫大大的颚部拥有能够折断粗壮树枝的威力。连天敌稚山雀都会因此逃跑。",
     "types": [
   "虫"
 ],
@@ -1842,6 +1889,7 @@ export const ENEMIES = [
     "name": "伪螳草",
     "en": "Fomantis",
     "dex": "0753",
+    "dexText": "由于沐浴阳光后会发出甜甜的香味，虫宝可梦会聚集过来。",
     "types": [
   "草"
 ],
@@ -1858,6 +1906,7 @@ export const ENEMIES = [
     "name": "霸王花",
     "en": "Vileplume",
     "dex": "0045",
+    "dexText": "它有着世界上最大的花瓣。每走一步，花瓣都会跟着摇动，同时撒出大量的毒花粉。",
     "types": [
   "草",
   "毒"
@@ -1875,6 +1924,7 @@ export const ENEMIES = [
     "name": "安瓢虫",
     "en": "Ledian",
     "dex": "0166",
+    "dexText": "夜空中星光闪烁时，它会一边抛撒闪亮的粉末，一边翩翩飞过。",
     "types": [
   "虫",
   "飞行"
@@ -1892,6 +1942,7 @@ export const ENEMIES = [
     "name": "狩猎凤蝶",
     "en": "Beautifly",
     "dex": "0267",
+    "dexText": "拥有色彩鲜艳的美丽外貌，然而性情贪婪，会驱赶正在采集花蜜的三蜜蜂，以便独占自己爱吃的花蜜。",
     "types": [
   "虫",
   "飞行"
@@ -1909,6 +1960,7 @@ export const ENEMIES = [
     "name": "铁蚁",
     "en": "Durant",
     "dex": "0632",
+    "dexText": "在巢穴的深处产卵。受到熔蚁兽的袭击时会用大大的颚部咬住对方进行反击。",
     "types": [
   "虫",
   "钢"
@@ -1926,6 +1978,7 @@ export const ENEMIES = [
     "name": "凯罗斯",
     "en": "Pinsir",
     "dex": "0127",
+    "dexText": "同类之间以角的成色划分等级。一只凯罗斯的角越粗越结实，它就越受异性欢迎。",
     "types": [
   "虫"
 ],
@@ -1943,6 +1996,7 @@ export const ENEMIES = [
     "name": "巨钳螳螂",
     "en": "Scizor",
     "dex": "0212",
+    "dexText": "凭借奇异的道具进化而成。包覆全身的甲壳极为坚硬，据纪录其强度甚至更胜百炼精钢。",
     "types": [
   "虫",
   "钢"
@@ -1961,6 +2015,7 @@ export const ENEMIES = [
     "name": "赫拉克罗斯",
     "en": "Heracross",
     "dex": "0214",
+    "dexText": "头顶的巨角强健无比。论起力气，它刚猛的劲力足以将数名熟习传统武艺的大力士一并摔出老远。",
     "types": [
   "虫",
   "格斗"
@@ -1979,6 +2034,7 @@ export const ENEMIES = [
     "name": "兰螳花",
     "en": "Lurantis",
     "dex": "0754",
+    "dexText": "美丽的花之宝可梦。茁壮成长的兰螳花会变得极为鲜艳。",
     "types": [
   "草"
 ],
@@ -1996,6 +2052,7 @@ export const ENEMIES = [
     "name": "阿利多斯",
     "en": "Ariados",
     "dex": "0168",
+    "dexText": "不仅会从臀部，还会从口中吐出丝来，所以仅凭眼睛看，无法分清哪边才是头。",
     "types": [
   "虫",
   "毒"
@@ -2014,6 +2071,7 @@ export const ENEMIES = [
     "name": "蜥蜴王",
     "en": "Sceptile",
     "dex": "0254",
+    "dexText": "手臂上长出的叶子锋利得连大树都能“唰”地一刀砍倒。在密林中战斗无人能敌。",
     "types": [
   "草"
 ],
@@ -2032,6 +2090,7 @@ export const ENEMIES = [
     "name": "巨蔓藤",
     "en": "Tangrowth",
     "dex": "0465",
+    "dexText": "全身缠满长长藤蔓的模样看起来就如一丛杂草。能将束起的藤蔓像手臂般自在挥舞，用以卷住猎物。",
     "types": [
   "草"
 ],
@@ -2050,6 +2109,7 @@ export const ENEMIES = [
     "name": "玛瑙水母",
     "en": "Tentacool",
     "dex": "0072",
+    "dexText": "会从玻璃般的赤红眼珠发出光线。平时漂浮在浅海中，退潮时偶尔会在海滩见到它们被晒得干瘪的身影。",
     "types": [
   "水",
   "毒"
@@ -2067,6 +2127,7 @@ export const ENEMIES = [
     "name": "大舌贝",
     "en": "Shellder",
     "dex": "0090",
+    "dexText": "通过2片贝壳的不断开合来向后方游动。游动的速度相当快。",
     "types": [
   "水"
 ],
@@ -2083,6 +2144,7 @@ export const ENEMIES = [
     "name": "铁炮鱼",
     "en": "Remoraid",
     "dex": "0223",
+    "dexText": "从口中喷射出的水流能够极为精确地命中所瞄准的目标。会击落并猎捕吊在树枝上的结草儿。",
     "types": [
   "水"
 ],
@@ -2099,6 +2161,7 @@ export const ENEMIES = [
     "name": "龙虾小兵",
     "en": "Corphish",
     "dex": "0341",
+    "dexText": "有着顽强生命力的宝可梦。不管河里的水有多脏，它都能适应并在那里繁衍生息。",
     "types": [
   "水"
 ],
@@ -2115,6 +2178,7 @@ export const ENEMIES = [
     "name": "无壳海兔",
     "en": "Shellos",
     "dex": "0422",
+    "dexText": "多数生息在水温较暖的岩岸。性情意外地亲人，会主动靠近过来，但要小心被它的黏液沾满全身。",
     "types": [
   "水"
 ],
@@ -2131,6 +2195,7 @@ export const ENEMIES = [
     "name": "弱丁鱼",
     "en": "Wishiwashi",
     "dex": "0746",
+    "dexText": "单独1只十分弱小，所以学会了通过群体行动来对抗敌人的能力。",
     "types": [
   "水"
 ],
@@ -2147,6 +2212,7 @@ export const ENEMIES = [
     "name": "好坏星",
     "en": "Mareanie",
     "dex": "0747",
+    "dexText": "要是被它的毒刺给刺中，首先会发麻，接着会奇痒无比，让人恨不得把皮都给抓烂。",
     "types": [
   "水",
   "毒"
@@ -2164,6 +2230,7 @@ export const ENEMIES = [
     "name": "拳海参",
     "en": "Pyukumuku",
     "dex": "0771",
+    "dexText": "栖息于温暖的浅滩。遇到敌人时，会从嘴里吐出内脏来攻击对方。",
     "types": [
   "水"
 ],
@@ -2180,6 +2247,7 @@ export const ENEMIES = [
     "name": "毒刺水母",
     "en": "Tentacruel",
     "dex": "0073",
+    "dexText": "身上触手共80根。触手前端有毒，在捕捉猎物时会伸得比平时更长，遇见时务必得小心。",
     "types": [
   "水",
   "毒"
@@ -2197,6 +2265,7 @@ export const ENEMIES = [
     "name": "铁螯龙虾",
     "en": "Crawdaunt",
     "dex": "0342",
+    "dexText": "不停挥舞自己巨大的钳子，是个性格粗暴的家伙。被认为是很难培育的宝可梦。",
     "types": [
   "水",
   "恶"
@@ -2214,6 +2283,7 @@ export const ENEMIES = [
     "name": "海兔兽",
     "en": "Gastrodon",
     "dex": "0423",
+    "dexText": "以海中沙子作为粮食。不同颜色的海兔兽相遇时，将会展开激烈无比的斗争。",
     "types": [
   "水",
   "地面"
@@ -2231,6 +2301,7 @@ export const ENEMIES = [
     "name": "磨牙彩皮鱼",
     "en": "Bruxish",
     "dex": "0779",
+    "dexText": "从头部的突起物放出精神力量的时候，周围会响起非常刺耳的磨牙声。",
     "types": [
   "水",
   "超能"
@@ -2248,6 +2319,7 @@ export const ENEMIES = [
     "name": "巨钳蟹",
     "en": "Kingler",
     "dex": "0099",
+    "dexText": "虽然坚硬的钳子有着1万马力的力量，但因为太大而行动迟缓。",
     "types": [
   "水"
 ],
@@ -2265,6 +2337,7 @@ export const ENEMIES = [
     "name": "巨翅飞鱼",
     "en": "Mantine",
     "dex": "0226",
+    "dexText": "性情温和，悠游于大海之中。游泳速度增快时会跃出海面，人们常将其误认为鸟宝可梦。",
     "types": [
   "水",
   "飞行"
@@ -2283,6 +2356,7 @@ export const ENEMIES = [
     "name": "刺龙王",
     "en": "Kingdra",
     "dex": "0230",
+    "dexText": "会在暴风雨袭来时出现在海面上。如果遇到快龙，便会开始激烈的争斗。",
     "types": [
   "水",
   "龙"
@@ -2301,6 +2375,7 @@ export const ENEMIES = [
     "name": "猎斑鱼",
     "en": "Huntail",
     "dex": "0367",
+    "dexText": "栖息在光线都照不到的深海中。会让像小鱼一样的尾巴发光，引诱猎物出现。",
     "types": [
   "水"
 ],
@@ -2318,6 +2393,7 @@ export const ENEMIES = [
     "name": "拉普拉斯",
     "en": "Lapras",
     "dex": "0131",
+    "dexText": "头脑聪慧，心地善良的宝可梦。会一边以优美的声音歌唱，一边畅游于大海之上。",
     "types": [
   "水",
   "冰"
@@ -2336,6 +2412,7 @@ export const ENEMIES = [
     "name": "盖欧卡",
     "en": "Kyogre",
     "dex": "0382",
+    "dexText": "神话中的宝可梦，它用大雨和大海啸扩张海洋。曾与固拉多激烈交战。",
     "types": [
   "水"
 ],
@@ -2354,6 +2431,7 @@ export const ENEMIES = [
     "name": "超坏星",
     "en": "Toxapex",
     "dex": "0748",
+    "dexText": "为了能承受住伽勒尔地区冰凉的水温，它用脚搭起圆顶，借助体温保持内部的温暖。",
     "types": [
   "毒",
   "水"
@@ -2364,7 +2442,7 @@ export const ENEMIES = [
     "deck": MOVE_POOLS.kit_t_毒_hi,
     "signature": [ "sig_tidal_rage" ],
     "lines": [ "浅滩的水忽然全红了 —— 那些圆乎乎的东西是它伸出来的。", "「踩进来的，就别想出去了。」" ],
-    "voice": [ "我这圈刺，圈出来的地方归我。", "我的刺没动，不代表它没看见你。", "松口这个词，我的刺没学过。" ],
+    "voice": [ "我这圈刺，圈出来的地方归我。", "我的刺没动，不代表我没看见你。", "松口这个词，我的刺没学过。" ],
     "bossTitle": "盐海的刺丛",
   },
   {
@@ -2373,6 +2451,7 @@ export const ENEMIES = [
     "name": "波波",
     "en": "Pidgey",
     "dex": "0016",
+    "dexText": "大量分布在森林或树丛中。即使是在地上，有时也会用力拍打翅膀泼洒沙子。",
     "types": [
   "一般",
   "飞行"
@@ -2390,6 +2469,7 @@ export const ENEMIES = [
     "name": "傲骨燕",
     "en": "Taillow",
     "dex": "0276",
+    "dexText": "有着不管是怎样强大的对手都敢于前去迎战的毅力。会向着温暖的土地飞行。",
     "types": [
   "一般",
   "飞行"
@@ -2407,6 +2487,7 @@ export const ENEMIES = [
     "name": "可可多拉",
     "en": "Aron",
     "dex": "0304",
+    "dexText": "食用铁矿石，偶尔也会吃铁路的轨道，从而打造出保护身体的钢铁盔甲。",
     "types": [
   "钢",
   "岩石"
@@ -2424,6 +2505,7 @@ export const ENEMIES = [
     "name": "滚滚蝙蝠",
     "en": "Woobat",
     "dex": "0527",
+    "dexText": "在洞窟中，如果抬头看到墙壁上留着心形的痕迹，就代表滚滚蝙蝠住在那里。",
     "types": [
   "超能",
   "飞行"
@@ -2441,6 +2523,7 @@ export const ENEMIES = [
     "name": "毛头小鹰",
     "en": "Rufflet",
     "dex": "0627",
+    "dexText": "虽然还是雏鸟，但性情暴躁易怒。经常借故向亲鸟挑起斗争，为展示自己的力量而奋力搏击。",
     "types": [
   "一般",
   "飞行"
@@ -2458,6 +2541,7 @@ export const ENEMIES = [
     "name": "小箭雀",
     "en": "Fletchling",
     "dex": "0661",
+    "dexText": "它优美的鸣叫其实是威吓。对于进入自己领地的家伙，会毫不留情地啄个不停。",
     "types": [
   "一般",
   "飞行"
@@ -2475,6 +2559,7 @@ export const ENEMIES = [
     "name": "小陨星",
     "en": "Minior",
     "dex": "0774",
+    "dexText": "原本栖息在臭氧层，身体的外壳变重后，就会向着地面落下。",
     "types": [
   "岩石",
   "飞行"
@@ -2492,6 +2577,7 @@ export const ENEMIES = [
     "name": "稚山雀",
     "en": "Rookidee",
     "dex": "0821",
+    "dexText": "性格勇敢，无论多强的敌人都勇于挑战。即使在敌人的反击中被打败，也能从中得到锻炼。",
     "types": [
   "飞行"
 ],
@@ -2508,6 +2594,7 @@ export const ENEMIES = [
     "name": "大嘴雀",
     "en": "Fearow",
     "dex": "0022",
+    "dexText": "可以用大大的翅膀持续地在空中翱翔。就算一直不降落也没问题。",
     "types": [
   "一般",
   "飞行"
@@ -2525,6 +2612,7 @@ export const ENEMIES = [
     "name": "隆隆石",
     "en": "Graveler",
     "dex": "0075",
+    "dexText": "以悬崖峭壁上的洞穴为巢，喜欢像落石般往下滚落，因此走在山路上时一定要小心头上。",
     "types": [
   "岩石",
   "地面"
@@ -2542,6 +2630,7 @@ export const ENEMIES = [
     "name": "可多拉",
     "en": "Lairon",
     "dex": "0305",
+    "dexText": "由于可多拉所栖息的山上有着丰富的泉水和铁矿石，因此经常会与人类发生争端。",
     "types": [
   "钢",
   "岩石"
@@ -2559,6 +2648,7 @@ export const ENEMIES = [
     "name": "青绵鸟",
     "en": "Swablu",
     "dex": "0333",
+    "dexText": "像丝绵一样的翅膀中含有空气，触感蓬松。绝不会忽视对翅膀精细地保养。",
     "types": [
   "一般",
   "飞行"
@@ -2576,6 +2666,7 @@ export const ENEMIES = [
     "name": "盔甲鸟",
     "en": "Skarmory",
     "dex": "0227",
+    "dexText": "锐利的羽毛比剑还要锋利。与钢铠鸦为领地展开激烈的争斗。",
     "types": [
   "钢",
   "飞行"
@@ -2594,6 +2685,7 @@ export const ENEMIES = [
     "name": "天蝎王",
     "en": "Gliscor",
     "dex": "0472",
+    "dexText": "用漆黑的双翼悄无声息地滑翔，而后将锐利的獠牙刺进猎物的喉咙，直至吸尽猎物血液后才会满足。",
     "types": [
   "地面",
   "飞行"
@@ -2612,6 +2704,7 @@ export const ENEMIES = [
     "name": "勇士雄鹰",
     "en": "Braviary",
     "dex": "0628",
+    "dexText": "勇猛的大鸟。狩猎时会发出气势骇人的战吼，朝湖水发出冲击波，捕捉浮出水面的猎物。",
     "types": [
   "一般",
   "飞行"
@@ -2630,6 +2723,7 @@ export const ENEMIES = [
     "name": "姆克鹰",
     "en": "Staraptor",
     "dex": "0398",
+    "dexText": "获得了离开群体独立生存的能力。就连壮汉也能一把抓起带走的飞行能力是一大威胁。",
     "types": [
   "一般",
   "飞行"
@@ -2648,13 +2742,14 @@ export const ENEMIES = [
     "name": "摔角鹰人",
     "en": "Hawlucha",
     "dex": "0701",
+    "dexText": "利用发挥轻盈体型优势的战法，在消耗了对手的体力之后使用华丽的绝招分出胜负。",
     "types": [
   "格斗",
   "飞行"
 ],
     "tier": "elite",
     "biome": "cliff",
-    "intro": "崖上一跃而下，落地时连姿势都摆好了。",
+    "intro": "体型轻盈，打法却很有章法：先把对手的体力耗掉，再用一记华丽绝招分出胜负。",
     "deck": MOVE_POOLS.kit_t_格斗_hi,
     "signature": [ "sig_brave_bird" ],
     "lines": [ "它从崖上一跃而下，落地时摆了个姿势。", "「……帅吧。」" ],
@@ -2666,6 +2761,7 @@ export const ENEMIES = [
     "name": "波士可多拉",
     "en": "Aggron",
     "dex": "0306",
+    "dexText": "会用能够刺穿铁板的锐利尖角在撞击敌人的同时攻击对方。",
     "types": [
   "钢",
   "岩石"
@@ -2685,6 +2781,7 @@ export const ENEMIES = [
     "name": "钢铠鸦",
     "en": "Corviknight",
     "dex": "0823",
+    "dexText": "在伽勒尔地区的空中所向披靡。它那黑得发亮的钢铁之躯有着让敌人畏惧的威慑力。",
     "types": [
   "飞行",
   "钢"
@@ -2704,6 +2801,7 @@ export const ENEMIES = [
     "name": "鬼斯",
     "en": "Gastly",
     "dex": "0092",
+    "dexText": "气体状的生命体，难以捉摸。毒性强烈，若吸入它身体的一部分就会立即失去意识，极其危险。",
     "types": [
   "幽灵",
   "毒"
@@ -2721,6 +2819,7 @@ export const ENEMIES = [
     "name": "怨影娃娃",
     "en": "Shuppet",
     "dex": "0353",
+    "dexText": "据说会用头部的角吃掉怨恨和嫉妒的感情。在深夜非常活跃。",
     "types": [
   "幽灵"
 ],
@@ -2737,6 +2836,7 @@ export const ENEMIES = [
     "name": "夜巡灵",
     "en": "Duskull",
     "dex": "0355",
+    "dexText": "洗翠的孩子们个个都相信夜巡灵会在丑时四处徘徊拐走恶童的怪谈。这让他们学会了改正自己的过错。",
     "types": [
   "幽灵"
 ],
@@ -2753,6 +2853,7 @@ export const ENEMIES = [
     "name": "哭哭面具",
     "en": "Yamask",
     "dex": "0562",
+    "dexText": "每天夜里都在遗迹中徘徊。据说它拿着的面具是它还是人类时的脸。",
     "types": [
   "幽灵"
 ],
@@ -2769,6 +2870,7 @@ export const ENEMIES = [
     "name": "烛光灵",
     "en": "Litwick",
     "dex": "0607",
+    "dexText": "头上燃烧着的烛光让它的身体保持微热。会拉着迷路孩子的手，将他们带向灵界。",
     "types": [
   "幽灵",
   "火"
@@ -2786,6 +2888,7 @@ export const ENEMIES = [
     "name": "独剑鞘",
     "en": "Honedge",
     "dex": "0679",
+    "dexText": "很久以前因这把剑而丧命之人的灵魂成为了独剑鞘的灵魂。",
     "types": [
   "钢",
   "幽灵"
@@ -2803,6 +2906,7 @@ export const ENEMIES = [
     "name": "南瓜精",
     "en": "Pumpkaboo",
     "dex": "0710",
+    "dexText": "在这个世界游荡的灵魂会被装到南瓜精的身体里，启程前往另一个世界。",
     "types": [
   "幽灵",
   "草"
@@ -2820,6 +2924,7 @@ export const ENEMIES = [
     "name": "谜拟丘",
     "en": "Mimikyu",
     "dex": "0778",
+    "dexText": "为了让别人不要害怕自己，特意穿上了看似皮卡丘的破布，结果却变得更加令人毛骨悚然。",
     "types": [
   "幽灵",
   "妖精"
@@ -2837,6 +2942,7 @@ export const ENEMIES = [
     "name": "诅咒娃娃",
     "en": "Banette",
     "dex": "0354",
+    "dexText": "怨念附在被丢弃的玩偶身上，变成了宝可梦。会一直寻找丢弃自己的孩子。",
     "types": [
   "幽灵"
 ],
@@ -2853,6 +2959,7 @@ export const ENEMIES = [
     "name": "梦妖魔",
     "en": "Mismagius",
     "dex": "0429",
+    "dexText": "由于会咏唱辟邪的咒语，因此人们有着将其找来家中的习俗。然而一旦惹其不悦，便会反招灾祸。",
     "types": [
   "幽灵"
 ],
@@ -2869,6 +2976,7 @@ export const ENEMIES = [
     "name": "花岩怪",
     "en": "Spiritomb",
     "dex": "0442",
+    "dexText": "由邪恶的念想带来的邪崇之物。据文献记载，此种宝可梦是由一百零八个邪恶灵魂聚集所生。",
     "types": [
   "幽灵",
   "恶"
@@ -2886,6 +2994,7 @@ export const ENEMIES = [
     "name": "迭失棺",
     "en": "Cofagrigus",
     "dex": "0563",
+    "dexText": "拥有闪亮亮的黄金之躯。据说它已再也无法记起自己曾是人类。",
     "types": [
   "幽灵"
 ],
@@ -2902,6 +3011,7 @@ export const ENEMIES = [
     "name": "耿鬼",
     "en": "Gengar",
     "dex": "0094",
+    "dexText": "附在影子里伺机取人性命的宝可梦。要是发现脚下的影子自己在笑，最好赶紧握住护身符来驱邪。",
     "types": [
   "幽灵",
   "毒"
@@ -2920,6 +3030,7 @@ export const ENEMIES = [
     "name": "水晶灯火灵",
     "en": "Chandelure",
     "dex": "0609",
+    "dexText": "住在古老的洋楼里。诡异地摇晃手臂上的火焰，以此来催眠对手。",
     "types": [
   "幽灵",
   "火"
@@ -2938,6 +3049,7 @@ export const ENEMIES = [
     "name": "迭失板",
     "en": "Runerigus",
     "dex": "0867",
+    "dexText": "被注入了强烈诅咒的古代绘画在吸进哭哭面具的灵魂后就开始动起来了。",
     "types": [
   "地面",
   "幽灵"
@@ -2956,6 +3068,7 @@ export const ENEMIES = [
     "name": "随风球",
     "en": "Drifblim",
     "dex": "0426",
+    "dexText": "静悄悄地飘在夜色之中。那落寞而哀愁的模样颇能扣人心弦，时不时会成为诗句的题材。",
     "types": [
   "幽灵",
   "飞行"
@@ -2974,6 +3087,7 @@ export const ENEMIES = [
     "name": "破破舵轮",
     "en": "Dhelmise",
     "dex": "0781",
+    "dexText": "在海底飘荡的海藻吸收了沉船的零件后转生而成的幽灵宝可梦。",
     "types": [
   "幽灵",
   "草"
@@ -2992,6 +3106,7 @@ export const ENEMIES = [
     "name": "达克莱伊",
     "en": "Darkrai",
     "dex": "0491",
+    "dexText": "以往曾有过在无月的夜里，村子里所有的人都做了恶梦的怪事。村民们宣称恶梦中出现的宝可梦就是此宝可梦。",
     "types": [
   "恶"
 ],
@@ -3010,6 +3125,7 @@ export const ENEMIES = [
     "name": "基格尔德",
     "en": "Zygarde",
     "dex": "0718",
+    "dexText": "如果卡洛斯地区的生态系统崩溃，它好像就会现身，发挥蕴藏的力量。",
     "types": [
   "龙",
   "地面"
@@ -3030,6 +3146,7 @@ export const ENEMIES = [
     "name": "索罗亚克",
     "en": "Zoroark",
     "dex": "0571",
+    "dexText": "疯狂舞动白发的姿态如同死神。在足以撕裂自身的深刻仇怨驱使下，抱定同归于尽之心袭杀仇敌。",
     "types": [
   "恶"
 ],
@@ -3048,6 +3165,7 @@ export const ENEMIES = [
     "name": "小拳石",
     "en": "Geodude",
     "dex": "0074",
+    "dexText": "栖息在山区，用双手攀登险峻的山路。若是不小心踢到小拳石可是会惹上大麻烦，被发怒的它穷追不舍。",
     "types": [
   "岩石",
   "地面"
@@ -3065,6 +3183,7 @@ export const ENEMIES = [
     "name": "卡拉卡拉",
     "en": "Cubone",
     "dex": "0104",
+    "dexText": "因想起与自己天人永隔的母亲而哭泣时，哀伤的哭声便会回荡在它头上戴着的头骨中。",
     "types": [
   "地面"
 ],
@@ -3073,7 +3192,7 @@ export const ENEMIES = [
     "intro": "戴着头骨在断墙间穿行，看谁都很警惕。",
     "deck": MOVE_POOLS.kit_t_地面,
     "lines": [ "它抱着一个旧头骨，看了你一会儿，什么也没说。" ],
-    "voice": [ "头骨说这一下不算数，它不服。", "我躲了那么久，还是被你找到了。", "这地方的断墙，我闭着眼都能走。" ],
+    "voice": [ "头骨说这一下不算数 —— 我可不服。", "我躲了那么久，还是被你找到了。", "这地方的断墙，我闭着眼都能走。" ],
   },
   {
     "id": "unown",
@@ -3081,12 +3200,13 @@ export const ENEMIES = [
     "name": "未知图腾",
     "en": "Unown",
     "dex": "0201",
+    "dexText": "奇形怪状不似生物，且个体之间形状各异，本人指出其身姿与异国文字的共通之处，但未获重视。",
     "types": [
   "超能"
 ],
     "tier": "mob",
     "biome": "ruins",
-    "intro": "墙上的刻痕排成一个字，然后那个字飘了下来。",
+    "intro": "形状像文字而不像生物，每一只的样子都不一样。有人说它和一种异国的文字相通。",
     "deck": MOVE_POOLS.kit_t_超能,
     "lines": [ "墙上的刻痕排成一个你不知道的字，然后那个字飘了下来。" ],
     "voice": [ "我本来只想拼个词，没想打架。", "你知道刚才那个字念什么吗？", "换个字再飘一次，说不定能赢。" ],
@@ -3097,6 +3217,7 @@ export const ENEMIES = [
     "name": "勾魂眼",
     "en": "Sableye",
     "dex": "0302",
+    "dexText": "宝石的眼睛发出诡异光芒时，就会摄取人的魂魄。是令人恐惧的宝可梦。",
     "types": [
   "恶",
   "幽灵"
@@ -3114,6 +3235,7 @@ export const ENEMIES = [
     "name": "月石",
     "en": "Lunatone",
     "dex": "0337",
+    "dexText": "月亮的盈缺似乎会影响它力量的增减。每到满月之夜就会变得活跃。",
     "types": [
   "岩石",
   "超能"
@@ -3131,6 +3253,7 @@ export const ENEMIES = [
     "name": "天秤偶",
     "en": "Baltoy",
     "dex": "0343",
+    "dexText": "会用单脚旋转着移动。也能看到颠倒过来旋转的天秤偶。",
     "types": [
   "地面",
   "超能"
@@ -3148,6 +3271,7 @@ export const ENEMIES = [
     "name": "铜镜怪",
     "en": "Bronzor",
     "dex": "0436",
+    "dexText": "靠着不可思议的能量漂浮在半空。人们将其背上所刻的纹路视为神圣，相同纹路有时会被刻在古时的坟墓等地。",
     "types": [
   "钢",
   "超能"
@@ -3165,6 +3289,7 @@ export const ENEMIES = [
     "name": "泥偶小人",
     "en": "Golett",
     "dex": "0622",
+    "dexText": "诞生自黏土的古代宝可梦。不知为何，有一些泥偶小人会不断地把大石头排列起来。",
     "types": [
   "地面",
   "幽灵"
@@ -3182,6 +3307,7 @@ export const ENEMIES = [
     "name": "太阳岩",
     "en": "Solrock",
     "dex": "0338",
+    "dexText": "当它旋转自己的身体时，会发出太阳般的光芒，让敌人的眼睛暂时失明。",
     "types": [
   "岩石",
   "超能"
@@ -3199,6 +3325,7 @@ export const ENEMIES = [
     "name": "念力土偶",
     "en": "Claydol",
     "dex": "0344",
+    "dexText": "似乎是由2万年前的古代人制作的泥偶蜕变而来的谜之宝可梦。",
     "types": [
   "地面",
   "超能"
@@ -3216,6 +3343,7 @@ export const ENEMIES = [
     "name": "护城龙",
     "en": "Bastiodon",
     "dex": "0411",
+    "dexText": "强固无比的脸部硬度堪比金刚石，使得它在守备方面固若金汤。包括栖息地在内的诸多信息至今不明。",
     "types": [
   "岩石",
   "钢"
@@ -3233,6 +3361,7 @@ export const ENEMIES = [
     "name": "青铜钟",
     "en": "Bronzong",
     "dex": "0437",
+    "dexText": "据说当它发出钟声般的音色时，通往异界的洞穴便会开启。自古被视为神而受到供奉。",
     "types": [
   "钢",
   "超能"
@@ -3250,6 +3379,7 @@ export const ENEMIES = [
     "name": "巨金怪",
     "en": "Metagross",
     "dex": "0376",
+    "dexText": "由于当气温下降至0度以下时磁力会增强，栖息在雪山上的巨金怪特别有活力。",
     "types": [
   "钢",
   "超能"
@@ -3268,6 +3398,7 @@ export const ENEMIES = [
     "name": "雷吉洛克",
     "en": "Regirock",
     "dex": "0377",
+    "dexText": "身上任何一个部分都由岩石构成。即使身体磨损了也会自己用岩石去修补。",
     "types": [
   "岩石"
 ],
@@ -3285,6 +3416,7 @@ export const ENEMIES = [
     "name": "战槌龙",
     "en": "Rampardos",
     "dex": "0409",
+    "dexText": "关于其生态的信息十分缺乏。当它用珍珠般光滑亮丽的头顶猛撞时，就连巨树也能撞断。",
     "types": [
   "岩石"
 ],
@@ -3302,6 +3434,7 @@ export const ENEMIES = [
     "name": "坚盾剑怪",
     "en": "Aegislash",
     "dex": "0681",
+    "dexText": "处于防御状态时，会用钢之身体和灵力的屏障来减弱一切的攻击。",
     "types": [
   "钢",
   "幽灵"
@@ -3320,6 +3453,7 @@ export const ENEMIES = [
     "name": "太古盔甲",
     "en": "Armaldo",
     "dex": "0348",
+    "dexText": "进化之后登上了陆地。下半身得到了强化，尾巴的攻击破坏力极强。",
     "types": [
   "岩石",
   "虫"
@@ -3338,6 +3472,7 @@ export const ENEMIES = [
     "name": "雷吉奇卡斯",
     "en": "Regigigas",
     "dex": "0486",
+    "dexText": "传说雷吉奇卡斯用绳索将大陆拖曳而来，创造了洗翠的大地。传说内容虽存疑，但其中或许蕴藏着一丝真理。",
     "types": [
   "一般"
 ],
@@ -3356,6 +3491,7 @@ export const ENEMIES = [
     "name": "怪颚龙",
     "en": "Tyrantrum",
     "dex": "0697",
+    "dexText": "大约1亿年前的宝可梦。虽然凶暴，堂堂正正的举止却略显王者之风。",
     "types": [
   "岩石",
   "龙"
@@ -3375,6 +3511,7 @@ export const ENEMIES = [
     "name": "派拉斯",
     "en": "Paras",
     "dex": "0046",
+    "dexText": "散见于潮湿森林里的树木根部。背上名为冬虫夏草的蘑菇并非与生俱来，而是随着幼体发育而长出。",
     "types": [
   "虫",
   "草"
@@ -3392,6 +3529,7 @@ export const ENEMIES = [
     "name": "臭泥",
     "en": "Grimer",
     "dex": "0088",
+    "dexText": "受到月亮X射线的照射后，污泥变成了臭泥。非常喜欢脏东西。",
     "types": [
   "毒"
 ],
@@ -3408,6 +3546,7 @@ export const ENEMIES = [
     "name": "蘑蘑菇",
     "en": "Shroomish",
     "dex": "0285",
+    "dexText": "喜欢潮湿的地方，白天会呆在森林的树荫里一动不动。会从头上放出毒粉。",
     "types": [
   "草"
 ],
@@ -3424,6 +3563,7 @@ export const ENEMIES = [
     "name": "土居忍士",
     "en": "Nincada",
     "dex": "0290",
+    "dexText": "因为长时间生活在地下，所以眼睛几乎什么都看不到。会靠触角来探察周围的情况。",
     "types": [
   "虫",
   "地面"
@@ -3441,6 +3581,7 @@ export const ENEMIES = [
     "name": "滴蛛",
     "en": "Dewpider",
     "dex": "0751",
+    "dexText": "用臀部让水泡膨胀，并包裹住自己的头部。会和同类比拼水泡的大小。",
     "types": [
   "水",
   "虫"
@@ -3458,6 +3599,7 @@ export const ENEMIES = [
     "name": "哎呀球菇",
     "en": "Foongus",
     "dex": "0590",
+    "dexText": "关于它酷似精灵球的花纹的意义和理由，至今都无人知晓。",
     "types": [
   "草",
   "毒"
@@ -3475,6 +3617,7 @@ export const ENEMIES = [
     "name": "黏黏宝",
     "en": "Goomy",
     "dex": "0704",
+    "dexText": "藏身在湿度较高的树荫下。覆盖着身体的黏糊液体一旦干枯，就会立刻失去生命力。",
     "types": [
   "龙"
 ],
@@ -3491,6 +3634,7 @@ export const ENEMIES = [
     "name": "睡睡菇",
     "en": "Morelull",
     "dex": "0755",
+    "dexText": "头上的蘑菇伞非常好吃，虽然会被森林中的宝可梦吃掉，但是过了一晚上就会再生。",
     "types": [
   "草",
   "妖精"
@@ -3508,6 +3652,7 @@ export const ENEMIES = [
     "name": "派拉斯特",
     "en": "Parasect",
     "dex": "0047",
+    "dexText": "森林中存在着背上蘑菇脱落后丝毫不动的个体，此样本足可用以证明大大的蘑菇才是真身的学说。",
     "types": [
   "虫",
   "草"
@@ -3525,6 +3670,7 @@ export const ENEMIES = [
     "name": "沼跃鱼",
     "en": "Marshtomp",
     "dex": "0259",
+    "dexText": "腰腿十分结实，即使是在泥泞的地上也能稳步前进。会把身体埋进泥里睡觉。",
     "types": [
   "水",
   "地面"
@@ -3542,6 +3688,7 @@ export const ENEMIES = [
     "name": "毒骷蛙",
     "en": "Toxicroak",
     "dex": "0454",
+    "dexText": "嫣红色的爪子上带有剧毒。将此毒稀释后混合数种野草，煎煮两晚即成强身健体之药。",
     "types": [
   "毒",
   "格斗"
@@ -3559,6 +3706,7 @@ export const ENEMIES = [
     "name": "蜈蚣王",
     "en": "Scolipede",
     "dex": "0545",
+    "dexText": "用颈部的爪子抓住猎物后，会直接将对方摔向地面，然后将带毒的尖刺猛戳进去。",
     "types": [
   "虫",
   "毒"
@@ -3576,6 +3724,7 @@ export const ENEMIES = [
     "name": "大针蜂",
     "en": "Beedrill",
     "dex": "0015",
+    "dexText": "会用双手及尾部的3根毒针刺击、刺击、不断地刺击对手。",
     "types": [
   "虫",
   "毒"
@@ -3593,6 +3742,7 @@ export const ENEMIES = [
     "name": "沼王",
     "en": "Quagsire",
     "dex": "0195",
+    "dexText": "就算脑袋撞上船底或河里的岩石，也完全不会去在意，悠然自在地游泳的悠闲宝可梦。",
     "types": [
   "水",
   "地面"
@@ -3610,6 +3760,7 @@ export const ENEMIES = [
     "name": "蟾蜍王",
     "en": "Seismitoad",
     "dex": "0537",
+    "dexText": "通过震动全身的瘤，引发地震般的晃动。与不良蛙是相近的物种。",
     "types": [
   "水",
   "地面"
@@ -3627,6 +3778,7 @@ export const ENEMIES = [
     "name": "吞食兽",
     "en": "Swalot",
     "dex": "0317",
+    "dexText": "不管是什么都会整个吞掉。会将毛孔中分泌出的剧毒体液撒向敌人。",
     "types": [
   "毒"
 ],
@@ -3643,6 +3795,7 @@ export const ENEMIES = [
     "name": "雨翅蛾",
     "en": "Masquerain",
     "dex": "0284",
+    "dexText": "有着长有眼珠花纹的触角。能用4根翅膀浮在空中，并向前后左右移动。",
     "types": [
   "虫",
   "飞行"
@@ -3652,7 +3805,7 @@ export const ENEMIES = [
     "intro": "在自己造出的水雾里进进出出。",
     "deck": MOVE_POOLS.kit_t_虫_hi,
     "lines": [ "它头顶那对花纹忽然全睁开了，湿地里一下安静下来。" ],
-    "voice": [ "水雾还没散，我劝你别急着走。", "那对花纹盯过你，现在它闭眼了。", "雾是我织的，你只看到了一半。" ],
+    "voice": [ "水雾还没散，我劝你别急着走。", "那对花纹盯过你，现在我闭眼了。", "雾是我织的，你只看到了一半。" ],
   },
   {
     "id": "breloom",
@@ -3660,6 +3813,7 @@ export const ENEMIES = [
     "name": "斗笠菇",
     "en": "Breloom",
     "dex": "0286",
+    "dexText": "短短的手臂在出拳时会猛地一下伸长。有着能令职业拳击手汗颜的技术。",
     "types": [
   "草",
   "格斗"
@@ -3679,6 +3833,7 @@ export const ENEMIES = [
     "name": "朽木妖",
     "en": "Trevenant",
     "dex": "0709",
+    "dexText": "人们惧怕它，因为它据说会吃掉砍倒森林里树木的人。但它对住在森林里的宝可梦很亲切。",
     "types": [
   "幽灵",
   "草"
@@ -3698,6 +3853,7 @@ export const ENEMIES = [
     "name": "小磁怪",
     "en": "Magnemite",
     "dex": "0081",
+    "dexText": "铁球上长着一只眼睛的相貌可谓惊世骇俗。据推测，它是靠着马蹄形磁铁般的双臂发出的磁力让自己保持悬浮。",
     "types": [
   "电",
   "钢"
@@ -3715,6 +3871,7 @@ export const ENEMIES = [
     "name": "咩利羊",
     "en": "Mareep",
     "dex": "0179",
+    "dexText": "储存了静电后，蓬松的体毛就会膨胀到原来的2倍。一旦触摸就会触电。",
     "types": [
   "电"
 ],
@@ -3723,7 +3880,7 @@ export const ENEMIES = [
     "intro": "洞里的那点微光随着它走，静电把水晶都点亮了。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "一团毛球蹲在岩缝里，毛越炸越开。", "它打了个喷嚏，旁边的草全趴下了。" ],
-    "voice": [ "毛团子还挂着电，走路都一颠一颠的。", "打雷的时候它就不困了，眼睛发亮。", "身上的静电还没散，草叶都往它这边倒。" ],
+    "voice": [ "毛团子还挂着电，走路都一颠一颠的。", "打雷的时候我就不困了，眼睛发亮。", "身上的静电还没散，草叶都往我这边倒。" ],
   },
   {
     "id": "elekid",
@@ -3731,6 +3888,7 @@ export const ENEMIES = [
     "name": "电击怪",
     "en": "Elekid",
     "dex": "0239",
+    "dexText": "会转动双臂来发电。当在雷雨中听见山中传来孩童嬉闹的声音，那便是由电击怪所发出的。",
     "types": [
   "电"
 ],
@@ -3739,7 +3897,7 @@ export const ENEMIES = [
     "intro": "插在磁石上的小东西，一拔就炸毛。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "它在雷声里晃着两根线，插头一直对着你转。" ],
-    "voice": [ "插头还热着呢，碰到石头就冒火星。", "雷一响它两根线就跟着抖一下。", "要是再充会儿电，它还能更精神。" ],
+    "voice": [ "插头还热着呢，碰到石头就冒火星。", "雷一响我两根线就跟着抖一下。", "要是再充会儿电，我还能更精神。" ],
   },
   {
     "id": "electrike",
@@ -3747,6 +3905,7 @@ export const ENEMIES = [
     "name": "落雷兽",
     "en": "Electrike",
     "dex": "0309",
+    "dexText": "会将静电储存在体毛中进行放电。暴风雨临近时，会从全身散发出火花。",
     "types": [
   "电"
 ],
@@ -3755,7 +3914,7 @@ export const ENEMIES = [
     "intro": "它跑过的地方，地上的碎屑会跳起来。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "它身上的毛全竖着，雷每响一次就往前冲一步。" ],
-    "voice": [ "四条腿还痒着，总想再跑两圈。", "刚才那圈跑完，碎屑都追不上它。", "风从耳边过的时候，它才觉得自己活着。" ],
+    "voice": [ "四条腿还痒着，总想再跑两圈。", "刚才那圈跑完，碎屑都追不上我。", "风从耳边过的时候，我才觉得自己活着。" ],
   },
   {
     "id": "emolga",
@@ -3763,6 +3922,7 @@ export const ENEMIES = [
     "name": "电飞鼠",
     "en": "Emolga",
     "dex": "0587",
+    "dexText": "一边放电一边如舞蹈般在空中飞翔。虽然很可爱，但是很难对付。",
     "types": [
   "电",
   "飞行"
@@ -3772,7 +3932,7 @@ export const ENEMIES = [
     "intro": "在晶簇之间滑翔，尾巴上还挂着光。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "它张着翼膜挂在风里，像一张被雷照亮的纸。", "它从你头顶滑过去，你脖子后面的汗毛全竖了。" ],
-    "voice": [ "翼膜还带着风，收起来鼓鼓的。", "从晶簇上滑下来这一下，真过瘾。", "下次风再大点，它想飞到台地顶上去。" ],
+    "voice": [ "翼膜还带着风，收起来鼓鼓的。", "从晶簇上滑下来这一下，真过瘾。", "下次风再大点，我想飞到台地顶上去。" ],
   },
   {
     "id": "dedenne",
@@ -3780,6 +3940,7 @@ export const ENEMIES = [
     "name": "咚咚鼠",
     "en": "Dedenne",
     "dex": "0702",
+    "dexText": "用胡子来感知伙伴发出的电波。它们通过这种方式告诉彼此哪里有食物和电。",
     "types": [
   "电",
   "妖精"
@@ -3789,7 +3950,7 @@ export const ENEMIES = [
     "intro": "蜷在电晶上取暖，被碰一下就瞪眼。",
     "deck": MOVE_POOLS.kit_t_妖精,
     "lines": [ "岩缝里有个小东西，胡须上噼啪响。", "它把尾巴竖起来当引雷的杆，然后对着你。" ],
-    "voice": [ "胡须还噼啪着，它自己都被吓一跳。", "脸颊上的电没处放，急得原地打转。", "等它把电攒够了，再来和你闹一场。" ],
+    "voice": [ "胡须还噼啪着，我自己都被吓一跳。", "脸颊上的电没处放，急得原地打转。", "等我把电攒够了，再来和你闹一场。" ],
   },
   {
     "id": "togedemaru",
@@ -3797,6 +3958,7 @@ export const ENEMIES = [
     "name": "托戈德玛尔",
     "en": "Togedemaru",
     "dex": "0777",
+    "dexText": "用背上的长毛来接收闪电和电气宝可梦释放的电击，然后将之储存在电囊中。",
     "types": [
   "电",
   "钢"
@@ -3806,7 +3968,7 @@ export const ENEMIES = [
     "intro": "缩成一团尖刺滚过来，扎手。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "一颗带刺的圆球滚过来，刺上全是细小的火花。", "它一缩，刺全立起来，火花串成了一圈。" ],
-    "voice": [ "滚了这么多圈，它自己都有点晕。", "刺尖上的火花还没凉透，照样扎手。", "下次缩团之前，它得先数数方向。" ],
+    "voice": [ "滚了这么多圈，我自己都有点晕。", "刺尖上的火花还没凉透，照样扎手。", "下次缩团之前，我得先数数方向。" ],
   },
   {
     "id": "pincurchin",
@@ -3814,6 +3976,7 @@ export const ENEMIES = [
     "name": "啪嚓海胆",
     "en": "Pincurchin",
     "dex": "0871",
+    "dexText": "能从刺的尖端放电。会用锐利的牙齿刮取附在岩石上的海藻吃。",
     "types": [
   "电"
 ],
@@ -3822,7 +3985,7 @@ export const ENEMIES = [
     "intro": "晶面上那一小团黑刺，动手之前先看一眼脚下。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "石头上那团黑色的刺亮了一下。" ],
-    "voice": [ "它慢吞吞挪了半天，就为了挪到影子里。", "脚下一小圈电流，谁踩谁知道。", "它懒得动，只把刺又立高了一点。" ],
+    "voice": [ "我慢吞吞挪了半天，就为了挪到影子里。", "脚下一小圈电流，谁踩谁知道。", "我懒得动，只把刺又立高了一点。" ],
   },
   {
     "id": "raichu",
@@ -3830,6 +3993,7 @@ export const ENEMIES = [
     "name": "雷丘",
     "en": "Raichu",
     "dex": "0026",
+    "dexText": "发出的电击能超过十万伏特。其威力之强，即使是本人故乡的大王铜象也能一击电晕。",
     "types": [
   "电"
 ],
@@ -3838,7 +4002,7 @@ export const ENEMIES = [
     "intro": "尾巴插在地上，整片洞窟的电流都归它。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "它把尾巴往地上一插，脚下的地面就亮了。" ],
-    "voice": [ "洞里的电流这会都听它的，服气了吗。", "它抖了抖耳朵，洞里还有余电嗡嗡响。", "它不急着追，知道你还会回来。" ],
+    "voice": [ "洞里的电流这会都听我的，服气了吗。", "我抖了抖耳朵，洞里还有余电嗡嗡响。", "我不急着追，知道你还会回来。" ],
   },
   {
     "id": "electrode",
@@ -3846,6 +4010,7 @@ export const ENEMIES = [
     "name": "顽皮雷弹",
     "en": "Electrode",
     "dex": "0101",
+    "dexText": "体表的组织与球果的成分极为接近，不可思议。当它情绪焦躁时所放出的电流，能量足以匹敌20次的落雷。",
     "types": [
   "电"
 ],
@@ -3854,7 +4019,7 @@ export const ENEMIES = [
     "intro": "一颗滚过来的铁球，先变红再响。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "台地上滚过来一个圆球，边滚边笑。", "「……那东西在笑。」" ],
-    "voice": [ "它滚到一边，小声嘀咕刚才差点爆了。", "这球的脾气来得快去得也快。", "它想下次转得更快，让你抓不住。" ],
+    "voice": [ "我滚到一边，小声嘀咕刚才差点爆了。", "这球的脾气来得快去得也快。", "我想下次转得更快，让你抓不住。" ],
   },
   {
     "id": "manectric",
@@ -3862,6 +4027,7 @@ export const ENEMIES = [
     "name": "雷电兽",
     "en": "Manectric",
     "dex": "0310",
+    "dexText": "用电刺激肌肉，所以能迅速行动。用电也能缓解肌肉疼痛，因此很快会治愈。",
     "types": [
   "电"
 ],
@@ -3870,7 +4036,7 @@ export const ENEMIES = [
     "intro": "鬃毛竖起来的时候，洞里其他声音都没了。",
     "deck": MOVE_POOLS.kit_t_电,
     "lines": [ "它站的那块地一直在冒火花。" ],
-    "voice": [ "它低低吼了一声，脚下的余电还噼啪着。", "它甩了甩毛，把残留的电抖到地上。", "等雷声再起，它才慢悠悠地走开。" ],
+    "voice": [ "我低低吼了一声，脚下的余电还噼啪着。", "我甩了甩毛，把残留的电抖到地上。", "等雷声再起，我才慢悠悠地走开。" ],
   },
   {
     "id": "heliolisk",
@@ -3878,6 +4044,7 @@ export const ENEMIES = [
     "name": "光电伞蜥",
     "en": "Heliolisk",
     "dex": "0695",
+    "dexText": "在如今已灭亡的沙漠之国曾经是人们珍视的对象。和财宝一起来到了伽勒尔地区。",
     "types": [
   "电",
   "一般"
@@ -3887,7 +4054,7 @@ export const ENEMIES = [
     "intro": "靠着晶簇站着，像在晒太阳。",
     "deck": MOVE_POOLS.kit_t_一般,
     "lines": [ "它把脖子上那片东西撑开，雨在它身上分成了两半。" ],
-    "voice": [ "它伸了个懒腰，鳞片在光里发亮。", "它晒了半天，觉得浑身的电都满格了。", "脖子上的褶子还没干，得再晒会儿。" ],
+    "voice": [ "我伸了个懒腰，鳞片在光里发亮。", "我晒了半天，觉得浑身的电都满格了。", "脖子上的褶子还没干，得再晒会儿。" ],
   },
   {
     "id": "gyarados",
@@ -3895,6 +4062,7 @@ export const ENEMIES = [
     "name": "暴鲤龙",
     "en": "Gyarados",
     "dex": "0130",
+    "dexText": "被认为是古书所载之龙的真身。文献中留有它口吐灼热射线，将村落焚烧殆尽的纪录。",
     "types": [
   "水",
   "飞行"
@@ -3905,7 +4073,7 @@ export const ENEMIES = [
     "deck": MOVE_POOLS.kit_t_水_hi,
     "signature": [ "sig_rage_wave" ],
     "lines": [ "水面被从下面顶开，一条蓝色的东西升起来，比你在沙丘上见过的任何东西都长。" ],
-    "voice": [ "它沉回水里之前，回头看了你一眼。", "水面平静下来，它还在下面游着。", "这一场它记住了，浪头都替你留着。" ],
+    "voice": [ "我沉回水里之前，回头看了你一眼。", "水面平静下来，我还在下面游着。", "这一场我记住了，浪头都替你留着。" ],
   },
   {
     "id": "electivire",
@@ -3913,6 +4081,7 @@ export const ENEMIES = [
     "name": "电击魔兽",
     "en": "Electivire",
     "dex": "0466",
+    "dexText": "凭借奇异的道具进化而成。心跳增快时，发电量将会增加。会从尾巴发出两万伏特的电流。",
     "types": [
   "电"
 ],
@@ -3921,7 +4090,7 @@ export const ENEMIES = [
     "intro": "它把两根导线接在一起，整个洞窟都亮了一下。",
     "deck": MOVE_POOLS.kit_t_电_hi,
     "lines": [ "它把两条尾巴一碰，整个台地暗了一瞬。" ],
-    "voice": [ "两条尾巴还连着，电在它胳膊上来回跑。", "它把拳头一握，指尖又亮了一下。", "等下一次碰面，它会用上真正的雷。" ],
+    "voice": [ "两条尾巴还连着，电在我胳膊上来回跑。", "我把拳头一握，指尖又亮了一下。", "等下一次碰面，我会用上真正的雷。" ],
   },
   {
     "id": "vikavolt",
@@ -3929,6 +4098,7 @@ export const ENEMIES = [
     "name": "锹农炮虫",
     "en": "Vikavolt",
     "dex": "0738",
+    "dexText": "用腹部发电，并把电力集中至大大的颚部，释放出能量惊人的光束。",
     "types": [
   "虫",
   "电"
@@ -3946,6 +4116,7 @@ export const ENEMIES = [
     "name": "伦琴猫",
     "en": "Luxray",
     "dex": "0405",
+    "dexText": "以一只雄性个体为首领形成群体。传说中，当其双眼闪耀金色光辉，便能够看透世间万物。",
     "types": [
   "电"
 ],
@@ -3962,6 +4133,7 @@ export const ENEMIES = [
     "name": "自爆磁怪",
     "en": "Magnezone",
     "dex": "0462",
+    "dexText": "考察结果显示，它的进化是分子构造受特殊磁场影响后发生改变所致。会从独角向天空发射神秘的电波。",
     "types": [
   "电",
   "钢"
@@ -3979,6 +4151,7 @@ export const ENEMIES = [
     "name": "电龙",
     "en": "Ampharos",
     "dex": "0181",
+    "dexText": "尾巴的前端闪耀着光芒。这光能传播到很远的地方，成为迷途者的路标。",
     "types": [
   "电"
 ],
@@ -3997,6 +4170,7 @@ export const ENEMIES = [
     "name": "捷拉奥拉",
     "en": "Zeraora",
     "dex": "0807",
+    "dexText": "以媲美闪电的速度奔跑，用能释放高压电的爪子将敌人撕得粉碎。",
     "types": [
   "电"
 ],
@@ -4015,6 +4189,7 @@ export const ENEMIES = [
     "name": "大岩蛇",
     "en": "Onix",
     "dex": "0095",
+    "dexText": "巨石连缀而成的身姿宛如大蛇。会引发天摇地动潜入地下深处，吞噬岩石形成隧道供自己前进。",
     "types": [
   "岩石",
   "地面"
@@ -4032,6 +4207,7 @@ export const ENEMIES = [
     "name": "铁哑铃",
     "en": "Beldum",
     "dex": "0374",
+    "dexText": "从臀部发出磁力，猛地将敌人吸过来，然后用锐利的爪子把对方刺穿。",
     "types": [
   "钢",
   "超能"
@@ -4049,6 +4225,7 @@ export const ENEMIES = [
     "name": "石居蟹",
     "en": "Dwebble",
     "dex": "0557",
+    "dexText": "会在自己喜欢的石头上开洞当成住所。对石丸子还有小炭仔来说是天敌。",
     "types": [
   "虫",
   "岩石"
@@ -4066,6 +4243,7 @@ export const ENEMIES = [
     "name": "赤面龙",
     "en": "Druddigon",
     "dex": "0621",
+    "dexText": "生活在地洞里。因为身体受凉就会无法动弹，所以日光浴必不可缺。",
     "types": [
   "龙"
 ],
@@ -4082,13 +4260,14 @@ export const ENEMIES = [
     "name": "小碎钻",
     "en": "Carbink",
     "dex": "0703",
+    "dexText": "从体内埋藏的宝石中发射出高能量的光线，将所有来袭的敌人都一扫而尽。",
     "types": [
   "岩石",
   "妖精"
 ],
     "tier": "mob",
     "biome": "crystal",
-    "intro": "结晶后面滚出来一枚会眨眼的石头。",
+    "intro": "身体由宝石构成，能从内部射出高能量的光线。大多待在洞窟最深处，很少被人看见。",
     "deck": MOVE_POOLS.kit_t_妖精,
     "lines": [ "水晶后面滚出来一枚会眨眼的石头。", "它身上嵌满了碎晶，走一步响一下。" ],
     "voice": [ "这身碎晶太多，重得我快滚不动。", "多眨几下眼，就当给你鼓鼓掌。", "妖精之风一吹，我能滚出好远。" ],
@@ -4099,6 +4278,7 @@ export const ENEMIES = [
     "name": "冰宝",
     "en": "Bergmite",
     "dex": "0712",
+    "dexText": "栖息在万年积雪覆盖的山区。戴着将大气中的水分冷冻后形成的冰盔，借此保护自己。",
     "types": [
   "冰"
 ],
@@ -4115,6 +4295,7 @@ export const ENEMIES = [
     "name": "嗡蝠",
     "en": "Noibat",
     "dex": "0714",
+    "dexText": "到了太阳落山时，它便会离开居住的洞窟四处飞行，用超音波寻找熟透的果实。",
     "types": [
   "飞行",
   "龙"
@@ -4132,6 +4313,7 @@ export const ENEMIES = [
     "name": "盐石宝",
     "en": "Nacli",
     "dex": "0932",
+    "dexText": "出生在地底的岩盐层。原意分享贵重的盐巴，因此在过去非常受到重视。",
     "types": [
   "岩石"
 ],
@@ -4148,6 +4330,7 @@ export const ENEMIES = [
     "name": "大嘴娃",
     "en": "Mawile",
     "dex": "0303",
+    "dexText": "会用温顺的长相让对手大意，然后再用大颚一口咬住对手。咬住后就绝不会松口。",
     "types": [
   "钢",
   "妖精"
@@ -4165,6 +4348,7 @@ export const ENEMIES = [
     "name": "金属怪",
     "en": "Metang",
     "dex": "0375",
+    "dexText": "2只铁哑铃因磁力结合起来了。因为有了2个大脑，精神力量也强化到了2倍。",
     "types": [
   "钢",
   "超能"
@@ -4174,7 +4358,7 @@ export const ENEMIES = [
     "intro": "两块铁拼在一起，缝里透出蓝光。",
     "deck": MOVE_POOLS.kit_t_超能,
     "lines": [ "两个铁块叠在一起，成了更大的一只。" ],
-    "voice": [ "我的运算慢了半拍，算你赢。", "我的另一半说，它还有点不服。", "这次先记你一分，回头再算。" ],
+    "voice": [ "我的运算慢了半拍，算你赢。", "我的一半还在嘀咕，说这局不算。", "这次先记你一分，回头再算。" ],
   },
   {
     "id": "avalugg",
@@ -4182,6 +4366,7 @@ export const ENEMIES = [
     "name": "冰岩怪",
     "en": "Avalugg",
     "dex": "0713",
+    "dexText": "包覆下颚的冰块装甲硬度更胜钢铁，能轻易地击碎岩石。冰岩怪借此铲开厚重积雪，在险峻的山路上猛冲。",
     "types": [
   "冰"
 ],
@@ -4198,6 +4383,7 @@ export const ENEMIES = [
     "name": "盐石垒",
     "en": "Naclstack",
     "dex": "0933",
+    "dexText": "朝着猎物喷出盐，并将其做成盐腌物。猎物体内的水分会在此过程中被夺走。",
     "types": [
   "岩石"
 ],
@@ -4214,6 +4400,7 @@ export const ENEMIES = [
     "name": "冰鬼护",
     "en": "Glalie",
     "dex": "0362",
+    "dexText": "身着硬度更胜钢铁的冰甲。会吐出气息冰冻猎物，然后像吃冰般地把猎物吞进胃里。",
     "types": [
   "冰"
 ],
@@ -4231,6 +4418,7 @@ export const ENEMIES = [
     "name": "大朝北鼻",
     "en": "Probopass",
     "dex": "0476",
+    "dexText": "能发出强大的磁力，自在操纵像浓密胡子般积蓄在身上的大量铁沙。会发射坚硬的块状物攻击猎物。",
     "types": [
   "岩石",
   "钢"
@@ -4249,6 +4437,7 @@ export const ENEMIES = [
     "name": "冰雪巨龙",
     "en": "Aurorus",
     "dex": "0699",
+    "dexText": "从化石复原而来。据说当冰雪巨龙吼叫时，夜空中就会出现极光。",
     "types": [
   "岩石",
   "冰"
@@ -4267,6 +4456,7 @@ export const ENEMIES = [
     "name": "暴雪王",
     "en": "Abomasnow",
     "dex": "0460",
+    "dexText": "就连巨石也能轻易劈开的大力士。不爱与外界接触，静静地生活在深山之中，平时只与白雪同乐。",
     "types": [
   "草",
   "冰"
@@ -4285,6 +4475,7 @@ export const ENEMIES = [
     "name": "雪妖女",
     "en": "Froslass",
     "dex": "0478",
+    "dexText": "被怀抱怨恨消失在雪山中的女人魂魄所附的宝可梦。传说会施咒杀死行为不检的男人，令人心惊胆战。",
     "types": [
   "冰",
   "幽灵"
@@ -4303,6 +4494,7 @@ export const ENEMIES = [
     "name": "酋雷姆",
     "en": "Kyurem",
     "dex": "0646",
+    "dexText": "虽然拥有凌驾于莱希拉姆和捷克罗姆之上的力量，但是那力量已被极低温冷气封印住了。",
     "types": [
   "龙",
   "冰"
@@ -4322,6 +4514,7 @@ export const ENEMIES = [
     "name": "蒂安希",
     "en": "Diancie",
     "dex": "0719",
+    "dexText": "小碎钻的突变体。闪着粉红色光辉的身体被赞为全世界最美。",
     "types": [
   "岩石",
   "妖精"
