@@ -70,6 +70,18 @@ export class UI {
       audio.ui('open');
       showSettings();
     });
+    document.getElementById('btn-items')?.addEventListener('click', () => {
+      audio.ui('open');
+      /**
+       * 背包（手持道具）：**战斗中、商店里都能开**。
+       *
+       * 右上角原本只有卡组 / 图鉴 / 设置 —— 于是「身上带着什么」这件事在商店里
+       * 想不起来也查不到（只有按 I 这一个隐藏入口），更难判断「这瓶药现在喝不喝、
+       * 栏位还放不放得下」。这一屏的「使用」按钮在战斗中本来就是禁用的（写着原因），
+       * 所以打开它没有任何副作用，只是把信息摆出来。
+       */
+      if (this.game.data) showItems(this.game);
+    });
     document.getElementById('btn-deck')?.addEventListener('click', () => {
       audio.ui('open');
       // 卡组一览是只读的（出战卡组 = 全部所持卡牌），所以战斗中也能看 —— 查牌挺有用的

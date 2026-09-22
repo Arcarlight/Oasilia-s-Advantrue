@@ -76,8 +76,41 @@ export function renderHud(game) {
   );
 
   goldEl.textContent = String(d.gold);
+  updateHudButtons(game, d);
 
   updatePortrait(d);
+}
+
+/**
+ * 右上角那一排按钮：悬停文字 + 背包的**件数角标**。
+ *
+ * 悬停文字一律走 `t()`，跟着语言切（index.html / 单文件包里那份只是 JS 跑起来之前的
+ * 默认值）—— 以前这一排是**写死在 HTML 里的中文**，切成日语 / 英语之后鼠标一放上去
+ * 还是中文（标签页标题都跟着切了，这里却一直没人管）。
+ *
+ * 角标写「现在几件」，玩家最想一眼看到的其实是「**还放不放得下**」——
+ * 拿到掉落时要不要丢一件、商店里能不能再买，全看这个数，所以满栏位时它变色。
+ */
+function updateHudButtons(game, d) {
+  const titles = {
+    'btn-items': t('背包：身上带着的道具（按 I）'),
+    'btn-deck': t('查看卡组（只读：排序 / 卡牌详情 / 图鉴）'),
+    'btn-codex': t('敌人图鉴（按 E）'),
+    'btn-settings': t('设置'),
+  };
+  for (const [id, title] of Object.entries(titles)) {
+    const btn = document.getElementById(id);
+    if (btn) btn.title = title;
+  }
+
+  const badge = document.getElementById('hud-held-count');
+  if (!badge) return;
+  const n = (d.held ?? []).length;
+  const max = game.heldMax();
+  badge.textContent = String(n);
+  badge.classList.toggle('hidden', n === 0);
+  badge.classList.toggle('full', n >= max);
+  badge.title = t('手持道具 {n} / {max}', { n, max });
 }
 
 /**

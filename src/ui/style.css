@@ -619,6 +619,32 @@ button { font-family: inherit; }
 }
 .gold-pill .ico-money { width: 16px; height: 16px; }
 
+/**
+ * 右上角「背包」按钮上的件数角标（src/ui/hud.js 的 updateItemsButton 写它）。
+ *
+ * 玩家最想一眼看到的其实不是「有几件」，而是「**还放不放得下**」——
+ * 拿到掉落时要不要丢一件、商店里能不能再买，全看这个数，所以满栏位时它变色。
+ */
+.btn-icon { position: relative; }
+.hud-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 18px; height: 18px;
+  padding: 0 4px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 800; line-height: 1;
+  color: #2b1704;
+  background: linear-gradient(180deg, #ffe08a, var(--gold) 60%, #d6a12f);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(43, 23, 4, .35);
+  pointer-events: none;
+}
+/* 手持栏满了：换成警示色（和「栏位满了」那句提示同一个红）*/
+.hud-count.full {
+  color: #2b0c07;
+  background: linear-gradient(180deg, #f0a08c, var(--bad) 60%, #a83a2a);
+}
+
 /* ============================================================
    舞台
    ============================================================ */

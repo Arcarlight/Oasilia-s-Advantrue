@@ -948,6 +948,62 @@ const SCRIPT = `
       errors.push('shopFullBag: ' + e.message);
     }
 
+    /**
+     * 6d) 右上角的背包按钮：**战斗中能看、但绝不能嗑药**（用户点名：那会影响平衡）。
+     *
+     * 这一屏原本只有一个隐藏入口（按 I），于是「身上带着什么」在商店 / 战斗里想不起来
+     * 也查不到。现在 HUD 上多了一个背包按钮 —— 它必须满足两件事：
+     *   ① 点得开，而且里面有东西（玩家要能看到自己带着什么）；
+     *   ② 战斗中「使用」按钮是**禁用的**，并且引擎那一层也拒绝（两道闸都要在，
+     *      否则以后谁写个新入口就绕过去了）。
+     */
+    try {
+      window.__oasisAuto({ scene: 'battle', stage: 1 });
+      await wait(1400);
+      const gB = window.__oasis;
+      gB.data.held = [];
+      gB.invalidateMods();
+      gB.giveItem('oran_berry', 1);
+      const heldItem = gB.data.held[gB.data.held.length - 1];
+      window.__oasisUI.forceRerender();
+      await wait(400);
+
+      const bagBtn = document.getElementById('btn-items');
+      log('HUD 背包按钮 =', !!bagBtn, '｜角标 =', document.getElementById('hud-held-count')?.textContent);
+      if (!bagBtn) errors.push('HUD 上没有背包按钮（#btn-items）');
+      const badge = document.getElementById('hud-held-count');
+      if (badge && badge.textContent.trim() !== String(gB.data.held.length)) {
+        errors.push('背包角标写的件数和实际不符：' + badge.textContent + ' vs ' + gB.data.held.length);
+      }
+      if (bagBtn) {
+        bagBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(400);
+        const modals = [...document.querySelectorAll('.modal-backdrop')];
+        const bag = modals.find((m) => m.querySelector('.held-item'));
+        log('战斗中打开背包：弹窗 =', !!bag, '｜列出道具 =', bag ? bag.querySelectorAll('.held-item').length : 0);
+        if (!bag) errors.push('战斗中点 HUD 的背包按钮没打开手持道具面板');
+        const useBtn = bag ? [...bag.querySelectorAll('button')].find((b) => b.textContent.trim() === '使用') : null;
+        log('战斗中「使用」按钮：存在 =', !!useBtn, '｜禁用 =', useBtn ? useBtn.disabled : '—',
+          '｜悬停说明 =', useBtn ? (useBtn.dataset.tip || '') : '—');
+        if (useBtn && !useBtn.disabled) errors.push('战斗中背包里的「使用」按钮还能点（会影响平衡）');
+        if (useBtn && !/战斗中不能使用/.test(useBtn.dataset.tip || '')) {
+          errors.push('战斗中「使用」按钮没有写明为什么不能点：' + (useBtn.dataset.tip || '（空）'));
+        }
+        // 引擎那一层也要拦（界面禁用只是第一道闸）
+        const before = gB.data.hp;
+        const res = gB.useItem(heldItem);
+        log('战斗中直接调 useItem：ok =', res ? res.ok : '（null）', '｜', res ? res.text : '');
+        if (res && res.ok) errors.push('引擎允许在战斗中使用道具（平衡会被打破）');
+        if (gB.data.hp !== before) errors.push('战斗中被拒绝之后血还是变了：' + before + ' → ' + gB.data.hp);
+        if (!gB.data.held.includes(heldItem)) errors.push('战斗中被拒绝之后道具却消失了');
+        // 关掉面板，别影响后面几步
+        for (const b of [...document.querySelectorAll('.modal-head button')]) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(300);
+      }
+    } catch (e) {
+      errors.push('hudBag: ' + e.message);
+    }
+
     // 7) 通关记录 / 图鉴 / 曲子库：标题页那四个入口点得开、有内容
     //    （不该只活在专门的诊断脚本里 —— 冒烟是每次改完都会跑的那一道）
     try {
@@ -1036,9 +1092,11 @@ const SCRIPT = `
       hasScreen: !!document.querySelector('.screen'),
       cardCount: document.querySelectorAll('.card').length,
       hudCodexBtn: !!document.getElementById('btn-codex'),
+      hudBagBtn: !!document.getElementById('btn-items'),
     };
     log('DOM checks', JSON.stringify(checks));
     if (!checks.hudCodexBtn) errors.push('HUD 上没有图鉴按钮（#btn-codex）');
+    if (!checks.hudBagBtn) errors.push('HUD 上没有背包按钮（#btn-items）');
 
     /**
      * 9) **页面这一趟不许留下任何被吞掉的错误**。

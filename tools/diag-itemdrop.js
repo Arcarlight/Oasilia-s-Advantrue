@@ -206,7 +206,91 @@
       ok(tops.size >= 1, '排布有确定的行数（换行是布局做的，不是游离在外面）', `${tops.size} 行`);
     }
 
+    log('⑤ 右上角背包按钮：件数角标 + 悬停文字跟着语言走');
+    {
+      const { changeLanguage } = await import('../src/ui/langswitch.js');
+      game.newRun(31339);
+      game.data.held = [];
+      game.invalidateMods();
+      game.phase = 'map';
+      ui.forceRerender();
+      await wait(300);
+      const btn = q('#btn-items');
+      const badge = q('#hud-held-count');
+      ok(!!btn && !!badge, 'HUD 上有背包按钮和它的件数角标');
+      ok(badge.classList.contains('hidden'), '手上没东西时不显示角标', `text="${badge.textContent}"`);
+
+      game.giveItem('big_root', 1);
+      game.giveItem('honey', 1);
+      ui.forceRerender();
+      await wait(250);
+      ok(!badge.classList.contains('hidden') && badge.textContent === '2',
+        '拿到两件之后角标写 2', `text="${badge.textContent}"`);
+      ok(!badge.classList.contains('full'), '没满的时候不是警示色');
+
+      while (game.data.held.length < game.heldMax()) game.giveItem('oran_berry', 1);
+      ui.forceRerender();
+      await wait(250);
+      ok(badge.classList.contains('full'), `手持栏满了角标变警示色（${game.data.held.length} / ${game.heldMax()}）`,
+        `text="${badge.textContent}"`);
+
+      // 点开：里面列着身上那几件
+      click(btn);
+      await wait(300);
+      const bag = q('.modal-backdrop');
+      ok(!!bag && qa('.held-item', bag).length === game.data.held.length,
+        '点开就是那几件道具（数量对得上）', `${qa('.held-item', bag).length} 件`);
+      for (const b of qa('.modal-head button')) click(b);
+      await wait(200);
+
+      // 悬停文字：三语各写一份，不留中文
+      const seen = {};
+      for (const lg of ['zh', 'ja', 'en']) {
+        changeLanguage(lg);
+        await wait(150);
+        const t2 = q('#btn-items')?.getAttribute('title') ?? '';
+        seen[lg] = t2;
+      }
+      changeLanguage('zh');
+      await wait(150);
+      ok(seen.zh && seen.ja && seen.en, '三种语言都有悬停文字',
+        Object.entries(seen).map(([k, v]) => `${k}「${v}」`).join(' ｜ '));
+      ok(seen.ja !== seen.zh && seen.en !== seen.zh, '日语 / 英语那两份不是中文原文');
+      ok(/^[\x20-\x7E]+$/.test(seen.en), '英语那份是纯 ASCII，没有夹着汉字', `「${seen.en}」`);
+      ok(/[\u3040-\u30ff]/.test(seen.ja), '日语那份真的是日语（有假名）', `「${seen.ja}」`);
+    }
+
     // 截图模式：把掉落那一屏重新摆好就停住
+    if (mode === 'shot-hud') {
+      /**
+       * `?dgitemdrop=shot-hud`：摆一场战斗 + 手上几件道具，停在 HUD 上（看背包按钮与角标）。
+       * `&full=1` 让手持栏满（角标变警示色）。
+       */
+      game.newRun(31340);
+      game.data.held = [];
+      game.invalidateMods();
+      game.giveItem('big_root', 1);
+      if (params.get('full') === '1') {
+        while (game.data.held.length < game.heldMax()) game.giveItem('oran_berry', 1);
+      } else {
+        game.giveItem('honey', 1);
+      }
+      game.startBattle('normal', 0, 'direct');
+      await wait(1600);
+      // `&hudzoom=2`：把 HUD 放大来看角标（截图工具没有裁剪功能，就地放大最省事）
+      const zoom = params.get('hudzoom');
+      if (zoom) {
+        const hud = document.getElementById('hud');
+        if (hud) {
+          hud.style.zoom = zoom;
+          hud.style.transformOrigin = 'top right';
+        }
+        await wait(200);
+      }
+      log('（截图模式：shot-hud，画面停在战斗 + HUD）');
+      log('DROP_DONE');
+      return;
+    }
     if (mode === 'shot-reward') {
       log('（截图模式：shot-reward，画面停在 5 个选项的结算页）');
       log('DROP_DONE');

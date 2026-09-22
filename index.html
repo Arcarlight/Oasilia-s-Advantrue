@@ -28,6 +28,11 @@
     </div>
     <div class="hud-right">
       <div class="gold-pill"><span class="ico-money"></span><span id="hud-gold">0</span></div>
+      <!-- 背包：战斗中 / 商店里都能随手看一眼身上带着什么（按 I 同效）。
+           右上角这一排是「随时可查」的四件事：道具 / 卡组 / 图鉴 / 设置。
+           悬停文字由 src/ui/hud.js 按当前语言写进去（这里这份是 JS 跑起来之前的默认值），
+           单文件包里那份是 tools/bundle.mjs 里抄的第二份，两边必须一字不差（check-copy 第 ⑦ 条）。 -->
+      <button class="btn btn-icon" id="btn-items" title="背包：身上带着的道具（按 I）"><span class="ico-backpack"></span><span class="hud-count" id="hud-held-count"></span></button>
       <button class="btn btn-icon" id="btn-deck" title="查看卡组（只读：排序 / 卡牌详情 / 图鉴）"><span class="ico-cards"></span></button>
       <button class="btn btn-icon" id="btn-codex" title="敌人图鉴（按 E）"><span class="ico-book"></span></button>
       <button class="btn btn-icon" id="btn-settings" title="设置"><span class="ico-gear"></span></button>
