@@ -271,6 +271,16 @@
           const bad = facts.wls.filter((wl) => Math.abs(facts.unit - Math.round(facts.unit / wl) * wl) > 0.6);
           log('  平铺无缝：周期 ' + facts.unit + 'px · 字号 ' + facts.size + 'px · 波长 ' + facts.wls.join('/'));
           if (bad.length) errors.push('有波长不能整除一个周期的宽度（平铺会有缝）：' + bad.join('、'));
+          /**
+           * 位图的高度必须等于场地现在的真实高度。
+           * 不等的话贴上去会被**纵向拉伸** —— 字会被压成一条条横杠，
+           * 用户截图报的「既没有波也没有浪，全是一块一块的」正是这个（当时 background-size 写了 100%）。
+           */
+          const decorH = Math.round(decor.getBoundingClientRect().height);
+          log('  位图高=' + facts.h + ' 场地高=' + decorH);
+          if (Math.abs(facts.h - decorH) > 2) {
+            errors.push('位图高度和场地高度对不上（' + facts.h + ' vs ' + decorH + '）—— 会被纵向拉伸变形');
+          }
         }
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;left:-9999px;top:0;width:10px;height:10px;';
@@ -299,6 +309,9 @@
          */
         bs.decorPin = 'enemy';
         bs.screen.dataset.acting = 'enemy';
+        const vars = getComputedStyle(bs.decor);
+        log('  高亮中心：敌人 ' + vars.getPropertyValue('--glow-enemy-x').trim() + ',' + vars.getPropertyValue('--glow-enemy-y').trim()
+          + ' · 玩家 ' + vars.getPropertyValue('--glow-player-x').trim() + ',' + vars.getPropertyValue('--glow-player-y').trim());
         // 把过渡关掉再读：虚拟时间下 CSS 过渡不推进，读到的会永远是起点值 0
         for (const n of [glowE, glowP]) n.style.transition = 'none';
         await wait(200);

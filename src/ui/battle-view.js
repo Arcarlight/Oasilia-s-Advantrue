@@ -600,6 +600,13 @@ export class BattleScreen {
       await document.fonts?.load?.('20px "Oasis Decor"');
     } catch { /* 字体加载失败就退回首次画的那张 */ }
     this.decor?.relayoutDecor?.(this.fieldR?.width ?? 0, this.fieldR?.height ?? 0, true);
+    // 场地尺寸一变（手牌、日志、状态图标都会改它的高度）就得重画那张位图：
+    // 位图是按当时的高度画的，贴的时候又按像素高度贴 —— 不重画就会被拉伸变形
+    if (typeof ResizeObserver !== 'undefined' && this.decor) {
+      this._decorRo?.disconnect?.();
+      this._decorRo = new ResizeObserver(() => this.decor?.syncDecor?.());
+      this._decorRo.observe(this.decor);
+    }
     // 进战斗时把可能残留的文本选区清掉：
     // 在上一屏（地图 / 卡组）拖鼠标留下的选区会一直画在那儿，看起来像一块蓝色色块
     // （用户就是这么被吓到的：以为是伤害数字背后的「蓝底」）。
@@ -686,9 +693,9 @@ export class BattleScreen {
     }
     // ③ 出牌展示区
     for (const side of ['enemy', 'player']) this.layoutPlayZone(side);
-    // ④ 背景花纹：按精灵位置钉住高亮中心，并按战场尺寸重画那张位图
+    // ④ 背景花纹：按精灵位置钉住高亮中心，并把位图和场地尺寸对一次账
     this.layoutDecorGlow(fieldR);
-    this.decor?.relayoutDecor?.(fieldR.width, fieldR.height);
+    this.decor?.syncDecor?.();
   }
 
   /**
@@ -702,6 +709,7 @@ export class BattleScreen {
    */
   layoutDecorGlow(fieldR = this.fieldR) {
     if (!this.decor || !fieldR?.width) return;
+    const bands = this.decor.decorBands ?? {};
     const box = {
       enemy: this.enemyBody ?? this.enemyFighter,
       player: this.playerBody ?? this.playerFighter,
@@ -709,10 +717,19 @@ export class BattleScreen {
     for (const [side, node] of Object.entries(box)) {
       const r = node?.getBoundingClientRect?.();
       if (!r?.width) continue;
+      /**
+       * 横向跟着精灵走（亮的是它那一片），**纵向用那条行带的中心**。
+       * 用精灵自己的纵向位置踩过坑：我方精灵贴在场地最左边偏下，圈有一半落在场地外、
+       * 剩下的大半被角色信息卡盖住 —— 实测我方那侧只亮了 +3.6%、对手 +12.8%，
+       * 玩家立刻就看出来「我方不会点亮」。行带中心才是「它那半片文字」的正中央。
+       */
+      const band = bands[side];
+      const y = band ? ((band[0] + band[1]) / 2) * 100
+        : ((r.top + r.height / 2) - fieldR.top) / fieldR.height * 100;
       const x = ((r.left + r.width / 2) - fieldR.left) / fieldR.width * 100;
-      const y = ((r.top + r.height / 2) - fieldR.top) / fieldR.height * 100;
-      // 夹一下：精灵本来就贴着边，高亮核心跑出战场就会变成「从屏幕外照进来」
-      this.decor.style.setProperty(`--glow-${side}-x`, `${Math.max(6, Math.min(94, x)).toFixed(1)}%`);
+      // 夹一下：精灵本来就贴着边（我方在最左），圈心贴边会有一小半落到场地外，
+      // 白亮一片看不见的区域；夹到 24~76 之后，圈基本都落在场地里
+      this.decor.style.setProperty(`--glow-${side}-x`, `${Math.max(24, Math.min(76, x)).toFixed(1)}%`);
       this.decor.style.setProperty(`--glow-${side}-y`, `${Math.max(6, Math.min(94, y)).toFixed(1)}%`);
     }
   }

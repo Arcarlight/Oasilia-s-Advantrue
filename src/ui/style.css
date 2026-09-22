@@ -1014,21 +1014,22 @@ button { font-family: inherit; }
   opacity: 0;
   transition: opacity .55s ease;
 }
-/* 敌人那一半在右上、主角那一半在左下 —— 中心由 battle-view 的 layoutDecorGlow()
-   按两只精灵的**实际位置**写进 --glow-*（写死百分比会和精灵对不上）。
-   亮起来的幅度按实测调过：位图版一开始写 .22，实测最亮那一格 +18.8%，比上一版
-   （+7%）明显重了 —— 用户要的是「微微变亮，但又不会太过明显」，所以收到 .16、
-   圈也收小一点（48%×34%），落回 +5~6%。 */
+/* 敌人那一半在上、主角那一半在下 —— 中心由 battle-view 的 layoutDecorGlow() 算出来
+   写进 --glow-*（横向跟精灵、纵向取那条行带的中心，理由见那边的注释）。
+   圈开得比较大（68% × 50%）：这层本身很淡，圈小了看着就像「没亮」。
+   两侧的强度不一样，是**量出来的**：下半场的底色更亮（渐变的下半段），同样的附加亮度
+   算成相对变化天然更小 —— 实测玩家那侧只有敌人那侧的 1/5，玩家原话就是「我方这边似乎不会点亮」。
+   所以玩家那侧给到 .21（敌人 .16），让两边看上去差不多。 */
 .decor-glow-enemy {
-  -webkit-mask-image: radial-gradient(48% 34% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(48% 34% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(68% 50% at var(--glow-enemy-x, 60%) var(--glow-enemy-y, 24%), #000 0%, rgba(0, 0, 0, .5) 55%, transparent 82%);
+  mask-image: radial-gradient(68% 50% at var(--glow-enemy-x, 60%) var(--glow-enemy-y, 24%), #000 0%, rgba(0, 0, 0, .5) 55%, transparent 82%);
 }
 .decor-glow-player {
-  -webkit-mask-image: radial-gradient(48% 34% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(48% 34% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(68% 50% at var(--glow-player-x, 30%) var(--glow-player-y, 76%), #000 0%, rgba(0, 0, 0, .5) 55%, transparent 82%);
+  mask-image: radial-gradient(68% 50% at var(--glow-player-x, 30%) var(--glow-player-y, 76%), #000 0%, rgba(0, 0, 0, .5) 55%, transparent 82%);
 }
 .battle-screen[data-acting="enemy"] .decor-glow-enemy { opacity: .16; }
-.battle-screen[data-acting="player"] .decor-glow-player { opacity: .16; }
+.battle-screen[data-acting="player"] .decor-glow-player { opacity: .21; }
 /* 降低动效 / 诊断用（?fps=1 的第二轮会挂 html[data-decor-motion="off"]）时就不滚了 */
 @media (prefers-reduced-motion: reduce) {
   .decor-layer { animation: none !important; }

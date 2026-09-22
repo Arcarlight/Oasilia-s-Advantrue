@@ -39,12 +39,21 @@
 // 「同一张图 + 只改 opacity」这一点很重要：变亮就是同一片文字更亮一点，不会多出别的形状。
 import { el } from './dom.js';
 
-/** 每个半场铺几行（3.0.6 从 7 行加到 13 行：用户要「密一点」） */
-const LINES = 13;
-/** 上半（敌人）与下半（主角）各自的行带（相对战场高度的比例，留出起伏余量） */
-const BANDS = { enemy: [0.03, 0.45], player: [0.55, 0.97] };
+/**
+ * 每个半场铺几行。
+ *
+ * 这一路改过三版：7 → 13（用户要「密一点」）→ **8**（用户：「字号又小又全部叠在一块没有错开」）。
+ * 教训是「密」不等于「行多」：13 行挤在半个场地里，字只能做到 14px，行距 17px、
+ * 波幅 5px —— 行与行挨得几乎没有缝，看上去就是一团。现在改成 8 行、字号约 21px、
+ * 行距 30px 上下，密度靠**波形铺满**（而不是靠塞行数）来出。
+ */
+const LINES = 8;
+/** 上半（敌人）与下半（主角）各自的行带（相对场地高度的比例，留出起伏余量） */
+const BANDS = { enemy: [0.02, 0.47], player: [0.53, 0.98] };
 /** 文本重复单元里补几个全角空格 */
 const UNIT_PAD = 3;
+/** 字距（相对字号）：给花纹留一点空气，不然一整行字挤成一条黑带 */
+const TRACKING = 0.09;
 /** 每行自己的浓淡（画进位图里，避免整片一个调子；整层的不透明度写在 style.css） */
 const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
 /** 一个波形里放多少字（必须能整除 unitChars，否则平铺会有缝 —— 见文件头） */
@@ -66,7 +75,8 @@ function nearestDivisor(n, target) {  let best = 1;
  * @returns {{url:string, unit:number, size:number}} 位图地址、一个周期的像素宽、字号
  */
 function paintPattern(bands, w, h) {
-  const size = Math.max(11, Math.min(21, Math.round(h * 0.029)));
+  // 字号随场地高度走：小窗口也要能看清，大窗口别糊成一片
+  const size = Math.max(15, Math.min(28, Math.round(h * 0.042)));
   const texts = Object.values(bands).filter(Boolean);
   const maxChars = Math.max(...texts.map((t) => [...t].length));
   const unitChars = maxChars + UNIT_PAD;
@@ -85,7 +95,9 @@ function paintPattern(bands, w, h) {
     if (!adv.has(ch)) adv.set(ch, ctx.measureText(ch).width);
     return adv.get(ch);
   };
-  const unitAdv = (t) => [...unit(t)].reduce((s, ch) => s + widthOf(ch), 0);
+  /** 排布时的步进 = 字形宽度 + 字距（两边用同一条规则，不然位图和量到的宽度对不上） */
+  const stepOf = (ch) => widthOf(ch) + size * TRACKING;
+  const unitAdv = (t) => [...unit(t)].reduce((s, ch) => s + stepOf(ch), 0);
   const unitW = Math.max(...texts.map(unitAdv));
   const px = Math.max(160, Math.round(unitW));            // 位图宽度取整（整数像素平铺最干净）
 
@@ -111,20 +123,27 @@ function paintPattern(bands, w, h) {
     const gap = (h * (bottom - top)) / (LINES - 1);
     for (let i = 0; i < LINES; i += 1) {
       const lineY = bandTop + i * gap;
-      const amp = gap * (0.22 + (i % 3) * 0.07);          // 波幅跟行距挂钩，行与行不会撞上
-      // 一个波里放多少字：必须是 unitChars 的因数（不然平铺有缝），取最接近 20 的那个
-      const waveChars = nearestDivisor(unitChars, 20) || WAVE_CHOICES[0];
+      const amp = gap * (0.26 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
+      // 一个波里放多少字：必须是 unitChars 的因数（不然平铺有缝），取最接近 18 的那个
+      const waveChars = nearestDivisor(unitChars, 18) || WAVE_CHOICES[0];
       const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度
       wls.push(wl);
-      /** 相位每行错开：整片才像水面，而不是 13 条一样的波（错开多少不影响平铺） */
+      /** 相位每行错开：整片才像水面，而不是 8 条一样的波（错开多少不影响平铺） */
       const phase = i * 1.7 + (side === 'enemy' ? 0.6 : 2.4) + (i % 2 ? 1.2 : 0);
       ctx.fillStyle = `rgba(${INK}, ${LINE_ALPHA[i % LINE_ALPHA.length]})`;
       /**
        * ③ 逐字沿正弦排布：位置按实测字宽累加，角度取这一点的切线。
-       * 从 i=0 画到 unitChars+1：首尾各多画一个字，它们跨过平铺边界的部分由相邻那一块补上。
+       *
+       * ⚠ **每一行的起点还要再错开半个字左右**（`i * 0.37` 个字）：
+       * 所有行共用同一套字形网格、波长又一样的话，同一个字会在每一行落在同一个 x 上，
+       * 整片看上去就是一张对齐的表格 —— 用户的原话是「全部叠在一块没有错开」。
+       * 起点错开**不影响平铺**（单元仍是一个周期的重复），只是每行的字不再上下对齐。
+       *
+       * 从 -2 画到 unitChars+2：首尾各多画两个字，它们跨过平铺边界的部分由相邻那一块补上。
        */
-      let x = 0;
-      const order = [...u, u[0], u[1] ?? ''];
+      const order = [];
+      for (let k = -2; k <= unitChars + 2; k += 1) order.push(u[((k % unitChars) + unitChars) % unitChars]);
+      let x = -2 * stepOf(u[0]) - (i * 0.37) * size;
       for (const ch of order) {
         const a = (x / wl) * Math.PI * 2 + phase;
         const y = lineY + amp * Math.sin(a);
@@ -135,7 +154,7 @@ function paintPattern(bands, w, h) {
         ctx.rotate(Math.atan(slope));
         ctx.fillText(ch, 0, 0);
         ctx.restore();
-        x += widthOf(ch);
+        x += stepOf(ch);
       }
     }
   }
@@ -172,40 +191,77 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
   });
 
   let last = { w: 0, h: 0 };
+  const debugCanvas = new URLSearchParams(location.search).get('decor') === 'canvas';
   /**
-   * @param {number} w 战场宽
-   * @param {number} h 战场高
+   * 把位图铺到三层上。
+   *
+   * ⚠ `background-size` 的高度**必须是画进去的那个高度**（px），不能写 100%。
+   * 写 100% 的话，只要「画的时候的高度」和「现在显示的高度」不一致，整幅图就被**纵向拉伸**：
+   * 用户截图报的「既没有波也没有浪，全是一块一块的」就是这么来的 ——
+   * 场地某一刻量到的高度偏大、之后变矮，于是每个字被压成一条横杠。
+   * 现在用真实像素高度 + 纵向居中：即便重画晚了一帧，也只会轻微裁掉上下一两行，不会变形。
+   */
+  const applyToLayers = (unit, paintH) => {
+    for (const node of layers) {
+      node.style.backgroundSize = `${unit}px ${paintH}px`;
+      node.style.backgroundPosition = '0 50%';
+      // 滚一个周期 = 回到逐像素相同的画面，所以这条动画永远不会「跳」
+      node.style.setProperty('--roll', `${unit}px`);
+      node.style.setProperty('--rollDur', `${(unit / 26).toFixed(1)}s`);   // 约 26 像素/秒
+    }
+  };
+
+  /**
+   * 场地尺寸变了就重画。
+   * @param {number} w 场地宽
+   * @param {number} h 场地高
    * @param {boolean} force 尺寸没变也重画（字体晚一步加载好时要用它补一次，见 battle-view）
    */
   box.relayoutDecor = (w, h, force = false) => {
     const W = Math.round(w);
     const H = Math.round(h);
-    if (!W || !H) return;
-    if (!force && Math.abs(W - last.w) < 2 && Math.abs(H - last.h) < 2) return;
-    last = { w: W, h: H };
+    // 太小的量测直接跳过（场地还没排好版时的 0 / 几像素会让位图压根不成形）
+    if (W < 120 || H < 120) return;
+    if (!force && Math.abs(W - last.w) < 1 && Math.abs(H - last.h) < 1) return;
     const { url, unit, size, unitW, wls, canvas } = paintPattern(bands, W, H);
+    last = { w: W, h: H };
+    for (const node of layers) node.style.backgroundImage = `url(${url})`;
+    applyToLayers(unit, H);
     /**
      * `?decor=canvas`：把那张平铺位图本身摊在屏幕上（调试用）。
-     * 花纹出问题时（比如字被叠成一列、接缝有缝）看它比看战场直接得多 ——
+     * 花纹出问题时（比如字被压扁、接缝有缝）看它比看战场直接得多 ——
      * 战场上是三层叠着、还半透明，肉眼分不出是位图画错了还是铺错了。
      */
-    if (new URLSearchParams(location.search).get('decor') === 'canvas') {
+    if (debugCanvas) {
       canvas.style.cssText = `position:absolute;left:0;top:0;z-index:9;opacity:1;outline:2px solid #f0f;`
         + `width:${unit}px;height:${H}px;image-rendering:pixelated;`;
       if (canvas.parentNode !== box) box.append(canvas);
     }
     /**
-     * 留在元素上给体检用的一组事实（smoke-check 会读它验「平铺无缝」）：
-     * `unit` 是一个周期的像素宽（也就是滚动距离），`wls` 是每一行的波长 ——
-     * 平铺无缝的数学条件就是**每一行的波长都能整除 unit**（否则接缝处波形对不上）。
+     * 留在元素上给体检用的一组事实（smoke-check 会读它们）：
+     * `unit` = 一个周期的像素宽（= 滚动距离），`wls` = 每一行的波长 ——
+     * 平铺无缝的数学条件就是**每一行的波长都能整除 unit**；
+     * `h` = 位图的高度，它必须等于现在场地的真实高度（不等就会被拉伸变形）。
      */
-    box.decorFacts = { unit, size, unitW: Math.round(unitW), wls: wls.map((x) => Math.round(x * 100) / 100) };
-    for (const node of layers) {
-      node.style.backgroundImage = `url(${url})`;
-      node.style.backgroundSize = `${unit}px 100%`;
-      // 滚一个周期 = 回到逐像素相同的画面，所以这条动画永远不会「跳」
-      node.style.setProperty('--roll', `${unit}px`);
-      node.style.setProperty('--rollDur', `${(unit / 26).toFixed(1)}s`);   // 约 26 像素/秒
+    box.decorFacts = { unit, size, h: H, unitW: Math.round(unitW), wls: wls.map((x) => Math.round(x * 100) / 100) };
+    /**
+     * 两个行带的位置（相对场地高度的比例）也交出去：battle-view 要按它算高亮的纵向中心。
+     * 为什么不用精灵自己的中心：精灵贴着场地边（我方在最左、对手偏上），
+     * 拿它的中心当圆心，圈有一半落在场地外、剩下的大半被角色信息卡盖住 ——
+     * 实测我方那侧只亮了 +3.6%，对手那侧 +12.8%，玩家看出来就是「我方不会点亮」。
+     */
+    box.decorBands = { enemy: BANDS.enemy, player: BANDS.player };
+  };
+
+  /**
+   * 每次布局都对一次账：**位图的高度必须等于场地现在的真实高度**。
+   * 不等就立刻重画（上面那条「不许写 100%」是防线，这里是根治）。
+   */
+  box.syncDecor = () => {
+    const r = box.getBoundingClientRect?.();
+    if (!r?.width || !r?.height) return;
+    if (Math.abs(Math.round(r.height) - last.h) >= 1 || Math.abs(Math.round(r.width) - last.w) >= 1) {
+      box.relayoutDecor(r.width, r.height);
     }
   };
   return box;
