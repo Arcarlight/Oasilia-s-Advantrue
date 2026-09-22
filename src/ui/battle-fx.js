@@ -236,6 +236,23 @@ export function projectile(field, fromEl, toEl, fx, opts = {}) {
 }
 
 /**
+ * 行走图闪光用的 filter 串（护盾的白光、属性升降的红/蓝光）。
+ *
+ * ⚠ 上色为什么不能从**纯白**起步（3.1.8 的错就在这儿）：
+ * 剪影是 `brightness(0) invert(1)` 做出来的，而纯白（255,255,255）经 `sepia(1)`
+ * 只变成 (255,255,239) —— 明度 97%，这个明度下**饱和度已经顶到 1**，
+ * 再怎么 `saturate()` 也挤不出颜色，`hue-rotate` 也只是把「几乎白的黄」转成「几乎白的别的色」。
+ * 所以玩家看到的还是一道白光（「属性降低的颜色没有成功显示，现在都是白的」）。
+ *
+ * 正确做法是**先压成中灰再上色**：`invert(0.55)` 给出灰 140 左右，
+ * 这个明度 sepia 之后才有饱和度可加，saturate 拉满就是一块实色。
+ */
+export function flashFilter(color) {
+  if (!color) return 'brightness(0) invert(1)';
+  return `brightness(0) invert(0.55) ${tintFilter(color)}`;
+}
+
+/**
  * 行走图闪一下光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。
  *
  * 全白不是叠一层白图，而是 `brightness(0) invert(1)`（见 style.css 的 whiteFlash）：
@@ -249,8 +266,8 @@ export function flashWhite(body, { color = null, ms = 620 } = {}) {
   if (!body) return;
   body.classList.remove('fighter-flash');
   void body.offsetWidth;            // 强制重排：连着两次强化也要能重新播
-  // 不给颜色时用 brightness(1)（一个空操作），保证 filter 串始终合法
-  body.style.setProperty('--flash-tint', color ? tintFilter(color) : 'brightness(1)');
+  // 不给颜色时是一道纯白剪影；给了颜色就是「中灰起步再上色」（见 flashFilter 的说明）
+  body.style.setProperty('--flash-filter', flashFilter(color));
   body.style.setProperty('--flash-ms', `${ms}ms`);
   body.classList.add('fighter-flash');
   setTimeout(() => body.classList.remove('fighter-flash'), ms + 40);

@@ -118,6 +118,45 @@
       + ' animation-delay: -0.09s; animation-play-state: paused; }';
     document.head.append(st2);
     bs.playerBody.classList.add('demo-flash');
+
+    /**
+     * 三种闪光**并排**看：护盾的白、属性提升的红、属性被削的蓝。
+     *
+     * 为什么单摆这一行：3.1.8 的红/蓝闪光在玩家那儿「还是白的」——
+     * 原因是剪影是纯白起步（明度 97%、饱和度顶格），sepia+saturate 根本挤不出颜色。
+     * 这种错只有把三种颜色摆在一起看才一眼认出来，所以让总览页常备这一行。
+     */
+    const { flashFilter, FLASH_UP, FLASH_DOWN } = await import('../src/ui/battle-fx.js');
+    const idle = bs.playerIdleAnim;
+    if (idle) {
+      const strip = document.createElement('div');
+      strip.className = 'fx-demo-flash';
+      for (const [label, color] of [['护盾 · 白', null], ['提升 · 红', FLASH_UP], ['被削 · 蓝', FLASH_DOWN]]) {
+        const cell = document.createElement('div');
+        const cap = document.createElement('span');
+        cap.textContent = label;
+        // 把待机画布**拷一份**静态图（canvas 克隆不带位图，得自己 drawImage），再套闪光滤镜
+        const copy = document.createElement('canvas');
+        copy.width = idle.width;
+        copy.height = idle.height;
+        copy.getContext('2d').drawImage(idle, 0, 0);
+        copy.style.cssText = 'width:' + idle.style.width + ';height:' + idle.style.height
+          + ';image-rendering:pixelated;position:static;transform:none;filter:' + flashFilter(color) + ';';
+        cell.append(copy, cap);
+        strip.append(cell);
+      }
+      const st3 = document.createElement('style');
+      st3.textContent = `
+        .fx-demo-flash { position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+          z-index: 9; display: flex; gap: 14px; align-items: flex-end; }
+        .fx-demo-flash > div { position: relative; outline: 1px dashed rgba(255,255,255,.2);
+          padding: 6px 8px 18px; }
+        .fx-demo-flash span { position: absolute; left: 6px; bottom: 2px; font-size: 11px;
+          color: rgba(255,255,255,.8); text-shadow: 0 1px 0 #000; }`;
+      document.head.append(st3);
+      bs.field.append(strip);
+      log('闪光样本：' + ['白', '红', '蓝'].join('/') + '（flashFilter 已应用）');
+    }
     log('FX_DEMO_DONE');
   } catch (e) {
     log('FATAL ' + (e?.message ?? e));

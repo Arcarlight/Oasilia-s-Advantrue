@@ -111,6 +111,41 @@ const normalNoCard = noCard(normal) / normal.length;
 ok(Math.abs(normalNoCard - (1 - BALANCE.cardRewardChance)) < 0.15,
   `普通怪空手率≈ ${(100 - BALANCE.cardRewardChance * 100).toFixed(0)}%`, `实测 ${(normalNoCard * 100).toFixed(1)}%`);
 
+/**
+ * ②-b **连空保底**：同一局里连空 `cardDroughtPity` 场之后，下一场必出卡。
+ *
+ * 用户报的：「怎么现在会出现连续好几场都不掉卡牌的情况？」
+ * 查下来不是 bug（也不是抽到了 enemyOnly 的牌 —— 那个池子根本不收，实测 2 万次一张没漏），
+ * 就是 30% 的骰子在连空：实测 3 连空占所有空手段的 5.6%、最长 5 场。
+ *
+ * ⚠ 这一条**必须在同一局里连打**才有意义：上面 `collect()` 是「一场一个新 Game」，
+ * 每场都是新开局，连空计数永远是 0 —— 第一版把断言加在 collect 的样本上，
+ * 结果量出来「最长连空 3 场」而报红，那是测法不对，不是保底没生效。
+ * 这里干脆把骰子按死（`rng.chance` 恒为 false），看保底是不是真的兜住了。
+ */
+{
+  const g = new Game({ seed: 4242 });
+  g.newRun();
+  const hits = [];
+  for (let i = 0; i < 4; i += 1) {
+    // 数值给足，保证每场都赢（打输会结束这一局，连空计数就断了）
+    Object.assign(g.data, { atk: 300, def: 120, maxHp: 3000, hp: 3000, agi: 30, stage: 2 });
+    for (const id of [sustainHealId, sustainCleanseId]) if (id && !g.data.deck.includes(id)) g.data.deck.push(id);
+    const b = g.startBattle('normal', 0, 'direct');
+    g.rng.chance = () => false;          // 手气按死：普通怪的 30% 空手必定发生
+    autoPlay(b);
+    if (b.winner !== 'player') { hits.push('lose'); continue; }
+    const r = g.finishBattle();
+    hits.push((r?.cardChoices ?? []).length);
+  }
+  const limit = BALANCE.cardDroughtPity ?? Infinity;
+  let worst = 0; let streak = 0;
+  for (const h of hits) { if (h === 0) { streak += 1; worst = Math.max(worst, streak); } else if (h !== 'lose') streak = 0; }
+  ok(hits.filter((h) => h === 'lose').length === 0, '连空测试的 4 场都打赢了', hits.join('/'));
+  ok(worst <= limit, `手气按死的情况下最多连空 ${limit} 场`, `实际序列 ${hits.join('/')}（0 = 空手，数字 = 给几张）`);
+  ok(hits.includes(0) && hits.some((h) => h > 0), '既测得空手、也测得保底给卡', hits.join('/'));
+}
+
 // ③ 选项张数：精英 / 首领 4 张，普通怪 3 张
 ok(slotsOf(elite).every((n) => n === 4), '精英给 4 个选项', `实际 ${slotsOf(elite).join('/')}`);
 ok(slotsOf(boss).every((n) => n === 4), '首领给 4 个选项', `实际 ${slotsOf(boss).join('/')}`);

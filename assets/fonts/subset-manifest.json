@@ -1,6 +1,6 @@
 {
   "note": "由 tools/subset-fonts.mjs 生成；textSha256 / ja.textSha256 对不上就说明内容（或日语译文）改过、子集过期了",
-  "textSha256": "535e3b492c31d5a423689becb51c0e9541a27c44d3ec0d089f844b05a0002503",
+  "textSha256": "c27b0df1068a79eec50ea262ac88dcee30d462f89acd07e5caf287dccc1ed36c",
   "chars": 3125,
   "fonts": [
     {
@@ -43,16 +43,16 @@
     "stillMissing": "═⟨⟩️🥇"
   },
   "ja": {
-    "textSha256": "cd4d5b58d9b50ec4d5322cce6b48be1159a3bdbb9d1ad088377c3cc436eec639",
-    "chars": 1595,
+    "textSha256": "5c5324fa836a0efca12f2a2ab1c51c04c096450d71887bc17854395945098a53",
+    "chars": 1597,
     "fonts": [
       {
         "out": "HanaZome-subset.woff2",
         "src": "はなぞめフォント.otf",
         "label": "日语粗体（卡名 / 商店名 / 标题）",
         "srcBytes": 2133800,
-        "outBytes": 392300,
-        "codepoints": 1594,
+        "outBytes": 392820,
+        "codepoints": 1596,
         "missingCount": 1,
         "missing": "鬃"
       },
@@ -61,8 +61,8 @@
         "src": "XiaoshanCircle.ttf",
         "label": "日语正文",
         "srcBytes": 2558160,
-        "outBytes": 227236,
-        "codepoints": 1589,
+        "outBytes": 227644,
+        "codepoints": 1591,
         "missingCount": 6,
         "missing": "¥·–—ゔ鬃"
       },
@@ -71,8 +71,8 @@
         "src": "YOzBS_.otf",
         "label": "日语手写（旁白 / 对白）",
         "srcBytes": 11638200,
-        "outBytes": 1074112,
-        "codepoints": 1595,
+        "outBytes": 1076060,
+        "codepoints": 1597,
         "missingCount": 0,
         "missing": ""
       }

@@ -1136,17 +1136,18 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
    战斗简单特效（全部复用 assets/img/fx 里的贴图，不额外画素材）
    ============================================================ */
 
-/* 护盾 / 强化 / 净化：行走图**整个剪影闪白**再复原。
-   `brightness(0)` 把精灵压成黑、`invert(1)` 反成白 —— 透明处仍然透明，
-   所以是「这只精灵白了一下」，不是糊一块白方块。
-   `--flash-tint` 是**给剪影上色**的那一串 filter（默认 brightness(1) = 什么都不做）：
-   属性提升时是红的、被削时是蓝的（见 battle-fx.js 的 flashWhite / FLASH_UP）。
-   闪两下（12% 全白 → 30% 半白 → 48% 又全白）是有意的：只闪一下太像掉帧，两下才像「生效了」。 */
+/* 护盾 / 强化 / 净化：行走图**整个剪影变成一种颜色**再复原。
+   `--flash-filter` 由 JS 给（见 battle-fx.js 的 flashFilter）：默认 `brightness(0) invert(1)`
+   = 纯白剪影；属性升降时是「中灰起步再上色」的红 / 蓝 —— 透明处一律仍然透明，
+   所以是「这只精灵变色了一下」，不是糊一块色块。
+   ⚠ 上色**不能从纯白起步**：纯白经 sepia 之后明度 97%，饱和度顶格，saturate 挤不出颜色，
+   表现出来就是「设了红蓝还是闪白光」（用户报过）。
+   闪两下（12% → 30% 半 → 48%）是有意的：只闪一下太像掉帧，两下才像「生效了」。 */
 @keyframes whiteFlash {
   0%   { filter: none; }
-  12%  { filter: brightness(0) invert(1) var(--flash-tint, brightness(1)) drop-shadow(0 0 16px rgba(255, 255, 255, .95)); }
+  12%  { filter: var(--flash-filter, brightness(0) invert(1)) drop-shadow(0 0 16px rgba(255, 255, 255, .95)); }
   30%  { filter: brightness(2.2) saturate(.4) drop-shadow(0 0 10px rgba(255, 240, 200, .75)); }
-  48%  { filter: brightness(0) invert(1) var(--flash-tint, brightness(1)) drop-shadow(0 0 12px rgba(255, 255, 255, .8)); }
+  48%  { filter: var(--flash-filter, brightness(0) invert(1)) drop-shadow(0 0 12px rgba(255, 255, 255, .8)); }
   100% { filter: none; }
 }
 .fighter-flash { animation: whiteFlash var(--flash-ms, 620ms) ease both; }
