@@ -236,6 +236,20 @@
       const glowP = document.querySelector('.decor-glow-player');
       const opa = (n) => (n ? Number(getComputedStyle(n).opacity) : -1);
       const bs = window.__oasisUI.battleScreen;
+      /**
+       * 「真的像波浪一样动起来」（3.0.6）：每半场三组、三份图层，一共 18 组；
+       * 而且**必须真的在动** —— 光有 animation-name 不算，这里隔一段时间读两次
+       * computed transform，两帧一样就是没动（回到 3.0.5 那种死板的样子）。
+       */
+      const drifts = [...document.querySelectorAll('.decor-drift')];
+      log('花纹漂动组 =', drifts.length, '｜动画名 =', drifts.length ? getComputedStyle(drifts[0]).animationName : '-');
+      if (drifts.length !== 18) errors.push('花纹漂动组应该是 18 个（每份 6 组 × 3 份），实际 ' + drifts.length);
+      const frame = () => drifts.slice(0, 6).map((n) => getComputedStyle(n).transform).join('|');
+      const f1 = frame();
+      await wait(1200);
+      const f2 = frame();
+      if (!drifts.length || !f1 || f1 === f2) errors.push('花纹没有在动（两帧的 transform 一样）');
+      else log('花纹在动 ✓（两组 transform 不同）');
       if (!screenEl || !glowE || !glowP || !bs) {
         errors.push('背景花纹缺少高亮层');
       } else {

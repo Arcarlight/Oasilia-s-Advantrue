@@ -992,23 +992,53 @@ button { font-family: inherit; }
   font-family: 'Oasis Decor', var(--font-hand);
 }
 .battle-decor text { letter-spacing: .06em; }
-.decor-base text { fill: rgba(255, 241, 216, .085); }
-.decor-glow text { fill: rgba(255, 247, 226, .175); }
+/**
+ * 浓淡：3.0.6 从 .085 / .175 压到 .045 / .10。
+ * 用户第二版的原话是「密一点更不显眼一点」—— 行数翻倍会让墨量跟着变多，
+ * 所以两个数字必须一起降；高亮仍然保持在底色的两倍上下（相对变化才看得出来）。
+ */
+.decor-base text { fill: rgba(255, 241, 216, .045); }
+.decor-glow text { fill: rgba(255, 247, 226, .10); }
 .decor-glow {
   opacity: 0;
   transition: opacity .55s ease;
 }
-/* 敌人那一半在右上、主角那一半在左下 —— 和战场上两只精灵的站位对齐 */
+/**
+ * 漂动（3.0.6，用户：「真的像波浪一样动起来，现在这样还是太死板了」）。
+ *
+ * 每半场拆成三个小组，各自按自己的 `--dx/--dy/--dur/--delay` 慢慢漂 —— 一组往左、
+ * 一组往右，周期互不相同，于是波峰互相穿过去，像水面而不是一张纸在平移。
+ * 三份图层用的是同一组参数，所以它们永远同步（不同步会看出重影）。
+ */
+@keyframes decorSway {
+  0%   { transform: translate(0px, 0px); }
+  33%  { transform: translate(var(--dx1, 0px), var(--dy1, 0px)); }
+  66%  { transform: translate(var(--dx2, 0px), var(--dy2, 0px)); }
+  100% { transform: translate(0px, 0px); }
+}
+.decor-drift {
+  animation: decorSway var(--dur, 24s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  /* 只有 18 组（每份 6 组 × 3 份），代价很低；提一句让浏览器别每帧重算布局 */
+  will-change: transform;
+}
+/* 敌人那一半在右上、主角那一半在左下 —— 中心由 battle-view 的 layoutDecorGlow()
+   按两只精灵的**实际位置**写进 --glow-*（画布被 slice 裁过，写死百分比会歪） */
 .decor-glow-enemy {
-  -webkit-mask-image: radial-gradient(58% 44% at 74% 20%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(58% 44% at 74% 20%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(54% 40% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(54% 40% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
 }
 .decor-glow-player {
-  -webkit-mask-image: radial-gradient(58% 44% at 26% 80%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(58% 44% at 26% 80%, #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(54% 40% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(54% 40% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
 }
 .battle-screen[data-acting="enemy"] .decor-glow-enemy { opacity: 1; }
 .battle-screen[data-acting="player"] .decor-glow-player { opacity: 1; }
+/* 降低动效时花纹就不漂了（截图也走这条路：动起来反而截不稳） */
+@media (prefers-reduced-motion: reduce) {
+  .decor-drift { animation: none !important; }
+  .decor-glow { transition: none; }
+}
 .weather i {
   position: absolute;
   width: 2px; height: 2px;

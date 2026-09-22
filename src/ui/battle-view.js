@@ -675,6 +675,35 @@ export class BattleScreen {
     }
     // ③ 出牌展示区
     for (const side of ['enemy', 'player']) this.layoutPlayZone(side);
+    // ④ 背景花纹那两份高亮的中心：**按两只精灵的实际位置算**
+    this.layoutDecorGlow(fieldR);
+  }
+
+  /**
+   * 背景花纹的高亮中心（3.0.6）。
+   *
+   * 为什么不能在 CSS 里写死百分比：花纹那一层是 `<svg preserveAspectRatio="slice">`，
+   * 画布比例和战场不一致时会被裁掉上下两截 —— 于是「画布的 20%」和「战场上敌方精灵的
+   * 位置」根本不是一回事。第一版写死了 74%/20% 与 26%/80%，实测两边亮度差了一倍多
+   * （敌人那侧 +4.3%、玩家那侧只有 +1.6%）。
+   * 现在拿两只精灵的实际中心换算成**相对战场盒子的百分比**，写进 --glow-* 给 CSS 的 mask 用 ——
+   * 窗口怎么变、行高怎么变，亮的那一块都跟着精灵走。
+   */
+  layoutDecorGlow(fieldR = this.fieldR) {
+    if (!this.decor || !fieldR?.width) return;
+    const box = {
+      enemy: this.enemyBody ?? this.enemyFighter,
+      player: this.playerBody ?? this.playerFighter,
+    };
+    for (const [side, node] of Object.entries(box)) {
+      const r = node?.getBoundingClientRect?.();
+      if (!r?.width) continue;
+      const x = ((r.left + r.width / 2) - fieldR.left) / fieldR.width * 100;
+      const y = ((r.top + r.height / 2) - fieldR.top) / fieldR.height * 100;
+      // 夹一下：精灵本来就贴着边，高亮核心跑出战场就会变成「从屏幕外照进来」
+      this.decor.style.setProperty(`--glow-${side}-x`, `${Math.max(6, Math.min(94, x)).toFixed(1)}%`);
+      this.decor.style.setProperty(`--glow-${side}-y`, `${Math.max(6, Math.min(94, y)).toFixed(1)}%`);
+    }
   }
 
   /**
