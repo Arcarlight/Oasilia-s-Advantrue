@@ -40,29 +40,30 @@
 import { el } from './dom.js';
 
 /**
- * 每个半场铺几行。
+ * 每个半场铺几行，以及字号 / 字距的取法。
  *
- * 这一路改过三版：7 → 13（用户要「密一点」）→ **8**（用户：「字号又小又全部叠在一块没有错开」）。
- * 教训是「密」不等于「行多」：13 行挤在半个场地里，字只能做到 14px，行距 17px、
- * 波幅 5px —— 行与行挨得几乎没有缝，看上去就是一团。现在改成 8 行、字号约 21px、
- * 行距 30px 上下，密度靠**波形铺满**（而不是靠塞行数）来出。
+ * 这一路被用户来回拧过四次，最后定在这组数字上（用户：「你之前做的第一个版本那样就不错啊，
+ * 只是那个没动起来」）——**回到第一版的比例**，只把「会滚」这件事加进来：
+ *   第一版：7 行、字号约 30px（在 780 的画布里是 25~31，按场地高度折算过来就是这个）、
+ *          波长 450~720px、行间靠一个全角空格分开。
+ *   中间两版走过弯路：为了「密」加到 13 行 → 字只能 14px，行挨着行（用户：「又小又叠在一块」）；
+ *   又嫌缝隙明显把行距拉开、补三格空格 —— 结果缝隙更大、还更密（用户：「缝隙还是太大，
+ *   而且太密了，还是可以放大字号」）。
+ * 结论写在这儿：**字要大、行要少、行距要够、段与段之间只留一格**。
  */
-const LINES = 8;
+const LINES = 7;
 /** 上半（敌人）与下半（主角）各自的行带（相对场地高度的比例，留出起伏余量） */
-const BANDS = { enemy: [0.02, 0.47], player: [0.53, 0.98] };
-/** 文本重复单元里补几个全角空格 */
-const UNIT_PAD = 3;
+const BANDS = { enemy: [0.03, 0.46], player: [0.54, 0.97] };
 /** 字距（相对字号）：给花纹留一点空气，不然一整行字挤成一条黑带 */
-const TRACKING = 0.09;
+const TRACKING = 0.06;
 /** 每行自己的浓淡（画进位图里，避免整片一个调子；整层的不透明度写在 style.css） */
 const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
-/** 一个波形里放多少字（必须能整除 unitChars，否则平铺会有缝 —— 见文件头） */
-const WAVE_CHOICES = [10, 20, 40];
 /** 位图里文字的填充色（暖白；用户要的是「和背景颜色相近」） */
 const INK = '255, 241, 216';
 
 /** 一个整数 n 的、最接近 target 的因数（用来挑「一个波里放多少字」） */
-function nearestDivisor(n, target) {  let best = 1;
+function nearestDivisor(n, target) {
+  let best = 1;
   for (let d = 1; d <= n; d += 1) {
     if (n % d) continue;
     if (Math.abs(d - target) < Math.abs(best - target)) best = d;
@@ -71,15 +72,37 @@ function nearestDivisor(n, target) {  let best = 1;
 }
 
 /**
+ * 挑「段与段之间补几个全角空格」。
+ *
+ * 两件事要同时满足，否则花纹就不对：
+ *   · **缝要小**（用户：「每段中间的缝隙还是太大」）→ 补的空格越少越好；
+ *   · 一个周期的**字数必须能分成几个完整的波** —— 波长只能是「单元宽度 ÷ 整数」，
+ *     不然波长除不尽平铺周期，接缝处波峰对不上（会有竖缝）。
+ * 踩过的坑：固定补 1 个空格时，最长那句图鉴文本正好凑出 53 个字 —— **质数**，
+ * 约数只有 1 和 53，于是整个周期只能算一个波，波就没了。
+ * 所以这里从 1 个空格往上试，找到第一个「有接近 18 的约数」的组合。
+ */
+function chooseUnitChars(maxChars, targetWave = 18) {
+  for (let pad = 1; pad <= 6; pad += 1) {
+    const n = maxChars + pad;
+    const d = nearestDivisor(n, targetWave);
+    if (d > 1 && Math.abs(d - targetWave) <= Math.max(2, targetWave * 0.35)) return { unitChars: n, waveChars: d, pad };
+  }
+  const n = maxChars + 1;
+  return { unitChars: n, waveChars: nearestDivisor(n, targetWave), pad: 1 };
+}
+
+/**
  * 把「一个周期的花纹」画成位图。
  * @returns {{url:string, unit:number, size:number}} 位图地址、一个周期的像素宽、字号
  */
 function paintPattern(bands, w, h) {
-  // 字号随场地高度走：小窗口也要能看清，大窗口别糊成一片
-  const size = Math.max(15, Math.min(28, Math.round(h * 0.042)));
+  // 字号随场地高度走：**往大了给**（第一版在 477 高的场地上就画到 30px 上下）
+  const size = Math.max(18, Math.min(42, Math.round(h * 0.062)));
   const texts = Object.values(bands).filter(Boolean);
   const maxChars = Math.max(...texts.map((t) => [...t].length));
-  const unitChars = maxChars + UNIT_PAD;
+  // 补几个空格、一个波里放几个字：两件事一起挑（见 chooseUnitChars 的说明）
+  const { unitChars, waveChars } = chooseUnitChars(maxChars, 18);
   /** 每行的重复单元（图鉴文本 + 全角空格）——所有行共用同一个字符数，宽度就一致 */
   const unit = (t) => t + '　'.repeat(unitChars - [...t].length);
 
@@ -123,27 +146,25 @@ function paintPattern(bands, w, h) {
     const gap = (h * (bottom - top)) / (LINES - 1);
     for (let i = 0; i < LINES; i += 1) {
       const lineY = bandTop + i * gap;
-      const amp = gap * (0.26 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
-      // 一个波里放多少字：必须是 unitChars 的因数（不然平铺有缝），取最接近 18 的那个
-      const waveChars = nearestDivisor(unitChars, 18) || WAVE_CHOICES[0];
-      const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度
+      const amp = gap * (0.28 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
+      const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度（见 chooseUnitChars）
       wls.push(wl);
-      /** 相位每行错开：整片才像水面，而不是 8 条一样的波（错开多少不影响平铺） */
+      /** 相位每行错开：整片才像水面，而不是 7 条一样的波（错开多少不影响平铺） */
       const phase = i * 1.7 + (side === 'enemy' ? 0.6 : 2.4) + (i % 2 ? 1.2 : 0);
       ctx.fillStyle = `rgba(${INK}, ${LINE_ALPHA[i % LINE_ALPHA.length]})`;
       /**
        * ③ 逐字沿正弦排布：位置按实测字宽累加，角度取这一点的切线。
        *
-       * ⚠ **每一行的起点还要再错开半个字左右**（`i * 0.37` 个字）：
-       * 所有行共用同一套字形网格、波长又一样的话，同一个字会在每一行落在同一个 x 上，
-       * 整片看上去就是一张对齐的表格 —— 用户的原话是「全部叠在一块没有错开」。
-       * 起点错开**不影响平铺**（单元仍是一个周期的重复），只是每行的字不再上下对齐。
+       * ⚠ 每一行的起点还要错开，而且要用**黄金比**那种不规则间距（`i * 0.618` 取小数部分）：
+       * 所有行共用同一套字形网格、波长又一样的话，段与段之间的空隙会在纵向排成一列列竖缝，
+       * 看着像表格格子（用户报的「每段中间的缝隙还是太大」有一半是这个原因）。
+       * 黄金比错位能让空隙永远不在同一列上相遇。起点错开不影响平铺。
        *
        * 从 -2 画到 unitChars+2：首尾各多画两个字，它们跨过平铺边界的部分由相邻那一块补上。
        */
       const order = [];
       for (let k = -2; k <= unitChars + 2; k += 1) order.push(u[((k % unitChars) + unitChars) % unitChars]);
-      let x = -2 * stepOf(u[0]) - (i * 0.37) * size;
+      let x = -2 * stepOf(u[0]) - ((i * 0.618) % 1) * size;
       for (const ch of order) {
         const a = (x / wl) * Math.PI * 2 + phase;
         const y = lineY + amp * Math.sin(a);

@@ -120,6 +120,14 @@ export const audio = {
   sfxVolume: 0.6,
   musicVolume: 0.32,
   pendingTrack: null,
+  /**
+   * 音效播放的计数（3.1 加的，诊断用）。
+   * `started` = 真的 `src.start()` 过的次数；
+   * `dropped` = 被丢掉的次数，按原因分开记 ——
+   * 「音效偶尔不出声」这种问题以前完全无从下手（没有上下文、没有解码失败、就是没声音），
+   * 现在发牌 / 打牌各播几次，看这两个数就知道是哪一环丢了。
+   */
+  stats: { started: 0, dropped: { noCtx: 0, noBuffer: 0 } },
 
   get ctx() { return ctx; },
   get master() { return master; },
@@ -202,7 +210,16 @@ export const audio = {
       .then((ab) => ctx.decodeAudioData(ab))
       // 用 file:// 双击打开时浏览器会拦掉本地音频请求；此时静默降级成无声，
       // 不影响游戏本体（想听音效就用 tools/serve.mjs 起本地服务器）
-      .catch(() => null);
+      .catch(() => {
+        /**
+         * ⚠ 失败的结果**不能留在缓存里**（3.1 修的「音效偶尔没有」之一）。
+         * 以前这里把 `null` 也 cache 住，于是某一次网络抖动 / 解码失败之后，
+         * **这个音效本次会话就永远哑了** —— 玩家听到的就是「有时候有、有时候没有」。
+         * 现在失败就把它从缓存里删掉，下一次播放会重新取一遍。
+         */
+        buffers.delete(name);
+        return null;
+      });
     buffers.set(name, p);
     return p;
   },
@@ -235,9 +252,21 @@ export const audio = {
     if (!this.enabled) return;
     played.add(name);
     this.init();
-    if (!ctx || !unlocked) return;
+    if (!ctx) { this.stats.dropped.noCtx += 1; return; }
+    /**
+     * 3.1：没解锁 / 上下文被浏览器挂起时**试着重启**，而不是把这一声直接丢掉。
+     *
+     * 以前这里是一句 `if (!ctx || !unlocked) return;` —— 只要 AudioContext 因为
+     * 切标签页、系统休眠、或者第一次交互时还没 resume 完而处于 suspended，
+     * 之后**所有的音效都会静默消失**（BGM 走的是别的路，所以只有音效哑，
+     * 玩家报的就是「发牌 / 打牌音效偶尔出现偶尔不见」）。
+     * 现在：resume 一次、并把解锁标记立起来，失败也只是这一声没有，
+     * 下一次点击带来的手势会把它救回来。
+     */
+    if (!unlocked) unlocked = true;
+    if (ctx.state !== 'running') ctx.resume?.().catch(() => {});
     this.load(name).then((buf) => {
-      if (!buf || !this.enabled) return;
+      if (!buf || !this.enabled) { this.stats.dropped.noBuffer += 1; return; }
       const src = ctx.createBufferSource();
       src.buffer = buf;
       src.playbackRate.value = rate;
@@ -247,6 +276,7 @@ export const audio = {
       src.connect(g);
       g.connect(sfxGain);
       src.start();
+      this.stats.started += 1;
     });
   },
 

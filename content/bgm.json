@@ -96,9 +96,9 @@
     },
     "map_ruins": {
       "source": "dsymphony",
-      "file": "DS-022o.ogg",
-      "name": "永遠なる輝きのもとに",
-      "page": "戦い · 強敵との死闘",
+      "file": "DS-127o.ogg",
+      "name": "白虎豪勇",
+      "page": "ダンジョン · 険しい山・渓谷",
       "desc": "第七章 沉沙遗迹",
       "room": "map"
     },
@@ -120,9 +120,9 @@
     },
     "map_crystal": {
       "source": "dsymphony",
-      "file": "DS-113o.ogg",
-      "name": "朽ち果てた紋章",
-      "page": "ダンジョン · たたずむ古城",
+      "file": "DS-072o.ogg",
+      "name": "深淵を行く",
+      "page": "フィールド · 静かな海底",
       "desc": "第十章 水晶洞窟",
       "room": "map"
     },
@@ -200,17 +200,17 @@
     },
     "battle_storm": {
       "source": "dsymphony",
-      "file": "DS-102o.ogg",
-      "name": "蒼天疾駆",
-      "page": "戦い · 青空を駆ける",
+      "file": "DS-111o.ogg",
+      "name": "轟く鉄の巨神",
+      "page": "ダンジョン · 巨大兵器",
       "desc": "雷暴台地的战斗",
       "room": "battle"
     },
     "battle_crystal": {
       "source": "dsymphony",
-      "file": "DS-072o.ogg",
-      "name": "深淵を行く",
-      "page": "フィールド · 静かな海底",
+      "file": "DS-113o.ogg",
+      "name": "朽ち果てた紋章",
+      "page": "ダンジョン · たたずむ古城",
       "desc": "水晶洞窟的战斗",
       "room": "battle"
     },
@@ -272,9 +272,9 @@
     },
     "elite_ruins": {
       "source": "dsymphony",
-      "file": "DS-127o.ogg",
-      "name": "白虎豪勇",
-      "page": "ダンジョン · 険しい山・渓谷",
+      "file": "DS-022o.ogg",
+      "name": "永遠なる輝きのもとに",
+      "page": "戦い · 強敵との死闘",
       "desc": "沉沙遗迹的强敌",
       "room": "elite"
     },
@@ -288,9 +288,9 @@
     },
     "elite_storm": {
       "source": "dsymphony",
-      "file": "DS-111o.ogg",
-      "name": "轟く鉄の巨神",
-      "page": "ダンジョン · 巨大兵器",
+      "file": "DS-102o.ogg",
+      "name": "蒼天疾駆",
+      "page": "戦い · 青空を駆ける",
       "desc": "雷暴台地的强敌",
       "room": "elite"
     },
@@ -358,5 +358,13 @@
       "desc": "营地",
       "room": "misc"
     }
-  }
+  },
+  "_swaps": [
+    "2026-09-22（3.1）用户提的三处对调：",
+    "  map_ruins ⇄ elite_ruins（沉沙遗迹：地图曲与强敌曲的感情色彩正好相反）；",
+    "  battle_storm ⇄ elite_storm（雷暴台地：强敌曲与战斗曲对调）；",
+    "  map_crystal ⇄ battle_crystal（水晶洞窟：战斗槽里原来那首是「静かな海底」的场景曲，太安静）。",
+    "对调的是曲目内容（source/file/name/page），槽位自己的 desc（第七�章 沉沙遗迹 / 沉沙遗迹的强敌这类）不动 ——",
+    "所以曲子库里的标题仍然是「这首在哪儿放 · 曲名」，读者不会看到错位。"
+  ]
 }

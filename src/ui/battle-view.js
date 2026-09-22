@@ -2,9 +2,9 @@
 
 import { el, clear, sleep, floatAt, toast } from './dom.js';
 import { cardEl } from './cards.js';
-import { setCardTextContext } from './cardtext.js';
+import { setCardTextContext, resolveCardText } from './cardtext.js';
 import { initTips } from './tips.js';
-import { createAnim, createStill, animInfo, DIR } from '../core/sprites.js';
+import { createAnim, createStill, animInfo, resolveAnim, DIR } from '../core/sprites.js';
 import { createPortrait, setPortraitEmotion, emotionForEvent } from '../core/portraits.js';
 import { turnArt as turnArtOf, fitArt, ART_FROM_SCALE } from '../core/gen9.js';
 import { audio } from '../core/audio.js';
@@ -15,8 +15,26 @@ import { BIOMES, speedMulOf, loadBattleSpeed, apFromAgi, drawFromAgi, playsFromA
 import { TIERS, ENEMIES } from '../data/enemies.js';
 // 主角记录（3.0）：战斗面板上「性别 物种 / 属性 · 特性」那一行按主角走
 import { heroById } from '../data/heroes.js';
-// 背景那层波浪花纹文字（3.0.5）：文本来自 52wiki 的图鉴介绍，见 battle-decor.js 的说明
+// 装饰字体（战斗背景花纹）之外，战斗界面还用到「远程招式的属性」这一组判断（见 animForCard）
 import { battleDecor } from './battle-decor.js';
+
+/**
+ * 哪些属性的招算「远程」（挥手的姿势）——用于挑 Shoot 还是 Attack。
+ * 一般 / 格斗 / 地面 / 岩石 / 钢 / 毒 / 虫 是近身（撞击、地震、落石…）。
+ */
+const RANGED_TYPES = new Set(['火', '水', '电', '冰', '超能', '草', '妖精', '幽灵', '恶', '龙', '飞行']);
+
+/**
+ * 近身招的**白名单**：属性判据（上面那张表）对「恶」「龙」这类系会判错 ——
+ * 「咬住」是恶系但明显是上去咬一口，「龙爪」是龙系但也是近身 —— 所以这些常见的接触招
+ * 单独点出来，优先判近身（用户要的是「远程攻击改成 shoot」，那就别把咬一口也当远程）。
+ */
+const MELEE_MOVES = new Set([
+  'tackle', 'bite', 'double_kick', 'dragon_claw', 'dragon_rush', 'crunch', 'fire_fang', 'thunder_fang',
+  'ice_fang', 'thunder_punch', 'fire_punch', 'ice_punch', 'close_combat', 'superpower', 'body_press',
+  'iron_head', 'cross_chop', 'bug_bite', 'x_scissor', 'knock_off', 'u_turn', 'lunge', 'mach_punch',
+  'wing_attack', 'aerial_ace', 'bite_off', 'dragon_tail', 'steel_wing', 'headbutt', 'stomp',
+]);
 import { t } from '../core/i18n.js';
 // 属性短标签 / 悬停说明放在纯数据模块里（待翻清单靠扫源码收，见那个文件的说明）。
 // 读取处照旧 t(STAT_SHORT.…)、t(STAT_TIP[label], { … })。
@@ -464,8 +482,15 @@ export class BattleScreen {
     this.turnBadge = el('div', { class: 'turn-badge' }, [el('span', { class: 'ico-clock' }), this.turnBadgeText]);
     this.intentEl = el('div', { class: 'intent' }, [el('span', { class: 'ico-sword' }), el('span', { text: t('正在观察……') })]);
 
-    // ---- 战斗日志 ----
+    // ---- 战斗日志 + 弃牌区 ----
     this.logEl = el('div', { class: 'battle-log' });
+    /**
+     * 弃牌区（3.1，用户提的）：「右方日志可以往上挪，腾出下方空间用于放置玩家打过的牌，
+     * 这样就可以看到弃牌区有哪些牌了」。
+     * 以前底栏只知道弃牌的**张数**（「弃牌 3」），打出去的是什么牌、还剩哪些资源，全靠记性。
+     */
+    this.discardEl = el('div', { class: 'discard-zone' });
+    this.sidePanel = el('div', { class: 'battle-side' }, [this.logEl, this.discardEl]);
 
     // ---- 底部：AP / 手牌 ----
     this.apOrbs = el('div', { class: 'ap-orbs' });
@@ -535,7 +560,7 @@ export class BattleScreen {
       this.enemyFighter,
       el('div', { class: 'battle-middle' }, [this.turnBadge, this.intentEl]),
       this.playerFighter,
-      this.logEl,
+      this.sidePanel,
     ]);
 
     this.screen.append(this.field, this.battleBottom);
@@ -871,6 +896,7 @@ export class BattleScreen {
       const scale = this.fitScale(b.enemy.slug, 'Idle', rowH.enemy.height, this.enemyBaseScale);
       this.enemyScale = scale;
       this.enemyAnim = await createAnim(b.enemy.slug, { anim: 'Idle', scale, fps: 7, dir: DIR.DOWN_LEFT });
+      this.enemyIdleAnim = this.enemyAnim;
       this.enemyBody.append(this.enemyAnim);
     } catch (err) {
       this.enemyBody.append(el('div', { class: 'card-art', style: { width: '96px', height: '96px' } }));
@@ -880,6 +906,7 @@ export class BattleScreen {
       const scale = this.fitScale(this.game.data.slug, 'Idle', rowH.player.height, this.playerBaseScale);
       this.playerScale = scale;
       this.playerAnim = await createAnim(this.game.data.slug, { anim: 'Idle', scale, fps: 8, dir: DIR.UP_RIGHT });
+      this.playerIdleAnim = this.playerAnim;
       this.playerBody.append(this.playerAnim);
     } catch (err) {
       /* 忽略 */
@@ -1176,13 +1203,24 @@ export class BattleScreen {
   }
 
   /** 被净化的前一下：先亮白光，玩家才看得见「消失的是这几个」 */
-  markPurge(key) {
+  /**
+   * 净化 / 引爆时，把**真的被清掉的那几个**胶囊点亮一下。
+   *
+   * ⚠ 这里以前是按「演出副本里这一项的层数已经归零」来判断的，而这一排里除了状态胶囊
+   * （`data-st`）还混着**强化胶囊**（`data-buff`，强化没有层数、读出来恒为 0）——
+   * 于是每一次净化都会把「力量 +8」「护盾」这些良性 buff 一起点亮（用户报的
+   * 「清理恶性 buff 时良性 buff 也会发光」）。
+   * 现在改成按**引擎给的名单**点：cleanse / detonate 事件的 `statuses` 就是这一下清掉的那几个，
+   * 名单里没有的一律不碰。强化胶囊连判断都不进。
+   */
+  markPurge(key, ev = null) {
     const statusEl = key === 'player' ? this.playerStatuses : this.enemyStatuses;
-    const dd = this.disp[key] ?? {};
     if (!statusEl) return 0;
+    const cleared = new Set(ev?.statuses ?? []);
     let n = 0;
     for (const node of [...statusEl.children]) {
-      if ((dd[node.dataset.st] ?? 0) > 0) continue;
+      if (!node.dataset.st) continue;                  // 强化胶囊：净化不动它，也不该发光
+      if (!cleared.has(node.dataset.st)) continue;      // 这一下没清到它
       node.classList.add('purge');
       n += 1;
     }
@@ -1477,6 +1515,51 @@ export class BattleScreen {
       mk(t('销毁：带「使用后销毁」的牌打完就进这里，本场战斗不会再出现。'), [t('销毁') + ' ', el('b', { text: String(d.exhaust.length) })]),
       mk(t('手牌：当前能打出的牌。上限由敏捷决定，抽到手牌满就抽不动了（剩下的留在牌堆顶，不会丢）。'), [t('手牌') + ' ', el('b', { text: `${d.hand.length}/${this.battle.player.handMax}` })]),
     );
+    this.renderDiscard();
+  }
+
+  /**
+   * 弃牌区（3.1）：把**玩家打过的牌**摊在右侧日志下面。
+   *
+   * 用户的原话：「右方日志可以往上挪，腾出下方空间用于放置玩家打过的牌，
+   * 这样就可以看到弃牌区有哪些牌了」—— 以前底栏只有一个「弃牌 3」的数字。
+   *
+   * 显示顺序按**打出的先后**（弃牌堆就是 push 进去的），最新的排在前面 ——
+   * 打完一张牌马上就能在左侧看到它，不用翻。
+   * 张数多的时候只留最近的一批（`MAX_SHOWN`），并写明「共 N 张」，
+   * 免得十几张牌把日志挤没（要看全量的话，牌堆 / 弃牌的数字和悬停说明还在底栏）。
+   */
+  renderDiscard() {
+    const d = this.battle?.decks?.player;
+    if (!this.discardEl || !d) return;
+    const MAX_SHOWN = 12;
+    const all = d.discard ?? [];
+    clear(this.discardEl);
+    const head = el('div', { class: 'discard-head' }, [
+      el('span', { text: t('弃牌区') }),
+      el('b', { text: t('{n} 张', { n: all.length }) }),
+    ]);
+    this.discardEl.append(head);
+    if (!all.length) {
+      this.discardEl.append(el('div', { class: 'discard-empty', text: t('还没打出过牌。') }));
+      return;
+    }
+    const list = el('div', { class: 'discard-list' });
+    for (const entry of all.slice(-MAX_SHOWN).reverse()) {
+      const card = entry?.card ?? CARD_BY_ID[entry?.id ?? entry];
+      if (!card) continue;
+      const cost = card.ap ?? 0;
+      list.append(el('span', {
+        class: `discard-card${card.rarity ? ' rarity-' + card.rarity : ''}`,
+        dataset: {
+          tip: `${card.name}（${t('费用 {n}', { n: cost })}）\n${t(resolveCardText(card))}`,
+        },
+      }, [
+        el('i', { class: 'discard-cost', text: String(cost) }),
+        el('span', { class: 'discard-name', text: card.name }),
+      ]));
+    }
+    this.discardEl.append(list);
   }
 
   /**
@@ -1567,7 +1650,15 @@ export class BattleScreen {
       return;
     }
     let freshIndex = 0;
-    for (const entry of hand) {
+    /**
+     * 叠放顺序：**左边的牌压在上层**（3.1，用户提的）。
+     *
+     * 手牌是负边距互相叠着的，压住的是**右边那张的左半边**——而费用角标在左上角，
+     * 正好被压掉（用户：「右边的卡牌居上，会导致卡牌费用被挡住」）。
+     * DOM 顺序决定叠放顺序（后面的压前面），所以这里按位置倒着写 z-index：
+     * 第一张（最左）给最高的层级。悬停时 CSS 那条 `z-index: 20` 仍然盖过全部。
+     */
+    for (const [idx, entry] of hand.entries()) {
       const canPlay = b.canPlay(entry.uid) && !this.busy && b.active === 'player' && !b.over;
       const node = cardEl(entry.card, {
         disabled: !canPlay,
@@ -1578,6 +1669,8 @@ export class BattleScreen {
         onDisabledClick: () => { audio.bad(); toast(this.cantPlayReason(entry), 'bad'); },
       });
       if (canPlay) node.classList.add('playable');
+      // 左边的牌在最上层（费用角标在左上角，别被右边那张压掉）
+      node.style.zIndex = String(hand.length - idx);
       if (fresh.has(entry.uid)) {
         node.classList.add('card-draw-in');
         node.style.animationDelay = `${Math.min(freshIndex, 6) * 55}ms`;   // 一张接一张，不是一起蹦出来
@@ -1888,7 +1981,7 @@ export class BattleScreen {
           floatAt(mine, t('转嫁'), 'float-heal');
           this.burstFx(other, 'magic_1', { size: 160, ms: 560, klass: 'fx-status fx-status-toxic' });
           this.burstFx(mine, 'light_1', { size: 140, ms: 460 });
-          if (this.markPurge(ev.side)) await this.wait(PACE.purge);
+          if (this.markPurge(ev.side, ev)) await this.wait(PACE.purge);
           this.refreshSide(ev.side);
           this.refreshSide(ev.side === 'player' ? 'enemy' : 'player');
           await this.wait(PACE.purge);
@@ -1904,7 +1997,7 @@ export class BattleScreen {
           this.flash(body);
           this.burstFx(body, 'light_1', { size: 150, ms: 480 });
           this.burstFx(body, 'spark_1', { size: 120, ms: 520, klass: 'fx-heal' });
-          if (this.markPurge(ev.side)) {
+          if (this.markPurge(ev.side, ev)) {
             floatAt(body, t('净化'), 'float-heal');
             // 先让那几个胶囊亮一下白光：不然「哪几个被清掉了」根本看不见
             await this.wait(PACE.purge);
@@ -1925,7 +2018,7 @@ export class BattleScreen {
           audio.poison();
           this.burstFx(body, 'magic_1', { size: 150, ms: 560, klass: 'fx-status fx-status-toxic' });
           floatAt(body, t('引爆 ×{n}', { n: ev.stacks }), 'float-dmg');
-          if (this.markPurge(ev.side)) await this.wait(PACE.purge);
+          if (this.markPurge(ev.side, ev)) await this.wait(PACE.purge);
           this.refreshSide(ev.side);
         }
         await this.wait(PACE.detonate);
@@ -2177,10 +2270,109 @@ export class BattleScreen {
    * @param {'player'|'enemy'} side
    * @param {object} [card] 打出的卡（有伤害效果就加斩击/冲击特效）
    */
+  /**
+   * 这一下该播哪个动作（3.1，用户提的）。
+   *
+   * 规则来自用户的描述：
+   *   · 远程攻击 → `Shoot`（挥手把招放出去）
+   *   · 自己加 buff / 护盾 → `Charge`（蓄力）
+   *   · 给对手叠 buff / 状态（削弱）→ `Shoot`
+   *   · 其余（近身打人）→ `Attack`
+   * 卡片数据里没有「远程 / 近身」这个字段，所以按**属性**推：火水电冰超草妖幽恶龙飞这些系
+   * 在素材里都是放招的姿势，一般 / 格斗 / 地面 / 岩石 / 钢 / 毒算近身。
+   */
+  animForCard(card) {
+    const effs = card?.effects ?? [];
+    const onEnemy = (e) => e.target !== 'self';
+    /**
+     * 先看「自己这边」的动作，再看「打向对手」的动作。
+     * 顺序有讲究：一张牌两样都干的时候（酸液护甲 = 给自己护盾 + 给对手叠中毒），
+     * 按「它主要是个什么牌」来演 —— 护盾是它给人的第一印象，所以 Charge 优先。
+     */
+    if (effs.some((e) => ['shield', 'strength', 'grantBuff'].includes(e.kind)
+      || (e.kind === 'buff' && !onEnemy(e) && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0)))) return 'Charge';
+    // 给对手挂状态 / 削弱 → 放招（状态效果在本作里都是挂给对手的：target 字段多半没写）
+    if (effs.some((e) => (e.kind === 'status' && onEnemy(e))
+      || (e.kind === 'buff' && onEnemy(e) && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0)))) return 'Shoot';
+    // 伤害牌：近身白名单优先，其次按属性分远近
+    if (effs.some((e) => e.kind === 'damage')) {
+      if (MELEE_MOVES.has(card.id)) return 'Attack';
+      return (card.types ?? []).some((tp) => RANGED_TYPES.has(tp)) ? 'Shoot' : 'Attack';
+    }
+    // 纯抽牌 / 纯治疗之类：没有更贴的动作，蓄一下
+    return effs.some((e) => e.kind === 'heal') ? 'Charge' : 'Attack';
+  }
+
+  /**
+   * 这个物种有没有这个动作；没有就按 `want → Attack → Idle` 依次退。
+   * 素材里 214 只物种**不是每只都画了 Shoot / Charge**（有的只画了 Idle/Attack/Hurt），
+   * 所以这条回退链是必须的 —— 用户也说了「如果没有某些动画就回退到 attack 或者 idle」。
+   */
+  pickFighterAnim(slug, want) {
+    for (const name of [want, 'Attack', 'Idle']) {
+      if (name && resolveAnim(slug, name)?.anim === name) return name;
+    }
+    return 'Idle';
+  }
+
+  /**
+   * 演一个「一次性的动作」，演完**回到 Idle**。
+   *
+   * 为什么要专门做这件事（3.1，用户提的）：
+   *   · 以前每个动作都是**新建一张画布把 Idle 换掉**，而 `playOnce` 播完是「停在最后一帧」——
+   *     于是出完招以后角色就一直僵在那一帧上（用户：「做完动作要回归 idle，而不是卡在动画的最后一帧」）；
+   *   · 现在 Idle 那张画布**一直留着**（只是先藏起来），动作画布演完就摘掉、把 Idle 放回来。
+   *     既不会再卡帧，也省掉了「每次出招都重造一张 Idle」的开销。
+   *
+   * @returns {Promise<{name:string, restore:()=>void}>}
+   */
+  async playFighterAnim(side, want, { fps = 12 } = {}) {
+    const slug = side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
+    const body = side === 'player' ? this.playerBody : this.enemyBody;
+    const idle = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
+    const name = this.pickFighterAnim(slug, want);
+    const noop = { name, restore: () => {} };
+    if (!body) return noop;
+    try {
+      const rowH = (this.rowR?.[side]?.height) ?? 300;
+      const base = side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
+      const scale = this.fitScale(slug, name, rowH, base);
+      const node = await createAnim(slug, {
+        anim: name,
+        scale,
+        fps,
+        dir: side === 'player' ? DIR.UP_RIGHT : DIR.DOWN_LEFT,
+      });
+      this[side === 'player' ? '_playerOneshot' : '_enemyOneshot']?.destroy?.();
+      this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] = node;
+      // Idle 先藏起来（不销毁）：动作演完就把它放回来
+      if (idle) idle.style.visibility = 'hidden';
+      body.append(node);
+      node.playOnce(fps);
+      this[side === 'player' ? 'playerAnim' : 'enemyAnim'] = node;
+      this[side === 'player' ? 'playerAnimName' : 'enemyAnimName'] = name;
+      this[side === 'player' ? 'playerScale' : 'enemyScale'] = scale;
+      const restore = () => {
+        node.destroy?.();
+        if (this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] === node) {
+          this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] = null;
+        }
+        if (idle) {
+          idle.style.visibility = '';
+          this[side === 'player' ? 'playerAnim' : 'enemyAnim'] = idle;
+          this[side === 'player' ? 'playerAnimName' : 'enemyAnimName'] = 'Idle';
+        }
+      };
+      return { name, restore };
+    } catch {
+      // 素材缺失 / 解码失败：只是没有动作，Idle 继续演
+      if (idle) idle.style.visibility = '';
+      return noop;
+    }
+  }
+
   async attackAnim(side, card = null) {
     const body = side === 'player' ? this.playerBody : this.enemyBody;
-    const anim = side === 'player' ? this.playerAnim : this.enemyAnim;
-    const slug = side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
     body.classList.add(side === 'player' ? 'lunge-player' : 'lunge-enemy');
     // 攻击牌甩一道弧光（朝对手那一侧偏出去），纯变化牌不甩
     const isAttack = !!card?.effects?.some((e) => e.kind === 'damage');
@@ -2203,26 +2395,13 @@ export class BattleScreen {
       `;
       document.head.append(st);
     }
-    // 换成 Attack 帧动画（保持同一个朝向，别在出招时突然转身）
-    try {
-      const rowH = (this.rowR?.[side]?.height) ?? 300;
-      const base = side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
-      const scale = this.fitScale(slug, 'Attack', rowH, base);
-      const atk = await createAnim(slug, {
-        anim: 'Attack',
-        scale,
-        fps: 12,
-        dir: side === 'player' ? DIR.UP_RIGHT : DIR.DOWN_LEFT,
-      });
-      if (anim && anim.parentElement) anim.replaceWith(atk);
-      else body.append(atk);
-      atk.playOnce(14);
-      if (side === 'player') { this.playerAnim?.destroy?.(); this.playerAnim = atk; this.playerAnimName = 'Attack'; this.playerScale = scale; }
-      else { this.enemyAnim?.destroy?.(); this.enemyAnim = atk; this.enemyAnimName = 'Attack'; this.enemyScale = scale; }
-    } catch { /* 没有 Attack 动画就只做位移 */ }
+    // 按卡牌决定动作（远程 → Shoot、自身强化 → Charge、近身 → Attack），演完回 Idle
+    const { name, restore } = await this.playFighterAnim(side, this.animForCard(card), { fps: 12 });
+    void name;
     await this.wait(PACE.attack / 2);
     body.classList.remove('lunge-player', 'lunge-enemy');
     await this.wait(PACE.attack / 2);
+    restore();
   }
 
   async hitAnim(ev, body, cardEl) {
@@ -2242,25 +2421,15 @@ export class BattleScreen {
       });
     }
     const slug = ev.side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
-    const cur = ev.side === 'player' ? this.playerAnim : this.enemyAnim;
+    void slug;
     // Hurt 帧通常比 Idle 瘦一些，但仍然按行高算，避免大个子受伤时顶出画面
-    const rowH = (this.rowR?.[ev.side]?.height) ?? 300;
-    const base = ev.side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
-    const scale = this.fitScale(slug, 'Hurt', rowH, base);
-    try {
-      const hurt = await createAnim(slug, {
-        anim: 'Hurt', scale, fps: 10,
-        dir: ev.side === 'player' ? DIR.UP_RIGHT : DIR.DOWN_LEFT,
-      });
-      if (cur && cur.parentElement) cur.replaceWith(hurt);
-      hurt.playOnce(10);
-      if (ev.side === 'player') { this.playerAnim?.destroy?.(); this.playerAnim = hurt; this.playerAnimName = 'Hurt'; this.playerScale = scale; }
-      else { this.enemyAnim?.destroy?.(); this.enemyAnim = hurt; this.enemyAnimName = 'Hurt'; this.enemyScale = scale; }
-    } catch { /* 忽略 */ }
+    void this.fitScale;
+    const { restore } = await this.playFighterAnim(ev.side, 'Hurt', { fps: 10 });
     this.refreshSide(ev.side);
     this.pushLogLine(this.logOf(ev));
     setTimeout(() => body.classList.remove('fighter-hurt'), 300);
     await this.wait(ev.crit ? PACE.crit : PACE.damage);
+    restore();
   }
 
   async onBattleEnd(ev) {

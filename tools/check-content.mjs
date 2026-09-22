@@ -842,6 +842,35 @@ if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   note(`敌人攻击力（逐档递增）：${rows.join(' ｜ ')}`);
 }
 
+/**
+ * 战斗动作的素材覆盖（3.1）。
+ *
+ * 战斗里现在按卡牌挑动作：远程 / 削弱 → `Shoot`、自身强化 / 护盾 → `Charge`、
+ * 近身 → `Attack`（见 ui/battle-view.js 的 animForCard）。上游素材**不是每只都画了**这两套，
+ * 缺的会回退到 Attack/Idle（用户也要求了回退），但「缺得太多」就等于这个功能白做，
+ * 所以这里把覆盖率报出来 —— 低于一半就变成警告。
+ */
+{
+  const sprites = JSON.parse(await fs.readFile(path.join(ROOT, 'assets', 'data', 'sprites.json'), 'utf8'));
+  const meta = sprites.species ?? sprites;
+  const need = [...new Set([...ENEMIES.map((e) => e.slug), ...HEROES.map((h) => h.species)])];
+  const miss = (name) => need.filter((slug) => !meta[slug]?.anims?.[name]);
+  const noShoot = miss('Shoot');
+  const noCharge = miss('Charge');
+  const heroMiss = HEROES.filter((h) => !meta[h.species]?.anims?.Shoot || !meta[h.species]?.anims?.Charge);
+  if (heroMiss.length) {
+    err(`主角缺 Shoot / Charge 素材（他们永远在场上，缺了就一定看得见）：${heroMiss.map((h) => h.name).join('、')}`);
+  }
+  const rate = (n) => `${need.length - n.length}/${need.length}`;
+  if (noShoot.length > need.length / 2) {
+    warn(`战斗物种里只有 ${rate(noShoot)} 有 Shoot 素材（远程招会大面积退回 Attack）—— 跑 node tools/fetch-sprites.mjs`);
+  } else {
+    note(`战斗动作素材：Shoot ${rate(noShoot)} · Charge ${rate(noCharge)}（缺的那些按 Attack/Idle 回退）`);
+  }
+  const stale = need.filter((slug) => !meta[slug]?.anims?.Idle);
+  if (stale.length) err(`这些战斗物种连 Idle 素材都没有：${stale.slice(0, 5).join('、')}`);
+}
+
 // ---------- 5. BGM ----------
 if (BGM_FILES) {
   const bgmDir = path.join(ROOT, 'assets', 'audio', 'bgm');

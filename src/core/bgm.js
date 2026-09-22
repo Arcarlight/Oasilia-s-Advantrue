@@ -89,10 +89,10 @@ export const BGM_NAMES = {
   "map_tide": "第四章 潮汐盐海 · 太陽と潮風の街",
   "map_cliff": "第五章 风蚀峭壁 · 頂上目指して",
   "map_night": "第六章 夜砂墓原 · 闇の洞窟",
-  "map_ruins": "第七章 沉沙遗迹 · 永遠なる輝きのもとに",
+  "map_ruins": "第七章 沉沙遗迹 · 白虎豪勇",
   "map_fungal": "第八章 菌菇湿地 · 木霊の踊り",
   "map_storm": "第九章 雷暴台地 · 霊峰は荘厳に",
-  "map_crystal": "第十章 水晶洞窟 · 朽ち果てた紋章",
+  "map_crystal": "第十章 水晶洞窟 · 深淵を行く",
   "battle": "战斗兜底曲 · 攻防一体",
   "battle_desert": "流沙之海的战斗 · Sand Labyrinth",
   "battle_canyon": "赤岩峡谷的战斗 · 取っ組み合い",
@@ -102,8 +102,8 @@ export const BGM_NAMES = {
   "battle_night": "夜砂墓原的战斗 · 闇を打ち払う",
   "battle_ruins": "沉沙遗迹的战斗 · 龍飛鳳舞",
   "battle_fungal": "菌菇湿地的战斗 · Crimson Ridge",
-  "battle_storm": "雷暴台地的战斗 · 蒼天疾駆",
-  "battle_crystal": "水晶洞窟的战斗 · 深淵を行く",
+  "battle_storm": "雷暴台地的战斗 · 轟く鉄の巨神",
+  "battle_crystal": "水晶洞窟的战斗 · 朽ち果てた紋章",
   "elite": "强敌兜底曲 · クロス陣形",
   "elite_desert": "流沙之海的强敌 · 立ち向かう者達",
   "elite_canyon": "赤岩峡谷的强敌 · 灼熱の奥へ",
@@ -111,9 +111,9 @@ export const BGM_NAMES = {
   "elite_tide": "潮汐盐海的强敌 · 飛竜の背に乗って",
   "elite_cliff": "风蚀峭壁的强敌 · 風を追いかけて",
   "elite_night": "夜砂墓原的强敌 · 執行人",
-  "elite_ruins": "沉沙遗迹的强敌 · 白虎豪勇",
+  "elite_ruins": "沉沙遗迹的强敌 · 永遠なる輝きのもとに",
   "elite_fungal": "菌菇湿地的强敌 · 鉄と炎の律動",
-  "elite_storm": "雷暴台地的强敌 · 轟く鉄の巨神",
+  "elite_storm": "雷暴台地的强敌 · 蒼天疾駆",
   "elite_crystal": "水晶洞窟的强敌 · Freezing Edge",
   "boss": "章节首领 · 襲来",
   "boss_final": "最终首领（终章） · 巨竜血闘",
@@ -167,8 +167,8 @@ export const BGM_LOOPS = {
     "rate": 44100
   },
   "map_ruins": {
-    "start": 481504,
-    "length": 5029420,
+    "start": 380637,
+    "length": 4390180,
     "rate": 44100
   },
   "map_fungal": {
@@ -183,7 +183,7 @@ export const BGM_LOOPS = {
   },
   "map_crystal": {
     "start": 0,
-    "length": 3138450,
+    "length": 4381072,
     "rate": 44100
   },
   "battle": {
@@ -227,10 +227,14 @@ export const BGM_LOOPS = {
     "length": 2101924,
     "rate": 44100
   },
-  "battle_storm": null,
+  "battle_storm": {
+    "start": 196338,
+    "length": 5291356,
+    "rate": 44100
+  },
   "battle_crystal": {
     "start": 0,
-    "length": 4381072,
+    "length": 3138450,
     "rate": 44100
   },
   "elite": {
@@ -269,8 +273,8 @@ export const BGM_LOOPS = {
     "rate": 44100
   },
   "elite_ruins": {
-    "start": 380637,
-    "length": 4390180,
+    "start": 481504,
+    "length": 5029420,
     "rate": 44100
   },
   "elite_fungal": {
@@ -278,11 +282,7 @@ export const BGM_LOOPS = {
     "length": 3074248,
     "rate": 44100
   },
-  "elite_storm": {
-    "start": 196338,
-    "length": 5291356,
-    "rate": 44100
-  },
+  "elite_storm": null,
   "elite_crystal": {
     "start": 367452,
     "length": 4483540,

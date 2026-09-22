@@ -335,6 +335,90 @@
       errors.push('battleDecor: ' + e.message);
     }
 
+    /**
+     * 3.7) 3.1 的几处战斗界面改动
+     *
+     * 这一块的共同点是「肉眼能看出、但出错了也不会崩」，所以每条都钉在冒烟里：
+     *   · 手牌左边那张压在上层（费用角标别再被右边的牌盖住）；
+     *   · 右侧多出一块弃牌区（打过的牌看得见）；
+     *   · 动作按卡牌挑（远程 Shoot / 自身强化 Charge / 近身 Attack），缺动画要回退；
+     *   · 净化只点亮**真的被清掉**的那个状态，强化胶囊不许跟着发光；
+     *   · 发牌 / 打牌的音效真的放出声（不是被「未解锁 / 解码失败」悄悄丢掉）。
+     */
+    try {
+      window.__oasisAuto({ scene: 'battle', stage: 1 });
+      await wait(900);
+      const bsv = window.__oasisUI.battleScreen;
+      const cardsMod = await import('/src/data/cards.js');
+      const CARD_BY_ID = cardsMod.CARD_BY_ID;
+
+      // ① 手牌叠放：最左边那张 z-index 最大
+      const handCards = [...document.querySelectorAll('.hand .card')];
+      const zs = handCards.map((n) => Number(n.style.zIndex || 0));
+      log('手牌叠放 z-index =', zs.join('/'));
+      if (handCards.length >= 2 && !(zs[0] > zs[zs.length - 1])) {
+        errors.push('手牌的叠放顺序不对（应该左边的牌在最上层）：' + zs.join('/'));
+      }
+
+      // ② 弃牌区：容器在、写着张数
+      const dz = document.querySelector('.discard-zone');
+      log('弃牌区：容器=' + !!dz, '标题=' + (dz ? (dz.textContent || '').slice(0, 20) : '-'));
+      if (!dz) errors.push('右侧没有弃牌区（.discard-zone）');
+      else if (!dz.querySelector('.discard-head')) errors.push('弃牌区没有标题行（张数写在哪儿？）');
+
+      // ③ 动作挑选 + 回退链
+      const pick = (n) => bsv.pickFighterAnim('flygon', n);
+      const animOf = (id) => bsv.animForCard(CARD_BY_ID[id]);
+      const samples = ['tackle', 'bite', 'sand_attack', 'baby_doll_eyes'].filter((id) => CARD_BY_ID[id]);
+      log('动作挑选：' + samples.map((id) => id + '=' + animOf(id)).join(' '),
+        '| 回退：Shoot=' + pick('Shoot') + ' 不存在的动作=' + pick('根本不存在'));
+      if (animOf('sand_attack') !== 'Shoot') errors.push('远程招（泼沙）应该用 Shoot，实际 ' + animOf('sand_attack'));
+      if (animOf('tackle') !== 'Attack') errors.push('近身招（撞击）应该用 Attack，实际 ' + animOf('tackle'));
+      if (pick('根本不存在') !== 'Attack') errors.push('没有的动作应该回退到 Attack，实际 ' + pick('根本不存在'));
+      const buffCard = Object.values(CARD_BY_ID).find((c) => (c.effects ?? []).some((e) => e.kind === 'shield'));
+      for (const [label, card] of [['自身强化', buffCard]]) {
+        if (card && animOf(card.id) !== 'Charge') errors.push(label + '（' + card.id + '）应该用 Charge，实际 ' + animOf(card.id));
+      }
+
+      // ④ 净化只点亮被清掉的那个：造两个胶囊（一个状态、一个强化）验一下
+      const holder = bsv.playerStatuses;
+      if (holder) {
+        holder.innerHTML = '';
+        const chipSt = document.createElement('span');
+        chipSt.dataset.st = 'poison';
+        const chipBuff = document.createElement('span');
+        chipBuff.dataset.buff = 'power';
+        holder.append(chipSt, chipBuff);
+        const n = bsv.markPurge('player', { statuses: ['poison'] });
+        const stLit = chipSt.classList.contains('purge');
+        const buffLit = chipBuff.classList.contains('purge');
+        log('净化发光：被清掉的状态=' + stLit, '强化胶囊=' + buffLit, '（返回 ' + n + '）');
+        if (!stLit) errors.push('净化没有点亮被清掉的那个状态胶囊');
+        if (buffLit) errors.push('净化把强化胶囊也点亮了（用户报的错发光）');
+        if (n !== 1) errors.push('净化点亮了几个胶囊的返回值不对：' + n);
+        holder.innerHTML = '';
+        bsv.refreshSide('player');
+      }
+
+      // ⑤ 音效：发牌 / 打牌真的出声
+      const audioMod = await import('/src/core/audio.js');
+      const au = audioMod.audio;
+      au.enabled = true;
+      au.unlock();
+      await au.warm(['cardSlide', 'cardPlace', 'cardSlide2']);
+      const before = { ...au.stats, dropped: { ...au.stats.dropped } };
+      au.dealCards(3);
+      au.cardPlay();
+      await wait(600);
+      const started = au.stats.started - before.started;
+      const dropped = (au.stats.dropped.noBuffer - before.dropped.noBuffer) + (au.stats.dropped.noCtx - before.dropped.noCtx);
+      log('音效：这一轮真的播了 ' + started + ' 声 · 被丢掉 ' + dropped + ' 声（发牌 3 + 打牌 2 共 5 声）');
+      if (started < 4) errors.push('发牌 / 打牌的音效没有真的播出来（只播了 ' + started + ' 声）');
+      if (dropped) errors.push('有音效被静默丢掉：' + dropped + ' 声');
+    } catch (e) {
+      errors.push('battle-3.1: ' + e.message);
+    }
+
     // 4) BGM 检查：解锁音频后依次切场景，看曲子有没有跟着换
     try {
       const audioMod = await import('/src/core/audio.js');
@@ -546,6 +630,42 @@
       }
     } catch (e) {
       errors.push('codex: ' + e.message);
+    }
+
+    /**
+     * 7.5) 首领称号在图鉴里的写法（3.1）
+     *
+     * 用户要求：称号不要再做成名字旁边的一枚小胶囊，而是写在名字下面那一行
+     * （遭遇演出里本来就是这么打的）。这里点开一个「首领」档位的图鉴详情，
+     * 看那一行在不在、以及有没有残留的胶囊写法。
+     */
+    try {
+      g.phase = 'title';
+      window.__oasisUI.forceRerender();
+      await wait(350);
+      const entries2 = [...document.querySelectorAll('.title-codex .title-codex-btn')];
+      entries2[2]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(400);
+      const modal2 = [...document.querySelectorAll('.modal-backdrop')].pop();
+      const bossCard = modal2 ? [...modal2.querySelectorAll('.dex-card')].find((n) => (n.textContent || '').includes('首领')) : null;
+      if (!bossCard) {
+        log('首领称号：这一局还没遇见过首领（图鉴里没解锁），跳过');
+      } else {
+        bossCard.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(400);
+        const detail = [...document.querySelectorAll('.modal-backdrop')].pop();
+        const title = detail ? detail.querySelector('.dex-boss-title') : null;
+        const chip = detail ? detail.querySelector('.detail-chip.boss-title') : null;
+        log('首领称号：名字下面那一行 =', title ? (title.textContent || '').slice(0, 12) : '（没有）', '| 残留胶囊 =', !!chip);
+        if (!title) errors.push('图鉴详情里没有「名字下面那一行」的首领称号（.dex-boss-title）');
+        if (chip) errors.push('首领称号还在用胶囊写法（.detail-chip.boss-title）');
+        for (const b of (detail ? detail.querySelectorAll('.modal-head button') : [])) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await wait(120);
+      }
+      for (const b of (modal2 ? modal2.querySelectorAll('.modal-head button') : [])) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await wait(120);
+    } catch (e) {
+      errors.push('bossTitle: ' + e.message);
     }
 
     // 7) 更新日志：标题页那个按钮点得开、有版本条目

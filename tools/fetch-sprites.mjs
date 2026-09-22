@@ -20,7 +20,16 @@ const species = JSON.parse(await fs.readFile(path.join(ROOT, 'content/species.js
 const only = process.argv.slice(2);
 
 const BASE = 'https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master';
-const ANIMS = ['Idle', 'Attack', 'Hurt'];
+/**
+ * 抓哪几张精灵表。
+ *
+ * `Shoot` / `Charge` 是 3.1 补的：战斗中「远程攻击」要挥 shoot、「自己加 buff / 护盾」要蓄
+ * charge（用户提的），而当初只抓了 Idle / Attack / Hurt 三张 ——
+ * 上游 AnimData 里本来就登记着它们（见 tools/animdata-cache/*.xml 的 <Name> 列表），
+ * 只是没人下下来。每张 10~30KB，全量补齐不心疼。
+ * 缺哪张就退回 Attack / Idle（见 ui/battle-view.js 的 pickFighterAnim），不会裂图。
+ */
+const ANIMS = ['Idle', 'Attack', 'Hurt', 'Shoot', 'Charge'];
 const EMOTIONS = ['Normal', 'Happy', 'Joyous', 'Inspired', 'Determined', 'Angry',
   'Sad', 'Pain', 'Worried', 'Surprised', 'Shouting', 'Stunned', 'Dizzy', 'Sigh', 'Crying', 'Teary-Eyed'];
 

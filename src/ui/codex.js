@@ -773,14 +773,22 @@ function showEnemyDetail(def, sets, meta) {
    * 上半场只剩「图 +（行首 + 三条简短介绍）」，右列再靠 flex 撑到和图一样高。
    */
   const info = el('div', { class: 'dex-detail-info' });
-  info.append(el('div', { class: 'detail-head' }, [
+  /**
+   * 首领称号（3.1，用户提的）：以前它和「#0844」「较强」「地面」这些一起挤在名字右边，
+   * 做成了一枚胶囊 —— 而「流沙之主」这种称号是**名字的一部分**（遭遇演出里就打在大字名下面），
+   * 塞进一排小胶囊里既挤又不像称号。现在它单独占名字下面那一行，不用胶囊。
+   */
+  const head = el('div', { class: 'detail-head' }, [
     el('h2', { text: known ? def.name : t('？？？') }),
     el('span', { class: 'detail-chip', text: `#${def.dex ?? '----'}` }),
     el('span', { class: `detail-chip tier-${def.tier}`, text: tierName }),
     el('span', { class: 'detail-chip', text: biome?.name ?? def.biome }),
     (def.types ?? []).length ? el('span', { class: 'detail-chip', text: (def.types ?? []).join(' / ') }) : null,
-    known && def.bossTitle ? el('span', { class: 'detail-chip boss-title', text: def.bossTitle }) : null,
-  ]));
+  ]);
+  info.append(head);
+  if (known && def.bossTitle) {
+    info.append(el('div', { class: 'dex-boss-title', text: def.bossTitle }));
+  }
 
   if (known) {
     info.append(introRows(def));
