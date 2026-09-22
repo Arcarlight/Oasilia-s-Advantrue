@@ -650,13 +650,20 @@ export function effectLines(card) {
           ? t('{sign}{pct}%（按基础值）', { sign: e.pct > 0 ? '+' : '−', pct: Math.abs(Math.round(e.pct * 100)) })
           : `${(e.amount ?? 0) > 0 ? '+' : ''}${e.amount}`;
         const down = e.pct != null ? e.pct < 0 : (e.amount ?? 0) < 0;
+        /**
+         * ⚠ 这一句原来把下限写死成「基础值的 25%」，而引擎里是
+         * `BALANCE.debuffFloorPct`（atk / def 0.5、agi / luck 0.6）——
+         * 玩家拿着削弱牌看到的说明和实际能削到哪，差了一倍。
+         * 现在按**这张牌削的那一项**现算（敏捷 / 幸运的下限和攻防不一样）。
+         */
+        const floorPct = Math.round((BALANCE.debuffFloorPct?.[e.stat] ?? BALANCE.debuffFloorPct ?? 0.5) * 100);
         rows.push({
           ico: STAT_ICO[e.stat] ?? 'ico-star',
           label: t('{who} · {stat}', { who, stat: STAT_NAME[e.stat]?.() ?? e.stat }),
           value: t('{amount}（本场战斗）', { amount }),
           note: e.target === 'enemy'
             ? (down
-              ? t('对手被削弱，你后面每一张攻击牌都更疼。\n属性下降最多削到基础值的 25%，之后就会提示「已经降到底了」。')
+              ? t('对手被削弱，你后面每一张攻击牌都更疼。\n属性下降最多削到基础值的 {pct}%，之后就会提示「已经降到底了」。', { pct: floorPct })
               : t('把对手的属性堆上去。'))
             : t('战斗结束就复原。'),
         });

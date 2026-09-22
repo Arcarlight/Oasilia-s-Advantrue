@@ -242,6 +242,13 @@ export const BALANCE = {
   healAfterBattlePct: 0.06,   // 6 章一趟很长，每场战斗后多回一点，让玩家有机会看到后面的地图
   fullHealAfterBoss: true, // 打完首领完全恢复，准备下一章
   restHealPct: 0.30,
+  /**
+   * 手持栏的**基础格数**（每打赢一个首领 +1，见 Game.heldMax）。
+   *
+   * 放在 BALANCE 里是因为说明页要写这个数：写死在文案里的话，以后改成 4 格，
+   * 说明页会继续对玩家说「只有 3 个」——而这类数字过期是肉眼看不出来的。
+   */
+  heldBase: 3,
   cardRewardChance: 0.7,
 /**
  * 普通战斗**连续几场不掉卡**就要保底。

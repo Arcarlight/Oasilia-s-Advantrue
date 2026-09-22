@@ -330,9 +330,9 @@ export class Game {
     return Math.max(0, cost);
   }
 
-  /** 手上的栏位上限：3 个，每打赢一个 boss +1（用户定的规则） */
+  /** 手上的栏位上限：3 个（BALANCE.heldBase），每打赢一个 boss +1（用户定的规则） */
   heldMax() {
-    return 3 + Math.max(0, this.data?.bossKills ?? 0);
+    return (BALANCE.heldBase ?? 3) + Math.max(0, this.data?.bossKills ?? 0);
   }
 
   /** 持有效果汇总表（战斗与界面都读它，见 sumHeldMods） */

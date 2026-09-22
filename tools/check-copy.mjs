@@ -264,5 +264,151 @@ const { ITEMS } = await import('../src/data/items.js');
     bad.slice(0, 4).join(' ｜ ') || '全部干净');
 }
 
+/**
+ * ⑨ 已经删掉 / 改名的东西，不许再出现在玩家读得到的字里
+ *
+ * 用户报的：「有些事件还有好伤药、伤药之类的已经没了的东西，以及卡牌名之类的」——
+ * 一查一串：9 条事件标签还在发「好伤药 / 厉害伤药 / 活力药」（那三件道具早就改名成了
+ * 橙橙果 / 文柚果 / 甜甜苹果），一条事件正文写着「一瓶高级伤药」，
+ * 一条更新日志写着「哞哞牛奶」（现在是哞哞鲜奶），说明页整栏还写着药水与「战斗中随时能用」。
+ *
+ * 这份清单是**手写**的：只有「真的删掉 / 改名过」的名字才进来。
+ * 判据细节：
+ *   · 命中处若正好落在**现役名字**里（「甜苹果」⊂「甜甜苹果」）不算；
+ *   · 同一行里有 `→` 的算**改名说明**（更新日志里「毒液吸取 → 剧毒汲取」那种），不算。
+ */
+{
+  const DEAD = [
+    // 道具：旧版药水三条 + 其它改名过的
+    '好伤药', '厉害伤药', '活力药', '高级伤药', '哞哞牛奶', '专家腰带', '元气之根', '光之粉',
+    '光滑岩石', '力量之羽', '发光苔', '坚硬石头', '妖异石板', '妖精羽毛', '寒冷岩石', '恶之石板',
+    '漂亮羽毛', '甜苹果', '紧绑之爪', '蜂蜜', '贝壳铃', '钢铁宝石', '龙之鳞',
+    // 卡牌：改名过的两张
+    '毒液吸取', '毒针连刺',
+  ];
+  /** 现在还在用的名字（命中落在这些里面就不算） */
+  const liveCards = JSON.parse(rd('content/cards.json')).cards.map((c) => c.name);
+  const liveItems = Object.values(JSON.parse(rd('content/items.json')).items).map((i) => i.name);
+  const live = [...liveCards, ...liveItems];
+  const SCAN = [
+    ...fs.readdirSync(path.join(ROOT, 'content/events')).filter((f) => f.endsWith('.json')).map((f) => `content/events/${f}`),
+    'content/cards.json', 'content/items.json', 'content/enemy-voice.json', 'content/enemy-intro.json',
+    'content/merchants.json', 'content/biomes.json',
+    'src/core/changelog-data.js', 'src/ui/overlays.js', 'src/ui/screens.js', 'src/ui/codex.js',
+    'src/ui/cardtext.js', 'src/ui/cards.js', 'src/ui/carddetail.js', 'src/ui/records.js', 'src/ui/tips.js',
+    'index.html',
+  ];
+  const hits = [];
+  for (const rel of SCAN) {
+    if (!fs.existsSync(path.join(ROOT, rel))) continue;
+    rd(rel).split('\n').forEach((line, i) => {
+      const t = line.trim();
+      if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') || t.startsWith('<!--')) return;
+      for (const dead of DEAD) {
+        let at = line.indexOf(dead);
+        while (at >= 0) {
+          /** 命中处是不是正落在某个现役名字里？（「甜苹果」在「甜甜苹果」里） */
+          const insideLive = live.some((n) => {
+            let p = line.indexOf(n);
+            while (p >= 0) {
+              if (p <= at && at + dead.length <= p + n.length) return true;
+              p = line.indexOf(n, p + 1);
+            }
+            return false;
+          });
+          if (!insideLive && !line.includes('→')) hits.push(`${rel}:${i + 1} 「${dead}」`);
+          at = line.indexOf(dead, at + 1);
+        }
+      }
+    });
+  }
+  ok(!hits.length, `删掉 / 改名过的 ${DEAD.length} 个名字没有残留在玩家读得到的字里`,
+    hits.slice(0, 6).join(' ｜ ') || `扫了 ${SCAN.length} 个文件`);
+}
+
+/**
+ * ⑩ 同一个名字不许对应两种东西（三语各查一遍）
+ *
+ * 用户让「把文案都对齐一下」时顺手挖出来的：日文里**橙橙果和文柚果都叫「オレンのみ」**、
+ * 木子果和桃桃果都叫「モモンのみ」，英文里木子果和桃桃果都叫「Pecha Berry」——
+ * 玩家看到的是「两种不一样的果子挂着同一个名字」，而中文 / 数据 / 掉落全都是对的，
+ * 所以任何数据门禁都抓不到它。
+ *
+ * 判据：**同一类东西内部**（道具 / 卡牌 / 物种）译名必须唯一。
+ * 跨类允许重名（道具「文柚果」和卡牌「文柚果」是两件不同的东西，这是设计）。
+ */
+{
+  const dicts = { ja: JSON.parse(rd('content/i18n/ja.json')), en: JSON.parse(rd('content/i18n/en.json')) };
+  const groups = {
+    道具: Object.values(JSON.parse(rd('content/items.json')).items).map((i) => i.name),
+    卡牌: JSON.parse(rd('content/cards.json')).cards.map((c) => c.name),
+    物种: Object.values(JSON.parse(rd('content/species.json')).species).map((s) => s.name),
+  };
+  const bad = [];
+  for (const [lang, dict] of Object.entries(dicts)) {
+    for (const [label, names] of Object.entries(groups)) {
+      const seen = new Map();
+      for (const zh of names) {
+        const v = dict[zh];
+        if (!v) continue;
+        if (!seen.has(v)) seen.set(v, []);
+        seen.get(v).push(zh);
+      }
+      for (const [v, list] of seen) if (list.length > 1) bad.push(`${lang} ${label}：${v} ← ${list.join(' + ')}`);
+    }
+  }
+  ok(!bad.length, '三语里每一件道具 / 每一张卡 / 每一只宝可梦的名字都唯一', bad.slice(0, 6).join(' ｜ ') || '没有重名');
+}
+
+/**
+ * ⑪ 事件标签说的那件东西，必须就是它真正发的那件
+ *
+ * 「（获得好伤药 ×2）」这种标签是**手写的**，而实际发什么由 effects.item 决定 ——
+ * 两者对不上时玩家会看到「标题说给好伤药、结算说拿到橙橙果」（用户报的就是这个）。
+ * 这里把 21 个发道具的事件选项全查一遍：标签里点名的东西和数量都要对得上。
+ */
+{
+  const byId = new Map(Object.entries(JSON.parse(rd('content/items.json')).items));
+  const dir = path.join(ROOT, 'content/events');
+  const bad = [];
+  let n = 0;
+  const collect = (fxs, out) => {
+    for (const fx of fxs ?? []) {
+      if (fx.item) out.push(typeof fx.item === 'string' ? { id: fx.item, n: 1 } : { id: fx.item.id, n: fx.item.n ?? 1 });
+      if (fx.branch) for (const b of fx.branch) collect(b.effects, out);
+      if (fx.then) collect([fx.then], out);
+      if (fx.else) collect([fx.else], out);
+    }
+    return out;
+  };
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.json') || f.startsWith('_')) continue;   // _checklist 是设计清单，不加载
+    const data = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    for (const e of (data.events ?? data)) {
+      for (const o of (e.options ?? [])) {
+        const grants = collect(o.effects, []);
+        if (!grants.length) continue;
+        const m = /获得([^\s（），、×]{2,8})(?:\s*×\s*(\d+))?/.exec(o.label ?? '');
+        if (!m) continue;
+        /**
+         * 只查「标签点名了一件**现役道具**」的情况：
+         * 「获得道具与金币」「获得一件道具」这类笼统说法是故意的（不剧透掉什么），跳过。
+         * 标签点名了**已经不存在的**道具时，由第 ⑨ 条（删掉的名字）负责抓。
+         */
+        const named = [...byId.values()].find((it) => it.name === m[1]);
+        if (!named) continue;
+        n++;
+        const want = byId.get(grants[0].id);
+        if (!want) { bad.push(`${f}【${e.id}】标签发的是一张不存在的道具 id：${grants[0].id}`); continue; }
+        if (m[1] !== want.name) bad.push(`${f}【${e.id}】标签写「${m[1]}」、实际发「${want.name}」`);
+        const labelN = m[2] ? Number(m[2]) : 1;
+        const granted = grants.filter((g) => g.id === grants[0].id).reduce((s, g) => s + g.n, 0);
+        if (labelN !== granted) bad.push(`${f}【${e.id}】标签写 ×${labelN}、实际给 ×${granted}`);
+      }
+    }
+  }
+  ok(!bad.length, `点名了道具的 ${n} 条事件标签，名字与数量都和实际发放一致`, bad.slice(0, 6).join(' ｜ '));
+}
+
 console.log(`\n文案体检：通过 ${pass}，失败 ${fail}`);
 if (fail) process.exitCode = 1;

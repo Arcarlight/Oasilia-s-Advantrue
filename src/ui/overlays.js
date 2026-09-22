@@ -439,9 +439,17 @@ export function showHelp() {
     el('div', { class: 'help-card' }, [
       el('h4', { text: t('道具与背包') }),
       el('ul', {}, [
-        el('li', { html: t('按 <code>I</code> 打开背包。药水（好伤药 {small} / 厉害伤药 {big}）留在背包里，想喝就点「使用」——<b>不占出牌次数</b>，战斗中随时能用。', { small: pct(0.25), big: pct(0.5) }) }),
-        el('li', { html: t('护符与活力药这类「本局 +N」的道具，<b>拿到手就自动生效</b>，不会留在背包里。') }),
-        el('li', { text: t('来源：宝箱、事件、商店（铁匠铺一定有护符、药草摊一定有药），以及首领奖励。') }),
+        /**
+         * ⚠ 这一栏是**照着旧的道具制**写的，一直没人改：
+         *   · 「药水（好伤药 / 厉害伤药）留在背包里」「活力药」—— 那三件道具早就没了
+         *     （现在是橙橙果 / 文柚果 / 甜甜苹果，而且全部是**手持**制，没有「背包」这一层）；
+         *   · 更要命的是「战斗中随时能用」—— 引擎里战斗中**根本不能**用道具
+         *     （用户点名定的规则：打架时嗑药会破坏平衡）。
+         * 所以这一整栏重写：格数、两类道具、真正不能做的事、真正的来源。
+         */
+        el('li', { html: t('右上角的<code>背包</code>按钮（键盘 <code>I</code> 是同一件事）打开身上带着的东西：一局只有 <b>{base} 个</b>手持栏，每打赢一个首领 <b>+1</b>；拿满了再捡到东西，得先丢掉一件，或者干脆不要新的那件。', { base: BALANCE.heldBase }) }),
+        el('li', { html: t('写着<b>持有</b>的拿在手上就一直生效（不占出牌次数，也不用点）；写着<b>可用</b>的要自己点「使用」，用掉就没了 —— <b>战斗中不能使用</b>，回血得靠卡牌、营地和战斗外的补给。') }),
+        el('li', { text: t('来源：宝箱、事件、敌人与首领掉落，以及商店（石丸子铁匠铺一定有护符、沙铃仙人掌药草摊一定有回血的果子）。') }),
       ]),
     ]),
     el('div', { class: 'help-card' }, [
@@ -450,7 +458,7 @@ export function showHelp() {
         el('li', { text: t('每场战斗胜利都会永久提升属性（精英与首领给得更多），这是跟得上后续章节的关键。') }),
         el('li', { text: t('走到首领节点时会先自动恢复 {pct} 生命。', { pct: pct(BALANCE.preBossHealPct) }) }),
         el('li', { text: BALANCE.fullHealAfterBoss ? t('打完章节首领完全回血，然后进入下一章。') : t('打完章节首领后进入下一章。') }),
-        el('li', { text: t('每场战斗胜利后自动回复最大生命的 {after}；绿洲营地回复 {rest}。', { after: pct(BALANCE.healAfterBattlePct), rest: pct(BALANCE.restHealPct) }) }),
+        el('li', { text: t('每场战斗胜利后自动回复最大生命的 {after}；绿洲营地回复 {rest} —— 手上带着「战斗胜利后回复」这类道具时会在这个数上再加。', { after: pct(BALANCE.healAfterBattlePct), rest: pct(BALANCE.restHealPct) }) }),
         el('li', { text: t('回复类卡牌里，羽栖 / 急救 / 水流环 / 睡觉按最大生命的百分比回，文柚果 / 寄生种子 / 生命水滴是固定值 —— 前期固定值更顶用，后期百分比更顶用。') }),
         el('li', { text: t('护盾类卡牌（变硬、铁壁、守住）的量会随你的防御成长。') }),
       ]),
@@ -466,7 +474,12 @@ export function showHelp() {
         el('li', {}, [el('span', { class: 'help-ico ico-shield_02' }), t('护盾：先于 HP 承受伤害，回合开始时清空（「广域防守」给的那一份不会清）。')]),
         el('li', { html: t('持续伤害按<b>最大生命的百分比</b>结算，所以它打血厚的敌人最划算 —— 打首领时上毒比硬拼攻击力更省事。') }),
         el('li', { html: t('「毒爆」这类<code>引爆</code>牌能把对手身上的持续伤害一次性爆成伤害并清空，是毒流的收尾手段。') }),
-        el('li', { html: t('属性被削有下限：攻击 / 防御最多削到基础值的 <b>{pct}</b>（后期敌人防御只有十几点，固定值削弱两下就顶到底，所以稀有牌改用百分比削弱）；<b>敏捷与幸运只削到一半</b> —— 敏捷一个人管着 AP、抽牌、出牌上限三件事，削太深等于直接没收回合。', { pct: pct(typeof BALANCE.debuffFloorPct === 'object' ? BALANCE.debuffFloorPct.atk : BALANCE.debuffFloorPct) }) }),
+        /**
+         * ⚠ 这句原来写的是「敏捷与幸运只削到一半」—— 而 BALANCE.debuffFloorPct 是
+         * `{ atk: 0.5, def: 0.5, agi: 0.6, luck: 0.6 }`，敏捷 / 幸运的上限其实是 60% 不是 50%。
+         * 现在两边的数字都从 BALANCE 现算，改平衡时不会再对不上。
+         */
+        el('li', { html: t('属性被削有下限：攻击 / 防御最多削到基础值的 <b>{pct}</b>，敏捷与幸运 <b>{pct2}</b>（后期敌人防御只有十几点，固定值削弱两下就顶到底，所以稀有牌改用百分比削弱）—— 敏捷一个人管着 AP、抽牌、出牌上限三件事，削太深等于直接没收回合。', { pct: pct(BALANCE.debuffFloorPct.atk), pct2: pct(BALANCE.debuffFloorPct.agi) }) }),
         el('li', { text: t('「白雾」清自己所有属性下降，「焕然一新」「月光」连负面状态一起清 —— 被削弱得难受时找这几张。') }),
       ]),
     ]),
@@ -486,7 +499,7 @@ export function showHelp() {
         el('li', { html: t('<code>1</code> ~ <code>9</code> 打出手牌中第 N 张。') }),
         el('li', { html: t('<code>空格</code> 结束回合。') }),
         el('li', { html: t('<code>D</code> 打开卡组一览（只读：能排序、看详情、看图鉴）。') }),
-        el('li', { html: t('<code>I</code> 打开背包（喝药在这里）。') }),
+        el('li', { html: t('<code>I</code> 打开背包（和右上角那个背包按钮是同一件事）。') }),
         el('li', { html: t('<code>E</code> 打开敌人图鉴（打之前先看看对面会什么）。') }),
         el('li', { html: t('<code>C</code> 打开卡牌图鉴（看卡牌的收集进度）。') }),
         el('li', { html: t('<code>H</code> 或 <code>?</code> 打开这一页。') }),

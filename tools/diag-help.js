@@ -64,8 +64,14 @@
     ok(text.includes(pct(BALANCE.restHealPct)), `营地回复写的是 ${pct(BALANCE.restHealPct)}（= restHealPct）`);
     ok(text.includes(pct(BALANCE.healAfterBattlePct)), `战后回复写的是 ${pct(BALANCE.healAfterBattlePct)}（= healAfterBattlePct）`);
     ok(text.includes(pct(BALANCE.preBossHealPct)), `首领前回复写的是 ${pct(BALANCE.preBossHealPct)}（= preBossHealPct）`);
-    ok(!text.includes('35%'), '旧文案「35%」已经消失');
-    ok(!/自动回复最大生命的 4%/.test(text), '旧文案「4%」已经消失');
+    /**
+     * ⚠ 这两条原来写的是「不许出现 35%」「不许出现『自动回复最大生命的 4%』」——
+     * 而 preBossHealPct **现在就是 35%**（首领前回复那一行会正大光明地印出来），
+     * 所以「不许出现 35%」这条一直在假红（它没进 author check，所以没人发现）。
+     * 现在改成盯**当年那句旧说法**，而不是盯一个数字：数字会随平衡变，句子不会。
+     */
+    ok(!/绿洲营地[：:]\s*回复/.test(text), '旧说法「绿洲营地：回复…」已经消失（改成现算的一句话）');
+    ok(!/自动回复最大生命的 4%/.test(text), '旧说法「自动回复最大生命的 4%」已经消失');
 
     // ③ 四个上限跟着 BALANCE 走
     for (const [key, label] of [['apMax', 'AP 上限'], ['playMax', '出牌上限'], ['drawMax', '抽牌上限'], ['handMax', '手牌上限']]) {
@@ -80,10 +86,17 @@
     }
     ok(/什么键|快捷键/.test(text), '有「快捷键」这一节');
 
-    // ⑤ 新加的「道具与背包」一节
+    // ⑤ 「道具与背包」一节：说的必须是**手持制**这一套（不再是药水 + 背包那套旧说法）
     ok(text.includes('道具与背包'), '说明里新增了「道具与背包」一节');
-    ok(/拿到手就自动生效/.test(text), '写清了护符拿到就生效（不是留在背包里等你点）');
-    ok(/不占出牌次数/.test(text), '写清了喝药不占出牌次数');
+    ok(text.includes(`只有 ${BALANCE.heldBase} 个`), `手持栏写的是 ${BALANCE.heldBase} 个（= BALANCE.heldBase）`);
+    ok(/战斗中不能使用/.test(text), '写明了道具**战斗中不能使用**（用户点名：会影响平衡）');
+    ok(/不占出牌次数/.test(text), '写清了持有型不占出牌次数');
+    ok(/石丸子铁匠铺|护符/.test(text), '写清了护符的来源（铁匠铺一定有护符）');
+
+    // ⑤b 那套「药水 / 背包」的旧说法必须彻底消失（用户报的：事件和说明页里还有好伤药）
+    for (const dead of ['好伤药', '厉害伤药', '活力药', '高级伤药', '药水', '喝药']) {
+      ok(!text.includes(dead), `说明页不再提「${dead}」（那件东西已经没了）`);
+    }
 
     // ⑥ 状态名要和引擎一致（引擎里叫「出血」，旧文案写的是「流血」）
     const { STATUS_INFO } = await import('../src/core/battle.js');
@@ -92,14 +105,26 @@
     }
     ok(!text.includes('流血'), '旧文案「流血」已经消失');
 
-    // ⑦ 背包页里那几条回血方式同样是现算的
+    // ⑦ 手持道具面板：每一件都写着自己的作用，而且不许说「战斗里能嗑药」
+    /**
+     * ⚠ 这一段原来断言的是「面板里写着营地回复 30% / 战后回复 6%」——
+     * 而那两句话在**说明页**（不是这个面板），面板早就不印续航数字了。
+     * 现在改成查这个面板真正该有的东西：作用说明 + 战斗中的禁令。
+     */
     document.querySelector('.modal-backdrop')?.remove();
+    game.data.held = [];
+    game.invalidateMods();
+    game.giveItem('big_root', 1);
+    game.giveItem('oran_berry', 1);
     showItems(game);
     await wait(250);
-    const bagText = (document.querySelector('.modal-backdrop .modal-body')?.textContent ?? '').replace(/\s+/g, ' ');
-    ok(bagText.includes(pct(BALANCE.restHealPct)), `背包页的营地回复也是 ${pct(BALANCE.restHealPct)}`);
-    ok(bagText.includes(pct(BALANCE.healAfterBattlePct)), `背包页的战后回复也是 ${pct(BALANCE.healAfterBattlePct)}`);
-    ok(!bagText.includes('35%') && !/的 4%/.test(bagText), '背包页的旧数字也清掉了');
+    const bagEl = document.querySelector('.modal-backdrop .modal-body');
+    const bagText = (bagEl?.textContent ?? '').replace(/\s+/g, ' ');
+    ok((bagEl?.querySelectorAll('.held-item') ?? []).length >= 2, '面板里列出了身上带着的那几件');
+    ok((bagEl?.querySelectorAll('.shop-eff') ?? []).length >= 2, '每一件都写着自己的作用（不是只有名字和风味文案）');
+    ok(/战斗胜利后回复最大生命/.test(bagText), '大根茎的作用写出来了', '战斗胜利后回复最大生命 10%');
+    ok(/战斗中不能使用/.test(bagText) || /战斗外使用/.test(bagText), '写清了「可用」那类只能在战斗外使用');
+    ok(!/战斗中随时能用|可以随时使用/.test(bagText), '没有「战斗中随时能用」这种和引擎相反的写法');
     document.querySelector('.modal-backdrop')?.remove();
 
     if (fails.length) log(`HP_ERRORS=[${fails.join(' | ')}]`);
