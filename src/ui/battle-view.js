@@ -737,7 +737,8 @@ export class BattleScreen {
        */
       const scale = this.fitScale(slug, 'Idle', this.rowR[side].height, base);
       const canvas = side === 'player' ? this.playerAnim : this.enemyAnim;
-      this.applyAnimScale(canvas, scale);
+      const idleEl0 = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
+      this.applyAnimScale(canvas, scale, idleEl0);
       /**
        * 待机那张也按同一套帧量一次，并用它的尺寸**把身体盒子钉住**。
        *
@@ -757,7 +758,7 @@ export class BattleScreen {
       const idleEl = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
       const bodyEl = side === 'player' ? this.playerBody : this.enemyBody;
       if (idleEl && bodyEl) {
-        this.applyAnimScale(idleEl, scale);
+        this.applyAnimScale(idleEl, scale, idleEl);
         bodyEl.style.width = idleEl.style.width;
         bodyEl.style.height = idleEl.style.height;
       }
@@ -814,7 +815,7 @@ export class BattleScreen {
   }
 
   /**
-   * 把已经建好的动画 canvas 按当前的缩放定尺寸。
+   * 把已经建好的动画 canvas 按当前的缩放定尺寸，并把它**对齐到待机那张的位置**。
    *
    * ⚠ **一只精灵只有一个缩放**（按待机那张的帧算出来），所有动作共用它 ——
    * 为什么不能让每个动作各按自己的帧高去缩：素材里同一只宝可梦各动作的帧盒子差得很远
@@ -827,13 +828,28 @@ export class BattleScreen {
    * 宽高**必须成对地**用同一套帧信息算：拿错一套就会把宽高比算歪，
    * 表现出来就是行走图被压扁。3.1.4 用户报的「基本所有敌人出招、受伤时行走图都会被压扁」
    * 其实不在这一行，而在 CSS 上（见下面 layoutBattle 里的说明）。
+   *
+   * ⚠⚠ 还有一条同样看不见的：**换动作时精灵会上下跳**。
+   * 画布是居中放的，而帧盒子四边的透明留白并不对称 —— 角色在 Idle 的格子里偏上一点、
+   * 在 Attack 的格子里偏下一点，居中之后就是一次位移。实测 206 只里 199 只跳得超过
+   * 4% 的帧高，最狠的跳了 65%（约 45 像素）。这里拿 `canvas.contentBox`（角色实际占的那一块）
+   * 把每个动作**对齐到待机那张的内容中心**上，用 CSS 变量 `--sprite-dy` 交给样式去偏。
    */
-  applyAnimScale(canvas, s) {
+  applyAnimScale(canvas, s, idleCanvas = null) {
     if (!canvas) return;
     const info = canvas.frameInfo;
     if (!info) return;
     canvas.style.width = `${Math.round(info.fw * s)}px`;
     canvas.style.height = `${Math.round(info.fh * s)}px`;
+    const cb = canvas.contentBox;
+    const ref = idleCanvas?.contentBox;
+    if (!cb || !ref || canvas === idleCanvas) {
+      canvas.style.removeProperty('--sprite-dy');
+      return;
+    }
+    // 两个「内容中心相对帧中心」的差，就是这一次换动作会产生的位移（帧像素 → 乘缩放）
+    const dy = ((cb.y + cb.h / 2) - info.fh / 2) - ((ref.y + ref.h / 2) - idleCanvas.frameInfo.fh / 2);
+    canvas.style.setProperty('--sprite-dy', `${(-dy * s).toFixed(1)}px`);
   }
 
   /**
@@ -2487,6 +2503,8 @@ export class BattleScreen {
         fps,
         dir: side === 'player' ? DIR.UP_RIGHT : DIR.DOWN_LEFT,
       });
+      // 补上「按内容对齐」的纵向补偿（尺寸 createAnim 已经按同一个 scale 定好了）
+      this.applyAnimScale(node, scale, idle);
       /**
        * ⚠ 换动作必须用 replaceWith **把 Idle 换出去**，不能「藏起来 + 另外 append 一张」。
        *

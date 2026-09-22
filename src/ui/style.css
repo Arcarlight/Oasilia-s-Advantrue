@@ -1057,10 +1057,12 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
 .fighter-body { position: relative; }
 /* 精灵一律**绝对定位居中**：换动作时帧盒子大小会变（Idle 32×72 / Attack 64×80），
    如果让画布参与流式布局，右边那张血条卡就会被挤得左右跳。
-   身体盒子的宽高由 battle-view 的 layoutBattle() 按待机那张写死，所以布局恒定。 */
+   身体盒子的宽高由 battle-view 的 layoutBattle() 按待机那张写死，所以布局恒定。
+   `--sprite-dy` 是**按内容对齐**的纵向补偿（帧盒子的空白四边不对称，不平移的话
+   换动作会让角色上下跳 —— 实测 206 只里 199 只有这个毛病，见 applyAnimScale）。 */
 .fighter-body canvas {
   position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, calc(-50% + var(--sprite-dy, 0px)));
 }
 /* 精灵尺寸由 JS 按「这一行实际高度」算好后写进 canvas 的内联宽高。
    ⚠ 这里**不能**再夹 `max-height: 100%`：身体盒子被钉成待机那张的大小，

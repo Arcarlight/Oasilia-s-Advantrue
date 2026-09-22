@@ -554,6 +554,48 @@
        * 这一次的真凶是 CSS 里那句「.fighter-body canvas { max-height: 100% }」：身体盒子被钉成待机那张的高度，
        * 出招画布比它高，于是**高度被夹、宽度照旧** —— 冰宝一出手就成了一张扁饼。
        */
+      /**
+       * 换动作时角色**不许上下跳**（3.1.4 的后半条）。
+       *
+       * 帧盒子的空白四边并不对称，画布又都是居中放的 —— 不平移的话，一出手精灵就位移一大截
+       * （实测 206 只里 199 只跳得超过 4% 帧高，最狠的 65% ≈ 45 像素）。
+       *
+       * 判据按**几何**算，不按当前显示的那一帧去数像素：一次性动作是**正在播的**，
+       * 量的时候它可能已经演到冲刺帧了，角色本来就该往前冲 —— 那是姿势，不是跳。
+       * 所以量的是「这张画布**起手帧**的角色中心落在身体盒子的哪个高度」：
+       * 画布顶边 + 内容外接框中心 × 缩放（内容外接框见 core/sprites.js 的 firstFrameBox），
+       * 也就是 applyAnimScale 里那句补偿想实现的东西。
+       * 待机的基准必须在出任何动作**之前**量好：一次性动作会把待机换出 DOM，
+       * 拿一张不在文档里的画布去量 rect 全是 0（第一版就是这么算出「跳了 175 像素」的假警报）。
+       */
+      const anchorAt = (node2, body2) => {
+        const r2 = node2?.getBoundingClientRect?.();
+        const fi = node2?.frameInfo;
+        const cb2 = node2?.contentBox;
+        if (!r2?.height || !fi || !cb2) return null;
+        const s2 = r2.height / fi.fh;
+        return (r2.top - body2.getBoundingClientRect().top) + (cb2.y + cb2.h / 2) * s2;
+      };
+      /** 实拍的内容中心（当前这一帧）：只打日志给人看，含姿势差，不能当判据 */
+      const shownCenter = (cv, body2) => {
+        if (!cv?.isConnected) return null;
+        const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+        let y0 = Infinity; let y1 = -1;
+        for (let y = 0; y < cv.height; y += 1) {
+          for (let x = 0; x < cv.width; x += 1) {
+            if (d[(y * cv.width + x) * 4 + 3] > 8) { if (y < y0) y0 = y; if (y > y1) y1 = y; }
+          }
+        }
+        if (y1 < 0) return null;
+        const k = cv.getBoundingClientRect().height / cv.height;
+        return (cv.getBoundingClientRect().top - body2.getBoundingClientRect().top) + ((y0 + y1 + 1) / 2) * k;
+      };
+      const idleRef = {};
+      for (const sd of ['enemy', 'player']) {
+        idleRef[sd] = anchorAt(sd === 'enemy' ? bsv.enemyIdleAnim : bsv.playerIdleAnim,
+          sd === 'enemy' ? bsv.enemyBody : bsv.playerBody);
+      }
+      log('待机的角色中心（身体盒子坐标）：敌 ' + idleRef.enemy?.toFixed(1) + ' / 我 ' + idleRef.player?.toFixed(1));
       for (const [side, want] of [['enemy', 'Attack'], ['enemy', 'Hurt'], ['player', 'Attack']]) {
         const body = side === 'enemy' ? bsv.enemyBody : bsv.playerBody;
         await bsv.playFighterAnim(side, want, { fps: 12 });
@@ -564,12 +606,21 @@
         const r = cv.getBoundingClientRect();
         const wantAspect = info.fw / info.fh;
         const gotAspect = r.width / r.height;
+        const at = anchorAt(cv, body);
+        const shown = shownCenter(cv, body);
         log('  ' + side + ' ' + want + '：帧 ' + info.fw + '×' + info.fh
           + ' → 显示 ' + r.width.toFixed(1) + '×' + r.height.toFixed(1)
-          + '（比 ' + gotAspect.toFixed(3) + ' vs ' + wantAspect.toFixed(3) + '）');
+          + '（比 ' + gotAspect.toFixed(3) + ' vs ' + wantAspect.toFixed(3) + '）'
+          + '｜起手帧中心 ' + (at == null ? '-' : at.toFixed(1)) + ' vs 待机 ' + (idleRef[side] == null ? '-' : idleRef[side].toFixed(1))
+          + '｜实拍 ' + (shown == null ? '-' : shown.toFixed(1))
+          + '｜--sprite-dy=' + (cv.style.getPropertyValue('--sprite-dy') || '(未设)'));
         if (Math.abs(gotAspect - wantAspect) > 0.02) {
           errors.push(side + ' 的 ' + want + ' 行走图被压扁了：帧比 ' + wantAspect.toFixed(3)
             + '，显示比 ' + gotAspect.toFixed(3) + '（' + r.width.toFixed(0) + '×' + r.height.toFixed(0) + '）');
+        }
+        if (at != null && idleRef[side] != null && Math.abs(at - idleRef[side]) > 3) {
+          errors.push(side + ' 换 ' + want + ' 的时候角色上下跳了 '
+            + Math.abs(at - idleRef[side]).toFixed(1) + 'px（起手帧中心 ' + at.toFixed(1) + ' vs 待机 ' + idleRef[side].toFixed(1) + '）');
         }
       }
       // 量完把这几个一次性动作收掉，别留给后面的检查

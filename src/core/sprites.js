@@ -178,6 +178,43 @@ function contentBox(info, img, pctx, row) {
 }
 
 /**
+ * **这一行动画里「第一帧」**的内容外接框（角色站稳时占了哪一块）。
+ *
+ * 为什么不用整行（所有列）的并集：那里面含着动作的**位移** —— 出招那一行角色会往前冲、
+ * 受伤那一行会歪倒，并集框于是被撑得又高又偏。拿它当对齐的锚，攻击动作会被算歪
+ * （实测用并集框时，「出招」补偿完还剩 27 像素的位移，而「受伤」只剩 4 像素）。
+ * 第一帧是每个动作的「起手」，各动作之间才是同一个姿势。
+ *
+ * 行首那一格可能是空的（有的素材前面留了空帧），所以往后找到第一个有内容的那格。
+ */
+function firstFrameBox(info, img, pctx, row) {
+  const { fw, fh, cols } = info;
+  const probe = document.createElement('canvas');
+  probe.width = fw;
+  probe.height = fh;
+  const px = probe.getContext('2d', { willReadFrequently: true });
+  for (let c = 0; c < cols; c++) {
+    if (isFrameBlank(img, pctx, c * fw, row * fh, fw, fh)) continue;
+    px.clearRect(0, 0, fw, fh);
+    px.drawImage(img, c * fw, row * fh, fw, fh, 0, 0, fw, fh);
+    const d = px.getImageData(0, 0, fw, fh).data;
+    let x0 = fw; let y0 = fh; let x1 = -1; let y1 = -1;
+    for (let y = 0; y < fh; y++) {
+      for (let x = 0; x < fw; x++) {
+        if (d[(y * fw + x) * 4 + 3] > 8) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 >= 0) return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+  }
+  return { x: 0, y: 0, w: fw, h: fh };
+}
+
+/**
  * 创建一个动画 DOM 元素。
  * @param {string} slug 物种 slug
  * @param {{anim?:string, scale?:number, fps?:number, flip?:boolean, dir?:number|null,
@@ -338,8 +375,11 @@ export async function createAnim(slug, opts = {}) {
     frames = frameList(info, img, pctx, next);
     canvas.dirRow = next;
     // 各朝向的外接框不一样（转身之后宽高会变），所以换向时重新量一次
+    const row = frames[0] ? Math.round(frames[0].y / info.fh) : 0;
+    canvas.contentBox = firstFrameBox(info, img, pctx, row);
+    canvas.contentRow = row;
     if (trim) {
-      box = contentBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0);
+      box = canvas.contentBox;
       const s = autoScale ? autoScale / box.h : useScale;
       canvas.width = Math.round(box.w * s);
       canvas.height = Math.round(box.h * s);
@@ -361,6 +401,17 @@ export async function createAnim(slug, opts = {}) {
    * 开了 trim 的话，显示出来的比例是**内容外接框**的比例，所以这里给的是它。
    */
   canvas.frameInfo = box ? { fw: box.w, fh: box.h, cols: info.cols, rows: info.rows } : info;
+  /**
+   * **内容外接框**（这个动作、这个朝向里角色实际占了哪一块）。
+   *
+   * 画布是按帧盒子居中放的，而帧盒子的空白四边并不对称（同一个动作里
+   * 角色偏上偏下都有可能），于是换动作时角色会**上下跳** —— 实测 206 只里
+   * 有 199 只跳得超过 4% 的帧高，最狠的一只（土居忍士的受伤）跳了 65%（约 45 像素）。
+   * 战斗界面拿这个框把每一帧的内容**对齐到同一个位置**（见 ui/battle-view.js 的 applyAnimScale），
+   * 换动作就只剩下动作本身的变化，不会有位移。
+   */
+  canvas.contentBox = box ?? firstFrameBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0);
+  canvas.contentRow = frames[0] ? Math.round(frames[0].y / info.fh) : 0;
   canvas.trimmed = !!box;
   canvas.animName = animName;
 
