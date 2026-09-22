@@ -409,7 +409,7 @@
       "targeting": "self",
       "ico": "ico-heart_break_02",
       "fx": "slash_1",
-      "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +25%。使用后销毁。",
+      "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +18%。使用后销毁。",
       "effects": [
         {
           "kind": "selfDmg",
@@ -418,7 +418,7 @@
         },
         {
           "kind": "strength",
-          "n": 25
+          "n": 18
         }
       ],
       "exhaust": true,
@@ -3064,11 +3064,11 @@
       "targeting": "self",
       "ico": "ico-demon",
       "fx": "slash_1",
-      "text": "本场战斗攻击威力 +45%，防御 -8。使用后销毁。",
+      "text": "本场战斗攻击威力 +30%，防御 -8。使用后销毁。",
       "effects": [
         {
           "kind": "strength",
-          "n": 45
+          "n": 30
         },
         {
           "kind": "buff",
@@ -3759,7 +3759,7 @@
       "targeting": "enemy",
       "ico": "ico-flame",
       "fx": "flare_1",
-      "text": "造成 {d} 点伤害，本场战斗攻击威力 +35%。使用后销毁。",
+      "text": "造成 {d} 点伤害，本场战斗攻击威力 +25%。使用后销毁。",
       "effects": [
         {
           "kind": "damage",
@@ -3767,7 +3767,7 @@
         },
         {
           "kind": "strength",
-          "n": 35
+          "n": 25
         }
       ],
       "exhaust": true,

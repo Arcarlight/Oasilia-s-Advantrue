@@ -788,11 +788,11 @@ function validateHeroes(doc, cards, species) {
      */
     const rw = h?.rewards;
     if (rw != null) {
-      for (const k of ['itemDropMul', 'goldMul']) {
+      for (const k of ['itemDropMul', 'goldMul', 'healMul']) {
         if (rw[k] != null && !(Number.isFinite(rw[k]) && rw[k] > 0)) err(`${at} 的 rewards.${k} 必须是正数（现在是 ${JSON.stringify(rw[k])}）`);
       }
       for (const k of Object.keys(rw)) {
-        if (!['itemDropMul', 'goldMul', 'rarityMul'].includes(k)) err(`${at} 的 rewards 里有不认识的字段 ${k}（只有 itemDropMul / goldMul / rarityMul）`);
+        if (!['itemDropMul', 'goldMul', 'healMul', 'rarityMul'].includes(k)) err(`${at} 的 rewards 里有不认识的字段 ${k}（只有 itemDropMul / goldMul / healMul / rarityMul）`);
       }
       if (rw.rarityMul != null) {
         for (const r of ['common', 'uncommon', 'rare', 'epic']) {

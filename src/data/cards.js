@@ -400,7 +400,7 @@ export const CARDS = [
     "ap": 1,
     "rarity": "rare",
     "targeting": "self",
-    "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +25%。使用后销毁。",
+    "text": "自身失去最大生命 10% 的 HP，本场战斗攻击威力 +18%。使用后销毁。",
     "effects": [
       {
         "kind": "selfDmg",
@@ -409,7 +409,7 @@ export const CARDS = [
       },
       {
         "kind": "strength",
-        "n": 25
+        "n": 18
       }
     ],
     "exhaust": true,
@@ -2853,11 +2853,11 @@ export const CARDS = [
     "ap": 2,
     "rarity": "epic",
     "targeting": "self",
-    "text": "本场战斗攻击威力 +45%，防御 -8。使用后销毁。",
+    "text": "本场战斗攻击威力 +30%，防御 -8。使用后销毁。",
     "effects": [
       {
         "kind": "strength",
-        "n": 45
+        "n": 30
       },
       {
         "kind": "buff",
@@ -3494,7 +3494,7 @@ export const CARDS = [
     "ap": 3,
     "rarity": "epic",
     "targeting": "enemy",
-    "text": "造成 {d} 点伤害，本场战斗攻击威力 +35%。使用后销毁。",
+    "text": "造成 {d} 点伤害，本场战斗攻击威力 +25%。使用后销毁。",
     "effects": [
       {
         "kind": "damage",
@@ -3502,7 +3502,7 @@ export const CARDS = [
       },
       {
         "kind": "strength",
-        "n": 35
+        "n": 25
       }
     ],
     "exhaust": true,

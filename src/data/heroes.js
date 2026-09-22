@@ -87,14 +87,16 @@ export const HEROES = [
       "rowsMul": 2,
       "bosses": 2,
       "enemy": {
-        "hp": 1.21,
+        "hp": 1.28,
         "atk": 1.16,
-        "perStage": 0.015
+        "perStage": 0.02,
+        "powerScaleMax": 1.35
       }
     },
     "rewards": {
       "itemDropMul": 1.7,
       "goldMul": 1.15,
+      "healMul": 1.7,
       "rarityMul": {
         "common": 0.7,
         "uncommon": 0.85,
@@ -165,7 +167,21 @@ export function heroMapShape(id) {
   return {
     rowsMul: h?.map?.rowsMul ?? 1,
     bosses: Math.max(1, Math.round(h?.map?.bosses ?? 1)),
-    enemy: { hp: h?.map?.enemy?.hp ?? 1, atk: h?.map?.enemy?.atk ?? 1, perStage: h?.map?.enemy?.perStage ?? 0 },
+    enemy: {
+      hp: h?.map?.enemy?.hp ?? 1,
+      atk: h?.map?.enemy?.atk ?? 1,
+      perStage: h?.map?.enemy?.perStage ?? 0,
+      /**
+       * 这位主角的敌人**能跟着玩家战力涨到多高**（见 data/enemies.js 的 powerFactor）。
+       *
+       * 为什么要分主角：难度缩放只跟玩家的**属性**走（战力 = 攻+防+血/25+敏/3），
+       * 而「两倍长的一章」给阿特拉斯的不只是属性 —— 他还多打了一倍的仗，
+       * 卡组比别人多七八张、奖励还偏向稀有/史诗，那部分战力**缩放看不见**。
+       * 于是他的攻击第 5 章就顶到上限（70），卡组却还在变强，后期的仗越打越短。
+       * 他的上限定得比本体高（1.4 对 1.18），就是让那条线还能继续跟着他。
+       */
+      powerScaleMax: h?.map?.enemy?.powerScaleMax ?? null,
+    },
   };
 }
 
@@ -204,6 +220,12 @@ export function heroRewardMul(id) {
   return {
     itemDrop: r.itemDropMul ?? 1,
     gold: r.goldMul ?? 1,
+    /**
+     * 战后回血的倍率：他那条线是两倍长，一场一场耗下来死的是**消耗**不是打不过
+     * （实测：他的敌人更硬、通关率反而更低 4.7% vs 7.3%，死因集中在第 4~5 章的精英）。
+     * 所以给他的补偿是「每场多回一点」，而不是把敌人调弱 —— 调弱会让他后期的仗更短。
+     */
+    heal: r.healMul ?? 1,
     rarity: {
       common: rm.common ?? 1,
       uncommon: rm.uncommon ?? 1,

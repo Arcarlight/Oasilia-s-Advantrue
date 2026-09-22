@@ -4551,12 +4551,16 @@ export function playerPower(stats) {
  * 但如果这一局玩家没怎么成长（运气差、一直走事件），直接撞上第二章会毫无还手之力。
  * 所以按玩家实际战力与章节期望战力的比值，把敌人调弱一点（最低 0.62）或略强（最高 1.18）。
  */
-export function powerFactor(stats, stage) {
+export function powerFactor(stats, stage, opts = {}) {
   if (!stats) return 1;
   const ref = BALANCE.playerPowerRef[stage] ?? BALANCE.playerPowerRef[0];
   const ratio = playerPower(stats) / ref;
   const scaled = 0.62 + 0.38 * ratio;
-  return Math.max(BALANCE.powerScaleMin, Math.min(BALANCE.powerScaleMax, scaled));
+  // 上限可以按主角放宽（见 data/heroes.js 的 powerScaleMax）：阿特拉斯那条线
+  // 多打一倍仗、卡组还更好，只按 38% 跟随 + 1.18 封顶的话，他后期会越打越短。
+  const hi = opts.max ?? BALANCE.powerScaleMax;
+  const lo = opts.min ?? BALANCE.powerScaleMin;
+  return Math.max(lo, Math.min(hi, scaled));
 }
 
 /**
@@ -4579,7 +4583,7 @@ export function scaleEnemy(enemy, stage, nodeIndex, playerStats = null, mul = nu
 
   const depthHp = 1 + nodeIndex * BALANCE.depthBonus;
   const depthAtk = 1 + nodeIndex * BALANCE.nodeAtkStep;
-  const pf = powerFactor(playerStats, s);
+  const pf = powerFactor(playerStats, s, { max: mul?.powerScaleMax });
 
   /**
    * 额外倍率：**只有无尽模式会传**（见 game.js 的 endlessEnemyMul）。

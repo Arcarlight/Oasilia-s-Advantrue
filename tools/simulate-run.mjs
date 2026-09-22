@@ -89,6 +89,9 @@ function pickPath(game) {
 }
 
 const stats = { win: 0, dead: 0, floors: [], stages: [], death: new Map(), stagesReached: [0, 0, 0] };
+/** --ttk：按章累计「战力对照」（见战斗那一支的说明） */
+const TTK = process.argv.includes('--ttk');
+const ttk = new Map();
 
 for (let i = 0; i < TOTAL; i++) {
   const game = new Game({ seed: 120000 + i * 271 });
@@ -106,6 +109,37 @@ for (let i = 0; i < TOTAL; i++) {
       continue;
     }
     if (game.phase === 'battle') {
+      /**
+       * `--ttk`：把每一场开打时的「这一章的战力对照」记下来。
+       *
+       * 用户报的是「阿特拉斯到后面 70 攻击三下把敌人秒了」——
+       * 那是**章节越往后、战斗越短**的问题，通关率看不出来（他照样会因为消耗战死掉）。
+       * 这里记四个数：玩家攻击、敌人血量、一张 200 威力牌的伤害、以及**打几下能打死**。
+       * 200 是常用攻击牌的中间档（见 content/cards.json），拿它当尺子最直观。
+       */
+      if (TTK) {
+        const st = game.data.stage ?? 0;
+        const e = game.battle.enemy;
+        const row = ttk.get(st) ?? { n: 0, atk: 0, ehp: 0, turns: 0, deck: 0 };
+        const turns0 = game.battle.turn ?? 1;
+        const r0 = fight(game);
+        /**
+         * ⚠ 真正该看的是**打了几个回合**，不是「血量 ÷ 攻击」——
+         * 后者只算属性，看不见卡组：阿特拉斯那一局打了约两倍的仗，卡组比别人多七八张、
+         * 而且奖励偏向稀有/史诗，实际每回合的伤害比属性算出来的高得多。
+         * 第一版就是拿血量÷攻击当尺子，量出来两人的「几下打死」几乎一样，
+         * 和玩家的「三下秒了」对不上 —— 换成回合数才对得上。
+         */
+        row.n += 1;
+        row.atk += game.data.atk;
+        row.ehp += (e.maxHp ?? e.hp);        // ⚠ 用 maxHp：打完之后 e.hp 已经是 0 了（第一版量出一列 0）
+        row.turns += Math.max(1, (game.battle.turn ?? 1) + 1 - turns0);
+        row.deck += game.data.deck.length;
+        ttk.set(st, row);
+        if (!r0.win) { stats.dead += 1; stats.floors.push(game.data.floor); stats.stages.push(game.data.stage); break; }
+        game.finishBattle();
+        continue;
+      }
       const r = fight(game);
       if (!r.win) {
         stats.dead++;
@@ -219,3 +253,16 @@ const hist = {};
 for (const f of stats.floors) { const b = Math.min(30, Math.floor(f / 3) * 3); hist[b] = (hist[b] ?? 0) + 1; }
 console.log('  步数分布：' + Object.entries(hist).sort((a, b) => a[0] - b[0]).map(([k, v]) => `${k}-${Number(k) + 2}:${v}`).join(' '));
 console.log('  死因：' + [...stats.death.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k}×${v}`).join('  '));
+
+if (TTK) {
+  console.log('\n  每一章实际打一场要几个回合（含敌方回合；这才是「几下打死」的真身）');
+  console.log('    章  样本   玩家攻击   敌人血量   卡组   平均回合');
+  for (const st of [...ttk.keys()].sort((a, b) => a - b)) {
+    const r = ttk.get(st);
+    console.log('    ' + String(st + 1).padStart(2) + '  ' + String(r.n).padStart(5)
+      + '   ' + (r.atk / r.n).toFixed(1).padStart(8)
+      + '   ' + Math.round(r.ehp / r.n).toString().padStart(8)
+      + '   ' + (r.deck / r.n).toFixed(1).padStart(4)
+      + '   ' + (r.turns / r.n).toFixed(2).padStart(8));
+  }
+}

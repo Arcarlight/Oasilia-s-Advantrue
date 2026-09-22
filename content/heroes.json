@@ -78,14 +78,16 @@
         "rowsMul": 2,
         "bosses": 2,
         "enemy": {
-          "hp": 1.21,
+          "hp": 1.28,
           "atk": 1.16,
-          "perStage": 0.015
+          "perStage": 0.02,
+          "powerScaleMax": 1.35
         }
       },
       "rewards": {
         "itemDropMul": 1.7,
         "goldMul": 1.15,
+        "healMul": 1.7,
         "rarityMul": {
           "common": 0.7,
           "uncommon": 0.85,

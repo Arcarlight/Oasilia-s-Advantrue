@@ -661,7 +661,14 @@ export class Game {
   enemyMul(stage = this.data?.stage ?? 0) {
     const e = this.endlessEnemyMul(stage);
     const h = heroEnemyMul(this.data?.hero ?? DEFAULT_HERO_ID, stage);
-    return { hp: e.hp * h.hp, atk: e.atk * h.atk };
+    const shape = heroMapShape(this.data?.hero ?? DEFAULT_HERO_ID);
+    // powerScaleMax 只取「主角给的那个」（无尽模式不动它）：这条线决定敌人**能跟着玩家涨到多高**
+    const heroMax = shape?.enemy?.powerScaleMax;
+    return {
+      hp: e.hp * h.hp,
+      atk: e.atk * h.atk,
+      ...(heroMax ? { powerScaleMax: heroMax } : {}),
+    };
   }
 
   /**
@@ -1126,7 +1133,8 @@ export class Game {
     const range = ctx.kind === 'boss' ? BALANCE.goldPerElite : ctx.kind === 'elite' ? BALANCE.goldPerElite : BALANCE.goldPerBattle;
     const gold = Math.round(this.rng.int(range[0], range[1]) * rewardMult * rw.gold);
     d.gold += gold;
-    const heal = Math.round(d.maxHp * BALANCE.healAfterBattlePct);
+    // 战后回血：主角可以有自己的倍率（阿特拉斯两倍长的路线靠它扛消耗，见 heroRewardMul 的 heal）
+    const heal = Math.round(d.maxHp * BALANCE.healAfterBattlePct * rw.heal);
     const healed = this.heal(heal);
 
     // 成长：每场战斗永久提升一点属性，精英/首领给得更多。
