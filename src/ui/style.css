@@ -1150,9 +1150,14 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
 .fighter-flash { animation: whiteFlash var(--flash-ms, 620ms) ease both; }
 
 /* 叠在角色身上的贴图特效：出现 → 放大 → 淡出。
-   ⚠ 形状来自贴图的 **alpha 通道**（mask），颜色来自 `--fx-color`（background-color）：
-   素材本身是**纯灰**的，「换色」只能这么做 —— 上一版用 `filter: hue-rotate()` 给状态配色，
-   对灰图完全无效（中毒和灼伤长得一模一样，见 battle-fx.js 的文件头）。 */
+   ⚠ 形状 = `background-image` 那张**贴图本身**（含羽化边与 alpha），
+   颜色 = 元素自己的 `filter`（JS 按属性/状态算好一串 sepia→hue-rotate→saturate，
+   见 battle-fx.js 的 tintFilter）。
+   为什么不用「mask + background-color」那套：在无头浏览器里没问题，但**玩家机器上
+   整个特效层渲染成了全透明**（「什么特效都没了」），而同一时刻护盾的闪白（普通 filter）
+   是好的 —— 说明 CSS 本身没问题、是 mask 那条路不通。
+   另外：贴图是**纯灰**的，所以早期用 `filter: hue-rotate()` 给状态上色的写法
+   从来就没生效过（色相旋转改不了灰），这也是这一次才发现的。 */
 .fx-burst {
   position: absolute;
   left: 50%; top: 50%;
@@ -1160,11 +1165,9 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
   height: var(--fx-size, 120px);
   margin-left: calc(var(--fx-size, 120px) / -2);
   margin-top: calc(var(--fx-size, 120px) / -2);
-  background-color: var(--fx-color, #fff);
-  -webkit-mask-image: var(--fx-img); mask-image: var(--fx-img);
-  -webkit-mask-size: contain; mask-size: contain;
-  -webkit-mask-position: center; mask-position: center;
-  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   pointer-events: none;
   z-index: 6;
   mix-blend-mode: screen;

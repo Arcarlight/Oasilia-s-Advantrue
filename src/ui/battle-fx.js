@@ -21,9 +21,14 @@
 // 也就是说那套配色从写下来那天起就没生效过：中毒和灼伤看起来一模一样，
 // 「用一点特效区分状态」这件事其实一件都没做到。
 //
-// 现在把贴图的 alpha 当 mask、颜色交给 `background-color`（见 style.css 的 .fx-burst）：
-// 同一张白星芒可以是金的（强化）、绿的（中毒）、青的（护盾）、红的（出血），
+// 现在的做法：**贴图当背景**（形状与羽化边都在，这条路上玩家一直看得见特效），
+// 颜色交给元素自己的 `filter`（`sepia → hue-rotate → saturate → brightness`，见 tintFilter）。
+// 这样同一张白星芒可以是金的（强化）、绿的（中毒）、青的（护盾）、红的（出血），
 // 而且**换颜色不换形状**这件事是真的了（以前连形状都只用了两张）。
+//
+// ⚠ 中途试过「拿贴图 alpha 当 mask + background-color 上色」——在无头浏览器里是好的，
+// 但玩家机器上**整个特效层渲染成了全透明**（报「什么特效都没了」，而同一时间护盾的闪白
+// 还是好的，说明普通 CSS 没问题、是 mask 那条路不通）。所以退回到 background-image + filter。
 //
 // 怎么量：`ffmpeg -i x.png -f rawvideo -pix_fmt rgba -` 拿原始像素，
 // 逐点算 (max-min)/max 取最大值；纯灰的图这个值恒为 0。
@@ -39,12 +44,53 @@ import { el } from './dom.js';
 const FREEZE = typeof location !== 'undefined' && /[?&]fxfreeze=1/.test(location.search);
 
 /**
+ * 目标色 → 一串 CSS `filter`。
+ *
+ * ⚠ 为什么不用「拿 alpha 当 mask + background-color 上色」那套（3.1.4 初版就是那么写的）：
+ * 玩家报「**什么特效都没了**」，而**护盾的闪白还在** —— 闪白是普通的 CSS filter，
+ * 而 mask 那套在玩家的机器上渲染成了全透明（形状来自 mask，mask 没了就是什么都没有）。
+ * 更要紧的是：**改之前用 background-image 的那些普攻特效，玩家本来一直看得见** ——
+ * 也就是说这一套「贴图当背景 + filter 上色」才是被验证过能跑的做法。
+ *
+ * 具体做法：贴图本身是**纯白**的（见文件头），先用 `sepia(1)` 把它染成暖奶油色
+ * （色相约 35°），再 `hue-rotate` 转到目标色相、`saturate` 把灰白图拉出颜色、
+ * `brightness` 压出深浅。`filter` 不改 alpha —— 所以贴图的形状与羽化边都原样保留。
+ */
+export function tintFilter(color) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(color ?? '').trim());
+  if (!m) return 'none';
+  const n = parseInt(m[1], 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const mx = Math.max(r, g, b);
+  const mn = Math.min(r, g, b);
+  const l = (mx + mn) / 2;
+  const d = mx - mn;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d !== 0) {
+    if (mx === r) h = 60 * (((g - b) / d) % 6);
+    else if (mx === g) h = 60 * ((b - r) / d + 2);
+    else h = 60 * ((r - g) / d + 4);
+  }
+  if (h < 0) h += 360;
+  const rot = (h - 35 + 360) % 360;
+  const sat = Math.max(1, 1 + s * 3.4);
+  // 目标越暗，压得越暗（深蓝的龙不能渲染成浅蓝）
+  const bri = Math.max(0.42, Math.min(1.6, 0.5 + l * 1.1));
+  return `sepia(1) hue-rotate(${rot.toFixed(0)}deg) saturate(${sat.toFixed(2)}) brightness(${bri.toFixed(2)})`;
+}
+/**
  * 属性 → 特效颜色。
  *
  * 用户点名了几个：「火是红色、格斗是粉红、龙是深蓝色、毒是紫色等等」——
  * 其余按宝可梦官方的属性配色取色相，但**整体提亮**：特效是叠在暗背景上、
  * 用 `mix-blend-mode: screen` 加亮的，官方那套（暗红 #C22E28、深褐 #705848 之类）
  * 直接拿来会糊成一片黑，只剩「有东西闪了一下」。
+ *
+ * 注意：这里的色值不是直接画上去的，而是经 `tintFilter()` 变成一串 filter ——
+ * 贴图是纯白的，颜色的色相 / 明暗都靠那串 filter 调出来（见它的说明）。
  */
 const TYPE_TINT = {
   一般: '#d8d2a8', 格斗: '#ff7fa8', 飞行: '#b0a0ff', 毒: '#b45ad8', 地面: '#e8c96a',
@@ -110,9 +156,10 @@ export function burst(parent, fx, opts = {}) {
     style: {
       width: `${size}px`,
       height: `${size}px`,
-      // 颜色在这里给，形状（alpha）由 CSS 的 mask 从贴图里取 —— 见文件头
-      '--fx-img': `url(assets/img/fx/${fx}.png)`,
-      '--fx-color': color ?? '#fff',
+      // 形状：贴图当背景（和 3.1.4 之前一直用的做法一致，玩家机器上验证过能显示）
+      backgroundImage: `url(assets/img/fx/${fx}.png)`,
+      // 颜色：白色贴图靠这串 filter 上色（见 tintFilter 的说明）
+      filter: tintFilter(color),
       '--fx-rot': `${rotate}deg`,
       '--fx-ms': `${ms}ms`,
       '--fx-delay': `${delay}ms`,
@@ -161,15 +208,14 @@ export function projectile(field, fromEl, toEl, fx, opts = {}) {
       // 起点用变量给（CSS 里 .fx-projectile 的 left/top 读它），内联写死会盖掉那条规则
       '--fx-x': `${x0}px`,
       '--fx-y': `${y0}px`,
-      '--fx-img': `url(assets/img/fx/${fx}.png)`,
-      '--fx-color': color ?? '#fff',
+      backgroundImage: `url(assets/img/fx/${fx}.png)`,
+      filter: tintFilter(color),
       '--fx-rot': `${rot}deg`,
       '--fx-ms': `${ms}ms`,
       '--fx-dx': `${dx}px`,
       '--fx-dy': `${dy}px`,
     },
-  });
-  field.append(node);
+  });  field.append(node);
   setTimeout(() => node.remove(), ms + 80);
   return node;
 }
