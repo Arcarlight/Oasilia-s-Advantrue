@@ -2331,8 +2331,14 @@ export class BattleScreen {
     const body = side === 'player' ? this.playerBody : this.enemyBody;
     const idle = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
     const name = this.pickFighterAnim(slug, want);
+    const key = side === 'player' ? '_playerOneshot' : '_enemyOneshot';
+    const animKey = side === 'player' ? 'playerAnim' : 'enemyAnim';
+    const nameKey = side === 'player' ? 'playerAnimName' : 'enemyAnimName';
+    const scaleKey = side === 'player' ? 'playerScale' : 'enemyScale';
     const noop = { name, restore: () => {} };
     if (!body) return noop;
+    // 上一个动作还没收场（事件挤在一起时会这样）：先让它收掉，别叠出第二张精灵图
+    try { this[key]?.__restore?.(); } catch { /* ignore */ }
     try {
       const rowH = (this.rowR?.[side]?.height) ?? 300;
       const base = side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
@@ -2343,30 +2349,37 @@ export class BattleScreen {
         fps,
         dir: side === 'player' ? DIR.UP_RIGHT : DIR.DOWN_LEFT,
       });
-      this[side === 'player' ? '_playerOneshot' : '_enemyOneshot']?.destroy?.();
-      this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] = node;
-      // Idle 先藏起来（不销毁）：动作演完就把它放回来
-      if (idle) idle.style.visibility = 'hidden';
-      body.append(node);
-      node.playOnce(fps);
-      this[side === 'player' ? 'playerAnim' : 'enemyAnim'] = node;
-      this[side === 'player' ? 'playerAnimName' : 'enemyAnimName'] = name;
-      this[side === 'player' ? 'playerScale' : 'enemyScale'] = scale;
+      /**
+       * ⚠ 换动作必须用 replaceWith **把 Idle 换出去**，不能「藏起来 + 另外 append 一张」。
+       *
+       * `canvas.destroy()` 只停动画、**不摘节点**（见 core/sprites.js 的 destroy），
+       * 而 Idle 那张要是留在 DOM 里（哪怕 visibility: hidden），一次动作就会多留一张画布：
+       * 出几次招之后屏幕上就是**叠着的两只精灵**（用户报的「行走图也出问题了」就是这个）。
+       * 现在的做法：Idle 被换出去时节点仍然活着（引用在 this.*IdleAnim 上），
+       * 动作演完再把它 replace 回来 —— 不重建、不残留、布局也不会跳。
+       */
       const restore = () => {
         node.destroy?.();
-        if (this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] === node) {
-          this[side === 'player' ? '_playerOneshot' : '_enemyOneshot'] = null;
-        }
+        if (node.parentElement && idle) node.replaceWith(idle);
+        else node.remove?.();
+        if (this[key] === node) this[key] = null;
         if (idle) {
-          idle.style.visibility = '';
-          this[side === 'player' ? 'playerAnim' : 'enemyAnim'] = idle;
-          this[side === 'player' ? 'playerAnimName' : 'enemyAnimName'] = 'Idle';
+          this[animKey] = idle;
+          this[nameKey] = 'Idle';
+        } else {
+          this[animKey] = node;
         }
       };
+      node.__restore = restore;
+      if (idle && idle.parentElement) idle.replaceWith(node);
+      else body.append(node);
+      node.playOnce(fps);
+      this[key] = node;
+      this[animKey] = node;
+      this[nameKey] = name;
+      this[scaleKey] = scale;
       return { name, restore };
     } catch {
-      // 素材缺失 / 解码失败：只是没有动作，Idle 继续演
-      if (idle) idle.style.visibility = '';
       return noop;
     }
   }

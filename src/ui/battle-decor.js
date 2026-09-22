@@ -42,20 +42,23 @@ import { el } from './dom.js';
 /**
  * 每个半场铺几行，以及字号 / 字距的取法。
  *
- * 这一路被用户来回拧过四次，最后定在这组数字上（用户：「你之前做的第一个版本那样就不错啊，
- * 只是那个没动起来」）——**回到第一版的比例**，只把「会滚」这件事加进来：
- *   第一版：7 行、字号约 30px（在 780 的画布里是 25~31，按场地高度折算过来就是这个）、
- *          波长 450~720px、行间靠一个全角空格分开。
- *   中间两版走过弯路：为了「密」加到 13 行 → 字只能 14px，行挨着行（用户：「又小又叠在一块」）；
- *   又嫌缝隙明显把行距拉开、补三格空格 —— 结果缝隙更大、还更密（用户：「缝隙还是太大，
- *   而且太密了，还是可以放大字号」）。
- * 结论写在这儿：**字要大、行要少、行距要够、段与段之间只留一格**。
+ * 这一路被用户来回拧过五次，最后一次（3.1）把两个毛病一起说了出来：
+ * 「这也还是太密了，而且我方这边还是有很大的空格」—— 这两句其实是**两个方向**：
+ *   · 「太密」= 一行里的字挤成一条黑带（横向没有呼吸）；
+ *   · 「空格大」= 行与行之间的空白带太宽（纵向节奏太散）。
+ * 所以不能只往一个方向拧，这一版两头各让一步：
+ *   · 行数 7 → **8**、字号收到 **0.045 倍场地高**（行距/字号 ≈ 1.55，和上一版一样有呼吸）；
+ *   · 字距 **0.06 → 0.11**：横向把字拉开一点，一行才不像一条黑带；
+ *   · 两个行带压满整个场地（0.00~0.49 / 0.51~1.00）：中间那条带间空隙从 8% 缩到 **2%**，
+ *     场地中央不再有一条横贯整屏的空白带；
+ *   · 半场的文本**永远不为空**：某一边缺文本时用另一边的顶上（见 battleDecor），
+ *     否则那整半就是空的（那种失效看起来就是「我方这边有很大的空格」）。
  */
-const LINES = 7;
+const LINES = 8;
 /** 上半（敌人）与下半（主角）各自的行带（相对场地高度的比例，留出起伏余量） */
-const BANDS = { enemy: [0.03, 0.46], player: [0.54, 0.97] };
+const BANDS = { enemy: [0.0, 0.49], player: [0.51, 1.0] };
 /** 字距（相对字号）：给花纹留一点空气，不然一整行字挤成一条黑带 */
-const TRACKING = 0.06;
+const TRACKING = 0.11;
 /** 每行自己的浓淡（画进位图里，避免整片一个调子；整层的不透明度写在 style.css） */
 const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
 /** 位图里文字的填充色（暖白；用户要的是「和背景颜色相近」） */
@@ -97,8 +100,8 @@ function chooseUnitChars(maxChars, targetWave = 18) {
  * @returns {{url:string, unit:number, size:number}} 位图地址、一个周期的像素宽、字号
  */
 function paintPattern(bands, w, h) {
-  // 字号随场地高度走：**往大了给**（第一版在 477 高的场地上就画到 30px 上下）
-  const size = Math.max(18, Math.min(42, Math.round(h * 0.062)));
+  // 字号随场地高度走：0.045 倍（行距是它的 1.55 倍上下，行与行之间才有呼吸）
+  const size = Math.max(14, Math.min(34, Math.round(h * 0.045)));
   const texts = Object.values(bands).filter(Boolean);
   const maxChars = Math.max(...texts.map((t) => [...t].length));
   // 补几个空格、一个波里放几个字：两件事一起挑（见 chooseUnitChars 的说明）
@@ -146,7 +149,7 @@ function paintPattern(bands, w, h) {
     const gap = (h * (bottom - top)) / (LINES - 1);
     for (let i = 0; i < LINES; i += 1) {
       const lineY = bandTop + i * gap;
-      const amp = gap * (0.28 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
+      const amp = gap * (0.30 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
       const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度（见 chooseUnitChars）
       wls.push(wl);
       /** 相位每行错开：整片才像水面，而不是 7 条一样的波（错开多少不影响平铺） */
@@ -179,7 +182,39 @@ function paintPattern(bands, w, h) {
       }
     }
   }
+  warnIfBandEmpty(cv, h, size);
   return { url: cv.toDataURL('image/png'), unit: px, size, unitW, wls, canvas: cv };
+}
+
+/**
+ * 画完自查：两个半场里**各自都得有字**。
+ *
+ * 一层花纹「某一半是空的」这种失效最阴 —— 不报错、不提示，只是安静地留白，
+ * 而玩家看到的是「我方这边有很大一块空白」。所以画完随手数几行像素，
+ * 空了就在控制台上直说（带上当时的尺寸与参数，方便照着重现）。
+ */
+function warnIfBandEmpty(canvas, h, size) {
+  try {
+    const ctx = canvas.getContext('2d');
+    const dpr = canvas.height / Math.max(1, h);
+    const inkIn = (from, to) => {
+      let n = 0;
+      // 只抽 6 行来数（整块 getImageData 是一份大拷贝，而且这里只要「有没有」）
+      for (let k = 0; k < 6; k += 1) {
+        const y = Math.round((from + ((to - from) * k) / 5) * dpr);
+        if (y < 0 || y >= canvas.height) continue;
+        const row = ctx.getImageData(0, y, canvas.width, 1).data;
+        for (let i = 3; i < row.length; i += 4) if (row[i] > 0) n += 1;
+      }
+      return n;
+    };
+    const inkE = inkIn(h * BANDS.enemy[0], h * BANDS.enemy[1]);
+    const inkP = inkIn(h * BANDS.player[0], h * BANDS.player[1]);
+    if (!inkE || !inkP) {
+      console.warn('[decor] 花纹有一半是空的（敌人 ' + inkE + ' 像素 / 主角 ' + inkP + ' 像素）'
+        + ' —— h=' + h + ' size=' + size + '，多半是那一半的图鉴文本缺了');
+    }
+  } catch { /* 自查出问题也不该影响画面 */ }
 }
 
 /**
@@ -193,7 +228,14 @@ function paintPattern(bands, w, h) {
  * @returns {HTMLElement}
  */
 export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
-  const bands = { enemy: enemyText || fallback, player: playerText || fallback };
+  /**
+   * 半场的文本**永远不为空**：某一边缺文本（物种没登记、抓取漏了、主角那条没生成）时
+   * 用另一边顶上 —— 否则那一整半就是空的。用户看到的「我方这边有很大的空格」
+   * 就是这种失效的样子（空的那半不会有任何提示，只是安静地留白）。
+   */
+  const enemy = enemyText || playerText || fallback;
+  const player = playerText || enemyText || fallback;
+  const bands = { enemy, player };
   const box = el('div', { class: 'battle-decor' });
   /**
    * 三层用**同一张位图**：不透明度写在 style.css 的 .decor-base / .decor-glow 里
@@ -265,6 +307,11 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
      * `h` = 位图的高度，它必须等于现在场地的真实高度（不等就会被拉伸变形）。
      */
     box.decorFacts = { unit, size, h: H, unitW: Math.round(unitW), wls: wls.map((x) => Math.round(x * 100) / 100) };
+    /**
+     * 打到控制台的一份诊断（`?decor=canvas` 时才打）：窗口尺寸一变，行距 / 字号 / 波长
+     * 都跟着变，「这一版在别人那台机器上到底长什么样」只能靠这行日志复现。
+     */
+    if (debugCanvas) console.log('[decor] ' + JSON.stringify({ ...box.decorFacts, bands: BANDS }));
     /**
      * 两个行带的位置（相对场地高度的比例）也交出去：battle-view 要按它算高亮的纵向中心。
      * 为什么不用精灵自己的中心：精灵贴着场地边（我方在最左、对手偏上），

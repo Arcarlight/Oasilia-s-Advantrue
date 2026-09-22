@@ -139,6 +139,16 @@
        * 这一条也要顺带把它点掉（顺便就断言了它点得掉、点完能到结算页）。
        */
       const dropSeen = await clearDrop();
+      /**
+       * 行走图不许叠：sprites.js 的 destroy() 只停动画、**不摘节点**，所以「换动作」必须是
+       * replaceWith 换出去再换回来 —— 一旦写成「藏起来 + 另 append 一张」，
+       * 出几次招屏幕上就会叠着两只精灵（用户报过「行走图也出问题了」）。
+       */
+      const bodyCounts = [...document.querySelectorAll('.fighter-body')].map((n) => n.querySelectorAll('canvas').length);
+      log('行走图 canvas 数（敌/我） =', bodyCounts.join('/'), '｜掉落页？' + dropSeen, '｜奖励页？' + !!document.querySelector('.reward-screen'));
+      if (bodyCounts.length && bodyCounts.some((n) => n !== 1)) {
+        errors.push('行走图叠了（每个 fighter-body 应该只有 1 张 canvas）：' + bodyCounts.join('/'));
+      }
       const hasReward = !!document.querySelector('.reward-screen');
       log('真打赢一场（不自己调 finishBattle）→ phase=' + g.phase, '掉落页？' + dropSeen, '奖励页？' + hasReward, '回合数=' + turn);
       if (g.phase !== 'reward' || !hasReward) {
@@ -415,6 +425,19 @@
       log('音效：这一轮真的播了 ' + started + ' 声 · 被丢掉 ' + dropped + ' 声（发牌 3 + 打牌 2 共 5 声）');
       if (started < 4) errors.push('发牌 / 打牌的音效没有真的播出来（只播了 ' + started + ' 声）');
       if (dropped) errors.push('有音效被静默丢掉：' + dropped + ' 声');
+
+      // ⑥ 真出两张牌，看行走图会不会叠成两张
+      const playable = bsv.battle.hand('player').filter((c) => bsv.battle.canPlay(c.uid)).slice(0, 2);
+      for (const c of playable) { await bsv.playCard(c.uid); await wait(420); }
+      const counts = [...document.querySelectorAll('.fighter-body')].map((n) => n.querySelectorAll('canvas').length);
+      log('出牌后行走图 canvas 数（敌/我） =', counts.join('/') + '（出牌 ' + playable.length + ' 张）');
+      if (counts.length && counts.some((n) => n !== 1)) {
+        errors.push('行走图叠了（每个 fighter-body 应该只有 1 张 canvas）：' + counts.join('/'));
+      }
+      // 出完牌必须回到 Idle（不能卡在动作的最后一帧）
+      const backToIdle = bsv.playerAnimName === 'Idle' && bsv.enemyAnimName === 'Idle';
+      log('出完牌的动作 =', bsv.playerAnimName + ' / ' + bsv.enemyAnimName);
+      if (!backToIdle) errors.push('动作演完没有回到 Idle（现在停在 ' + bsv.playerAnimName + '）');
     } catch (e) {
       errors.push('battle-3.1: ' + e.message);
     }

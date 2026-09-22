@@ -871,6 +871,24 @@ if (!CARDS.some((c) => c.effects?.some((e) => e.kind === 'cleanse'))) {
   if (stale.length) err(`这些战斗物种连 Idle 素材都没有：${stale.slice(0, 5).join('、')}`);
 }
 
+/**
+ * 主角的背景花纹文本（3.1 加的一条，来由是一次真事故）。
+ *
+ * 战斗背景那层花纹上下两半分别铺敌人与主角那个物种的图鉴文本。某一边缺文本时，
+ * 那**整整半场就是空的** —— 不报错、不提示，只是安静地留白（用户报的
+ * 「我方这边有很大的空格」正是这种失效）。battle-decor 里已经做了兜底（用另一边顶上），
+ * 但这里再钉一层：主角的记录里必须有 `dexText`。
+ */
+{
+  const missing = HEROES.filter((h) => !h.dexText || String(h.dexText).trim().length < 8);
+  if (missing.length) {
+    err(`主角缺背景花纹文本（dexText）：${missing.map((h) => h.name).join('、')}`
+      + ' —— build-content 会从 content/species-dex.json 按物种补，缺了说明那份表漏了这个物种');
+  } else {
+    note(`主角背景花纹文本都在：${HEROES.map((h) => h.name).join('、')}`);
+  }
+}
+
 // ---------- 5. BGM ----------
 if (BGM_FILES) {
   const bgmDir = path.join(ROOT, 'assets', 'audio', 'bgm');
