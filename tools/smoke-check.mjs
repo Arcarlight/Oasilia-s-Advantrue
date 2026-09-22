@@ -305,6 +305,31 @@ const SCRIPT = `
           if (Math.abs(facts.h - decorH) > 2) {
             errors.push('位图高度和场地高度对不上（' + facts.h + ' vs ' + decorH + '）—— 会被纵向拉伸变形');
           }
+          /**
+           * 位图**不能被排漏一段**（3.1.3）。
+           *
+           * 这一条守的是「字串没排满一个周期」：排到一半就停了的话，位图右端会空一截，
+           * 平铺出去就是每个周期一条竖向空白带 —— 不报错、不提示，只是安静地留白。
+           * 3.1.2 就是这个毛病（?decor=probe 量到最长的空白有 50~62 像素宽）。
+           * 判据取「最长的一段没有字的竖条」：一个字宽以内算正常
+           * （段与段之间补的那个全角空格本身就是这么宽），超过就是排漏了。
+           * ⚠ 一开始量的是「左 / 中 / 右三条 78px 宽的竖带里有没有字迹」，
+           * 注入 bug 一试就露馅：留了 60px 空白，那一条里仍然有 1100 多个字迹像素，照样放行。
+           */
+          const fill = facts.fill ?? {};
+          for (const side of ['enemy', 'player']) {
+            const f = fill[side];
+            if (!f) { errors.push('花纹没有留下那一半的字迹体检表（' + side + '）'); continue; }
+            log('  字迹（' + side + '）：左 ' + f.left + ' / 中 ' + f.mid + ' / 右 ' + f.right
+              + ' 像素 · 最长空白 ' + f.maxEmptyRun + 'px（在第 ' + f.maxEmptyAt + 'px 处）');
+            if (!f.left || !f.mid || !f.right) {
+              errors.push('花纹位图在 ' + side + ' 这一半整片没字（' + f.left + '/' + f.mid + '/' + f.right + '）');
+            }
+            if (!(f.maxEmptyRun <= facts.size)) {
+              errors.push('花纹位图在 ' + side + ' 这一半排漏了一段（最长空白 ' + f.maxEmptyRun
+                + 'px > 一个字宽 ' + facts.size + 'px，位置 ' + f.maxEmptyAt + '）—— 平铺出去是一条条竖向空白带');
+            }
+          }
         }
         const probe = document.createElement('div');
         probe.style.cssText = 'position:absolute;left:-9999px;top:0;width:10px;height:10px;';

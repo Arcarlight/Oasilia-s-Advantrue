@@ -65,59 +65,68 @@ const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
 const INK = '255, 241, 216';
 
 /**
- * 每一行用**不同的波长**（3.1.2，用户：「每条波浪左右错开一点，现在这样感觉有点整齐」）。
+ * 每一行用**不同的波长**（3.1.2）。
  *
- * 波长有个硬约束：只能是「单元宽度 ÷ 整数」（见文件头，否则平铺有缝）。
+ * 波长有个硬约束：只能是「一个周期的宽度 ÷ 整数」（见文件头，否则平铺有缝）。
  * 但那个**整数**每行可以不一样 —— 全都取同一个的话，各行的波峰会在竖直方向排成一列，
  * 整片看上去像一匹印花布；错开之后相邻行的波峰互相穿过去，才像水面。
- * 这 8 个数是「每行一个周期里放几个波」，故意不等距（含 7 这种质数，避免各行周期成倍数关系）。
+ * 这 8 个数故意不等距（含 5 这种质数，避免各行周期成倍数关系）。
  */
-const WAVE_COUNTS = [3, 4, 5, 4, 3, 5, 4, 3];
-
-/** 一个整数 n 的、最接近 target 的因数（用来挑「一个波里放多少字」） */
-function nearestDivisor(n, target) {
-  let best = 1;
-  for (let d = 1; d <= n; d += 1) {
-    if (n % d) continue;
-    if (Math.abs(d - target) < Math.abs(best - target)) best = d;
-  }
-  return best;
-}
+const ROW_WAVES = [3, 4, 5, 4, 3, 5, 4, 3];
 
 /**
- * 挑「段与段之间补几个全角空格」。
+ * 每一行的**起点**（3.1.3，用户：「我说的左右错开是指 x 轴上每一道波我希望起点都在不同位置，
+ * 而不是现在像方便面一样 x 轴全都对齐」）。
  *
- * 两件事要同时满足，否则花纹就不对：
- *   · **缝要小**（用户：「每段中间的缝隙还是太大」）→ 补的空格越少越好；
- *   · 一个周期的**字数必须能分成几个完整的波** —— 波长只能是「单元宽度 ÷ 整数」，
- *     不然波长除不尽平铺周期，接缝处波峰对不上（会有竖缝）。
- * 踩过的坑：固定补 1 个空格时，最长那句图鉴文本正好凑出 53 个字 —— **质数**，
- * 约数只有 1 和 53，于是整个周期只能算一个波，波就没了。
- * 所以这里从 1 个空格往上试，找到第一个「有接近 18 的约数」的组合。
+ * 3.1.2 这里写的是 `(i * 0.618) % 1` —— 黄金比取小数。它确实把各行错开了，而且错得**特别均匀**：
+ * 「低差异序列」的定义就是「任意两个点的间距都差不多」。可在花纹上「均匀」正是「规律」，
+ * 眼睛看到的是一排等距斜过去的面条。更要命的是它只错开**不到一个字**：
+ * 同一半场里各行用的是同一段文本、又是同一套字格，于是同一个字在竖直方向排成了一列列 ——
+ * `?decor=probe` 量出来各行的字格偏移只有 0/0/20/6/2/24/8/20 像素，而一个字有 26 像素宽，
+ * 也就是说「看得出来是在同一列上」。
+ *
+ * 现在改成**整段文本一起转**：这一行从第几个字开始排。转小半段就是几百像素，
+ * 各行在同一个 x 上用的完全是文本里不同的位置，字柱自然就散了。
+ * 这 8 个比例是手挑的 —— 不按等差、也不按黄金比：相邻两行间距忽大忽小（0.11~0.30 个周期），
+ * 而且任意两行都不会挨得太近（最小间隔 0.09 ≈ 一个字的宽度）。
  */
-function chooseUnitChars(maxChars, targetWave = 18) {
-  for (let pad = 1; pad <= 6; pad += 1) {
-    const n = maxChars + pad;
-    const d = nearestDivisor(n, targetWave);
-    if (d > 1 && Math.abs(d - targetWave) <= Math.max(2, targetWave * 0.35)) return { unitChars: n, waveChars: d, pad };
-  }
-  const n = maxChars + 1;
-  return { unitChars: n, waveChars: nearestDivisor(n, targetWave), pad: 1 };
-}
+const ROW_START = [0.00, 0.64, 0.24, 0.88, 0.39, 0.14, 0.75, 0.48];
+/** 起点再补一个**不到一个字**的零头：只转整字的话，两行的字格仍然落在同一个网格上 */
+const ROW_DRIFT = [0.00, 0.37, 0.71, 0.13, 0.58, 0.92, 0.26, 0.85];
+/**
+ * 每一行的波峰落在自己波长里的什么位置（比例，0 = 波峰贴着左边缘）。
+ *
+ * 这是「波从哪儿起」的第二个旋钮，和 ROW_START 各管一头：起点管**字**排在哪里，
+ * 相位管**波**鼓在哪里。原来是 `i * 2.399`（又是低差异序列），所以量出来会有
+ * 「两行的波峰都在第 194 像素」这种巧合（用户的「全都对齐」有它一份）。
+ */
+const ROW_CREST = [0.10, 0.85, 0.55, 0.30, 0.62, 0.92, 0.07, 0.43];
+/**
+ * 波幅（相对行距）。原来写的是 `0.26 + (i%3)*0.05 + (i%2 ? 0.04 : 0)` ——
+ * 那本身就是个周期为 6 的花样，整片看上去像一张瓦楞纸。
+ * 换成手挑的一串：大的小的交替，但没有周期。
+ */
+const ROW_AMP = [0.34, 0.21, 0.30, 0.24, 0.37, 0.20, 0.28, 0.33];
+
+/** 以上四个表都按「行号」取；主角那一半再挪 3 格，免得上下两半的节奏刚好对上 */
+const rowAt = (i, side) => (i + (side === 'player' ? 3 : 0)) % LINES;
 
 /**
  * 把「一个周期的花纹」画成位图。
- * @returns {{url:string, unit:number, size:number}} 位图地址、一个周期的像素宽、字号
+ * @returns {{url:string, unit:number, size:number, rows:RowFact[]}} 位图地址、一个周期的像素宽、字号
  */
 function paintPattern(bands, w, h) {
   // 字号随场地高度走：0.045 倍（行距是它的 1.55 倍上下，行与行之间才有呼吸）
   const size = Math.max(14, Math.min(34, Math.round(h * 0.045)));
-  const texts = Object.values(bands).filter(Boolean);
-  const maxChars = Math.max(...texts.map((t) => [...t].length));
-  // 补几个空格、一个波里放几个字：两件事一起挑（见 chooseUnitChars 的说明）
-  const { unitChars, waveChars } = chooseUnitChars(maxChars, 18);
-  /** 每行的重复单元（图鉴文本 + 全角空格）——所有行共用同一个字符数，宽度就一致 */
-  const unit = (t) => t + '　'.repeat(unitChars - [...t].length);
+  /**
+   * 每行的重复单元 = 图鉴文本 + 一个全角空格（缝里留一口气）。
+   *
+   * ⚠ 补空格**不再需要在字数上凑约数**：波长现在是「一个周期的宽度 ÷ 波数」，
+   * 除得尽与否跟文本有几个字无关。（3.1.2 之前是「单元宽度 ÷ 字数约数」，
+   * 而最长那句图鉴正好 53 个字 —— 质数，约数只有 1 和 53，一个周期里只剩一个波，
+   * 波形就没了；那段折腾记在 ROW_WAVES 上。）
+   */
+  const unit = (t) => t + '　';
 
   const cv = document.createElement('canvas');
   const ctx = cv.getContext('2d');
@@ -133,8 +142,17 @@ function paintPattern(bands, w, h) {
   };
   /** 排布时的步进 = 字形宽度 + 字距（两边用同一条规则，不然位图和量到的宽度对不上） */
   const stepOf = (ch) => widthOf(ch) + size * TRACKING;
-  const unitAdv = (t) => [...unit(t)].reduce((s, ch) => s + stepOf(ch), 0);
-  const unitW = Math.max(...texts.map(unitAdv));
+  const advOf = (t) => [...t].reduce((s, ch) => s + stepOf(ch), 0);
+  /**
+   * 两个半场各量各的：图鉴文本的长度不一样（半角数字只占半个字宽），
+   * 所以**各按各的缩放**，让每一半都严格以 px 为周期（见下面 `s`）。
+   * 原来是一个全局缩放（px / 最长那一半）：短的那一半周期就不是 px，
+   * 平铺到接缝处会对不齐，而且字串排不满整幅位图 —— `?decor=probe` 量到右端
+   * 有 50~62 像素宽的空白（每个周期一条竖向空白带）。
+   */
+  const pad = { enemy: unit(bands.enemy ?? ''), player: unit(bands.player ?? '') };
+  const bandW = { enemy: advOf(pad.enemy), player: advOf(pad.player) };
+  const unitW = Math.max(bandW.enemy, bandW.player);
   const px = Math.max(160, Math.round(unitW));            // 位图宽度取整（整数像素平铺最干净）
 
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -142,97 +160,226 @@ function paintPattern(bands, w, h) {
   cv.height = Math.max(1, Math.round(h * dpr));
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, px, h);
-  /**
-   * ② 横向缩放到**整数像素宽**：实测宽度与取整后的宽度差不到 1px，
-   * 但如果不缩放，每个平铺块都会攒出一点点缝。缩放量在千分之一上下，看不出来。
-   */
-  ctx.scale(px / unitW, 1);
   ctx.font = font;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 
+  const rows = [];
   for (const [side, [top, bottom]] of Object.entries(BANDS)) {
-    const text = bands[side];
-    if (!text) continue;
-    const u = unit(text);
+    const u = pad[side];
+    if (!u) continue;
+    const n = u.length;
+    /** 这一半的横向缩放：一个周期正好等于 px（这样平铺接缝处逐像素接得上） */
+    const s = px / bandW[side];
     const bandTop = h * top;
     const gap = (h * (bottom - top)) / (LINES - 1);
     for (let i = 0; i < LINES; i += 1) {
+      const k = rowAt(i, side);
       const lineY = bandTop + i * gap;
-      const amp = gap * (0.26 + (i % 3) * 0.05 + (i % 2 ? 0.04 : 0));   // 波幅跟行距挂钩，行与行不会撞上
-      /**
-       * 这一行的波长 = 单元宽度 ÷ 整数（`WAVE_COUNTS[i]`）。
-       * 两半场错开一位取，免得上下两半的节奏刚好对齐。
-       */
-      const waveCount = WAVE_COUNTS[(i + (side === 'player' ? 3 : 0)) % WAVE_COUNTS.length];
-      const wl = unitW / waveCount;
+      const amp = gap * ROW_AMP[k];
+      /** 这一行的波长 = 一个周期的宽度 ÷ 波数（`ROW_WAVES[i]`）—— 两边场各取各的表项 */
+      const wl = px / ROW_WAVES[k];
       wls.push(wl);
-      /**
-       * 相位：按**黄金角**（2.399 弧度）逐行递增 —— 相邻行的波峰错开的角度和周期「不成倍数」，
-       * 于是它们永远不会排成一列（用 i*1.7 这种等差相位时，隔几行就会重新对齐）。
-       */
-      const phase = i * 2.399 + (side === 'enemy' ? 0.6 : 2.4);
+      /** 相位：把波峰挪到这一行自己的 ROW_CREST 位置（0 = 贴着左边缘） */
+      const phase = Math.PI / 2 - ROW_CREST[k] * Math.PI * 2;
+      /** 这一行的字从文本的哪儿起（体检报告里要报一个像素数，见 probeTile） */
+      const startIdx = Math.round(ROW_START[k] * n) % n;
+      const startPx = startIdx * size * (1 + TRACKING) + ROW_DRIFT[k] * size;
+      rows.push({
+        band: side, i, lineY, amp, wl, phase,
+        start: ROW_START[k], crestFrac: ROW_CREST[k], startPx,
+      });
       ctx.fillStyle = `rgba(${INK}, ${LINE_ALPHA[i % LINE_ALPHA.length]})`;
       /**
-       * ③ 逐字沿正弦排布：位置按实测字宽累加，角度取这一点的切线。
-       *
-       * ⚠ 每一行的起点还要错开，而且要用**黄金比**那种不规则间距（`i * 0.618` 取小数部分）：
-       * 所有行共用同一套字形网格、波长又一样的话，段与段之间的空隙会在纵向排成一列列竖缝，
-       * 看着像表格格子（用户报的「每段中间的缝隙还是太大」有一半是这个原因）。
-       * 黄金比错位能让空隙永远不在同一列上相遇。起点错开不影响平铺。
-       *
-       * 从 -2 画到 unitChars+2：首尾各多画两个字，它们跨过平铺边界的部分由相邻那一块补上。
+       * 这一行的字串从第 `startIdx` 个字开始循环取用，起点再往左挪一个零头。
+       * 从 x = -零头 一路排到**铺满整幅位图**（`sx >= px` 才停）：
+       * 排到 x < 0 的部分会被画布裁掉，由左边相邻那一块（也就是上一周期的尾巴）补上 ——
+       * 因为整个排布（字格 + 波）严格以 px 为周期，接缝处本来就是逐像素相同的。
        */
-      const order = [];
-      for (let k = -2; k <= unitChars + 2; k += 1) order.push(u[((k % unitChars) + unitChars) % unitChars]);
-      let x = -2 * stepOf(u[0]) - ((i * 0.618) % 1) * size;
-      for (const ch of order) {
-        const a = (x / wl) * Math.PI * 2 + phase;
+      const charAt = (j) => u[(((startIdx + j) % n) + n) % n];
+      let xu = -ROW_DRIFT[k] * size;
+      for (let j = 0; j < n + 40; j += 1) {
+        const ch = charAt(j);
+        const sx = xu * s;
+        if (sx >= px) break;
+        const a = (sx / wl) * Math.PI * 2 + phase;
         const y = lineY + amp * Math.sin(a);
         // 切线角度 = atan(dy/dx)，dy/dx = amp·cos(a)·2π/wl
         const slope = (amp * Math.cos(a) * Math.PI * 2) / wl;
         ctx.save();
-        ctx.translate(x, y);
+        ctx.translate(sx, y);
         ctx.rotate(Math.atan(slope));
+        ctx.scale(s, 1);
         ctx.fillText(ch, 0, 0);
         ctx.restore();
-        x += stepOf(ch);
+        xu += stepOf(ch);
       }
     }
   }
-  warnIfBandEmpty(cv, h, size);
-  return { url: cv.toDataURL('image/png'), unit: px, size, unitW, wls, canvas: cv };
+  const fill = inkReport(cv, px, h);
+  return { url: cv.toDataURL('image/png'), unit: px, size, unitW, wls, canvas: cv, rows, fill };
 }
 
 /**
- * 画完自查：两个半场里**各自都得有字**。
- *
- * 一层花纹「某一半是空的」这种失效最阴 —— 不报错、不提示，只是安静地留白，
- * 而玩家看到的是「我方这边有很大一块空白」。所以画完随手数几行像素，
- * 空了就在控制台上直说（带上当时的尺寸与参数，方便照着重现）。
+ * 每一行的几何事实（`?decor=probe` 用它，逐像素反推「这一行的波到底从哪儿起」）。
+ * @typedef {{band:string, i:number, lineY:number, amp:number, wl:number, phase:number}} RowFact
  */
-function warnIfBandEmpty(canvas, h, size) {
-  try {
-    const ctx = canvas.getContext('2d');
-    const dpr = canvas.height / Math.max(1, h);
-    const inkIn = (from, to) => {
-      let n = 0;
-      // 只抽 6 行来数（整块 getImageData 是一份大拷贝，而且这里只要「有没有」）
-      for (let k = 0; k < 6; k += 1) {
-        const y = Math.round((from + ((to - from) * k) / 5) * dpr);
-        if (y < 0 || y >= canvas.height) continue;
-        const row = ctx.getImageData(0, y, canvas.width, 1).data;
-        for (let i = 3; i < row.length; i += 4) if (row[i] > 0) n += 1;
+
+/**
+ * `?decor=probe`：把**已经画好的那张位图**逐像素量一遍，把数字打到控制台。
+ *
+ * 为什么要有这个：花纹这一路被用户来回拧，判据一直是「看着像不像波浪」这种主观话，
+ * 而这几件事其实能量 ——
+ *
+ *   ① **每一行的波从哪儿起**：位图里每行的字都严格贴着一条正弦排，
+ *      所以拿每一列的字形重心 y 去和这一行自己的 sin/cos 做一次相关，就能把那行的相位反解出来
+ *      （见下面的 atan2），再换成「波峰离左边缘多少像素」。这是可以和用户对账的数字。
+ *   ② **每一行的字从哪儿起**：`startPx` = 这一行从文本的第几个字开始排、换成像素是多少。
+ *      这一条是**算出来的**（画的时候就是这么摆的），不是量出来的：
+ *      本来想用「每列墨量做互相关、看峰值 lag」，试过，不成立 —— 半角数字让字格不均匀，
+ *      加上一个周期正好整除了，lag 有周期性歧义（算出来 106 而真值是 609），
+ *      与其留一个不可信的指标，不如直接用画的时候那个数。
+ *   ③ **这幅位图是不是整幅都铺满了字**：字串没排满一个周期，位图右端就会空一截 ——
+ *      平铺出去是「每个周期一条竖向空白带」。3.1.2 就是这样（量到 50~62 像素宽），
+ *      用户看不到但迟早会以「那边有一块空的」报上来。这里按列统计，报出最长的一段空白。
+ *
+ * ⚠ 每列的重心要按**帐篷权重**算（离这一行的中线越远越不算数）：
+ * 相邻行本来就是上下叠着的（波幅大于行距的一半），直接取窗口内的重心会把邻居的字也算进来，
+ * 反解出来的相位就是错的（第一版就是这么错的：算出来 194 和 195 两行「同相」，实际差着半个周期）。
+ */
+function probeTile(canvas, px, h, size, rows) {
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const { width: cw, height: ch } = canvas;
+  const img = ctx.getImageData(0, 0, cw, ch).data;
+  const sxf = cw / px;                      // 位图坐标 → 画布坐标（dpr）
+  const syf = ch / h;
+  const alpha = (x, y) => img[(y * cw + x) * 4 + 3];
+  const out = { unit: px, size, bands: {} };
+  for (const band of [...new Set(rows.map((r) => r.band))]) {
+    const mine = rows.filter((r) => r.band === band);
+    const y0 = Math.min(...mine.map((r) => r.lineY - r.amp - size));
+    const y1 = Math.max(...mine.map((r) => r.lineY + r.amp + size));
+    // ① 覆盖率：逐列看这一半有没有字，找最长的一段空白
+    let run = 0; let worst = 0; let worstAt = 0; let empty = 0;
+    for (let x = 0; x < cw; x += 1) {
+      let ink = 0;
+      for (let y = Math.max(0, Math.round(y0 * syf)); y < Math.min(ch, Math.round(y1 * syf)); y += 1) ink += alpha(x, y);
+      if (ink > 0) { run = 0; continue; }
+      empty += 1; run += 1;
+      if (run > worst) { worst = run; worstAt = x; }
+    }
+    // ② 逐行量相位、报字格起点
+    const lines = mine.map((r) => {
+      const half = r.amp + size * 0.6;                       // 帐篷权重的作用半径
+      const top = Math.max(0, Math.round((r.lineY - half) * syf));
+      const bot = Math.min(ch, Math.round((r.lineY + half) * syf));
+      const cy = [];                                         // 这一行的「每列字形重心 y」
+      for (let x = 0; x < cw; x += 1) {
+        let sum = 0; let wy = 0;
+        for (let y = top; y < bot; y += 1) {
+          const a = alpha(x, y);
+          if (!a) continue;
+          const w = a * Math.max(0, 1 - Math.abs(y / syf - r.lineY) / half);
+          sum += w; wy += w * (y / syf);
+        }
+        cy.push(sum > 0 ? wy / sum : NaN);
       }
-      return n;
+      let sy = 0; let n = 0;
+      for (const v of cy) if (Number.isFinite(v)) { sy += v; n += 1; }
+      const mean = n ? sy / n : 0;
+      let sa = 0; let ca = 0;
+      for (let x = 0; x < cw; x += 1) {
+        if (!Number.isFinite(cy[x])) continue;
+        const th = ((x / sxf) / r.wl) * Math.PI * 2;
+        sa += (cy[x] - mean) * Math.sin(th);
+        ca += (cy[x] - mean) * Math.cos(th);
+      }
+      const phase = Math.atan2(ca, sa);                      // y = lineY + amp·sin(2πx/wl + phase)
+      const frac = (a) => (((a / (Math.PI * 2)) % 1) + 1) % 1;
+      return {
+        row: r.i,
+        wl: Math.round(r.wl),
+        crest: Math.round(frac(Math.PI / 2 - phase) * r.wl),          // 量出来的波峰位置
+        want: Math.round(frac(Math.PI / 2 - r.phase) * r.wl),         // 画的时候用的（对不上就是画错了）
+        /**
+         * 这一行的量测窗口被位图边缘切了一半 —— 半场的第一行正好压在场地上沿（`BANDS` 从 0 开始），
+         * 它的字本来就有一半在画布外，重心是偏的，**这一行的 `crest` 不能拿来对账**
+         * （实测那行的量出来 208、画的是 32，一度以为是画错了）。其余各行才对得上。
+         */
+        clipped: r.lineY - half < 0 || r.lineY + half > h,
+        startPx: Math.round(r.startPx),                              // 这一行从文本的哪儿开始（算出来的）
+      };
+    });
+    out.bands[band] = {
+      bandY: [Math.round(y0), Math.round(y1)],
+      emptyCols: Math.round(empty / sxf),
+      maxEmptyRun: Math.round(worst / sxf),
+      maxEmptyAt: Math.round(worstAt / sxf),
+      wls: lines.map((l) => l.wl),
+      crests: lines.map((l) => l.crest),
+      wantCrests: lines.map((l) => l.want),
+      clipped: lines.map((l) => (l.clipped ? 1 : 0)).join(''),
+      startPx: lines.map((l) => l.startPx),
     };
-    const inkE = inkIn(h * BANDS.enemy[0], h * BANDS.enemy[1]);
-    const inkP = inkIn(h * BANDS.player[0], h * BANDS.player[1]);
-    if (!inkE || !inkP) {
-      console.warn('[decor] 花纹有一半是空的（敌人 ' + inkE + ' 像素 / 主角 ' + inkP + ' 像素）'
-        + ' —— h=' + h + ' size=' + size + '，多半是那一半的图鉴文本缺了');
+  }
+  console.log('[decor] probe ' + JSON.stringify(out));
+}
+
+/**
+ * 画完自查，顺便交出一张「字迹体检表」（冒烟测试拿它当门禁）。两件事：
+ *
+ *   ① **两个半场里各自都得有字**。「某一半是空的」这种失效最阴 —— 不报错、不提示，
+ *      只是安静地留白，而玩家看到的是「我方这边有很大一块空白」。
+ *   ② **这一半里最长的一段没有字的竖条有多少像素**（`maxEmptyRun`）。
+ *      字串没排满一个周期的话，位图右端会空一截，平铺出去就是「每个周期一条竖向空白带」——
+ *      3.1.2 就是这个毛病（`?decor=probe` 量到 50~62 像素宽），当时没有任何东西拦得住它。
+ *
+ * ⚠ 判据必须是**连续空白有多长**，不能是「两端那一条里有没有字」：
+ * 第一版就是量「左 / 中 / 右三条竖带里有多少字迹」，结果的带宽是三个字宽（≈78px），
+ * 而那个毛病留下的空白只有 50~60px —— 注入 bug 验证的时候，右端明明空了一截，
+ * 条带里仍然有 1100 多个字迹像素，这条门禁**照样放行**。所以这里按列统计，
+ * 最长空白取真值；「端头有没有字」只作为报告里的参考数字。
+ *
+ * 阈值在冒烟那边：**一个字宽以内算正常**（段与段之间补的那个全角空格本身就是这么宽），
+ * 超过一个字宽就说明没排满。
+ */
+function inkReport(canvas, px, h) {
+  const out = {};
+  try {
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const dpr = canvas.width / Math.max(1, px);
+    for (const [side, [top, bottom]] of Object.entries(BANDS)) {
+      const cy = Math.max(0, Math.round(h * top * dpr));
+      const chh = Math.max(1, Math.min(canvas.height - cy, Math.round(h * (bottom - top) * dpr)));
+      const d = ctx.getImageData(0, cy, canvas.width, chh).data;
+      /** 每一列的字迹像素数（这一半里所有行加在一起） */
+      const col = new Array(canvas.width).fill(0);
+      for (let y = 0; y < chh; y += 1) {
+        const row = y * canvas.width * 4;
+        for (let x = 0; x < canvas.width; x += 1) col[x] += d[row + x * 4 + 3];
+      }
+      let run = 0; let worst = 0; let worstAt = 0;
+      for (let x = 0; x < canvas.width; x += 1) {
+        if (col[x] > 0) { run = 0; continue; }
+        run += 1;
+        if (run > worst) { worst = run; worstAt = x; }
+      }
+      const w = Math.round(canvas.width * 0.08);                 // 端头那一条取 8% 宽
+      const sum = (from, to) => col.slice(from, to).reduce((a, b) => a + b, 0);
+      out[side] = {
+        left: sum(0, w),
+        mid: sum(Math.round(canvas.width / 2 - w / 2), Math.round(canvas.width / 2 + w / 2)),
+        right: sum(canvas.width - w, canvas.width),
+        maxEmptyRun: Math.round(worst / dpr),
+        maxEmptyAt: Math.round(worstAt / dpr),
+      };
+      const v = out[side];
+      if (!v.left && !v.mid && !v.right) {
+        console.warn('[decor] 花纹有一半是空的（' + side + '） —— h=' + h + '，多半是那一半的图鉴文本缺了');
+      }
     }
   } catch { /* 自查出问题也不该影响画面 */ }
+  return out;
 }
 
 /**
@@ -272,7 +419,9 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
   });
 
   let last = { w: 0, h: 0 };
-  const debugCanvas = new URLSearchParams(location.search).get('decor') === 'canvas';
+  const decorParam = new URLSearchParams(location.search).get('decor');
+  const debugCanvas = decorParam === 'canvas';
+  const probe = decorParam === 'probe';
   /**
    * 把位图铺到三层上。
    *
@@ -304,10 +453,11 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
     // 太小的量测直接跳过（场地还没排好版时的 0 / 几像素会让位图压根不成形）
     if (W < 120 || H < 120) return;
     if (!force && Math.abs(W - last.w) < 1 && Math.abs(H - last.h) < 1) return;
-    const { url, unit, size, unitW, wls, canvas } = paintPattern(bands, W, H);
+    const { url, unit, size, unitW, wls, canvas, rows, fill } = paintPattern(bands, W, H);
     last = { w: W, h: H };
     for (const node of layers) node.style.backgroundImage = `url(${url})`;
     applyToLayers(unit, H);
+    if (probe) probeTile(canvas, unit, H, size, rows);
     /**
      * `?decor=canvas`：把那张平铺位图本身摊在屏幕上（调试用）。
      * 花纹出问题时（比如字被压扁、接缝有缝）看它比看战场直接得多 ——
@@ -316,15 +466,27 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
     if (debugCanvas) {
       canvas.style.cssText = `position:absolute;left:0;top:0;z-index:9;opacity:1;outline:2px solid #f0f;`
         + `width:${unit}px;height:${H}px;image-rendering:pixelated;`;
-      if (canvas.parentNode !== box) box.append(canvas);
+      /**
+       * ⚠ 每次重画都要**先把上一张挪走**：场地尺寸一变就会重画，几张位图叠在同一个位置上
+       * （都是 opacity:1），看起来像「字重影／一片糊」，很容易被当成花纹本身画错了 ——
+       * 第一次拿 `?decor=canvas` 看这张图时就被骗过一回。
+       */
+      box.__dbgCanvas?.remove?.();
+      box.__dbgCanvas = canvas;
+      box.append(canvas);
     }
     /**
      * 留在元素上给体检用的一组事实（smoke-check 会读它们）：
      * `unit` = 一个周期的像素宽（= 滚动距离），`wls` = 每一行的波长 ——
      * 平铺无缝的数学条件就是**每一行的波长都能整除 unit**；
-     * `h` = 位图的高度，它必须等于现在场地的真实高度（不等就会被拉伸变形）。
+     * `h` = 位图的高度，它必须等于现在场地的真实高度（不等就会被拉伸变形）；
+     * `fill` = 两个半场在位图左 / 中 / 右三条竖带上的字迹像素数（任何一条是 0
+     *   都意味着平铺出去会看到空白带，见 inkReport）。
      */
-    box.decorFacts = { unit, size, h: H, unitW: Math.round(unitW), wls: wls.map((x) => Math.round(x * 100) / 100) };
+    box.decorFacts = {
+      unit, size, h: H, unitW: Math.round(unitW),
+      wls: wls.map((x) => Math.round(x * 100) / 100), fill,
+    };
     /**
      * 打到控制台的一份诊断（`?decor=canvas` 时才打）：窗口尺寸一变，行距 / 字号 / 波长
      * 都跟着变，「这一版在别人那台机器上到底长什么样」只能靠这行日志复现。

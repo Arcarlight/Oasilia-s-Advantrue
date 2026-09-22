@@ -208,9 +208,9 @@
     },
     "battle_crystal": {
       "source": "dsymphony",
-      "file": "DS-113o.ogg",
-      "name": "朽ち果てた紋章",
-      "page": "ダンジョン · たたずむ古城",
+      "file": "DS-118o.ogg",
+      "name": "Future Savior",
+      "page": "戦い · さわやかな戦闘曲",
       "desc": "水晶洞窟的战斗",
       "room": "battle"
     },
@@ -263,10 +263,10 @@
       "room": "elite"
     },
     "elite_night": {
-      "source": "ontama",
-      "file": "shikkounin.mp3",
-      "name": "執行人",
-      "page": "RPG event",
+      "source": "dsymphony",
+      "file": "DS-116o.ogg",
+      "name": "Rouge et Noir",
+      "page": "戦い · ゴスロリ風ロック",
       "desc": "夜砂墓原的强敌",
       "room": "elite"
     },
@@ -364,7 +364,12 @@
     "  map_ruins ⇄ elite_ruins（沉沙遗迹：地图曲与强敌曲的感情色彩正好相反）；",
     "  battle_storm ⇄ elite_storm（雷暴台地：强敌曲与战斗曲对调）；",
     "  map_crystal ⇄ battle_crystal（水晶洞窟：战斗槽里原来那首是「静かな海底」的场景曲，太安静）。",
-    "对调的是曲目内容（source/file/name/page），槽位自己的 desc（第七�章 沉沙遗迹 / 沉沙遗迹的强敌这类）不动 ——",
-    "所以曲子库里的标题仍然是「这首在哪儿放 · 曲名」，读者不会看到错位。"
+    "对调的是曲目内容（source/file/name/page），槽位自己的 desc（第七章 沉沙遗迹 / 沉沙遗迹的强敌这类）不动 ——",
+    "所以曲子库里的标题仍然是「这首在哪儿放 · 曲名」，读者不会看到错位。",
+    "2026-09-22（3.1.3）用户自己去龍的交響楽挑了曲子，指定换掉两首：",
+    "  elite_night：執行人（音楽の卵）→ Rouge et Noir（DS-116，ゴスロリ風ロック）——「墓地的强敌」= 夜砂墓原的强敌；",
+    "  battle_crystal：朽ち果てた紋章（3.1 才对调过来的）→ Future Savior（DS-118，さわやかな戦闘曲）—— 原来那首还是太安静。",
+    "编号按 tools/fetch-dsymphony.mjs 现查的（mt_00 全曲一览里按曲名 grep），不是凭记忆写的；",
+    "换曲只要改这三行（source/file/name/page），音频和清单由 node tools/fetch-bgm.mjs 重新下载。"
   ]
 }

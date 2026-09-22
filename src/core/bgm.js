@@ -103,14 +103,14 @@ export const BGM_NAMES = {
   "battle_ruins": "沉沙遗迹的战斗 · 龍飛鳳舞",
   "battle_fungal": "菌菇湿地的战斗 · Crimson Ridge",
   "battle_storm": "雷暴台地的战斗 · 轟く鉄の巨神",
-  "battle_crystal": "水晶洞窟的战斗 · 朽ち果てた紋章",
+  "battle_crystal": "水晶洞窟的战斗 · Future Savior",
   "elite": "强敌兜底曲 · クロス陣形",
   "elite_desert": "流沙之海的强敌 · 立ち向かう者達",
   "elite_canyon": "赤岩峡谷的强敌 · 灼熱の奥へ",
   "elite_forest": "藤蔓密林的强敌 · 魔物の気配",
   "elite_tide": "潮汐盐海的强敌 · 飛竜の背に乗って",
   "elite_cliff": "风蚀峭壁的强敌 · 風を追いかけて",
-  "elite_night": "夜砂墓原的强敌 · 執行人",
+  "elite_night": "夜砂墓原的强敌 · Rouge et Noir",
   "elite_ruins": "沉沙遗迹的强敌 · 永遠なる輝きのもとに",
   "elite_fungal": "菌菇湿地的强敌 · 鉄と炎の律動",
   "elite_storm": "雷暴台地的强敌 · 蒼天疾駆",
@@ -233,8 +233,8 @@ export const BGM_LOOPS = {
     "rate": 44100
   },
   "battle_crystal": {
-    "start": 0,
-    "length": 3138450,
+    "start": 79004,
+    "length": 2790889,
     "rate": 44100
   },
   "elite": {
@@ -268,8 +268,8 @@ export const BGM_LOOPS = {
     "rate": 44100
   },
   "elite_night": {
-    "start": 2651,
-    "length": 2415353,
+    "start": 186504,
+    "length": 2534032,
     "rate": 44100
   },
   "elite_ruins": {
@@ -401,7 +401,7 @@ export const BGM_SOURCES = {
   "elite_forest": "ontama",
   "elite_tide": "ontama",
   "elite_cliff": "ontama",
-  "elite_night": "ontama",
+  "elite_night": "dsymphony",
   "elite_ruins": "dsymphony",
   "elite_fungal": "dsymphony",
   "elite_storm": "dsymphony",
