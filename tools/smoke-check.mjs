@@ -440,13 +440,27 @@ const SCRIPT = `
       if (started < 4) errors.push('发牌 / 打牌的音效没有真的播出来（只播了 ' + started + ' 声）');
       if (dropped) errors.push('有音效被静默丢掉：' + dropped + ' 声');
 
-      // ⑥ 真出两张牌，看行走图会不会叠成两张
+      // ⑥ 真出两张牌，看行走图会不会叠成两张、以及换动作时卡片会不会左右跳
       const playable = bsv.battle.hand('player').filter((c) => bsv.battle.canPlay(c.uid)).slice(0, 2);
+      const boxBefore = playable.length ? bsv.enemyBody.getBoundingClientRect() : null;
       for (const c of playable) { await bsv.playCard(c.uid); await wait(420); }
       const counts = [...document.querySelectorAll('.fighter-body')].map((n) => n.querySelectorAll('canvas').length);
       log('出牌后行走图 canvas 数（敌/我） =', counts.join('/') + '（出牌 ' + playable.length + ' 张）');
       if (counts.length && counts.some((n) => n !== 1)) {
         errors.push('行走图叠了（每个 fighter-body 应该只有 1 张 canvas）：' + counts.join('/'));
+      }
+      /**
+       * 换动作不许改布局：不同动作的帧盒子不一样（Idle 32×72 / Attack 64×80），
+       * 身体盒子要是跟着变，右边那张血条 / 头像卡就会被挤得左右跳（用户报的）。
+       */
+      if (boxBefore) {
+        const boxAfter = bsv.enemyBody.getBoundingClientRect();
+        log('精灵盒子 出牌前 x=' + boxBefore.left.toFixed(1) + ' w=' + boxBefore.width.toFixed(1)
+          + ' → 出牌后 x=' + boxAfter.left.toFixed(1) + ' w=' + boxAfter.width.toFixed(1));
+        if (Math.abs(boxAfter.width - boxBefore.width) > 1.5) {
+          errors.push('换动作时精灵盒子宽度变了（血条 / 头像框会左右跳）：'
+            + boxBefore.width.toFixed(1) + ' → ' + boxAfter.width.toFixed(1));
+        }
       }
       // 出完牌必须回到 Idle（不能卡在动作的最后一帧）
       const backToIdle = bsv.playerAnimName === 'Idle' && bsv.enemyAnimName === 'Idle';

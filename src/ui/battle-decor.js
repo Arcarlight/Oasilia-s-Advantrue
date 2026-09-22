@@ -64,6 +64,16 @@ const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
 /** 位图里文字的填充色（暖白；用户要的是「和背景颜色相近」） */
 const INK = '255, 241, 216';
 
+/**
+ * 每一行用**不同的波长**（3.1.2，用户：「每条波浪左右错开一点，现在这样感觉有点整齐」）。
+ *
+ * 波长有个硬约束：只能是「单元宽度 ÷ 整数」（见文件头，否则平铺有缝）。
+ * 但那个**整数**每行可以不一样 —— 全都取同一个的话，各行的波峰会在竖直方向排成一列，
+ * 整片看上去像一匹印花布；错开之后相邻行的波峰互相穿过去，才像水面。
+ * 这 8 个数是「每行一个周期里放几个波」，故意不等距（含 7 这种质数，避免各行周期成倍数关系）。
+ */
+const WAVE_COUNTS = [3, 4, 5, 4, 3, 5, 4, 3];
+
 /** 一个整数 n 的、最接近 target 的因数（用来挑「一个波里放多少字」） */
 function nearestDivisor(n, target) {
   let best = 1;
@@ -149,11 +159,19 @@ function paintPattern(bands, w, h) {
     const gap = (h * (bottom - top)) / (LINES - 1);
     for (let i = 0; i < LINES; i += 1) {
       const lineY = bandTop + i * gap;
-      const amp = gap * (0.30 + (i % 3) * 0.05);          // 波幅跟行距挂钩，行与行不会撞上
-      const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度（见 chooseUnitChars）
+      const amp = gap * (0.26 + (i % 3) * 0.05 + (i % 2 ? 0.04 : 0));   // 波幅跟行距挂钩，行与行不会撞上
+      /**
+       * 这一行的波长 = 单元宽度 ÷ 整数（`WAVE_COUNTS[i]`）。
+       * 两半场错开一位取，免得上下两半的节奏刚好对齐。
+       */
+      const waveCount = WAVE_COUNTS[(i + (side === 'player' ? 3 : 0)) % WAVE_COUNTS.length];
+      const wl = unitW / waveCount;
       wls.push(wl);
-      /** 相位每行错开：整片才像水面，而不是 7 条一样的波（错开多少不影响平铺） */
-      const phase = i * 1.7 + (side === 'enemy' ? 0.6 : 2.4) + (i % 2 ? 1.2 : 0);
+      /**
+       * 相位：按**黄金角**（2.399 弧度）逐行递增 —— 相邻行的波峰错开的角度和周期「不成倍数」，
+       * 于是它们永远不会排成一列（用 i*1.7 这种等差相位时，隔几行就会重新对齐）。
+       */
+      const phase = i * 2.399 + (side === 'enemy' ? 0.6 : 2.4);
       ctx.fillStyle = `rgba(${INK}, ${LINE_ALPHA[i % LINE_ALPHA.length]})`;
       /**
        * ③ 逐字沿正弦排布：位置按实测字宽累加，角度取这一点的切线。

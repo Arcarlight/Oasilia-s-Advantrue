@@ -1055,6 +1055,13 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
 .fighter-enemy { justify-content: flex-end; }
 .fighter-player { justify-content: flex-start; }
 .fighter-body { position: relative; }
+/* 精灵一律**绝对定位居中**：换动作时帧盒子大小会变（Idle 32×72 / Attack 64×80），
+   如果让画布参与流式布局，右边那张血条卡就会被挤得左右跳。
+   身体盒子的宽高由 battle-view 的 layoutBattle() 按待机那张写死，所以布局恒定。 */
+.fighter-body canvas {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
 /* 精灵尺寸由 JS 按「这一行实际高度」算好后写进 canvas 的内联宽高；
    这里的 max-height 只是 JS 还没跑时的兜底，别让它变成主要约束。 */
 .fighter-body canvas { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .45)); max-height: 100%; }

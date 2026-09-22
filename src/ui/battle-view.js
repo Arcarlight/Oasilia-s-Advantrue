@@ -707,6 +707,21 @@ export class BattleScreen {
       const name = side === 'player' ? this.playerAnimName : this.enemyAnimName;
       const canvas = side === 'player' ? this.playerAnim : this.enemyAnim;
       this.applyAnimScale(canvas, slug, name ?? 'Idle', this.rowR[side].height, base);
+      /**
+       * 待机那张也按「Idle 的帧尺寸」单独量一次，并用它的尺寸**把身体盒子钉住**。
+       *
+       * 为什么必须钉：换动作时用的是 replaceWith，不同动作的帧盒子不一样
+       * （沙漠蜻蜓 Idle 是 32×72、Attack 是 64×80），身体一宽一窄，右边那张
+       * 血条 / 头像卡就被挤得**左右跳**（用户报的「血条头像框会左右跳」）。
+       * 让 canvas 绝对定位居中、身体盒子固定成待机那张的大小，换动作就只换画面、不动布局。
+       */
+      const idleEl = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
+      const bodyEl = side === 'player' ? this.playerBody : this.enemyBody;
+      if (idleEl && bodyEl) {
+        this.applyAnimScale(idleEl, slug, 'Idle', this.rowR[side].height, base);
+        bodyEl.style.width = idleEl.style.width;
+        bodyEl.style.height = idleEl.style.height;
+      }
       if (side === 'player') this.playerScale = this.fitScale(slug, name ?? 'Idle', this.rowR[side].height, base);
       else this.enemyScale = this.fitScale(slug, name ?? 'Idle', this.rowR[side].height, base);
     }
@@ -2442,7 +2457,16 @@ export class BattleScreen {
     this.pushLogLine(this.logOf(ev));
     setTimeout(() => body.classList.remove('fighter-hurt'), 300);
     await this.wait(ev.crit ? PACE.crit : PACE.damage);
-    restore();
+    /**
+     * ⚠ 这是**致命一击**时不许还原。
+     *
+     * 还原的本意是「演完动作回到待机」，可被打倒那一下如果也还原，倒地就变成了
+     * 站着待机的样子（用户报的「敌我方被打倒以后的动画也没了」）——
+     * 以前这里根本不还原，那个受伤的姿势就一直留着，`.fighter-dead` 的灰度 + 歪倒
+     * 是叠在这个姿势上的。所以：打空了才还原，打死了就让它定格在受伤姿势上。
+     */
+    const dead = this.battle.over || (this.dispHp[ev.side] ?? 1) <= 0 || ev.lethal;
+    if (!dead) restore();
   }
 
   async onBattleEnd(ev) {
