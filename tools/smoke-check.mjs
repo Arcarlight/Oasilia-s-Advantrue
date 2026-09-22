@@ -237,33 +237,70 @@ const SCRIPT = `
       await wait(900);
       const screenEl = document.querySelector('.battle-screen');
       const decor = document.querySelector('.battle-decor');
-      const svgs = decor ? decor.querySelectorAll('svg') : [];
-      log('背景花纹：容器=' + !!decor, '图层数=' + svgs.length, '文字长度=' + (decor ? decor.textContent.length : 0));
+      const layers = decor ? decor.querySelectorAll('.decor-layer') : [];
+      const bg = layers.length ? getComputedStyle(layers[0]).backgroundImage : '';
+      log('背景花纹：容器=' + !!decor, '图层数=' + layers.length, '位图=' + (bg.startsWith('url("data:image/png') ? '有' : '没有'), '位图字节≈' + bg.length);
       if (!decor) errors.push('战斗背景没有花纹层（.battle-decor）');
-      if (svgs.length !== 3) errors.push('背景花纹应该是三份（底色 + 左右各一份高亮），实际 ' + svgs.length);
+      if (layers.length !== 3) errors.push('背景花纹应该是三层（底色 + 左右各一份高亮），实际 ' + layers.length);
+      // 位图必须是**真的画出来了**（空画布会是一张极小的透明 PNG）
+      if (!bg.startsWith('url("data:image/png')) errors.push('花纹层没有铺上那张平铺位图');
+      else if (bg.length < 2000) errors.push('花纹位图太小了，像是空画布：' + bg.length + ' 字节');
       const enemiesMod = await import('/src/data/enemies.js');
       const slug = window.__oasisUI.battleScreen.battle.enemy.slug;
       const dexText = (enemiesMod.ENEMIES.find((e) => e.slug === slug) || {}).dexText || '';
       if (!dexText) errors.push('这一场敌人的物种没有背景花纹文本：' + slug);
-      else if (decor && !decor.textContent.includes(dexText)) errors.push('背景花纹里没有这一场敌人的图鉴文本');
       const glowE = document.querySelector('.decor-glow-enemy');
       const glowP = document.querySelector('.decor-glow-player');
       const opa = (n) => (n ? Number(getComputedStyle(n).opacity) : -1);
       const bs = window.__oasisUI.battleScreen;
       /**
-       * 「真的像波浪一样动起来」（3.0.6）：每半场三组、三份图层，一共 18 组；
-       * 而且**必须真的在动** —— 光有 animation-name 不算，这里隔一段时间读两次
-       * computed transform，两帧一样就是没动（回到 3.0.5 那种死板的样子）。
+       * 「真的像波浪一样滚」（3.0.7）：三层各是一条 decorRoll 动画，滚一个周期（--roll）
+       * 刚好逐像素回到原点，所以看不到接缝。
+       *
+       * ⚠ 这里**不能**靠「隔一会儿读两次 computed transform」来判断动没动：
+       * 这条动画跑在合成层上（will-change + translate3d），主线程的 computed style
+       * 一直是起点值 matrix(1,0,0,1,0,0) —— 第一版就是这么误报「没在滚」的。
+       * 改成两件主线程能确定的事：
+       *   ① 动画挂上了、周期是个像样的正数；
+       *   ② 关键帧里那个 calc(-1 * var(--roll)) **真的能算出来**：
+       *      拿一个探针元素套同样的表达式，看它算出来的矩阵是不是平移了 -周期。
+       * 真在动这件事由 tools/measure-decor-motion.py 拿两张截图逐像素比（见那个脚本）。
        */
-      const drifts = [...document.querySelectorAll('.decor-drift')];
-      log('花纹漂动组 =', drifts.length, '｜动画名 =', drifts.length ? getComputedStyle(drifts[0]).animationName : '-');
-      if (drifts.length !== 18) errors.push('花纹漂动组应该是 18 个（每份 6 组 × 3 份），实际 ' + drifts.length);
-      const frame = () => drifts.slice(0, 6).map((n) => getComputedStyle(n).transform).join('|');
-      const f1 = frame();
-      await wait(1200);
-      const f2 = frame();
-      if (!drifts.length || !f1 || f1 === f2) errors.push('花纹没有在动（两帧的 transform 一样）');
-      else log('花纹在动 ✓（两组 transform 不同）');
+      const rolls = [...document.querySelectorAll('.decor-layer')];
+      const st = rolls.length ? getComputedStyle(rolls[0]) : null;
+      const rollPx = Number((st?.getPropertyValue('--roll') || '0px').replace('px', ''));
+      log('花纹滚动：层数=' + rolls.length, '动画=' + (st?.animationName || '-'), '周期=' + rollPx + 'px');
+      if (!(rollPx > 100)) errors.push('花纹的滚动周期不像样：' + rollPx + 'px');
+      if ((st?.animationName || '') !== 'decorRoll') errors.push('花纹没有挂上滚动动画（decorRoll）');
+      if (rolls.length) {
+        /**
+         * 「平铺无缝」的数学条件：每一行的波长必须能整除**一个周期的宽度**（= 滚动距离）。
+         * 不整除的话，滚到接缝处波形对不上，会看到一条一条的竖缝 ——
+         * 这是这个做法唯一的硬要求，所以在这里钉住（而不是等图上看出来）。
+         */
+        const facts = bs?.decor?.decorFacts;
+        if (!facts) {
+          errors.push('花纹没有留下 decorFacts（验不了平铺无缝）');
+        } else {
+          const bad = facts.wls.filter((wl) => Math.abs(facts.unit - Math.round(facts.unit / wl) * wl) > 0.6);
+          log('  平铺无缝：周期 ' + facts.unit + 'px · 字号 ' + facts.size + 'px · 波长 ' + facts.wls.join('/'));
+          if (bad.length) errors.push('有波长不能整除一个周期的宽度（平铺会有缝）：' + bad.join('、'));
+        }
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:absolute;left:-9999px;top:0;width:10px;height:10px;';
+        probe.style.setProperty('--roll', rollPx + 'px');
+        probe.style.transform = 'translate3d(calc(-1 * var(--roll, 640px)), 0, 0)';
+        document.body.append(probe);
+        const m = getComputedStyle(probe).transform;
+        probe.remove();
+        // 不用正则：这段代码是写在一个模板字符串里的，正则里的反斜杠会被提前吃掉（踩过）
+        const parts = String(m).replace('matrix(', '').replace(')', '').split(',').map((s) => Number(s.trim()));
+        const tx = parts.length === 6 ? parts[4] : NaN;
+        log('  关键帧那个 calc 算出来 =', m, '（横向位移 ' + tx + 'px）');
+        if (!(Math.abs(tx + Math.round(rollPx)) < 2)) {
+          errors.push('滚动关键帧里的 calc(-1 * var(--roll)) 没有算出平移（实测 ' + m + '）');
+        }
+      }
       if (!screenEl || !glowE || !glowP || !bs) {
         errors.push('背景花纹缺少高亮层');
       } else {
@@ -291,9 +328,9 @@ const SCRIPT = `
         for (const n of [glowE, glowP]) n.style.transition = '';
         log('背景花纹变亮（敌/玩家）：敌人行动 ' + onE + '/' + onP
           + ' · 玩家行动 ' + pE + '/' + pP + ' · 停手 ' + baseE + '/' + baseP);
-        if (!(onE > 0.9 && onP < 0.05)) errors.push('敌人行动时亮的应该只有敌人那半片（实测 ' + onE + '/' + onP + '）');
-        if (!(pP > 0.9 && pE < 0.05)) errors.push('玩家行动时亮的应该只有玩家那半片（实测 ' + pE + '/' + pP + '）');
-        if (!(baseE < 0.05 && baseP < 0.05)) errors.push('停手后两份高亮都该淡回去（实测 ' + baseE + '/' + baseP + '）');
+        if (!(onE > 0.1 && onP < 0.02)) errors.push('敌人行动时亮的应该只有敌人那半片（实测 ' + onE + '/' + onP + '）');
+        if (!(pP > 0.1 && pE < 0.02)) errors.push('玩家行动时亮的应该只有玩家那半片（实测 ' + pE + '/' + pP + '）');
+        if (!(baseE < 0.02 && baseP < 0.02)) errors.push('停手后两份高亮都该淡回去（实测 ' + baseE + '/' + baseP + '）');
       }
     } catch (e) {
       errors.push('battleDecor: ' + e.message);

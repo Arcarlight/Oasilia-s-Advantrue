@@ -1,177 +1,212 @@
-// 战斗背景那层**波浪花纹文字**（3.0.5，用户要的）。
+// 战斗背景那层**波浪花纹文字**（3.0.5 起，用户要的）。
 //
-// 用户的原话：「现在战斗画面背景有点略过简单，请问你可以在背景铺一层像波浪一样的，
-// 和背景颜色相近但勉强能看清的文本作为装饰吗？用简体中文的文本就可以，这个字体里的汉字
-// 长得很像图案，可以作为装饰。而玩家或敌人周围的背景文本在敌人行动或是玩家行动时会
-// 微微变亮，但又不会太过明显。文本可以直接采用52wiki上对应的宝可梦介绍。」
-// 第二版的原话：「我希望这个波纹能密一点更不显眼一点，然后真的像波浪一样动起来，
-// 现在这样还是太死板了。」
+// 用户的原话，四批：
+//   ① 「可以在背景铺一层像波浪一样的，和背景颜色相近但勉强能看清的文本作为装饰吗？
+//      用简体中文的文本就可以，这个字体里的汉字长得很像图案，可以作为装饰。
+//      而玩家或敌人周围的背景文本在敌人行动或是玩家行动时会微微变亮，但又不会太过明显。
+//      文本可以直接采用52wiki上对应的宝可梦介绍。」
+//   ② 「我希望这个波纹能密一点更不显眼一点，然后真的像波浪一样动起来，现在这样还是太死板了。」
+//   ③ 「怎么这些字还只是左右平移？我想的是像波浪那样波动，而不是现在这样平移。」
+//   ④ 「而且现在这个字有很严重的性能问题啊，我看了一眼巨卡无比。」
 //
-// 于是这一层是四件事拼出来的：
-//   ① **文本**：content/species-dex.json 里从 52wiki 抓的图鉴介绍（tools/fetch-species-dex.mjs）。
-//      上半片铺**这一场敌人**那个物种的，下半片铺**主角**那个物种的 —— 两半各铺各的，
-//      所以「那一侧行动时变亮」亮起来的才是它自己的那段话。
-//   ② **字体**：仓库根目录的「余繁离形体.otf」（用户提供），
-//      tools/subset-fonts.mjs 按这份文本单独裁成 92KB 的子集（装饰字体覆盖 1206 个字，100%）。
-//      它的汉字更像图案而不是字，正好当纹理用。
-//   ③ **波浪**：SVG 的 <textPath> —— 每行一条正弦路径，文字沿着路径走。
-//      SVG 而不是 CSS：CSS 只能靠逐行 rotate 假装斜排，弯不出真正的波形。
-//   ④ **动**（第二版加的）：每半场拆成三个小组，每组各自慢慢地左右漂、上下浮，
-//      周期各不相同 —— 波峰看着就像在水面上走。**不用逐帧 JS**：
-//      一条 CSS 关键帧 + 每组自己的 `--dx/--dy/--dur/--delay` 就够，
-//      而且三份图层（底色 + 两份高亮）拿到的是同一组参数，永远同步、不会重影。
+// ---------------------------------------------------------------------------
+// 为什么最后是「一张可平铺的位图 + GPU 平移」，而不是 SVG 文字在动
+// ---------------------------------------------------------------------------
+// 前三版都是「真的 SVG 文字，每行一条正弦路径，靠 CSS 动画让它们动」。④ 说的卡就是这么来的：
+// 一层 26 行、每行一份重复到铺满的图鉴文本，三层（底色 + 两份高亮）合起来 16000 多个字形，
+// 而只要有一个元素在动，**整个 SVG 每帧都要重新光栅化一遍** —— 1.6 万个字形 × 每秒几十帧。
+// （本机 headless 量主线程只有 4.2ms/帧，因为光栅化不在主线程上；但真浏览器里那一秒几十次的
+//   大片重绘就是玩家感觉到的「巨卡」。tools/measure-fps.mjs 量的是主线程，量不到这一层，
+//   所以这个问题的判据是**设计上别让它每帧重绘**，而不是靠那台机器上的数字。）
 //
-// 变亮的做法：整层画**三份**（底色一份 + 左右各一份高亮），高亮那两份用 CSS 的
-// radial-gradient mask 圈住自己那一侧（敌人右上、玩家左下），平时 opacity 0，
-// 那一侧行动时把某一层点亮（见 battle-view.js 的 decorAct）。这样「变亮」的范围
-// 天然就是「那一侧的周围」，不需要按坐标算，也不会有硬边。
+// 关键认识：一行正弦波 `y = A·sin(k(x − vt))` 的样子，就是**波形不动、一直往前推** ——
+// 所以「让它像波浪那样滚」在实现上等于**沿 x 平移整整一个周期**。既然如此：
+//   · 把「一个周期的花纹」**画成一张位图**（离屏 canvas，只画一次）；
+//   · 用它当这层的 `background-image`，`repeat-x` 平铺；
+//   · 让这一层用 CSS `transform` 平移一个周期，linear + infinite。
+// 因为位图本身就是一个周期的、可无缝平铺的图案，平移一个周期之后画面**逐像素相同**，
+// 接缝完全看不出来；而 transform 是合成层上的操作 —— **每帧不需要重绘任何东西**。
+// 位图里只有「一个周期」的字（约 1000 个字形，是原来三层合计的 1/16），且只画一次。
+//
+// 要让「一个周期」真的无缝，三件事必须对齐（这是最容易写错的地方）：
+//   · 文字：每一行的重复单元 = 图鉴文本 + 若干全角空格，单元里字符数固定 = unitChars；
+//   · 波长：必须能整除单元宽度，所以波长取「单元宽度 ÷ 整数」；
+//   · 字形网格：按**实测字宽**逐个累加排布（图鉴文本里有半角数字，1 和汉字的宽度不一样，
+//     不能假设「一个字符正好一个字号宽」），最后再把整幅位图缩放到整数像素宽。
+//
+// 变亮：三层用同一张位图，只是 `opacity` 不同（底色 0.10 / 高亮 0.22），
+// 高亮那两份再用 radial-gradient 的 mask 圈住自己那一侧（敌人右上、主角左下）。
+// 「同一张图 + 只改 opacity」这一点很重要：变亮就是同一片文字更亮一点，不会多出别的形状。
 import { el } from './dom.js';
 
-/** SVG 逻辑画布（CSS 用 xMidYMid slice 铺满整个战场，比例不同时裁掉溢出的部分） */
-const VB = { w: 1200, h: 780 };
-/**
- * 每个半场铺几行。
- * 3.0.6 从 7 行加到 13 行：用户要「密一点」—— 行距一缩小，它就从「几条大字」变成
- * 一层织纹，密度上来了才更像背景而不是内容。
- */
+/** 每个半场铺几行（3.0.6 从 7 行加到 13 行：用户要「密一点」） */
 const LINES = 13;
-/** 上半（敌人）与下半（主角）各自的行 y 范围（留出漂动用的上下余量） */
-const BANDS = {
-  enemy: { top: 18, bottom: 342 },
-  player: { top: 438, bottom: 762 },
-};
-/**
- * 每半场分几个「漂动小组」：组内的行一起走，组与组之间方向 / 速度 / 相位都不同。
- * 只有整层一起动会显得像一张纸在平移，分三组才像水面。
- */
-const DRIFT_GROUPS = 3;
-/** 文本不够长时用来补位的分隔符（一起进子集，见 subset-fonts 的 DECOR_SEP） */
-const SEP = '　·　';
+/** 上半（敌人）与下半（主角）各自的行带（相对战场高度的比例，留出起伏余量） */
+const BANDS = { enemy: [0.03, 0.45], player: [0.55, 0.97] };
+/** 文本重复单元里补几个全角空格 */
+const UNIT_PAD = 3;
+/** 每行自己的浓淡（画进位图里，避免整片一个调子；整层的不透明度写在 style.css） */
+const LINE_ALPHA = [0.45, 0.60, 0.75, 0.90];
+/** 一个波形里放多少字（必须能整除 unitChars，否则平铺会有缝 —— 见文件头） */
+const WAVE_CHOICES = [10, 20, 40];
+/** 位图里文字的填充色（暖白；用户要的是「和背景颜色相近」） */
+const INK = '255, 241, 216';
 
-/**
- * 一条正弦路径。
- *
- * 用折线采样而不是贝塞尔：这里的波幅只有 7~14、波长 400 上下，每 24 单位采一个点
- * 已经看不出棱角，而**参数改起来是一行**（贝塞尔的控制点要跟着振幅重算，改一次错一次）。
- *
- * x 从 -240 铺到 VB.w + 240：小组左右漂动最多 ±100，路径必须比画布宽出一截，
- * 不然漂到一边就会露出一段空白（第一版只多铺 80，漂起来缝就出来了）。
- */
-function wavePath(y, amp, wl, phase) {
-  const step = 24;
-  const pts = [];
-  for (let x = -240; x <= VB.w + 240; x += step) {
-    pts.push([x, y + amp * Math.sin((x / wl) * Math.PI * 2 + phase)]);
+/** 一个整数 n 的、最接近 target 的因数（用来挑「一个波里放多少字」） */
+function nearestDivisor(n, target) {  let best = 1;
+  for (let d = 1; d <= n; d += 1) {
+    if (n % d) continue;
+    if (Math.abs(d - target) < Math.abs(best - target)) best = d;
   }
-  return pts.map(([x, yy], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${yy.toFixed(1)}`).join(' ');
+  return best;
 }
 
 /**
- * 一个漂动小组的**动画参数**（写进内联的自定义属性，CSS 关键帧读它们）。
- *
- * 方向按「奇偶」错开：一半往左走、一半往右走，相邻两组的波峰就会互相穿过去 ——
- * 那正是水面在动的样子。周期故意**互质**（17 / 21 / 23 / 27 / 29 秒这类），
- * 于是整片纹理很久都不会回到同一个组合，看不出循环。
+ * 把「一个周期的花纹」画成位图。
+ * @returns {{url:string, unit:number, size:number}} 位图地址、一个周期的像素宽、字号
  */
-function driftStyle(band, g) {
-  const sign = (g % 2 === 0) ? -1 : 1;
-  const dir = band === 'enemy' ? 1 : -1;
-  const dur = 17 + ((g * 4 + (band === 'player' ? 3 : 0)) % 11) * 1.3;   // 17 ~ 30s
-  const dx1 = Math.round(sign * dir * (46 + g * 17));                    // 46 ~ 80
-  const dx2 = Math.round(-sign * dir * (30 + g * 11));
-  const dy1 = Math.round(6 + g * 2.5);
-  const dy2 = -Math.round(4 + g * 2);
-  return {
-    '--dx1': `${dx1}px`, '--dy1': `${dy1}px`,
-    '--dx2': `${dx2}px`, '--dy2': `${dy2}px`,
-    '--dur': `${dur}s`,
-    '--delay': `${-(g * 3.1 + (band === 'enemy' ? 0 : 1.7)).toFixed(1)}s`,
+function paintPattern(bands, w, h) {
+  const size = Math.max(11, Math.min(21, Math.round(h * 0.029)));
+  const texts = Object.values(bands).filter(Boolean);
+  const maxChars = Math.max(...texts.map((t) => [...t].length));
+  const unitChars = maxChars + UNIT_PAD;
+  /** 每行的重复单元（图鉴文本 + 全角空格）——所有行共用同一个字符数，宽度就一致 */
+  const unit = (t) => t + '　'.repeat(unitChars - [...t].length);
+
+  const cv = document.createElement('canvas');
+  const ctx = cv.getContext('2d');
+  const font = `${size}px "Oasis Decor", "Oasis Hand", sans-serif`;
+  ctx.font = font;
+  /** 每一行用到的波长（体检要用它验「能整除一个周期的宽度」= 平铺无缝） */
+  const wls = [];
+  // ① 先按**实测字宽**累加，量出一个周期的真实宽度（半角数字只有半个字宽）
+  const adv = new Map();
+  const widthOf = (ch) => {
+    if (!adv.has(ch)) adv.set(ch, ctx.measureText(ch).width);
+    return adv.get(ch);
   };
-}
+  const unitAdv = (t) => [...unit(t)].reduce((s, ch) => s + widthOf(ch), 0);
+  const unitW = Math.max(...texts.map(unitAdv));
+  const px = Math.max(160, Math.round(unitW));            // 位图宽度取整（整数像素平铺最干净）
 
-/**
- * 造一份 SVG：`prefix` 是这一份的 id 前缀（三份共用一个页面，id 不能撞）。
- * @param {string} prefix
- * @param {{enemy?:string, player?:string}} bands
- * @param {string} cls 挂在 <svg> 上的类名（底色 / 高亮）
- */
-function svgCopy(prefix, bands, cls) {
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${VB.w} ${VB.h}`);
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('focusable', 'false');
-  if (cls) svg.setAttribute('class', cls);
-  for (const [side, band] of Object.entries(BANDS)) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  cv.width = Math.round(px * dpr);
+  cv.height = Math.max(1, Math.round(h * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, px, h);
+  /**
+   * ② 横向缩放到**整数像素宽**：实测宽度与取整后的宽度差不到 1px，
+   * 但如果不缩放，每个平铺块都会攒出一点点缝。缩放量在千分之一上下，看不出来。
+   */
+  ctx.scale(px / unitW, 1);
+  ctx.font = font;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+
+  for (const [side, [top, bottom]] of Object.entries(BANDS)) {
     const text = bands[side];
     if (!text) continue;
-    const gap = (band.bottom - band.top) / (LINES - 1);
-    // 先把 13 行按顺序切成三组（0-4 / 5-8 / 9-12）
-    const groups = Array.from({ length: DRIFT_GROUPS }, () => []);
-    for (let i = 0; i < LINES; i += 1) groups[Math.floor((i / LINES) * DRIFT_GROUPS)].push(i);
-    for (let g = 0; g < groups.length; g += 1) {
-      const group = document.createElementNS(ns, 'g');
-      group.setAttribute('class', 'decor-drift');
-      for (const [k, v] of Object.entries(driftStyle(side, g))) group.setAttribute('style', `${group.getAttribute('style') ?? ''}${k}:${v};`);
-      for (const i of groups[g]) {
-        const y = band.top + i * gap;
-        // 每行的波幅 / 波长 / 相位 / 字号都错开一点：整片看起来才像「水」而不是「条纹」
-        const amp = 7 + (i % 3) * 3.5 + (side === 'player' ? 1.5 : 0);
-        const wl = 380 + (i % 4) * 75;
-        const phase = i * 1.7 + (side === 'enemy' ? 0.6 : 2.4);
-        const size = 19 + (i % 3) * 2;
-        const id = `${prefix}-${side}-${i}`;
-        const path = document.createElementNS(ns, 'path');
-        path.setAttribute('id', id);
-        path.setAttribute('d', wavePath(y, amp, wl, phase));
-        path.setAttribute('fill', 'none');
-        const t = document.createElementNS(ns, 'text');
-        t.setAttribute('font-size', String(size));
-        /**
-         * 每行的浓淡也有细微差别，避免整片一个调子。
-         * 3.0.6 整体压得更淡（底色 fill 从 .085 降到 .045，见 style.css）——
-         * 行数翻倍本身就让墨量变多了，两件事得一起调，不然「密」会变成「更显眼」。
-         */
-        t.setAttribute('opacity', String(0.45 + (i % 4) * 0.15));
-        const tp = document.createElementNS(ns, 'textPath');
-        tp.setAttribute('href', `#${id}`);
-        tp.setAttribute('startOffset', String(-((i * 137) % 260)));   // 每行错开起点
-        tp.textContent = filler(text, size);
-        t.append(tp);
-        group.append(path, t);
+    const u = unit(text);
+    const bandTop = h * top;
+    const gap = (h * (bottom - top)) / (LINES - 1);
+    for (let i = 0; i < LINES; i += 1) {
+      const lineY = bandTop + i * gap;
+      const amp = gap * (0.22 + (i % 3) * 0.07);          // 波幅跟行距挂钩，行与行不会撞上
+      // 一个波里放多少字：必须是 unitChars 的因数（不然平铺有缝），取最接近 20 的那个
+      const waveChars = nearestDivisor(unitChars, 20) || WAVE_CHOICES[0];
+      const wl = (unitW * waveChars) / unitChars;         // 波长整除一个周期的宽度
+      wls.push(wl);
+      /** 相位每行错开：整片才像水面，而不是 13 条一样的波（错开多少不影响平铺） */
+      const phase = i * 1.7 + (side === 'enemy' ? 0.6 : 2.4) + (i % 2 ? 1.2 : 0);
+      ctx.fillStyle = `rgba(${INK}, ${LINE_ALPHA[i % LINE_ALPHA.length]})`;
+      /**
+       * ③ 逐字沿正弦排布：位置按实测字宽累加，角度取这一点的切线。
+       * 从 i=0 画到 unitChars+1：首尾各多画一个字，它们跨过平铺边界的部分由相邻那一块补上。
+       */
+      let x = 0;
+      const order = [...u, u[0], u[1] ?? ''];
+      for (const ch of order) {
+        const a = (x / wl) * Math.PI * 2 + phase;
+        const y = lineY + amp * Math.sin(a);
+        // 切线角度 = atan(dy/dx)，dy/dx = amp·cos(a)·2π/wl
+        const slope = (amp * Math.cos(a) * Math.PI * 2) / wl;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(Math.atan(slope));
+        ctx.fillText(ch, 0, 0);
+        ctx.restore();
+        x += widthOf(ch);
       }
-      svg.append(group);
     }
   }
-  return svg;
-}
-
-/**
- * 把一段图鉴文本铺满一行：按「一个汉字约等于一个字号宽」估出需要重复几遍，
- * 多铺几遍无所谓 —— `<textPath>` 只画落在路径上的那部分，超出末尾的自动不显示。
- */
-function filler(text, size) {
-  const len = Math.max(1, [...text].length);
-  const perLine = Math.ceil(((VB.w + 480) * 1.25) / (len * size));
-  return Array.from({ length: perLine + 2 }, () => text).join(SEP);
+  return { url: cv.toDataURL('image/png'), unit: px, size, unitW, wls, canvas: cv };
 }
 
 /**
  * 造整层装饰。
+ *
+ * 返回的元素上挂了一个 `relayoutDecor(w, h)`：画位图（一个周期）并把三层铺上去。
+ * 战场尺寸变了要重画（行距、字号、一个周期的宽度都跟着高度走），所以
+ * battle-view 在 mount 与 resize 时各调一次。
+ *
  * @param {{enemyText?:string, playerText?:string, fallback?:string}} opts
  * @returns {HTMLElement}
  */
 export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
   const bands = { enemy: enemyText || fallback, player: playerText || fallback };
   const box = el('div', { class: 'battle-decor' });
-  box.append(svgCopy('dec', bands, 'decor-base'));
   /**
-   * 两份高亮：内容与底色**完全一样**，只是换了 CSS 类 ——
-   * 于是「变亮」在视觉上就是「同一片文字更亮了一点」，不会多出别的形状。
-   * 三份的漂动参数由同一套函数算出来，所以它们永远同步（不同步就会看出重影）。
+   * 三层用**同一张位图**：不透明度写在 style.css 的 .decor-base / .decor-glow 里
+   * （底色 0.10、高亮 0.22）——**不能写在内联样式上**，
+   * 不然「那一侧行动时点亮」那条 CSS 规则根本盖不过内联值（第一次就是这么写的，
+   * 结果两份高亮一直亮着，实测 0.22/0.22/0.22）。
    */
-  box.append(svgCopy('decE', bands, 'decor-glow decor-glow-enemy'));
-  box.append(svgCopy('decP', bands, 'decor-glow decor-glow-player'));
+  const layers = [
+    'decor-layer decor-base',
+    'decor-layer decor-glow decor-glow-enemy',
+    'decor-layer decor-glow decor-glow-player',
+  ].map((cls) => {
+    const node = el('div', { class: cls });
+    box.append(node);
+    return node;
+  });
+
+  let last = { w: 0, h: 0 };
+  /**
+   * @param {number} w 战场宽
+   * @param {number} h 战场高
+   * @param {boolean} force 尺寸没变也重画（字体晚一步加载好时要用它补一次，见 battle-view）
+   */
+  box.relayoutDecor = (w, h, force = false) => {
+    const W = Math.round(w);
+    const H = Math.round(h);
+    if (!W || !H) return;
+    if (!force && Math.abs(W - last.w) < 2 && Math.abs(H - last.h) < 2) return;
+    last = { w: W, h: H };
+    const { url, unit, size, unitW, wls, canvas } = paintPattern(bands, W, H);
+    /**
+     * `?decor=canvas`：把那张平铺位图本身摊在屏幕上（调试用）。
+     * 花纹出问题时（比如字被叠成一列、接缝有缝）看它比看战场直接得多 ——
+     * 战场上是三层叠着、还半透明，肉眼分不出是位图画错了还是铺错了。
+     */
+    if (new URLSearchParams(location.search).get('decor') === 'canvas') {
+      canvas.style.cssText = `position:absolute;left:0;top:0;z-index:9;opacity:1;outline:2px solid #f0f;`
+        + `width:${unit}px;height:${H}px;image-rendering:pixelated;`;
+      if (canvas.parentNode !== box) box.append(canvas);
+    }
+    /**
+     * 留在元素上给体检用的一组事实（smoke-check 会读它验「平铺无缝」）：
+     * `unit` 是一个周期的像素宽（也就是滚动距离），`wls` 是每一行的波长 ——
+     * 平铺无缝的数学条件就是**每一行的波长都能整除 unit**（否则接缝处波形对不上）。
+     */
+    box.decorFacts = { unit, size, unitW: Math.round(unitW), wls: wls.map((x) => Math.round(x * 100) / 100) };
+    for (const node of layers) {
+      node.style.backgroundImage = `url(${url})`;
+      node.style.backgroundSize = `${unit}px 100%`;
+      // 滚一个周期 = 回到逐像素相同的画面，所以这条动画永远不会「跳」
+      node.style.setProperty('--roll', `${unit}px`);
+      node.style.setProperty('--rollDur', `${(unit / 26).toFixed(1)}s`);   // 约 26 像素/秒
+    }
+  };
   return box;
 }

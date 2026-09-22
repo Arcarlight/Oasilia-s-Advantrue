@@ -589,6 +589,17 @@ export class BattleScreen {
 
     // ---- 精灵 ----
     await this.loadSprites();
+    /**
+     * 背景花纹那张位图**等装饰字体就绪之后再补画一次**。
+     *
+     * 位图是 canvas 画出来的一次性快照：字体还没加载完就画，画进去的是兜底字体的字形，
+     * 而且不会自己变。所以这里显式等一下这个字体（`document.fonts.load` 只等这一个，
+     * 比 `fonts.ready` 快，不会把进战斗的时间拖长），再 force 重画一次。
+     */
+    try {
+      await document.fonts?.load?.('20px "Oasis Decor"');
+    } catch { /* 字体加载失败就退回首次画的那张 */ }
+    this.decor?.relayoutDecor?.(this.fieldR?.width ?? 0, this.fieldR?.height ?? 0, true);
     // 进战斗时把可能残留的文本选区清掉：
     // 在上一屏（地图 / 卡组）拖鼠标留下的选区会一直画在那儿，看起来像一块蓝色色块
     // （用户就是这么被吓到的：以为是伤害数字背后的「蓝底」）。
@@ -675,17 +686,17 @@ export class BattleScreen {
     }
     // ③ 出牌展示区
     for (const side of ['enemy', 'player']) this.layoutPlayZone(side);
-    // ④ 背景花纹那两份高亮的中心：**按两只精灵的实际位置算**
+    // ④ 背景花纹：按精灵位置钉住高亮中心，并按战场尺寸重画那张位图
     this.layoutDecorGlow(fieldR);
+    this.decor?.relayoutDecor?.(fieldR.width, fieldR.height);
   }
 
   /**
    * 背景花纹的高亮中心（3.0.6）。
    *
-   * 为什么不能在 CSS 里写死百分比：花纹那一层是 `<svg preserveAspectRatio="slice">`，
-   * 画布比例和战场不一致时会被裁掉上下两截 —— 于是「画布的 20%」和「战场上敌方精灵的
-   * 位置」根本不是一回事。第一版写死了 74%/20% 与 26%/80%，实测两边亮度差了一倍多
-   * （敌人那侧 +4.3%、玩家那侧只有 +1.6%）。
+   * 为什么不能在 CSS 里写死百分比：花纹那一层要跟着战场盒子缩放，而「画布的 20%」
+   * 和「战场上敌方精灵的位置」根本不是一回事。第一版写死了 74%/20% 与 26%/80%，
+   * 实测两边亮度差了一倍多（敌人那侧 +4.3%、玩家那侧只有 +1.6%）。
    * 现在拿两只精灵的实际中心换算成**相对战场盒子的百分比**，写进 --glow-* 给 CSS 的 mask 用 ——
    * 窗口怎么变、行高怎么变，亮的那一块都跟着精灵走。
    */

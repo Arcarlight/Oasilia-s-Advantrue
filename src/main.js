@@ -134,8 +134,7 @@ async function boot() {
   splash.remove();
 
   // 支持 ?scene=battle 之类的直接定位，方便截图与手动检查
-  const params = new URLSearchParams(location.search);
-  /**
+  const params = new URLSearchParams(location.search);  /**
    * `?hero=atlas` 指定主角（截图 / 诊断用）。
    *
    * 两位主角（3.0）之后，标题页那屏、开局卡组、一章多长全都跟着主角走 ——
@@ -357,6 +356,47 @@ async function boot() {
         await wait(100);
       }
     }, 900);
+  }
+  /**
+   * `?fps=1`：真的跑一段时间、数帧间隔，把结果打到控制台。
+   *
+   * 为什么需要这条：战斗背景那层花纹是「大面积 + 每帧都要画」的重灾区，
+   * 而 `tools/shot.mjs` 的截图走的是虚拟时间（定时器与动画被一路快进）——
+   * **截图完全量不出卡不卡**。卡顿只能真的跑几秒、数帧间隔。
+   * 量两轮：先按当前设置跑一轮，再把花纹的动画关掉跑一轮（html[data-decor-motion="off"]），
+   * 两者的差值就是「花纹动画到底吃掉了多少帧」。
+   */
+  if (params.get('fps') === '1') {
+    const sample = () => new Promise((resolve) => {
+      const gaps = [];
+      let last = performance.now();
+      const t0 = last;
+      const tick = () => {
+        const now = performance.now();
+        gaps.push(now - last);
+        last = now;
+        if (now - t0 < 3500) requestAnimationFrame(tick);
+        else {
+          const sorted = [...gaps].sort((a, b) => a - b);
+          resolve({
+            frames: gaps.length,
+            avg: gaps.reduce((s, x) => s + x, 0) / gaps.length,
+            p95: sorted[Math.floor(sorted.length * 0.95)] ?? 0,
+            worst: sorted[sorted.length - 1] ?? 0,
+          });
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+    const fmt = (label, r) => console.log(`[fps] ${label} 帧数=${r.frames} 平均=${r.avg.toFixed(1)}ms`
+      + ` (${(1000 / r.avg).toFixed(0)}fps) p95=${r.p95.toFixed(1)}ms 最差=${r.worst.toFixed(1)}ms`);
+    setTimeout(async () => {
+      fmt('花纹动', await sample());
+      document.documentElement.dataset.decorMotion = 'off';
+      fmt('花纹停', await sample());
+      delete document.documentElement.dataset.decorMotion;
+      console.log('[fps] 完成');
+    }, 2200);
   }
   if (scene) {
     game.phase = 'title';

@@ -974,71 +974,67 @@ button { font-family: inherit; }
 }
 
 /* ------------------------------------------------------------------
-   背景那层波浪花纹文字（3.0.5，用户要的）
+   背景那层波浪花纹文字（3.0.5，用户要的；3.0.7 换成位图平铺）
    「和背景颜色相近但勉强能看清的文本作为装饰」——
    所以它不是白色也不是彩色，是**暖白、极低透明度**：在深色的上半片上像比背景亮一点的底纹，
    在浅色的下半片上同样只是勉强能看清。字体是用户给的那套装饰字体（汉字像图案）。
-   变亮：同样的内容再画两份，各自用 radial-gradient 的 mask 圈住自己那一侧，
-   那一侧行动时把对应那份点亮（见 battle-view.js 的 decorAct）。
+
+   ⚠ 这里是**位图平铺 + GPU 平移**，不是「SVG 文字在动」（见 battle-decor.js 的长说明）：
+   位图里只有「一个周期的花纹」，`background-repeat: repeat-x` 平铺，
+   整层用 transform 平移**一个周期**，linear 无限循环 —— 接缝处逐像素相同，
+   而 transform 是合成层操作，**每帧不需要重绘**。前三版用 SVG 文字逐行动画，
+   16000 多个字形每帧重光栅化，玩家实测「巨卡无比」。
+   变亮：三层同一张位图、只差 opacity（底色 0.10 / 高亮 0.22），
+   高亮那两份再用 mask 圈住自己那一侧 —— 亮起来的就是同一片字，不会多出别的形状。
    ------------------------------------------------------------------ */
 .battle-decor {
   position: absolute; inset: 0;
   pointer-events: none; overflow: hidden;
-  /* 别让浏览器给这层文字做抗锯齿之外的额外合成：它只是底纹 */
-  contain: paint;
+  /* 这层只画背景花纹：告诉浏览器它和别的盒子互不影响 */
+  contain: strict;
 }
-.battle-decor svg {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  font-family: 'Oasis Decor', var(--font-hand);
+.decor-layer {
+  position: absolute; top: 0; bottom: 0;
+  /* 比战场宽出两个周期：平移一个周期之后，战场仍然被铺满 */
+  left: calc(-1 * var(--roll, 640px));
+  width: calc(100% + 2 * var(--roll, 640px));
+  background-repeat: repeat-x;
+  background-position: 0 0;
+  will-change: transform;
+  /* 3D transform 会强制这一层进合成层（GPU 平移，不重绘） */
+  animation: decorRoll var(--rollDur, 30s) linear infinite;
 }
-.battle-decor text { letter-spacing: .06em; }
-/**
- * 浓淡：3.0.6 从 .085 / .175 压到 .045 / .10。
- * 用户第二版的原话是「密一点更不显眼一点」—— 行数翻倍会让墨量跟着变多，
- * 所以两个数字必须一起降；高亮仍然保持在底色的两倍上下（相对变化才看得出来）。
- */
-.decor-base text { fill: rgba(255, 241, 216, .045); }
-.decor-glow text { fill: rgba(255, 247, 226, .10); }
+/* 一个周期就是画面的重复单元，所以「滚一个周期」是逐像素无缝的 */
+@keyframes decorRoll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--roll, 640px)), 0, 0); }
+}
+.decor-base { opacity: .10; }
 .decor-glow {
   opacity: 0;
   transition: opacity .55s ease;
 }
-/**
- * 漂动（3.0.6，用户：「真的像波浪一样动起来，现在这样还是太死板了」）。
- *
- * 每半场拆成三个小组，各自按自己的 `--dx/--dy/--dur/--delay` 慢慢漂 —— 一组往左、
- * 一组往右，周期互不相同，于是波峰互相穿过去，像水面而不是一张纸在平移。
- * 三份图层用的是同一组参数，所以它们永远同步（不同步会看出重影）。
- */
-@keyframes decorSway {
-  0%   { transform: translate(0px, 0px); }
-  33%  { transform: translate(var(--dx1, 0px), var(--dy1, 0px)); }
-  66%  { transform: translate(var(--dx2, 0px), var(--dy2, 0px)); }
-  100% { transform: translate(0px, 0px); }
-}
-.decor-drift {
-  animation: decorSway var(--dur, 24s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
-  /* 只有 18 组（每份 6 组 × 3 份），代价很低；提一句让浏览器别每帧重算布局 */
-  will-change: transform;
-}
 /* 敌人那一半在右上、主角那一半在左下 —— 中心由 battle-view 的 layoutDecorGlow()
-   按两只精灵的**实际位置**写进 --glow-*（画布被 slice 裁过，写死百分比会歪） */
+   按两只精灵的**实际位置**写进 --glow-*（写死百分比会和精灵对不上）。
+   亮起来的幅度按实测调过：位图版一开始写 .22，实测最亮那一格 +18.8%，比上一版
+   （+7%）明显重了 —— 用户要的是「微微变亮，但又不会太过明显」，所以收到 .16、
+   圈也收小一点（48%×34%），落回 +5~6%。 */
 .decor-glow-enemy {
-  -webkit-mask-image: radial-gradient(54% 40% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(54% 40% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(48% 34% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(48% 34% at var(--glow-enemy-x, 74%) var(--glow-enemy-y, 20%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
 }
 .decor-glow-player {
-  -webkit-mask-image: radial-gradient(54% 40% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
-  mask-image: radial-gradient(54% 40% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  -webkit-mask-image: radial-gradient(48% 34% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
+  mask-image: radial-gradient(48% 34% at var(--glow-player-x, 26%) var(--glow-player-y, 80%), #000 0%, rgba(0, 0, 0, .45) 52%, transparent 78%);
 }
-.battle-screen[data-acting="enemy"] .decor-glow-enemy { opacity: 1; }
-.battle-screen[data-acting="player"] .decor-glow-player { opacity: 1; }
-/* 降低动效时花纹就不漂了（截图也走这条路：动起来反而截不稳） */
+.battle-screen[data-acting="enemy"] .decor-glow-enemy { opacity: .16; }
+.battle-screen[data-acting="player"] .decor-glow-player { opacity: .16; }
+/* 降低动效 / 诊断用（?fps=1 的第二轮会挂 html[data-decor-motion="off"]）时就不滚了 */
 @media (prefers-reduced-motion: reduce) {
-  .decor-drift { animation: none !important; }
+  .decor-layer { animation: none !important; }
   .decor-glow { transition: none; }
 }
+html[data-decor-motion="off"] .decor-layer { animation: none !important; }
 .weather i {
   position: absolute;
   width: 2px; height: 2px;
