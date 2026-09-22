@@ -29,14 +29,21 @@
 // 位图里只有「一个周期」的字（约 1000 个字形，是原来三层合计的 1/16），且只画一次。
 //
 // 要让「一个周期」真的无缝，三件事必须对齐（这是最容易写错的地方）：
-//   · 文字：每一行的重复单元 = 图鉴文本 + 若干全角空格，单元里字符数固定 = unitChars；
-//   · 波长：必须能整除单元宽度，所以波长取「单元宽度 ÷ 整数」；
+//   · 文字：每一行的重复单元 = 图鉴文本 + 一个全角空格（缝里留一口气）；
+//   · 波长：必须能整除位图宽度，所以波长取「位图宽度 ÷ 波数」（那个波数每行不同）；
 //   · 字形网格：按**实测字宽**逐个累加排布（图鉴文本里有半角数字，1 和汉字的宽度不一样，
-//     不能假设「一个字符正好一个字号宽」），最后再把整幅位图缩放到整数像素宽。
+//     不能假设「一个字符正好一个字号宽」），而两个半场各按各的宽度缩放到**整数像素宽**
+//     ——两个半场的文本长度不一样（半角数字只占半个字宽），各缩各的才不会在接缝处对不齐。
+//   · 每行排到哪里为止：**一直排到铺满整幅位图**（3.1.3 修的，之前会空出右端一截）。
 //
 // 变亮：三层用同一张位图，只是 `opacity` 不同（底色 0.10 / 高亮 0.22），
 // 高亮那两份再用 radial-gradient 的 mask 圈住自己那一侧（敌人右上、主角左下）。
 // 「同一张图 + 只改 opacity」这一点很重要：变亮就是同一片文字更亮一点，不会多出别的形状。
+//
+// 手感 / 眼感的对账工具（这一路的需求都是「看着太整齐了」这类主观话）：
+//   · `?decor=canvas` 把那张位图本身摊在屏幕上（看接缝、看字形对不对最直接）；
+//   · `?decor=probe` 逐像素量一遍，打印每行的波峰位置、字格起点、最长的一段空白，
+//     以及两个半场左 / 中 / 右的字迹量。
 import { el } from './dom.js';
 
 /**
@@ -115,7 +122,7 @@ const rowAt = (i, side) => (i + (side === 'player' ? 3 : 0)) % LINES;
  * 把「一个周期的花纹」画成位图。
  * @returns {{url:string, unit:number, size:number, rows:RowFact[]}} 位图地址、一个周期的像素宽、字号
  */
-function paintPattern(bands, w, h) {
+function paintPattern(bands, h) {
   // 字号随场地高度走：0.045 倍（行距是它的 1.55 倍上下，行与行之间才有呼吸）
   const size = Math.max(14, Math.min(34, Math.round(h * 0.045)));
   /**
@@ -453,7 +460,7 @@ export function battleDecor({ enemyText, playerText, fallback = '' } = {}) {
     // 太小的量测直接跳过（场地还没排好版时的 0 / 几像素会让位图压根不成形）
     if (W < 120 || H < 120) return;
     if (!force && Math.abs(W - last.w) < 1 && Math.abs(H - last.h) < 1) return;
-    const { url, unit, size, unitW, wls, canvas, rows, fill } = paintPattern(bands, W, H);
+    const { url, unit, size, unitW, wls, canvas, rows, fill } = paintPattern(bands, H);
     last = { w: W, h: H };
     for (const node of layers) node.style.backgroundImage = `url(${url})`;
     applyToLayers(unit, H);
