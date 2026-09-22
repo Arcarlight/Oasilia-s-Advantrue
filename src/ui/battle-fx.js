@@ -82,22 +82,28 @@ export function tintFilter(color) {
   return `sepia(1) hue-rotate(${rot.toFixed(0)}deg) saturate(${sat.toFixed(2)}) brightness(${bri.toFixed(2)})`;
 }
 /**
- * 属性 → 特效颜色。
+ * 属性 → 特效颜色。**这份色表是从用户给的「属性列表」参考图上逐格取色得到的**
+ * （tools/shots/sample-types.mjs 直接把图的像素读出来取中位色，不靠肉眼抄），
+ * 所以和玩家在界面里看到的属性胶囊是同一套颜色。
  *
- * 用户点名了几个：「火是红色、格斗是粉红、龙是深蓝色、毒是紫色等等」——
- * 其余按宝可梦官方的属性配色取色相，但**整体提亮**：特效是叠在暗背景上、
- * 用 `mix-blend-mode: screen` 加亮的，官方那套（暗红 #C22E28、深褐 #705848 之类）
- * 直接拿来会糊成一片黑，只剩「有东西闪了一下」。
+ * 取色时踩过一个小坑：自动探测「有颜色的横条」会漏掉灰、黑的那两颗
+ * （「一般」是灰的、「恶」是近黑的，饱和度不够），第一版于是把「恶」取成了「钢」的颜色 ——
+ * 现在按两列探测结果的并集补齐网格再逐格取。
  *
- * 注意：这里的色值不是直接画上去的，而是经 `tintFilter()` 变成一串 filter ——
- * 贴图是纯白的，颜色的色相 / 明暗都靠那串 filter 调出来（见它的说明）。
+ * ⚠ 色值只是**目标色**，真正上色是经 `tintFilter()` 变成一串 CSS filter
+ * （贴图是纯白的，色相/明暗全靠那串 filter 调）。
  */
 const TYPE_TINT = {
-  一般: '#d8d2a8', 格斗: '#ff7fa8', 飞行: '#b0a0ff', 毒: '#b45ad8', 地面: '#e8c96a',
-  岩石: '#cbb25c', 虫: '#b4cc38', 幽灵: '#8f6ae0', 钢: '#c4ccdc', 火: '#ff4a30',
-  水: '#5aa0ff', 草: '#6ad050', 电: '#ffe23a', 超能: '#ff5ac0', 冰: '#86dcd8',
-  龙: '#3a4ad8', 恶: '#a5825e', 妖精: '#ffb0d8',
+  一般: '#9fa19f', 飞行: '#81b9ef', 火: '#e62829', 超能: '#ef4179',
+  水: '#2980ef', 虫: '#91a119', 电: '#fac000', 岩石: '#afa981',
+  草: '#3fa129', 幽灵: '#704170', 冰: '#3fd8ff', 龙: '#5060e1',
+  格斗: '#ff8000', 恶: '#50413f', 毒: '#9141cb', 钢: '#60a1b8',
+  地面: '#915121', 妖精: '#ef70ef',
 };
+
+/** 属性升降时行走图的闪光色（用户：「降低时闪蓝光，提升时闪红光，和加护盾那个效果一样」） */
+export const FLASH_UP = '#ff4a3a';
+export const FLASH_DOWN = '#4a9aff';
 /** 状态 → [贴图, 颜色]：中毒绿、剧毒紫、灼伤橙、出血红、虚弱紫罗兰 */
 const STATUS_FX = {
   poison: ['magic_1', '#7fd45a'],
@@ -130,11 +136,20 @@ export function pickOne(list) {
  * 以前各处写死 110~160，小个子（冰宝 32×32）身上像糊了一整块，
  * 大个子（沙螺蟒 96×80）身上又盖不满。现在按精灵盒子算，再夹一下。
  */
-export function fxSize(body, mul = 1.25) {
+/**
+ * 特效的基准尺寸：**跟着精灵走**，而且刻意**收着**。
+ *
+ * 以前各处写死 110~160，小个子（冰宝 32×32）身上像糊了一整块，大个子盖不满；
+ * 3.1.4 改成跟精灵走之后**又放得太大**（用户：「这也太大了吧！！可以小一点」）——
+ * 现在是「精灵盒子 × 0.8~1.0」这一档，比精灵略大一点点，看得见但不糊住画面。
+ * 贴图本身四周有留白（512×512 里图案只占中间一块），所以乘出来的数字看着大、
+ * 实际可见的部分还要再小一圈。
+ */
+export function fxSize(body, mul = 0.85) {
   const r = body?.getBoundingClientRect?.();
-  if (!r?.width) return 120;
+  if (!r?.width) return 96;
   const base = Math.max(r.width, r.height * 0.8);
-  return Math.round(Math.max(70, Math.min(260, base * mul)));
+  return Math.round(Math.max(56, Math.min(200, base * mul)));
 }
 
 /**
@@ -221,17 +236,22 @@ export function projectile(field, fromEl, toEl, fx, opts = {}) {
 }
 
 /**
- * 行走图闪一下白光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。
+ * 行走图闪一下光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。
  *
  * 全白不是叠一层白图，而是 `brightness(0) invert(1)`（见 style.css 的 whiteFlash）：
  * 先把整只精灵压成黑、再反相成白，**透明的地方仍然是透明的** ——
  * 所以看到的是「这一只精灵的剪影全白了一下」，不是一块白色方块。
+ *
+ * 给了 `color` 就把白剪影再染成那个颜色（同一串 sepia→hue-rotate 手法）：
+ *   属性**提升** → 红光，属性**被削** → 蓝光（用户要求，和护盾的白光是同一套机制）。
  */
-export function flashWhite(body, { ms = 620 } = {}) {
+export function flashWhite(body, { color = null, ms = 620 } = {}) {
   if (!body) return;
   body.classList.remove('fighter-flash');
   void body.offsetWidth;            // 强制重排：连着两次强化也要能重新播
-  body.classList.add('fighter-flash');
+  // 不给颜色时用 brightness(1)（一个空操作），保证 filter 串始终合法
+  body.style.setProperty('--flash-tint', color ? tintFilter(color) : 'brightness(1)');
   body.style.setProperty('--flash-ms', `${ms}ms`);
+  body.classList.add('fighter-flash');
   setTimeout(() => body.classList.remove('fighter-flash'), ms + 40);
 }

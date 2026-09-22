@@ -18,7 +18,7 @@ import { heroById } from '../data/heroes.js';
 // 装饰字体（战斗背景花纹）之外，战斗界面还用到「远程招式的属性」这一组判断（见 animForCard）
 import { battleDecor } from './battle-decor.js';
 // 贴图特效（Kenney 粒子包）：形状 + **按属性/状态上色**都在那个模块里（见它的文件头）
-import { burst, projectile, flashWhite, tintOf, statusLook, fxSize, pickOne } from './battle-fx.js';
+import { burst, projectile, flashWhite, tintOf, statusLook, fxSize, pickOne, FLASH_UP, FLASH_DOWN } from './battle-fx.js';
 
 /**
  * 招式的「接触 / 远隔」判定在**数据里**（`content/cards.json` 的 `range` 字段，3.1.4 起）。
@@ -2227,10 +2227,7 @@ export class BattleScreen {
 
   // ================= 简单特效（复用工作区的 fx 贴图）=================
 
-  /**
-   * 角色行走图闪一下白光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。
-   * 实现（`brightness(0) invert(1)` 做成剪影）与理由都在 battle-fx.js 里。
-   */
+  /** 角色行走图闪一下光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。 */
   flash(body, opts) {
     flashWhite(body, opts);
   }
@@ -2273,7 +2270,7 @@ export class BattleScreen {
     if (!fromBody || !toBody) return null;
     const { ms = 340, size, ...rest } = opts;
     return projectile(this.field, fromBody, toBody, fx, {
-      size: size ?? Math.max(56, Math.round(fxSize(fromBody, 0.6))), ms: this.fxMs(ms), ...rest,
+      size: size ?? Math.max(48, Math.round(fxSize(fromBody, 0.45))), ms: this.fxMs(ms), ...rest,
     });
   }
 
@@ -2295,12 +2292,18 @@ export class BattleScreen {
     };
     const look = LOOK[stat] ?? { fx: 'magic_1', color: '#d8b0ff', text: '' };
     if (up) {
-      this.flash(body);
+      /**
+       * 属性**提升** → 行走图闪**红光**（用户要求：和护盾的白光是同一套机制）。
+       * 颜色和特效是两件事：闪光报「哪边变了」，特效报「变的是哪一项」。
+       */
+      this.flash(body, { color: FLASH_UP });
       // 强化：主特效 + 一颗星芒（延迟 90ms 出来，像「两层」而不是同时闪）
       this.burstFx(body, look.fx, { color: look.color, ms: 520, rotate: 0 });
       this.burstFx(body, 'star_08', { color: look.color, ms: 560, delay: 90 });
       floatAt(body, `${look.text} ${ev.amount > 0 ? '+' : ''}${ev.amount}`, 'float-buff');
     } else {
+      // 属性**被削** → 闪**蓝光**
+      this.flash(body, { color: FLASH_DOWN });
       // 削弱：烟（压暗）+ 一圈紫旋，和强化在颜色与混合模式上都拉开
       this.burstFx(body, 'smoke_1', { color: '#6a4a6a', ms: 520, blend: 'multiply', klass: 'fx-debuff' });
       this.burstFx(body, 'twirl_02', { color: '#c08ade', ms: 520, delay: 80, klass: 'fx-debuff' });
@@ -2590,7 +2593,7 @@ export class BattleScreen {
       this.burstFx(body, heavy ? 'flare_1' : 'slash_1', {
         color: tint,
         // 远隔那一道小一号：它的重点是飞出去的那一发
-        size: fxSize(body, heavy ? 1.5 : ranged ? 1.1 : 1.25),
+        size: fxSize(body, heavy ? 1.05 : ranged ? 0.8 : 0.9),
         ms: heavy ? 460 : 400,
         rotate: side === 'player' ? -18 : 18,
         klass: side === 'player' ? 'fx-swing-right' : 'fx-swing-left',
@@ -2646,8 +2649,8 @@ export class BattleScreen {
     const hitTint = tintOf(CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types);
     const typeList = CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types ?? [];
     if (ev.absorbed > 0 && ev.amount <= 0) {
-      this.burstFx(body, 'magic_2', { color: '#8ce4ff', size: fxSize(body, 1.4), ms: 520, klass: 'fx-block' });
-      this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring fx-block', size: fxSize(body, 1.5), ms: 620, delay: 60 });
+      this.burstFx(body, 'magic_2', { color: '#8ce4ff', size: fxSize(body, 1.0), ms: 520, klass: 'fx-block' });
+      this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring fx-block', size: fxSize(body, 1.1), ms: 620, delay: 60 });
     } else {
       /**
        * ⚠ 命中特效的时长要**够看清**：一版只给了 360ms（乘上演出速度还可能更短），
@@ -2656,17 +2659,17 @@ export class BattleScreen {
        */
       this.burstFx(body, ev.crit ? 'star_09' : pickOne(['dirt_1', 'dirt_2']), {
         color: ev.crit ? '#ffdf7a' : hitTint,
-        size: fxSize(body, ev.crit ? 1.7 : 1.35),
+        size: fxSize(body, ev.crit ? 1.15 : 0.9),
         ms: ev.crit ? 680 : 520,
         klass: ev.crit ? 'fx-impact-crit' : 'fx-impact',
       });
       if (ev.crit) {
-        this.burstFx(body, 'flare_1', { color: hitTint, size: fxSize(body, 1.3), ms: 560, delay: 70 });
+        this.burstFx(body, 'flare_1', { color: hitTint, size: fxSize(body, 0.95), ms: 560, delay: 70 });
       }
       // 电系打上来额外劈一道闪电（spark_01~07 是一族闪电弧，形状每次不一样）
       if (typeList.includes('电')) {
         this.burstFx(body, pickOne(['spark_02', 'spark_04', 'spark_06']), {
-          color: '#ffe23a', size: fxSize(body, 1.5), ms: 520, delay: 40,
+          color: '#ffe23a', size: fxSize(body, 1.0), ms: 520, delay: 40,
         });
       }
     }

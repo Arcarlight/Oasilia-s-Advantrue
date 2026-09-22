@@ -1139,12 +1139,14 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
 /* 护盾 / 强化 / 净化：行走图**整个剪影闪白**再复原。
    `brightness(0)` 把精灵压成黑、`invert(1)` 反成白 —— 透明处仍然透明，
    所以是「这只精灵白了一下」，不是糊一块白方块。
+   `--flash-tint` 是**给剪影上色**的那一串 filter（默认 brightness(1) = 什么都不做）：
+   属性提升时是红的、被削时是蓝的（见 battle-fx.js 的 flashWhite / FLASH_UP）。
    闪两下（12% 全白 → 30% 半白 → 48% 又全白）是有意的：只闪一下太像掉帧，两下才像「生效了」。 */
 @keyframes whiteFlash {
   0%   { filter: none; }
-  12%  { filter: brightness(0) invert(1) drop-shadow(0 0 16px rgba(255, 255, 255, .95)); }
+  12%  { filter: brightness(0) invert(1) var(--flash-tint, brightness(1)) drop-shadow(0 0 16px rgba(255, 255, 255, .95)); }
   30%  { filter: brightness(2.2) saturate(.4) drop-shadow(0 0 10px rgba(255, 240, 200, .75)); }
-  48%  { filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255, 255, 255, .8)); }
+  48%  { filter: brightness(0) invert(1) var(--flash-tint, brightness(1)) drop-shadow(0 0 12px rgba(255, 255, 255, .8)); }
   100% { filter: none; }
 }
 .fighter-flash { animation: whiteFlash var(--flash-ms, 620ms) ease both; }
