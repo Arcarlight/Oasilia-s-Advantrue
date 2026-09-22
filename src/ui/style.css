@@ -1062,9 +1062,13 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
   position: absolute; left: 50%; top: 50%;
   transform: translate(-50%, -50%);
 }
-/* 精灵尺寸由 JS 按「这一行实际高度」算好后写进 canvas 的内联宽高；
-   这里的 max-height 只是 JS 还没跑时的兜底，别让它变成主要约束。 */
-.fighter-body canvas { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .45)); max-height: 100%; }
+/* 精灵尺寸由 JS 按「这一行实际高度」算好后写进 canvas 的内联宽高。
+   ⚠ 这里**不能**再夹 `max-height: 100%`：身体盒子被钉成待机那张的大小，
+   而出招 / 受伤的帧盒子比待机大（冰宝 Idle 32×32 → Attack 64×64），
+   单轴夹高度会把画布压成扁的 —— 用户报的「基本所有敌人出招、受伤时行走图都会被压扁」
+   就是这一句（实测帧比 0.900 的画布被显示成 1.795，正好差一倍）。
+   画布本来就是绝对定位居中的、不参与布局，让它自然溢出即可。 */
+.fighter-body canvas { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .45)); }
 
 /* ------------------------------------------------------------------
    出牌展示区：一侧打出的牌会把卡面摊在这里
@@ -1130,29 +1134,40 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
    战斗简单特效（全部复用 assets/img/fx 里的贴图，不额外画素材）
    ============================================================ */
 
-/* 强化 / 变化技能：行走图闪一下白光 */
+/* 护盾 / 强化 / 净化：行走图**整个剪影闪白**再复原。
+   `brightness(0)` 把精灵压成黑、`invert(1)` 反成白 —— 透明处仍然透明，
+   所以是「这只精灵白了一下」，不是糊一块白方块。
+   闪两下（12% 全白 → 30% 半白 → 48% 又全白）是有意的：只闪一下太像掉帧，两下才像「生效了」。 */
 @keyframes whiteFlash {
   0%   { filter: none; }
-  18%  { filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(255, 255, 255, .95)); }
-  45%  { filter: brightness(2.4) saturate(.35) drop-shadow(0 0 10px rgba(255, 240, 200, .8)); }
+  12%  { filter: brightness(0) invert(1) drop-shadow(0 0 16px rgba(255, 255, 255, .95)); }
+  30%  { filter: brightness(2.2) saturate(.4) drop-shadow(0 0 10px rgba(255, 240, 200, .75)); }
+  48%  { filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255, 255, 255, .8)); }
   100% { filter: none; }
 }
-.fighter-flash { animation: whiteFlash .55s ease both; }
+.fighter-flash { animation: whiteFlash var(--flash-ms, 620ms) ease both; }
 
-/* 叠在角色身上的贴图特效：出现 → 放大 → 淡出 */
+/* 叠在角色身上的贴图特效：出现 → 放大 → 淡出。
+   ⚠ 形状来自贴图的 **alpha 通道**（mask），颜色来自 `--fx-color`（background-color）：
+   素材本身是**纯灰**的，「换色」只能这么做 —— 上一版用 `filter: hue-rotate()` 给状态配色，
+   对灰图完全无效（中毒和灼伤长得一模一样，见 battle-fx.js 的文件头）。 */
 .fx-burst {
   position: absolute;
   left: 50%; top: 50%;
+  width: var(--fx-size, 120px);
+  height: var(--fx-size, 120px);
   margin-left: calc(var(--fx-size, 120px) / -2);
   margin-top: calc(var(--fx-size, 120px) / -2);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  background-color: var(--fx-color, #fff);
+  -webkit-mask-image: var(--fx-img); mask-image: var(--fx-img);
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
   pointer-events: none;
   z-index: 6;
   mix-blend-mode: screen;
   transform: rotate(var(--fx-rot, 0deg));
-  animation: fxBurst var(--fx-ms, 460ms) cubic-bezier(.2, .8, .3, 1) both;
+  animation: fxBurst var(--fx-ms, 460ms) cubic-bezier(.2, .8, .3, 1) var(--fx-delay, 0ms) both;
 }
 @keyframes fxBurst {
   0%   { opacity: 0; scale: .45; }
@@ -1160,14 +1175,15 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
   60%  { opacity: .95; scale: 1.12; }
   100% { opacity: 0; scale: 1.3; }
 }
-/* 削弱 / 中毒这类负面特效不要用叠加发光，改成压暗 */
-.fx-debuff { mix-blend-mode: multiply; opacity: .8; }
-.fx-status-poison { filter: hue-rotate(70deg) saturate(1.4); }
-.fx-status-burn   { filter: hue-rotate(-18deg) saturate(1.6); }
-.fx-status-weak   { filter: hue-rotate(250deg) saturate(1.2); }
-.fx-status-bleed  { filter: hue-rotate(-40deg) saturate(2); }
-.fx-heal          { filter: hue-rotate(60deg) saturate(1.3); }
-.fx-block         { filter: hue-rotate(150deg) saturate(.8); }
+/* 负面特效不要用叠加发光，改成压暗（混合模式是**真的生效**的那一项，不是被删掉的 hue-rotate） */
+.fx-debuff { mix-blend-mode: multiply; opacity: .85; }
+/* 环状特效（护盾的罩子、净化的光圈）：从中心涨开、不旋转 */
+.fx-ring { animation: fxRing var(--fx-ms, 520ms) cubic-bezier(.15, .8, .3, 1) both; }
+@keyframes fxRing {
+  0%   { opacity: 0; scale: .3; }
+  22%  { opacity: .95; scale: .95; }
+  100% { opacity: 0; scale: 1.45; }
+}
 
 /* 出招时的弧光：从角色朝对手那一侧甩出去 */
 .fx-swing-right { animation: fxSwingRight var(--fx-ms, 380ms) ease-out both; }
@@ -1181,6 +1197,23 @@ html[data-decor-motion="off"] .decor-layer { animation: none !important; }
   0%   { opacity: 0; translate: 10px 0; scale: .5; }
   30%  { opacity: 1; }
   100% { opacity: 0; translate: -52px 0; scale: 1.15; }
+}
+
+/* 远隔类的招式：一道流光从出手那一侧**飞到**对手身上。
+   起点写在 left/top（JS 按两只精灵的实际位置算），位移交给 --fx-dx/--fx-dy。
+   贴图（trace 那族）是竖着的光条，所以 JS 会把旋转角设成「飞行方向 + 90°」。 */
+.fx-projectile {
+  left: var(--fx-x, 0px);
+  top: var(--fx-y, 0px);
+  margin: 0;
+  z-index: 7;
+  animation: fxFly var(--fx-ms, 340ms) cubic-bezier(.35, .1, .6, 1) both;
+}
+@keyframes fxFly {
+  0%   { opacity: 0; translate: 0 0; scale: .6; }
+  18%  { opacity: 1; scale: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; translate: var(--fx-dx, 0px) var(--fx-dy, 0px); scale: 1.12; }
 }
 
 /* 命中冲击：稍微抖动放大一点 */

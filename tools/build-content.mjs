@@ -183,6 +183,14 @@ function validateCards(data, iconNames, heroIds = null) {
       if (c[k] == null) err(`${at} 缺字段 ${k}`);
     }
     if (c.ap == null || !Number.isInteger(c.ap) || c.ap < 0 || c.ap > 5) err(`${at} 的 ap 必须是 0~5 的整数`);
+    /**
+     * `range`：这张牌是「接触」还是「远隔」—— 战斗界面拿它挑动作
+     * （接触演「撞上去」，远隔演「放招」，见 src/ui/battle-view.js 的 animForCard）。
+     * 这里和 check-content 各拦一道：这一道让「加新卡忘了写」在生成阶段就炸，
+     * 不用等到跑完体检。
+     */
+    if (c.range == null) err(`${at} 缺 range（这张牌是「接触」还是「远隔」？判定依据见 src/ui/battle-view.js 的 animForCard）`);
+    else if (!['接触', '远隔'].includes(c.range)) err(`${at} 的 range=${JSON.stringify(c.range)} 只能是「接触」或「远隔」`);
     if (!RARITIES.includes(c.rarity)) err(`${at} 的 rarity 必须是 ${RARITIES.join('/')}`);
     if (!['enemy', 'self'].includes(c.targeting)) err(`${at} 的 targeting 必须是 enemy/self`);
     if (!Array.isArray(c.effects) || !c.effects.length) err(`${at} 至少要有一个 effects`);

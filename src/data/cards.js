@@ -53,7 +53,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "accelrock",
@@ -75,7 +76,8 @@ export const CARDS = [
         "n": 1
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "acid_armor",
@@ -101,7 +103,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "acrobatics",
@@ -126,7 +129,8 @@ export const CARDS = [
     ],
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "aerial_ace",
@@ -144,7 +148,8 @@ export const CARDS = [
         "power": 190,
         "ignoreDefPct": 0.5
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "agility",
@@ -175,7 +180,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "air_slash",
@@ -194,7 +200,8 @@ export const CARDS = [
     ],
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "aqua_jet",
@@ -212,7 +219,8 @@ export const CARDS = [
         "power": 30
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "aqua_ring",
@@ -235,7 +243,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "aqua_tail",
@@ -260,7 +269,8 @@ export const CARDS = [
         "target": "enemy"
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "aurora_veil",
@@ -284,7 +294,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "baby_doll_eyes",
@@ -308,7 +319,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "barrier",
@@ -332,7 +344,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "bite",
@@ -351,7 +364,8 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "heroOnly": "oasilia"
+    "heroOnly": "oasilia",
+    "range": "接触"
   },
   {
     "id": "blizzard",
@@ -377,7 +391,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "blood_price",
@@ -403,7 +418,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "blood_toxins",
@@ -429,7 +445,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "bloodletting",
@@ -454,7 +471,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "body_press",
@@ -473,7 +491,8 @@ export const CARDS = [
     "types": [
       "格斗"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "body_slam",
@@ -497,7 +516,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "boomburst",
@@ -519,7 +539,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "branch_poke",
@@ -537,7 +558,8 @@ export const CARDS = [
         "power": 30
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "brick_break",
@@ -561,7 +583,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "brine",
@@ -584,7 +607,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "browbeat",
@@ -608,7 +632,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "bug_buzz",
@@ -626,7 +651,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "bulk_up",
@@ -657,7 +683,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "bulldoze",
@@ -681,7 +708,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "bullet_punch",
@@ -701,7 +729,8 @@ export const CARDS = [
     "types": [
       "钢"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "bullet_seed",
@@ -720,7 +749,8 @@ export const CARDS = [
     "types": [
       "草"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "calm_mind",
@@ -751,7 +781,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "charge_beam",
@@ -775,7 +806,8 @@ export const CARDS = [
     "types": [
       "电"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "charm",
@@ -794,7 +826,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "close_combat",
@@ -818,7 +851,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "confusion",
@@ -841,7 +875,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "corrode",
@@ -867,7 +902,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "corrosive_touch",
@@ -894,7 +930,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "cotton_guard",
@@ -912,7 +949,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "crimson_pact",
@@ -939,7 +977,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "cross_chop",
@@ -958,7 +997,8 @@ export const CARDS = [
     "types": [
       "格斗"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "crunch",
@@ -983,7 +1023,8 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "crush_grip",
@@ -1009,7 +1050,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "crystal_wall",
@@ -1032,7 +1074,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "curse",
@@ -1051,7 +1094,8 @@ export const CARDS = [
     "types": [
       "幽灵"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "dark_pulse",
@@ -1074,7 +1118,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "dazzling_gleam",
@@ -1093,7 +1138,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "defense_curl",
@@ -1116,7 +1162,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "disarming_voice",
@@ -1140,7 +1187,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "discharge",
@@ -1164,7 +1212,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "doom_desire",
@@ -1184,7 +1233,8 @@ export const CARDS = [
     "types": [
       "钢"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "double_edge",
@@ -1205,7 +1255,8 @@ export const CARDS = [
     "types": [
       "一般"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "double_kick",
@@ -1225,7 +1276,8 @@ export const CARDS = [
     "types": [
       "格斗"
     ],
-    "heroOnly": "oasilia"
+    "heroOnly": "oasilia",
+    "range": "接触"
   },
   {
     "id": "draco_meteor",
@@ -1260,7 +1312,8 @@ export const CARDS = [
       "buff",
       "burst"
     ],
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "远隔"
   },
   {
     "id": "dragon_ascension",
@@ -1296,7 +1349,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "dragon_breath",
@@ -1315,7 +1369,8 @@ export const CARDS = [
     "types": [
       "龙"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "dragon_claw",
@@ -1335,7 +1390,8 @@ export const CARDS = [
     "types": [
       "龙"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "dragon_dance",
@@ -1362,7 +1418,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "dragon_darts",
@@ -1382,7 +1439,8 @@ export const CARDS = [
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "dragon_rush",
@@ -1405,7 +1463,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "dragon_tail",
@@ -1430,7 +1489,8 @@ export const CARDS = [
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "drain_punch",
@@ -1449,7 +1509,8 @@ export const CARDS = [
     "types": [
       "格斗"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "draining_kiss",
@@ -1468,7 +1529,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "dynamax_cannon",
@@ -1488,7 +1550,8 @@ export const CARDS = [
     "types": [
       "钢"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "earth_power",
@@ -1508,7 +1571,8 @@ export const CARDS = [
     "types": [
       "地面"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "earthquake",
@@ -1534,7 +1598,8 @@ export const CARDS = [
     "types": [
       "地面"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "ember",
@@ -1557,7 +1622,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.2
       }
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "endure",
@@ -1581,7 +1647,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "energy_ball",
@@ -1605,7 +1672,8 @@ export const CARDS = [
         "chance": 0.3
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "exploit_weak",
@@ -1630,7 +1698,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "extrasensory",
@@ -1654,7 +1723,8 @@ export const CARDS = [
     "types": [
       "超能"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "fairy_wind",
@@ -1678,7 +1748,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "feather_dance",
@@ -1703,7 +1774,8 @@ export const CARDS = [
     ],
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "feint_attack",
@@ -1727,7 +1799,8 @@ export const CARDS = [
         "chance": 0.2
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "fire_blast",
@@ -1750,7 +1823,8 @@ export const CARDS = [
         "status": "burn",
         "stacks": 2
       }
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "fire_fang",
@@ -1773,7 +1847,8 @@ export const CARDS = [
     ],
     "types": [
       "火"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "first_aid",
@@ -1796,7 +1871,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "fissure",
@@ -1817,7 +1893,8 @@ export const CARDS = [
     "types": [
       "地面"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "flame_charge",
@@ -1839,7 +1916,8 @@ export const CARDS = [
     ],
     "types": [
       "火"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "flamethrower",
@@ -1863,7 +1941,8 @@ export const CARDS = [
         "stacks": 1,
         "chance": 0.3
       }
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "flash_cannon",
@@ -1887,7 +1966,8 @@ export const CARDS = [
         "chance": 0.3
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "focus_energy",
@@ -1913,7 +1993,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "focus_punch",
@@ -1937,7 +2018,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "foul_play",
@@ -1959,7 +2041,8 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "freeze_dry",
@@ -1978,7 +2061,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "frost_breath",
@@ -2002,7 +2086,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "fury_cutter",
@@ -2021,7 +2106,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "fury_swipes",
@@ -2047,7 +2133,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "future_sight",
@@ -2069,7 +2156,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "giga_drain",
@@ -2089,7 +2177,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "giga_impact",
@@ -2120,7 +2209,8 @@ export const CARDS = [
       "timing",
       "burst"
     ],
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "远隔"
   },
   {
     "id": "glaciate",
@@ -2144,7 +2234,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "guardian_oath",
@@ -2172,7 +2263,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "gunk_shot",
@@ -2194,7 +2286,8 @@ export const CARDS = [
         "status": "poison",
         "stacks": 2
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "gyro_ball",
@@ -2217,7 +2310,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "hail",
@@ -2239,7 +2333,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "harden",
@@ -2259,7 +2354,8 @@ export const CARDS = [
     "types": [
       "一般"
     ],
-    "heroOnly": "oasilia"
+    "heroOnly": "oasilia",
+    "range": "接触"
   },
   {
     "id": "head_smash",
@@ -2278,7 +2374,8 @@ export const CARDS = [
         "ignoreDefPct": 0.5
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "headbutt",
@@ -2301,7 +2398,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "heat_wave",
@@ -2325,7 +2423,8 @@ export const CARDS = [
     ],
     "types": [
       "火"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "hex",
@@ -2355,7 +2454,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "howl",
@@ -2379,7 +2479,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "hurricane",
@@ -2403,7 +2504,8 @@ export const CARDS = [
         "target": "enemy"
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "hydro_pump",
@@ -2428,7 +2530,8 @@ export const CARDS = [
         "chance": 0.3
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "hyper_beam",
@@ -2446,7 +2549,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "一般"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "hypnosis",
@@ -2470,7 +2574,8 @@ export const CARDS = [
     "types": [
       "超能"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "ice_fang",
@@ -2494,7 +2599,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "ice_shard",
@@ -2519,7 +2625,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "ice_wall",
@@ -2543,7 +2650,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "inferno_overdrive",
@@ -2567,7 +2675,8 @@ export const CARDS = [
         "target": "self"
       }
     ],
-    "exhaust": true
+    "exhaust": true,
+    "range": "远隔"
   },
   {
     "id": "intimidate",
@@ -2585,7 +2694,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "iron_barbs",
@@ -2611,7 +2721,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "iron_defense",
@@ -2635,7 +2746,8 @@ export const CARDS = [
     ],
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "iron_head",
@@ -2656,7 +2768,8 @@ export const CARDS = [
     "types": [
       "钢"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "iron_tail",
@@ -2679,7 +2792,8 @@ export const CARDS = [
         "amount": 2,
         "target": "self"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "knock_off",
@@ -2710,7 +2824,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "恶"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "languor",
@@ -2729,7 +2844,8 @@ export const CARDS = [
     ],
     "types": [
       "毒"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "last_stand",
@@ -2755,7 +2871,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "leaf_storm",
@@ -2780,7 +2897,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "leech_life",
@@ -2803,7 +2921,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "leech_seed",
@@ -2829,7 +2948,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "life_dew",
@@ -2851,7 +2971,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "life_spring",
@@ -2873,7 +2994,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "light_of_ruin",
@@ -2897,7 +3019,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "lunge",
@@ -2920,7 +3043,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mach_punch",
@@ -2945,7 +3069,8 @@ export const CARDS = [
     "types": [
       "格斗"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "megahorn",
@@ -2971,7 +3096,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "metal_claw",
@@ -2994,7 +3120,8 @@ export const CARDS = [
         "amount": -1,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "metal_sound",
@@ -3017,7 +3144,8 @@ export const CARDS = [
     ],
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mind_reader",
@@ -3038,7 +3166,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mist",
@@ -3061,7 +3190,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "misty_terrain",
@@ -3083,7 +3213,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mob_growl",
@@ -3103,7 +3234,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mob_guard",
@@ -3122,7 +3254,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mob_sand",
@@ -3146,7 +3279,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mob_scratch",
@@ -3165,7 +3299,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "mob_stare",
@@ -3186,7 +3321,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "moonblast",
@@ -3211,7 +3347,8 @@ export const CARDS = [
     "types": [
       "妖精"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "moonlight",
@@ -3232,7 +3369,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "night_daze",
@@ -3251,7 +3389,8 @@ export const CARDS = [
         "ignoreDefPct": 0.5
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "night_slash",
@@ -3276,7 +3415,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "nuzzle",
@@ -3298,7 +3438,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "outrage",
@@ -3321,7 +3462,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "overclock",
@@ -3343,7 +3485,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "电"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "overheat",
@@ -3368,7 +3511,8 @@ export const CARDS = [
     ],
     "tags": [
       "burst"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "peck",
@@ -3386,7 +3530,8 @@ export const CARDS = [
         "power": 30
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "phantom_force",
@@ -3407,7 +3552,8 @@ export const CARDS = [
     "types": [
       "幽灵"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "pin_missile",
@@ -3426,7 +3572,8 @@ export const CARDS = [
         "hits": 3
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "plague",
@@ -3453,7 +3600,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "play_rough",
@@ -3477,7 +3625,8 @@ export const CARDS = [
     ],
     "types": [
       "妖精"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "poison_fang",
@@ -3502,7 +3651,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "poison_sting",
@@ -3526,7 +3676,8 @@ export const CARDS = [
     "types": [
       "毒"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "potion_berry",
@@ -3544,7 +3695,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "power_gem",
@@ -3568,7 +3720,8 @@ export const CARDS = [
         "target": "enemy"
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "precipice_blades",
@@ -3591,7 +3744,8 @@ export const CARDS = [
         "amount": -4,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "protect",
@@ -3611,7 +3765,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "psybeam",
@@ -3635,7 +3790,8 @@ export const CARDS = [
     "types": [
       "超能"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "psychic",
@@ -3660,7 +3816,8 @@ export const CARDS = [
     "types": [
       "超能"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "psyshock",
@@ -3679,7 +3836,8 @@ export const CARDS = [
     "types": [
       "超能"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "quick_attack",
@@ -3701,7 +3859,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "quick_draw",
@@ -3722,7 +3881,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "quiver_dance",
@@ -3754,7 +3914,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "razor_leaf",
@@ -3777,7 +3938,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "recycle",
@@ -3798,7 +3960,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "refresh",
@@ -3821,7 +3984,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "rend",
@@ -3842,7 +4006,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "rest",
@@ -3865,7 +4030,8 @@ export const CARDS = [
     ],
     "types": [
       "超能"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "rock_blast",
@@ -3896,7 +4062,8 @@ export const CARDS = [
     "enemyOnly": false,
     "tags": [
       "timing"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "rock_polish",
@@ -3926,7 +4093,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "rock_slide",
@@ -3951,7 +4119,8 @@ export const CARDS = [
     "types": [
       "岩石"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "rock_throw",
@@ -3975,7 +4144,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "rolling_kick",
@@ -4000,7 +4170,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "roost",
@@ -4018,7 +4189,8 @@ export const CARDS = [
     ],
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "safeguard",
@@ -4042,7 +4214,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "salt_cure",
@@ -4076,7 +4249,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sand_attack",
@@ -4102,7 +4276,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sand_tomb",
@@ -4125,7 +4300,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sand_veil",
@@ -4148,7 +4324,8 @@ export const CARDS = [
     ],
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sandstorm",
@@ -4176,7 +4353,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "scale_shot",
@@ -4199,7 +4377,8 @@ export const CARDS = [
     ],
     "types": [
       "龙"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "scary_face",
@@ -4218,7 +4397,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "screech",
@@ -4241,7 +4421,8 @@ export const CARDS = [
     ],
     "tags": [
       "weaken"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "seed_bomb",
@@ -4266,7 +4447,8 @@ export const CARDS = [
         "target": "enemy"
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "shadow_ball",
@@ -4291,7 +4473,8 @@ export const CARDS = [
     "types": [
       "幽灵"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "shadow_bone",
@@ -4314,7 +4497,8 @@ export const CARDS = [
         "stacks": 2
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "shadow_punch",
@@ -4338,7 +4522,8 @@ export const CARDS = [
     "types": [
       "幽灵"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "shadow_sneak",
@@ -4362,7 +4547,8 @@ export const CARDS = [
     "types": [
       "幽灵"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "sig_ancient_beam",
@@ -4386,7 +4572,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_brave_bird",
@@ -4405,7 +4592,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_bullet_slash",
@@ -4429,7 +4617,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_crystal_fang",
@@ -4453,7 +4642,8 @@ export const CARDS = [
     "enemySpecies": "druddigon_alpha",
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_crystal_jaw",
@@ -4478,7 +4668,8 @@ export const CARDS = [
     "enemySpecies": "tyrantrum_crystal",
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_curse_mummy",
@@ -4503,7 +4694,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "幽灵"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_double_claw",
@@ -4528,7 +4720,8 @@ export const CARDS = [
     "enemySpecies": "scizor_warden",
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_dragon_water",
@@ -4551,7 +4744,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "龙"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_dual_chomp",
@@ -4576,7 +4770,8 @@ export const CARDS = [
     "enemySpecies": "garchomp",
     "types": [
       "龙"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_heavy_slam",
@@ -4601,7 +4796,8 @@ export const CARDS = [
     "enemySpecies": "aggron",
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_horn_drill",
@@ -4626,7 +4822,8 @@ export const CARDS = [
     "enemySpecies": "rhydon_warden",
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_iron_tail_wall",
@@ -4650,7 +4847,8 @@ export const CARDS = [
     "enemySpecies": "steelix",
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_land_wrath",
@@ -4675,7 +4873,8 @@ export const CARDS = [
     "enemySpecies": "zygarde",
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_leaf_blade",
@@ -4699,7 +4898,8 @@ export const CARDS = [
     "enemySpecies": "sceptile",
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_lighthouse",
@@ -4728,7 +4928,8 @@ export const CARDS = [
     "enemySpecies": "ampharos_storm",
     "types": [
       "超能"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_magma_erupt",
@@ -4752,7 +4953,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "火"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_megahorn_charge",
@@ -4780,7 +4982,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_meteor_mash",
@@ -4804,7 +5007,8 @@ export const CARDS = [
     "enemySpecies": "metagross",
     "types": [
       "钢"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_origin_pulse",
@@ -4828,7 +5032,8 @@ export const CARDS = [
     "enemySpecies": "kyogre",
     "types": [
       "水"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_pharaoh_curse",
@@ -4854,7 +5059,8 @@ export const CARDS = [
     "enemySpecies": "tyranitar_ruins",
     "types": [
       "幽灵"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_rage_wave",
@@ -4878,7 +5084,8 @@ export const CARDS = [
     "enemySpecies": "gyarados",
     "types": [
       "水"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_rock_slide_wing",
@@ -4902,7 +5109,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_root_bind",
@@ -4932,7 +5140,8 @@ export const CARDS = [
     "enemySpecies": "trevenant_fungal",
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_sand_fang",
@@ -4956,7 +5165,8 @@ export const CARDS = [
     "enemySpecies": "tyranitar",
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_sand_pit",
@@ -4980,7 +5190,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "地面"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_sky_dive",
@@ -5000,7 +5211,8 @@ export const CARDS = [
     "enemySpecies": "aerodactyl_alpha",
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_soul_flame",
@@ -5028,7 +5240,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "幽灵"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_soul_lantern",
@@ -5052,7 +5265,8 @@ export const CARDS = [
     "enemySpecies": "chandelure_warden",
     "types": [
       "幽灵"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_spark_ball",
@@ -5077,7 +5291,8 @@ export const CARDS = [
     "enemySpecies": "togedemaru_alpha",
     "types": [
       "电"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_spore_fist",
@@ -5107,7 +5322,8 @@ export const CARDS = [
     "enemySpecies": "breloom_alpha",
     "types": [
       "草"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_tidal_rage",
@@ -5132,7 +5348,8 @@ export const CARDS = [
     "enemySpecies": "gyarados_warden",
     "types": [
       "水"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_tide_ride",
@@ -5155,7 +5372,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_tomb_curse",
@@ -5187,7 +5405,8 @@ export const CARDS = [
     "enemySpecies": "cofagrigus_pharaoh",
     "types": [
       "幽灵"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "sig_war_banner",
@@ -5211,7 +5430,8 @@ export const CARDS = [
     "enemySpecies": "braviary_warden",
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sig_white_smoke",
@@ -5235,7 +5455,8 @@ export const CARDS = [
     "enemyOnly": true,
     "types": [
       "火"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "silver_wind",
@@ -5257,7 +5478,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "slam",
@@ -5281,7 +5503,8 @@ export const CARDS = [
     "types": [
       "一般"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "slash",
@@ -5306,7 +5529,8 @@ export const CARDS = [
     ],
     "tags": [
       "bleed"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sludge_bomb",
@@ -5334,7 +5558,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "snarl",
@@ -5357,7 +5582,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "snow_cloak",
@@ -5381,7 +5607,8 @@ export const CARDS = [
     ],
     "types": [
       "冰"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "snow_grave",
@@ -5405,7 +5632,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "solar_beam",
@@ -5424,7 +5652,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "草"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "spark",
@@ -5447,7 +5676,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "spider_web",
@@ -5471,7 +5701,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "spore",
@@ -5498,7 +5729,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "stone_edge",
@@ -5523,7 +5755,8 @@ export const CARDS = [
     ],
     "types": [
       "岩石"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "storm_throw",
@@ -5547,7 +5780,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "sunder",
@@ -5567,7 +5801,8 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "super_luck",
@@ -5593,7 +5828,8 @@ export const CARDS = [
     ],
     "tags": [
       "buff"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "superpower",
@@ -5621,7 +5857,8 @@ export const CARDS = [
     ],
     "types": [
       "格斗"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "surf",
@@ -5646,7 +5883,8 @@ export const CARDS = [
     "types": [
       "水"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "swift",
@@ -5665,7 +5903,8 @@ export const CARDS = [
     "types": [
       "一般"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "swords_dance",
@@ -5695,7 +5934,8 @@ export const CARDS = [
       "buff",
       "burst"
     ],
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "synthesis",
@@ -5717,7 +5957,8 @@ export const CARDS = [
     ],
     "types": [
       "草"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "tackle",
@@ -5736,7 +5977,8 @@ export const CARDS = [
     "types": [
       "一般"
     ],
-    "heroOnly": "oasilia"
+    "heroOnly": "oasilia",
+    "range": "接触"
   },
   {
     "id": "tail_whip",
@@ -5759,7 +6001,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "tailwind",
@@ -5782,7 +6025,8 @@ export const CARDS = [
     ],
     "types": [
       "飞行"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "thunder",
@@ -5806,7 +6050,8 @@ export const CARDS = [
         "amount": -3,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "thunder_shock",
@@ -5829,7 +6074,8 @@ export const CARDS = [
     ],
     "types": [
       "电"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "thunder_wave",
@@ -5853,7 +6099,8 @@ export const CARDS = [
     "types": [
       "电"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "thunderbolt",
@@ -5878,7 +6125,8 @@ export const CARDS = [
     "types": [
       "电"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "total_suppression",
@@ -5909,7 +6157,8 @@ export const CARDS = [
     ],
     "types": [
       "恶"
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "toxic",
@@ -5931,7 +6180,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "toxic_cloud",
@@ -5957,7 +6207,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "toxic_overflow",
@@ -5986,7 +6237,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "toxic_spikes",
@@ -6007,7 +6259,8 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "toxic_thread",
@@ -6030,7 +6283,8 @@ export const CARDS = [
     ],
     "types": [
       "毒"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "transference",
@@ -6047,7 +6301,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "超能"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "triple_axel",
@@ -6071,7 +6326,8 @@ export const CARDS = [
     "types": [
       "冰"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "twineedle",
@@ -6091,7 +6347,8 @@ export const CARDS = [
     "types": [
       "虫"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "u_turn",
@@ -6114,7 +6371,8 @@ export const CARDS = [
     "types": [
       "虫"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "u_turn_dance",
@@ -6138,7 +6396,8 @@ export const CARDS = [
     ],
     "types": [
       "虫"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "venom_burst",
@@ -6156,11 +6415,12 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "毒"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "venom_dart",
-    "name": "毒针连刺",
+    "name": "毒针急刺",
     "ap": 1,
     "rarity": "uncommon",
     "targeting": "enemy",
@@ -6181,11 +6441,12 @@ export const CARDS = [
     ],
     "tags": [
       "poison"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "venom_drain",
-    "name": "毒液吸取",
+    "name": "剧毒汲取",
     "ap": 2,
     "rarity": "uncommon",
     "targeting": "enemy",
@@ -6199,7 +6460,8 @@ export const CARDS = [
     ],
     "types": [
       "毒"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "venoshock",
@@ -6218,7 +6480,8 @@ export const CARDS = [
     "types": [
       "毒"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "volt_tackle",
@@ -6239,7 +6502,8 @@ export const CARDS = [
         "kind": "selfDmg",
         "amount": 6
       }
-    ]
+    ],
+    "range": "远隔"
   },
   {
     "id": "water_pulse",
@@ -6263,7 +6527,8 @@ export const CARDS = [
     "types": [
       "水"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "water_shuriken",
@@ -6286,7 +6551,8 @@ export const CARDS = [
     "types": [
       "水"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "whirlpool",
@@ -6313,7 +6579,8 @@ export const CARDS = [
     "types": [
       "水"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "wicked_blow",
@@ -6333,7 +6600,8 @@ export const CARDS = [
     "types": [
       "恶"
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "远隔"
   },
   {
     "id": "wide_guard",
@@ -6352,7 +6620,8 @@ export const CARDS = [
     ],
     "types": [
       "一般"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "wing_attack",
@@ -6375,7 +6644,8 @@ export const CARDS = [
         "amount": -2,
         "target": "enemy"
       }
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "withdraw",
@@ -6398,7 +6668,8 @@ export const CARDS = [
     ],
     "types": [
       "水"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "worsen",
@@ -6415,7 +6686,8 @@ export const CARDS = [
     "exhaust": true,
     "types": [
       "毒"
-    ]
+    ],
+    "range": "接触"
   },
   {
     "id": "x_scissor",
@@ -6434,7 +6706,8 @@ export const CARDS = [
         "hits": 2
       }
     ],
-    "enemyOnly": true
+    "enemyOnly": true,
+    "range": "接触"
   },
   {
     "id": "echoed_voice",
@@ -6461,7 +6734,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "self"
+    "targeting": "self",
+    "range": "接触"
   },
   {
     "id": "sand_beat",
@@ -6488,7 +6762,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "self"
+    "targeting": "self",
+    "range": "接触"
   },
   {
     "id": "hone_claws",
@@ -6513,7 +6788,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "self"
+    "targeting": "self",
+    "range": "接触"
   },
   {
     "id": "dual_chop",
@@ -6543,7 +6819,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "dig",
@@ -6577,7 +6854,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "rock_tomb",
@@ -6605,7 +6883,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "breaking_swipe",
@@ -6632,7 +6911,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "远隔"
   },
   {
     "id": "cut",
@@ -6658,7 +6938,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "take_down",
@@ -6680,7 +6961,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "sand_toxin",
@@ -6706,7 +6988,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "sand_burst",
@@ -6740,7 +7023,8 @@ export const CARDS = [
       }
     ],
     "enemyOnly": false,
-    "targeting": "enemy"
+    "targeting": "enemy",
+    "range": "接触"
   },
   {
     "id": "atlas_charge",
@@ -6760,7 +7044,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_bite",
@@ -6780,7 +7065,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_scales",
@@ -6801,7 +7087,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_wingbeat",
@@ -6822,7 +7109,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_roar",
@@ -6848,7 +7136,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_dive",
@@ -6869,7 +7158,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_steadfast",
@@ -6894,7 +7184,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "atlas_homeward",
@@ -6918,7 +7209,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "远隔"
   },
   {
     "id": "bleed_wait",
@@ -6948,7 +7240,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "bleed_chase",
@@ -6983,7 +7276,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "bleed_avalanche",
@@ -7019,7 +7313,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "weaken_wait",
@@ -7054,7 +7349,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "burst_wait",
@@ -7084,7 +7380,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "guard_wait",
@@ -7113,7 +7410,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "tempo_draw",
@@ -7142,7 +7440,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "power_wait",
@@ -7176,7 +7475,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "ap_wait",
@@ -7211,7 +7511,8 @@ export const CARDS = [
       }
     ],
     "targeting": "self",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "weaken_press",
@@ -7239,7 +7540,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "远隔"
   },
   {
     "id": "weaken_bind",
@@ -7268,7 +7570,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "接触"
   },
   {
     "id": "weaken_crush",
@@ -7302,7 +7605,8 @@ export const CARDS = [
       }
     ],
     "targeting": "enemy",
-    "enemyOnly": false
+    "enemyOnly": false,
+    "range": "远隔"
   }
 ];
 

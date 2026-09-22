@@ -32,7 +32,8 @@
       "fx": "magic_1",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "accelrock",
@@ -56,7 +57,8 @@
       ],
       "ico": "ico-stone",
       "fx": "dirt_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "acid_armor",
@@ -84,7 +86,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "acrobatics",
@@ -111,7 +114,8 @@
       "fx": "twirl_1",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "aerial_ace",
@@ -131,7 +135,8 @@
         }
       ],
       "ico": "ico-wind",
-      "fx": "slash_1"
+      "fx": "slash_1",
+      "range": "接触"
     },
     {
       "id": "agility",
@@ -164,7 +169,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "air_slash",
@@ -185,7 +191,8 @@
       "fx": "slash_1",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "aqua_jet",
@@ -205,7 +212,8 @@
       ],
       "ico": "ico-water",
       "fx": "magic_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "aqua_ring",
@@ -230,7 +238,8 @@
       "fx": "magic_2",
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "aqua_tail",
@@ -257,7 +266,8 @@
       ],
       "ico": "ico-water",
       "fx": "magic_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "aurora_veil",
@@ -283,7 +293,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "baby_doll_eyes",
@@ -309,7 +320,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "barrier",
@@ -335,7 +347,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "bite",
@@ -356,7 +369,8 @@
       "types": [
         "恶"
       ],
-      "heroOnly": "oasilia"
+      "heroOnly": "oasilia",
+      "range": "接触"
     },
     {
       "id": "blizzard",
@@ -384,7 +398,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "blood_price",
@@ -412,7 +427,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "blood_toxins",
@@ -440,7 +456,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "bloodletting",
@@ -467,7 +484,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "body_press",
@@ -488,7 +506,8 @@
       "types": [
         "格斗"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "body_slam",
@@ -514,7 +533,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "boomburst",
@@ -538,7 +558,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "branch_poke",
@@ -558,7 +579,8 @@
       ],
       "ico": "ico-leaves",
       "fx": "dirt_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "brick_break",
@@ -584,7 +606,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "brine",
@@ -609,7 +632,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "browbeat",
@@ -635,7 +659,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "bug_buzz",
@@ -655,7 +680,8 @@
       "fx": "magic_2",
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "bulk_up",
@@ -688,7 +714,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "bulldoze",
@@ -714,7 +741,8 @@
       "fx": "dirt_1",
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "bullet_punch",
@@ -736,7 +764,8 @@
       "types": [
         "钢"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "bullet_seed",
@@ -757,7 +786,8 @@
       "types": [
         "草"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "calm_mind",
@@ -790,7 +820,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "charge_beam",
@@ -816,7 +847,8 @@
       "types": [
         "电"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "charm",
@@ -837,7 +869,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "close_combat",
@@ -863,7 +896,8 @@
       "exhaust": true,
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "confusion",
@@ -888,7 +922,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "corrode",
@@ -916,7 +951,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "corrosive_touch",
@@ -945,7 +981,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "cotton_guard",
@@ -965,7 +1002,8 @@
       ],
       "types": [
         "草"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "crimson_pact",
@@ -994,7 +1032,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "cross_chop",
@@ -1015,7 +1054,8 @@
       "types": [
         "格斗"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "crunch",
@@ -1042,7 +1082,8 @@
       "types": [
         "恶"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "crush_grip",
@@ -1070,7 +1111,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "crystal_wall",
@@ -1095,7 +1137,8 @@
       ],
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "curse",
@@ -1116,7 +1159,8 @@
       "types": [
         "幽灵"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "dark_pulse",
@@ -1141,7 +1185,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "dazzling_gleam",
@@ -1162,7 +1207,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "defense_curl",
@@ -1187,7 +1233,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "disarming_voice",
@@ -1213,7 +1260,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "discharge",
@@ -1239,7 +1287,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "doom_desire",
@@ -1261,7 +1310,8 @@
       "types": [
         "钢"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "double_edge",
@@ -1284,7 +1334,8 @@
       "types": [
         "一般"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "double_kick",
@@ -1306,7 +1357,8 @@
       "types": [
         "格斗"
       ],
-      "heroOnly": "oasilia"
+      "heroOnly": "oasilia",
+      "range": "接触"
     },
     {
       "id": "draco_meteor",
@@ -1343,7 +1395,8 @@
         "buff",
         "burst"
       ],
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "远隔"
     },
     {
       "id": "dragon_ascension",
@@ -1381,7 +1434,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "dragon_breath",
@@ -1402,7 +1456,8 @@
       "types": [
         "龙"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "dragon_claw",
@@ -1424,7 +1479,8 @@
       "types": [
         "龙"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "dragon_dance",
@@ -1453,7 +1509,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "dragon_darts",
@@ -1475,7 +1532,8 @@
       "fx": "spark_1",
       "types": [
         "龙"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "dragon_rush",
@@ -1500,7 +1558,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "dragon_tail",
@@ -1527,7 +1586,8 @@
       "fx": "slash_1",
       "types": [
         "龙"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "drain_punch",
@@ -1548,7 +1608,8 @@
       "types": [
         "格斗"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "draining_kiss",
@@ -1569,7 +1630,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "dynamax_cannon",
@@ -1591,7 +1653,8 @@
       "types": [
         "钢"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "earth_power",
@@ -1613,7 +1676,8 @@
       "types": [
         "地面"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "earthquake",
@@ -1641,7 +1705,8 @@
       "types": [
         "地面"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "ember",
@@ -1666,7 +1731,8 @@
         }
       ],
       "ico": "ico-flame",
-      "fx": "flare_1"
+      "fx": "flare_1",
+      "range": "远隔"
     },
     {
       "id": "endure",
@@ -1692,7 +1758,8 @@
       "fx": "trace_1",
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "energy_ball",
@@ -1718,7 +1785,8 @@
       ],
       "ico": "ico-leaves",
       "fx": "magic_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "exploit_weak",
@@ -1745,7 +1813,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "extrasensory",
@@ -1771,7 +1840,8 @@
       "types": [
         "超能"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "fairy_wind",
@@ -1797,7 +1867,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "feather_dance",
@@ -1824,7 +1895,8 @@
       "fx": "twirl_1",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "feint_attack",
@@ -1850,7 +1922,8 @@
       ],
       "ico": "ico-demon",
       "fx": "magic_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "fire_blast",
@@ -1875,7 +1948,8 @@
         }
       ],
       "ico": "ico-volcanic_eruption",
-      "fx": "flare_1"
+      "fx": "flare_1",
+      "range": "远隔"
     },
     {
       "id": "fire_fang",
@@ -1900,7 +1974,8 @@
       "fx": "flare_1",
       "types": [
         "火"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "first_aid",
@@ -1925,7 +2000,8 @@
       "fx": "spark_1",
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "fissure",
@@ -1948,7 +2024,8 @@
       "types": [
         "地面"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "flame_charge",
@@ -1972,7 +2049,8 @@
       ],
       "types": [
         "火"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "flamethrower",
@@ -1998,7 +2076,8 @@
         }
       ],
       "ico": "ico-flame",
-      "fx": "flare_1"
+      "fx": "flare_1",
+      "range": "远隔"
     },
     {
       "id": "flash_cannon",
@@ -2024,7 +2103,8 @@
       ],
       "ico": "ico-gear",
       "fx": "light_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "focus_energy",
@@ -2052,7 +2132,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "focus_punch",
@@ -2078,7 +2159,8 @@
       "fx": "smoke_1",
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "foul_play",
@@ -2102,7 +2184,8 @@
       "types": [
         "恶"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "freeze_dry",
@@ -2123,7 +2206,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "frost_breath",
@@ -2149,7 +2233,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "fury_cutter",
@@ -2170,7 +2255,8 @@
       "fx": "slash_1",
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "fury_swipes",
@@ -2198,7 +2284,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "future_sight",
@@ -2222,7 +2309,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "giga_drain",
@@ -2244,7 +2332,8 @@
       "fx": "magic_1",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "giga_impact",
@@ -2277,7 +2366,8 @@
         "timing",
         "burst"
       ],
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "远隔"
     },
     {
       "id": "glaciate",
@@ -2303,7 +2393,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "guardian_oath",
@@ -2333,7 +2424,8 @@
       "exhaust": true,
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "gunk_shot",
@@ -2357,7 +2449,8 @@
         }
       ],
       "ico": "ico-flask",
-      "fx": "magic_1"
+      "fx": "magic_1",
+      "range": "接触"
     },
     {
       "id": "gyro_ball",
@@ -2382,7 +2475,8 @@
         }
       ],
       "ico": "ico-gear",
-      "fx": "twirl_02"
+      "fx": "twirl_02",
+      "range": "接触"
     },
     {
       "id": "hail",
@@ -2406,7 +2500,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "harden",
@@ -2428,7 +2523,8 @@
       "types": [
         "一般"
       ],
-      "heroOnly": "oasilia"
+      "heroOnly": "oasilia",
+      "range": "接触"
     },
     {
       "id": "head_smash",
@@ -2449,7 +2545,8 @@
       ],
       "ico": "ico-mace",
       "fx": "dirt_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "headbutt",
@@ -2474,7 +2571,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "heat_wave",
@@ -2500,7 +2598,8 @@
       "fx": "flare_1",
       "types": [
         "火"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "hex",
@@ -2532,7 +2631,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "howl",
@@ -2558,7 +2658,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "hurricane",
@@ -2584,7 +2685,8 @@
       ],
       "ico": "ico-wind",
       "fx": "twirl_01",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "hydro_pump",
@@ -2611,7 +2713,8 @@
       ],
       "ico": "ico-water",
       "fx": "magic_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "hyper_beam",
@@ -2631,7 +2734,8 @@
       "exhaust": true,
       "types": [
         "一般"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "hypnosis",
@@ -2657,7 +2761,8 @@
       "types": [
         "超能"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "ice_fang",
@@ -2683,7 +2788,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "ice_shard",
@@ -2710,7 +2816,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "ice_wall",
@@ -2736,7 +2843,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "inferno_overdrive",
@@ -2762,7 +2870,8 @@
       ],
       "exhaust": true,
       "ico": "ico-flame",
-      "fx": "flare_1"
+      "fx": "flare_1",
+      "range": "远隔"
     },
     {
       "id": "intimidate",
@@ -2782,7 +2891,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "iron_barbs",
@@ -2810,7 +2920,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "iron_defense",
@@ -2836,7 +2947,8 @@
       "fx": "trace_1",
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "iron_head",
@@ -2859,7 +2971,8 @@
       "types": [
         "钢"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "iron_tail",
@@ -2884,7 +2997,8 @@
         }
       ],
       "ico": "ico-mace",
-      "fx": "dirt_1"
+      "fx": "dirt_1",
+      "range": "接触"
     },
     {
       "id": "knock_off",
@@ -2917,7 +3031,8 @@
       "exhaust": true,
       "types": [
         "恶"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "languor",
@@ -2938,7 +3053,8 @@
       ],
       "types": [
         "毒"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "last_stand",
@@ -2966,7 +3082,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "leaf_storm",
@@ -2993,7 +3110,8 @@
       "fx": "slash_1",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "leech_life",
@@ -3018,7 +3136,8 @@
       ],
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "leech_seed",
@@ -3046,7 +3165,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "life_dew",
@@ -3070,7 +3190,8 @@
       "fx": "spark_1",
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "life_spring",
@@ -3094,7 +3215,8 @@
       "exhaust": true,
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "light_of_ruin",
@@ -3120,7 +3242,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "lunge",
@@ -3145,7 +3268,8 @@
         }
       ],
       "ico": "ico-bug",
-      "fx": "dirt_1"
+      "fx": "dirt_1",
+      "range": "接触"
     },
     {
       "id": "mach_punch",
@@ -3172,7 +3296,8 @@
       "types": [
         "格斗"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "megahorn",
@@ -3200,7 +3325,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "metal_claw",
@@ -3225,7 +3351,8 @@
         }
       ],
       "ico": "ico-mace",
-      "fx": "slash_1"
+      "fx": "slash_1",
+      "range": "接触"
     },
     {
       "id": "metal_sound",
@@ -3250,7 +3377,8 @@
       ],
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mind_reader",
@@ -3273,7 +3401,8 @@
       ],
       "types": [
         "超能"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mist",
@@ -3298,7 +3427,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "misty_terrain",
@@ -3322,7 +3452,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mob_growl",
@@ -3344,7 +3475,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mob_guard",
@@ -3365,7 +3497,8 @@
       ],
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mob_sand",
@@ -3391,7 +3524,8 @@
       ],
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mob_scratch",
@@ -3412,7 +3546,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "mob_stare",
@@ -3435,7 +3570,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "moonblast",
@@ -3462,7 +3598,8 @@
       "types": [
         "妖精"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "moonlight",
@@ -3485,7 +3622,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "night_daze",
@@ -3506,7 +3644,8 @@
       ],
       "ico": "ico-demon_02",
       "fx": "magic_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "night_slash",
@@ -3533,7 +3672,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "nuzzle",
@@ -3557,7 +3697,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "outrage",
@@ -3582,7 +3723,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "overclock",
@@ -3606,7 +3748,8 @@
       "exhaust": true,
       "types": [
         "电"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "overheat",
@@ -3633,7 +3776,8 @@
       ],
       "tags": [
         "burst"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "peck",
@@ -3653,7 +3797,8 @@
       ],
       "ico": "ico-wind",
       "fx": "slash_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "phantom_force",
@@ -3676,7 +3821,8 @@
       "types": [
         "幽灵"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "pin_missile",
@@ -3697,7 +3843,8 @@
       ],
       "ico": "ico-triple",
       "fx": "dirt_2",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "plague",
@@ -3726,7 +3873,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "play_rough",
@@ -3752,7 +3900,8 @@
       ],
       "types": [
         "妖精"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "poison_fang",
@@ -3779,7 +3928,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "poison_sting",
@@ -3805,7 +3955,8 @@
       "types": [
         "毒"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "potion_berry",
@@ -3825,7 +3976,8 @@
       "fx": "spark_1",
       "types": [
         "草"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "power_gem",
@@ -3851,7 +4003,8 @@
       ],
       "ico": "ico-diamond",
       "fx": "light_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "precipice_blades",
@@ -3876,7 +4029,8 @@
         }
       ],
       "ico": "ico-earthquake",
-      "fx": "dirt_1"
+      "fx": "dirt_1",
+      "range": "接触"
     },
     {
       "id": "protect",
@@ -3898,7 +4052,8 @@
       "fx": "trace_1",
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "psybeam",
@@ -3924,7 +4079,8 @@
       "types": [
         "超能"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "psychic",
@@ -3951,7 +4107,8 @@
       "types": [
         "超能"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "psyshock",
@@ -3972,7 +4129,8 @@
       "types": [
         "超能"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "quick_attack",
@@ -3996,7 +4154,8 @@
       "fx": "spark_1",
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "quick_draw",
@@ -4019,7 +4178,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "quiver_dance",
@@ -4053,7 +4213,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "razor_leaf",
@@ -4078,7 +4239,8 @@
       "fx": "slash_1",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "recycle",
@@ -4101,7 +4263,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "refresh",
@@ -4126,7 +4289,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "rend",
@@ -4149,7 +4313,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "rest",
@@ -4174,7 +4339,8 @@
       "fx": "light_1",
       "types": [
         "超能"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "rock_blast",
@@ -4207,7 +4373,8 @@
       "enemyOnly": false,
       "tags": [
         "timing"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "rock_polish",
@@ -4239,7 +4406,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "rock_slide",
@@ -4266,7 +4434,8 @@
       "types": [
         "岩石"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "rock_throw",
@@ -4292,7 +4461,8 @@
       "fx": "dirt_1",
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "rolling_kick",
@@ -4319,7 +4489,8 @@
       "fx": "dirt_2",
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "roost",
@@ -4339,7 +4510,8 @@
       "fx": "spark_1",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "safeguard",
@@ -4365,7 +4537,8 @@
       "fx": "trace_1",
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "salt_cure",
@@ -4401,7 +4574,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sand_attack",
@@ -4429,7 +4603,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sand_tomb",
@@ -4454,7 +4629,8 @@
       ],
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sand_veil",
@@ -4479,7 +4655,8 @@
       ],
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sandstorm",
@@ -4509,7 +4686,8 @@
       "fx": "smoke_1",
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "scale_shot",
@@ -4534,7 +4712,8 @@
       ],
       "types": [
         "龙"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "scary_face",
@@ -4555,7 +4734,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "screech",
@@ -4580,7 +4760,8 @@
       ],
       "tags": [
         "weaken"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "seed_bomb",
@@ -4607,7 +4788,8 @@
       ],
       "ico": "ico-leaves",
       "fx": "dirt_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "shadow_ball",
@@ -4634,7 +4816,8 @@
       "types": [
         "幽灵"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "shadow_bone",
@@ -4659,7 +4842,8 @@
       ],
       "ico": "ico-gravestone",
       "fx": "magic_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "shadow_punch",
@@ -4685,7 +4869,8 @@
       "types": [
         "幽灵"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "shadow_sneak",
@@ -4711,7 +4896,8 @@
       "types": [
         "幽灵"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "sig_ancient_beam",
@@ -4737,7 +4923,8 @@
       "enemyOnly": true,
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_brave_bird",
@@ -4758,7 +4945,8 @@
       "enemyOnly": true,
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_bullet_slash",
@@ -4784,7 +4972,8 @@
       "enemyOnly": true,
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_crystal_fang",
@@ -4810,7 +4999,8 @@
       "enemySpecies": "druddigon_alpha",
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_crystal_jaw",
@@ -4837,7 +5027,8 @@
       "enemySpecies": "tyrantrum_crystal",
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_curse_mummy",
@@ -4864,7 +5055,8 @@
       "enemyOnly": true,
       "types": [
         "幽灵"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_double_claw",
@@ -4891,7 +5083,8 @@
       "enemySpecies": "scizor_warden",
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_dragon_water",
@@ -4916,7 +5109,8 @@
       "enemyOnly": true,
       "types": [
         "龙"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_dual_chomp",
@@ -4943,7 +5137,8 @@
       "enemySpecies": "garchomp",
       "types": [
         "龙"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_heavy_slam",
@@ -4970,7 +5165,8 @@
       "enemySpecies": "aggron",
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_horn_drill",
@@ -4997,7 +5193,8 @@
       "enemySpecies": "rhydon_warden",
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_iron_tail_wall",
@@ -5023,7 +5220,8 @@
       "enemySpecies": "steelix",
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_land_wrath",
@@ -5050,7 +5248,8 @@
       "enemySpecies": "zygarde",
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_leaf_blade",
@@ -5076,7 +5275,8 @@
       "enemySpecies": "sceptile",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_lighthouse",
@@ -5107,7 +5307,8 @@
       "enemySpecies": "ampharos_storm",
       "types": [
         "超能"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_magma_erupt",
@@ -5133,7 +5334,8 @@
       "enemyOnly": true,
       "types": [
         "火"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_megahorn_charge",
@@ -5163,7 +5365,8 @@
       "enemyOnly": true,
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_meteor_mash",
@@ -5189,7 +5392,8 @@
       "enemySpecies": "metagross",
       "types": [
         "钢"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_origin_pulse",
@@ -5215,7 +5419,8 @@
       "enemySpecies": "kyogre",
       "types": [
         "水"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_pharaoh_curse",
@@ -5243,7 +5448,8 @@
       "enemySpecies": "tyranitar_ruins",
       "types": [
         "幽灵"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_rage_wave",
@@ -5269,7 +5475,8 @@
       "enemySpecies": "gyarados",
       "types": [
         "水"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_rock_slide_wing",
@@ -5295,7 +5502,8 @@
       "enemyOnly": true,
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_root_bind",
@@ -5327,7 +5535,8 @@
       "enemySpecies": "trevenant_fungal",
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_sand_fang",
@@ -5353,7 +5562,8 @@
       "enemySpecies": "tyranitar",
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_sand_pit",
@@ -5379,7 +5589,8 @@
       "enemyOnly": true,
       "types": [
         "地面"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_sky_dive",
@@ -5401,7 +5612,8 @@
       "enemySpecies": "aerodactyl_alpha",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_soul_flame",
@@ -5431,7 +5643,8 @@
       "enemyOnly": true,
       "types": [
         "幽灵"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_soul_lantern",
@@ -5457,7 +5670,8 @@
       "enemySpecies": "chandelure_warden",
       "types": [
         "幽灵"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_spark_ball",
@@ -5484,7 +5698,8 @@
       "enemySpecies": "togedemaru_alpha",
       "types": [
         "电"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_spore_fist",
@@ -5516,7 +5731,8 @@
       "enemySpecies": "breloom_alpha",
       "types": [
         "草"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_tidal_rage",
@@ -5543,7 +5759,8 @@
       "enemySpecies": "gyarados_warden",
       "types": [
         "水"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_tide_ride",
@@ -5568,7 +5785,8 @@
       "enemyOnly": true,
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_tomb_curse",
@@ -5602,7 +5820,8 @@
       "enemySpecies": "cofagrigus_pharaoh",
       "types": [
         "幽灵"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "sig_war_banner",
@@ -5628,7 +5847,8 @@
       "enemySpecies": "braviary_warden",
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sig_white_smoke",
@@ -5654,7 +5874,8 @@
       "enemyOnly": true,
       "types": [
         "火"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "silver_wind",
@@ -5678,7 +5899,8 @@
       "fx": "twirl_1",
       "types": [
         "虫"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "slam",
@@ -5704,7 +5926,8 @@
       "types": [
         "一般"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "slash",
@@ -5731,7 +5954,8 @@
       ],
       "tags": [
         "bleed"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sludge_bomb",
@@ -5761,7 +5985,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "snarl",
@@ -5786,7 +6011,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "snow_cloak",
@@ -5812,7 +6038,8 @@
       ],
       "types": [
         "冰"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "snow_grave",
@@ -5838,7 +6065,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "solar_beam",
@@ -5859,7 +6087,8 @@
       "exhaust": true,
       "types": [
         "草"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "spark",
@@ -5884,7 +6113,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "spider_web",
@@ -5910,7 +6140,8 @@
       "fx": "trace_1",
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "spore",
@@ -5939,7 +6170,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "stone_edge",
@@ -5966,7 +6198,8 @@
       "fx": "dirt_2",
       "types": [
         "岩石"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "storm_throw",
@@ -5992,7 +6225,8 @@
       ],
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "sunder",
@@ -6014,7 +6248,8 @@
       "types": [
         "恶"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "super_luck",
@@ -6042,7 +6277,8 @@
       ],
       "tags": [
         "buff"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "superpower",
@@ -6072,7 +6308,8 @@
       "fx": "spark_1",
       "types": [
         "格斗"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "surf",
@@ -6099,7 +6336,8 @@
       "types": [
         "水"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "swift",
@@ -6120,7 +6358,8 @@
       "types": [
         "一般"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "swords_dance",
@@ -6152,7 +6391,8 @@
         "buff",
         "burst"
       ],
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "synthesis",
@@ -6176,7 +6416,8 @@
       ],
       "types": [
         "草"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "tackle",
@@ -6197,7 +6438,8 @@
       "types": [
         "一般"
       ],
-      "heroOnly": "oasilia"
+      "heroOnly": "oasilia",
+      "range": "接触"
     },
     {
       "id": "tail_whip",
@@ -6222,7 +6464,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "tailwind",
@@ -6247,7 +6490,8 @@
       "fx": "twirl_1",
       "types": [
         "飞行"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "thunder",
@@ -6273,7 +6517,8 @@
         }
       ],
       "ico": "ico-lightning",
-      "fx": "spark_05"
+      "fx": "spark_05",
+      "range": "远隔"
     },
     {
       "id": "thunder_shock",
@@ -6298,7 +6543,8 @@
       ],
       "types": [
         "电"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "thunder_wave",
@@ -6324,7 +6570,8 @@
       "types": [
         "电"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "thunderbolt",
@@ -6351,7 +6598,8 @@
       "types": [
         "电"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "total_suppression",
@@ -6384,7 +6632,8 @@
       ],
       "types": [
         "恶"
-      ]
+      ],
+      "range": "远隔"
     },
     {
       "id": "toxic",
@@ -6408,7 +6657,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "toxic_cloud",
@@ -6436,7 +6686,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "toxic_overflow",
@@ -6467,7 +6718,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "toxic_spikes",
@@ -6490,7 +6742,8 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "toxic_thread",
@@ -6515,7 +6768,8 @@
       ],
       "types": [
         "毒"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "transference",
@@ -6534,7 +6788,8 @@
       "exhaust": true,
       "types": [
         "超能"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "triple_axel",
@@ -6560,7 +6815,8 @@
       "types": [
         "冰"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "twineedle",
@@ -6582,7 +6838,8 @@
       "types": [
         "虫"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "u_turn",
@@ -6607,7 +6864,8 @@
       "types": [
         "虫"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "u_turn_dance",
@@ -6633,7 +6891,8 @@
       "fx": "slash_1",
       "types": [
         "虫"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "venom_burst",
@@ -6653,11 +6912,12 @@
       "exhaust": true,
       "types": [
         "毒"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "venom_dart",
-      "name": "毒针连刺",
+      "name": "毒针急刺",
       "ap": 1,
       "rarity": "uncommon",
       "targeting": "enemy",
@@ -6680,11 +6940,12 @@
       ],
       "tags": [
         "poison"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "venom_drain",
-      "name": "毒液吸取",
+      "name": "剧毒汲取",
       "ap": 2,
       "rarity": "uncommon",
       "targeting": "enemy",
@@ -6700,7 +6961,8 @@
       ],
       "types": [
         "毒"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "venoshock",
@@ -6721,7 +6983,8 @@
       "types": [
         "毒"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "volt_tackle",
@@ -6744,7 +7007,8 @@
         }
       ],
       "ico": "ico-lightning",
-      "fx": "spark_02"
+      "fx": "spark_02",
+      "range": "远隔"
     },
     {
       "id": "water_pulse",
@@ -6770,7 +7034,8 @@
       "types": [
         "水"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "water_shuriken",
@@ -6795,7 +7060,8 @@
       "types": [
         "水"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "whirlpool",
@@ -6824,7 +7090,8 @@
       "types": [
         "水"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "wicked_blow",
@@ -6846,7 +7113,8 @@
       "types": [
         "恶"
       ],
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "远隔"
     },
     {
       "id": "wide_guard",
@@ -6867,7 +7135,8 @@
       ],
       "types": [
         "一般"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "wing_attack",
@@ -6892,7 +7161,8 @@
         }
       ],
       "ico": "ico-wind",
-      "fx": "slash_1"
+      "fx": "slash_1",
+      "range": "接触"
     },
     {
       "id": "withdraw",
@@ -6917,7 +7187,8 @@
       "fx": "trace_1",
       "types": [
         "水"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "worsen",
@@ -6936,7 +7207,8 @@
       "exhaust": true,
       "types": [
         "毒"
-      ]
+      ],
+      "range": "接触"
     },
     {
       "id": "x_scissor",
@@ -6957,7 +7229,8 @@
       ],
       "ico": "ico-bug",
       "fx": "slash_1",
-      "enemyOnly": true
+      "enemyOnly": true,
+      "range": "接触"
     },
     {
       "id": "echoed_voice",
@@ -6986,7 +7259,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "self"
+      "targeting": "self",
+      "range": "接触"
     },
     {
       "id": "sand_beat",
@@ -7015,7 +7289,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "self"
+      "targeting": "self",
+      "range": "接触"
     },
     {
       "id": "hone_claws",
@@ -7042,7 +7317,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "self"
+      "targeting": "self",
+      "range": "接触"
     },
     {
       "id": "dual_chop",
@@ -7074,7 +7350,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "dig",
@@ -7110,7 +7387,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "rock_tomb",
@@ -7140,7 +7418,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "breaking_swipe",
@@ -7169,7 +7448,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "远隔"
     },
     {
       "id": "cut",
@@ -7197,7 +7477,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "take_down",
@@ -7221,7 +7502,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "sand_toxin",
@@ -7249,7 +7531,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "sand_burst",
@@ -7285,7 +7568,8 @@
         }
       ],
       "enemyOnly": false,
-      "targeting": "enemy"
+      "targeting": "enemy",
+      "range": "接触"
     },
     {
       "id": "atlas_charge",
@@ -7307,7 +7591,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_bite",
@@ -7329,7 +7614,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_scales",
@@ -7352,7 +7638,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_wingbeat",
@@ -7375,7 +7662,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_roar",
@@ -7403,7 +7691,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_dive",
@@ -7426,7 +7715,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_steadfast",
@@ -7453,7 +7743,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "atlas_homeward",
@@ -7479,7 +7770,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "远隔"
     },
     {
       "id": "bleed_wait",
@@ -7511,7 +7803,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "bleed_chase",
@@ -7548,7 +7841,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "bleed_avalanche",
@@ -7586,7 +7880,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "weaken_wait",
@@ -7623,7 +7918,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "burst_wait",
@@ -7655,7 +7951,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "guard_wait",
@@ -7686,7 +7983,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "tempo_draw",
@@ -7717,7 +8015,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "power_wait",
@@ -7753,7 +8052,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "ap_wait",
@@ -7790,7 +8090,8 @@
         }
       ],
       "targeting": "self",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "weaken_press",
@@ -7820,7 +8121,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "远隔"
     },
     {
       "id": "weaken_bind",
@@ -7851,7 +8153,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "接触"
     },
     {
       "id": "weaken_crush",
@@ -7887,7 +8190,8 @@
         }
       ],
       "targeting": "enemy",
-      "enemyOnly": false
+      "enemyOnly": false,
+      "range": "远隔"
     }
   ]
 }

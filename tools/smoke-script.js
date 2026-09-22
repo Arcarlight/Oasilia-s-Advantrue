@@ -401,15 +401,82 @@
       if (!dz) errors.push('右侧没有弃牌区（.discard-zone）');
       else if (!dz.querySelector('.discard-head')) errors.push('弃牌区没有标题行（张数写在哪儿？）');
 
-      // ③ 动作挑选 + 回退链
+      // ③ 动作挑选 + 回退链（3.1.4 起判定改读卡牌自带的「接触 / 远隔」字段）
       const pick = (n) => bsv.pickFighterAnim('flygon', n);
       const animOf = (id) => bsv.animForCard(CARD_BY_ID[id]);
-      const samples = ['tackle', 'bite', 'sand_attack', 'baby_doll_eyes'].filter((id) => CARD_BY_ID[id]);
+      const samples = ['tackle', 'bite', 'sand_attack', 'baby_doll_eyes', 'ember', 'flash_cannon'].filter((id) => CARD_BY_ID[id]);
       log('动作挑选：' + samples.map((id) => id + '=' + animOf(id)).join(' '),
         '| 回退：Shoot=' + pick('Shoot') + ' 不存在的动作=' + pick('根本不存在'));
-      if (animOf('sand_attack') !== 'Shoot') errors.push('远程招（泼沙）应该用 Shoot，实际 ' + animOf('sand_attack'));
-      if (animOf('tackle') !== 'Attack') errors.push('近身招（撞击）应该用 Attack，实际 ' + animOf('tackle'));
+      /**
+       * 判据从「按属性猜」换成了**卡牌自己带的 range 字段**（用户：「从现在开始要求所有卡牌分一个，
+       * 命名为接触类（近程）和远隔类（远程）来进行判定」，见 content/SPEC.md 与 check-content 的门禁）。
+       * 这里挑的几对正好覆盖三种情况：
+       *   · 撞击（一般·接触）、咬住（恶·接触，名字是上去咬）：Attack
+       *   · 泼沙（地面·判定是接触）、撒娇凝视（妖精·挂弱化）：前者 Attack、后者 Shoot
+       *   · 火花（火·远隔）、岩崩（岩石·判定是远隔）：Shoot
+       */
+      const WANT_ANIM = { tackle: 'Attack', bite: 'Attack', sand_attack: 'Attack', baby_doll_eyes: 'Shoot', ember: 'Shoot', flash_cannon: 'Shoot' };
+      for (const [id, want] of Object.entries(WANT_ANIM)) {
+        if (!CARD_BY_ID[id]) continue;
+        if (animOf(id) !== want) {
+          errors.push('动作挑选错了：' + id + '（' + CARD_BY_ID[id].name + '，range=' + CARD_BY_ID[id].range
+            + '）应该演 ' + want + '，实际 ' + animOf(id));
+        }
+      }
+      // 每张牌都必须有判定字段（门禁在 check-content 里，这里顺手核一下引擎拿到的数据）
+      const noRange = Object.values(CARD_BY_ID).filter((c) => !c.range).map((c) => c.id);
+      log('没有接触/远隔判定的卡 =', noRange.length);
+      if (noRange.length) errors.push('有卡牌没有 range 判定：' + noRange.slice(0, 6).join('、'));
       if (pick('根本不存在') !== 'Attack') errors.push('没有的动作应该回退到 Attack，实际 ' + pick('根本不存在'));
+
+      /**
+       * ③-b 远隔类的牌要**真的打过去**（3.1.4）。
+       *
+       * 以前不管远近都只是在**自己身上**贴一张图，远程招和近身招看起来一模一样。
+       * 现在判定是数据里的（range），演出也照它走：远隔的牌会生成一发「.fx-projectile」
+       * 从出手那一侧飞向对手。这一条钉的是「飞行物真的生成了、而且方向对」——
+       * 光靠截图钉不住：CSS 动画在 shot.mjs 的虚拟时间下**不推进**（见那个脚本的说明），
+       * 想拍到飞行中的那一帧得靠运气。
+       */
+      const ranged = Object.values(CARD_BY_ID).find((c) => c.range === '远隔' && (c.effects ?? []).some((e) => e.kind === 'damage'));
+      const melee = Object.values(CARD_BY_ID).find((c) => c.range === '接触' && (c.effects ?? []).some((e) => e.kind === 'damage'));
+      if (ranged && melee) {
+        /**
+         * ⚠ 飞行物要在**它被摘掉之前**记下来：它自带一个「飞完就 remove」的定时器
+         * （见 src/ui/battle-fx.js），而冒烟跑在虚拟时间下 —— 那个定时器会在
+         * await attackAnim(...) 返回之前就烧掉，await 完再查 DOM 永远是 0（第一版就是这样）。
+         * 所以挂一个 MutationObserver，节点一进战场就抄下它的位移。
+         */
+        const caught = [];
+        const mo = new MutationObserver((muts) => {
+          for (const m of muts) {
+            for (const n of m.addedNodes) {
+              if (n.nodeType === 1 && n.classList?.contains('fx-projectile')) {
+                caught.push({
+                  dx: Number((n.style.getPropertyValue('--fx-dx') || '0px').replace('px', '')),
+                  dy: Number((n.style.getPropertyValue('--fx-dy') || '0px').replace('px', '')),
+                });
+              }
+            }
+          }
+        });
+        mo.observe(bsv.field, { childList: true, subtree: true });
+        await bsv.attackAnim('enemy', ranged);
+        await bsv.attackAnim('enemy', melee);
+        mo.disconnect();
+        const shot = caught[0];
+        log('远隔招（' + ranged.name + '）的飞行物：生成=' + !!shot,
+          shot ? '位移=' + shot.dx.toFixed(0) + ',' + shot.dy.toFixed(0) : '',
+          '｜接触招（' + melee.name + '）期间一共生成 ' + caught.length + ' 个');
+        if (!caught.length) errors.push('远隔招（' + ranged.name + '）没有生成飞行物');
+        // 敌人在右上、主角在左下：这一发应该是往左下方飞的
+        else if (!(shot.dx < -20 && shot.dy > 10)) {
+          errors.push('飞行物的方向不对：位移 ' + shot.dx.toFixed(0) + ',' + shot.dy.toFixed(0) + '（应该往左下方飞）');
+        }
+        // 两次出招只有远隔那一次会生成飞行物
+        if (caught.length !== 1) errors.push('接触招也生成了飞行物（' + caught.length + ' 个，应该只有远隔那 1 个）');
+        for (const n of document.querySelectorAll('.fx-projectile')) n.remove();
+      }
       const buffCard = Object.values(CARD_BY_ID).find((c) => (c.effects ?? []).some((e) => e.kind === 'shield'));
       for (const [label, card] of [['自身强化', buffCard]]) {
         if (card && animOf(card.id) !== 'Charge') errors.push(label + '（' + card.id + '）应该用 Charge，实际 ' + animOf(card.id));
@@ -477,6 +544,44 @@
       const backToIdle = bsv.playerAnimName === 'Idle' && bsv.enemyAnimName === 'Idle';
       log('出完牌的动作 =', bsv.playerAnimName + ' / ' + bsv.enemyAnimName);
       if (!backToIdle) errors.push('动作演完没有回到 Idle（现在停在 ' + bsv.playerAnimName + '）');
+
+      /**
+       * ⑦ **换动作时行走图不许被压扁**（3.1.4，用户截图报的「出招、受伤时行走图都会被压扁」）。
+       *
+       * 判据很硬：一个动作画布的**显示宽高比**必须等于它自己那套帧的宽高比（fw : fh）。
+       * 各动作的帧盒子差得很远（冰宝 Idle 32×32 / Attack 64×64，沙漠蜻蜓 Idle 32×72 / Attack 64×80），
+       * 所以只要哪个环节拿错一套尺寸、或者被 CSS 单轴夹住，比例立刻就对不上。
+       * 这一次的真凶是 CSS 里那句「.fighter-body canvas { max-height: 100% }」：身体盒子被钉成待机那张的高度，
+       * 出招画布比它高，于是**高度被夹、宽度照旧** —— 冰宝一出手就成了一张扁饼。
+       */
+      for (const [side, want] of [['enemy', 'Attack'], ['enemy', 'Hurt'], ['player', 'Attack']]) {
+        const body = side === 'enemy' ? bsv.enemyBody : bsv.playerBody;
+        await bsv.playFighterAnim(side, want, { fps: 12 });
+        await wait(160);
+        const cv = body?.querySelector('canvas');
+        const info = cv?.frameInfo;
+        if (!cv || !info) { errors.push('拿不到 ' + side + ' 的 ' + want + ' 画布 / 帧信息'); continue; }
+        const r = cv.getBoundingClientRect();
+        const wantAspect = info.fw / info.fh;
+        const gotAspect = r.width / r.height;
+        log('  ' + side + ' ' + want + '：帧 ' + info.fw + '×' + info.fh
+          + ' → 显示 ' + r.width.toFixed(1) + '×' + r.height.toFixed(1)
+          + '（比 ' + gotAspect.toFixed(3) + ' vs ' + wantAspect.toFixed(3) + '）');
+        if (Math.abs(gotAspect - wantAspect) > 0.02) {
+          errors.push(side + ' 的 ' + want + ' 行走图被压扁了：帧比 ' + wantAspect.toFixed(3)
+            + '，显示比 ' + gotAspect.toFixed(3) + '（' + r.width.toFixed(0) + '×' + r.height.toFixed(0) + '）');
+        }
+      }
+      // 量完把这几个一次性动作收掉，别留给后面的检查
+      for (const side of ['enemy', 'player']) {
+        const body = side === 'enemy' ? bsv.enemyBody : bsv.playerBody;
+        const idle = side === 'enemy' ? bsv.enemyIdleAnim : bsv.playerIdleAnim;
+        const cur = body?.querySelector('canvas');
+        if (cur && idle && cur !== idle) cur.replaceWith(idle);
+        if (idle) bsv[side === 'enemy' ? 'enemyAnim' : 'playerAnim'] = idle;
+        if (idle) bsv[side === 'enemy' ? 'enemyAnimName' : 'playerAnimName'] = 'Idle';
+        if (side === 'enemy') bsv._enemyOneshot = null; else bsv._playerOneshot = null;
+      }
     } catch (e) {
       errors.push('battle-3.1: ' + e.message);
     }

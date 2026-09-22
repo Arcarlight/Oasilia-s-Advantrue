@@ -45,9 +45,23 @@
     // 放慢演出，让截图能落在那张牌摊开的窗口里
     bs.speedMul = Number(params.get('mul') ?? 6);
 
-    // 逼敌方手里有一张伤害牌，并且 AP 足够
+    // 逼敌方手里有一张伤害牌，并且 AP 足够。
+    // `&card=<id>` 指定打哪一张 —— 看「接触 vs 远隔」两套演出（撞上去 / 打过去）时要用它：
+    // 默认随手挑一张伤害牌，「咬住」多半是接触类的，看不到飞行的那道光。
+    const want = params.get('card');
     const pool = b.decks.enemy.hand.length ? b.decks.enemy.hand : b.decks.enemy.draw;
-    const proto = pool.find((c) => c.card.effects.some((e) => e.kind === 'damage')) || pool[0];
+    let proto = (want ? pool.find((c) => c.card.id === want) : null)
+      || pool.find((c) => c.card.effects.some((e) => e.kind === 'damage'));
+    /**
+     * `&card=<id>` 指的牌不在敌方牌组里时**现造一张**给对面打 ——
+     * 截图要看的是「这一套特效长什么样」，不该受这一场敌人带了什么牌的摆布
+     * （沙漠的怪多半不会放电，但「电系打过来会劈一道闪电」这件事得能拍出来）。
+     */
+    if (want && !proto) {
+      const { CARD_BY_ID } = await import('../src/data/cards.js');
+      if (CARD_BY_ID[want]) proto = { card: CARD_BY_ID[want], uid: 'v9' };
+    }
+    if (!proto) proto = pool[0];
     if (proto) b.decks.enemy.hand = [{ ...proto, uid: 'v1' }, { ...proto, uid: 'v2' }];
     b.enemy.apMax = 9; b.enemy.ap = 9; b.enemy.playMax = 9; b.enemy.playsLeft = 9;
     log('敌方将打出: ' + (proto ? proto.card.name : '?') + '，speedMul=' + bs.speedMul);

@@ -201,6 +201,14 @@ async function boot() {
     // 把一张敌方卡面钉在场上，专门给截图用
     import('../tools/dgplay-script.js').catch((e) => console.error('出牌截图脚本加载失败', e));
   }
+  if (params.get('dgfxdemo') === '1') {
+    /**
+     * 特效总览：把 Kenney 那套贴图按**战斗里的实际用法**摆成一格一格（颜色尺寸都走
+     * src/ui/battle-fx.js 那一套），挂着不消失 —— 特效一闪而过，截图赌不到，
+     * 这个入口是给「这一版加了哪些特效、都是什么颜色」拍照用的。
+     */
+    import('../tools/dgfxdemo-script.js').catch((e) => console.error('特效总览加载失败', e));
+  }
   if (params.get('dgdeath') === '1') {
     import('../tools/diag-death-script.js').catch((e) => console.error('死亡诊断脚本加载失败', e));
   }

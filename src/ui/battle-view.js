@@ -17,24 +17,18 @@ import { TIERS, ENEMIES } from '../data/enemies.js';
 import { heroById } from '../data/heroes.js';
 // 装饰字体（战斗背景花纹）之外，战斗界面还用到「远程招式的属性」这一组判断（见 animForCard）
 import { battleDecor } from './battle-decor.js';
+// 贴图特效（Kenney 粒子包）：形状 + **按属性/状态上色**都在那个模块里（见它的文件头）
+import { burst, projectile, flashWhite, tintOf, statusLook, fxSize, pickOne } from './battle-fx.js';
 
 /**
- * 哪些属性的招算「远程」（挥手的姿势）——用于挑 Shoot 还是 Attack。
- * 一般 / 格斗 / 地面 / 岩石 / 钢 / 毒 / 虫 是近身（撞击、地震、落石…）。
+ * 招式的「接触 / 远隔」判定在**数据里**（`content/cards.json` 的 `range` 字段，3.1.4 起）。
+ *
+ * 这里曾经是两张表 —— `RANGED_TYPES`（按属性猜哪些系算远程）和 `MELEE_MOVES`
+ * （一张近身白名单，专门救「咬住」「龙爪」这种属性与动作明显不符的常见招）。
+ * 它们现在**都删掉了**：判定由卡牌自己说，`animForCard` 直接读 `card.range`，
+ * 每张牌都必须有这个字段（门禁在 tools/check-content.mjs 与 tools/build-content.mjs），
+ * 判定口径写在 content/SPEC.md 里。
  */
-const RANGED_TYPES = new Set(['火', '水', '电', '冰', '超能', '草', '妖精', '幽灵', '恶', '龙', '飞行']);
-
-/**
- * 近身招的**白名单**：属性判据（上面那张表）对「恶」「龙」这类系会判错 ——
- * 「咬住」是恶系但明显是上去咬一口，「龙爪」是龙系但也是近身 —— 所以这些常见的接触招
- * 单独点出来，优先判近身（用户要的是「远程攻击改成 shoot」，那就别把咬一口也当远程）。
- */
-const MELEE_MOVES = new Set([
-  'tackle', 'bite', 'double_kick', 'dragon_claw', 'dragon_rush', 'crunch', 'fire_fang', 'thunder_fang',
-  'ice_fang', 'thunder_punch', 'fire_punch', 'ice_punch', 'close_combat', 'superpower', 'body_press',
-  'iron_head', 'cross_chop', 'bug_bite', 'x_scissor', 'knock_off', 'u_turn', 'lunge', 'mach_punch',
-  'wing_attack', 'aerial_ace', 'bite_off', 'dragon_tail', 'steel_wing', 'headbutt', 'stomp',
-]);
 import { t } from '../core/i18n.js';
 // 属性短标签 / 悬停说明放在纯数据模块里（待翻清单靠扫源码收，见那个文件的说明）。
 // 读取处照旧 t(STAT_SHORT.…)、t(STAT_TIP[label], { … })。
@@ -135,6 +129,18 @@ const PACE = {
   gainAp: 180,
   battleEnd: 800,
   settle: 380,
+  /**
+   * 动作收场前的**定格**（3.1.4，用户：「受伤之类的动画放完就直接切回正常状态了，
+   * 还是太突然，可以加一点缓冲时间」）。
+   *
+   * 一次性动作（出招 / 受伤）本来就是「播完停在最后一帧」，以前是那一帧刚站稳就
+   * 立刻换回待机 —— 眼睛看到的是一张图被抽走、另一张图拍上来，中间没有停顿。
+   * 现在这一帧多留一会儿（打击感里的「命中停顿」也是这个道理），
+   * 换回待机时再让待机**从 60% 淡到 100%**（见 restoreIdleSoft），两件事合起来就不硬了。
+   */
+  restoreHold: 240,
+  /** 待机回来的淡入时长（配合 restoreHold 用，别超过它的一半，不然会拖） */
+  restoreFade: 150,
 };
 
 /** 演出倍率：1 = 标准速度，越大越慢。设置面板里可调。 */
@@ -375,6 +381,27 @@ export class BattleScreen {
   /** 按用户设置的倍率等待 */
   wait(ms) {
     return sleep(Math.max(16, Math.round(ms * this.speedMul)));
+  }
+
+  /**
+   * 让一张画布淡入 —— 动作收场、待机回到场上时用（见 PACE.restoreHold）。
+   *
+   * 起点是 **0.6 而不是 0**：淡到透明会让人看见精灵「消失了一下」，那是另一种突兀。
+   * 淡完把内联样式清掉，免得影响后面（这张画布是复用的，一直挂着 opacity 会出事）。
+   */
+  fadeInCanvas(node, ms = PACE.restoreFade) {
+    if (!node || !(ms > 0)) return;
+    node.style.transition = 'none';
+    node.style.opacity = '0.6';
+    requestAnimationFrame(() => {
+      node.style.transition = `opacity ${ms}ms ease`;
+      node.style.opacity = '1';
+      clearTimeout(node.__fadeClear);
+      node.__fadeClear = setTimeout(() => {
+        node.style.transition = '';
+        node.style.opacity = '';
+      }, ms + 80);
+    });
   }
 
   async mount() {
@@ -704,26 +731,38 @@ export class BattleScreen {
     for (const side of ['player', 'enemy']) {
       const slug = side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
       const base = side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
-      const name = side === 'player' ? this.playerAnimName : this.enemyAnimName;
-      const canvas = side === 'player' ? this.playerAnim : this.enemyAnim;
-      this.applyAnimScale(canvas, slug, name ?? 'Idle', this.rowR[side].height, base);
       /**
-       * 待机那张也按「Idle 的帧尺寸」单独量一次，并用它的尺寸**把身体盒子钉住**。
+       * 缩放按**待机**那套帧算，一只精灵只有一个（理由见 applyAnimScale）——
+       * 动作怎么换都不会让精灵忽大忽小。
+       */
+      const scale = this.fitScale(slug, 'Idle', this.rowR[side].height, base);
+      const canvas = side === 'player' ? this.playerAnim : this.enemyAnim;
+      this.applyAnimScale(canvas, scale);
+      /**
+       * 待机那张也按同一套帧量一次，并用它的尺寸**把身体盒子钉住**。
        *
        * 为什么必须钉：换动作时用的是 replaceWith，不同动作的帧盒子不一样
        * （沙漠蜻蜓 Idle 是 32×72、Attack 是 64×80），身体一宽一窄，右边那张
        * 血条 / 头像卡就被挤得**左右跳**（用户报的「血条头像框会左右跳」）。
        * 让 canvas 绝对定位居中、身体盒子固定成待机那张的大小，换动作就只换画面、不动布局。
+       *
+       * ⚠⚠ 而**身体盒子一旦定死，画布就绝不能被 CSS 单轴夹住** ——
+       * 出招 / 受伤的帧盒子比待机大（冰宝 32×32 → Attack 64×64），
+       * 3.1.2 起 style.css 里留了一句 `.fighter-body canvas { max-height: 100% }`
+       * （本意是「JS 还没跑时的兜底」），于是高度被夹到待机那张的高度、**宽度照旧**：
+       * 冰宝一出手就成了一张扁饼（用户 3.1.4 报的「基本所有敌人出招、受伤时行走图都会被压扁」，
+       * 实测帧比 0.900 的画布显示成了 1.795 —— 正好差一倍）。那句 CSS 已经删掉，
+       * 并且加了冒烟断言：每个动作画布的显示宽高比必须等于它自己的帧比。
        */
       const idleEl = side === 'player' ? this.playerIdleAnim : this.enemyIdleAnim;
       const bodyEl = side === 'player' ? this.playerBody : this.enemyBody;
       if (idleEl && bodyEl) {
-        this.applyAnimScale(idleEl, slug, 'Idle', this.rowR[side].height, base);
+        this.applyAnimScale(idleEl, scale);
         bodyEl.style.width = idleEl.style.width;
         bodyEl.style.height = idleEl.style.height;
       }
-      if (side === 'player') this.playerScale = this.fitScale(slug, name ?? 'Idle', this.rowR[side].height, base);
-      else this.enemyScale = this.fitScale(slug, name ?? 'Idle', this.rowR[side].height, base);
+      if (side === 'player') this.playerScale = scale;
+      else this.enemyScale = scale;
     }
 
     // ② 行太矮时把角色卡压缩：否则信息卡会溢出到自己这一行外面，和邻行/出牌卡撞在一起
@@ -775,18 +814,24 @@ export class BattleScreen {
   }
 
   /**
-   * 把已经建好的动画 canvas 按当前行高重新定尺寸。
+   * 把已经建好的动画 canvas 按当前的缩放定尺寸。
    *
-   * 关键：宽高必须用**这张 canvas 自己的帧信息**（`createAnim` 时挂在 canvas.frameInfo 上）来算。
-   * Idle / Attack / Hurt 的帧尺寸并不一样（沙漠蜻蜓是 32×72 / 64×80 / 48×72），
-   * 拿错一套就会把宽高比算歪 —— 表现出来就是行走图被压扁。
+   * ⚠ **一只精灵只有一个缩放**（按待机那张的帧算出来），所有动作共用它 ——
+   * 为什么不能让每个动作各按自己的帧高去缩：素材里同一只宝可梦各动作的帧盒子差得很远
+   * （沙漠蜻蜓 Idle 32×72 / Attack 64×80，冰宝 Idle 32×32 / Attack 64×64），
+   * 但**角色画在帧里的像素尺度是一样的**（实测各动作的内容外接框几乎相同：
+   * 沙漠蜻蜓 25×32 / 25×32 / 28×31，冰宝 17×19 / 17×20）。所以：
+   *   · 盒子按「这张画布自己的帧尺寸 × 同一个缩放」算 —— 比例和大小都对；
+   *   · 要是按各自的帧高去缩，帧大的动作会被缩得更小，出手的一瞬间精灵会**变小**。
+   *
+   * 宽高**必须成对地**用同一套帧信息算：拿错一套就会把宽高比算歪，
+   * 表现出来就是行走图被压扁。3.1.4 用户报的「基本所有敌人出招、受伤时行走图都会被压扁」
+   * 其实不在这一行，而在 CSS 上（见下面 layoutBattle 里的说明）。
    */
-  applyAnimScale(canvas, slug, anim, rowH, base) {
+  applyAnimScale(canvas, s) {
     if (!canvas) return;
-    const info = canvas.frameInfo ?? animInfo(slug, anim) ?? animInfo(slug, 'Idle');
+    const info = canvas.frameInfo;
     if (!info) return;
-    const maxH = Math.max(56, (rowH ?? 320) - 18);
-    const s = Math.max(0.7, Math.min(base, maxH / info.fh));
     canvas.style.width = `${Math.round(info.fw * s)}px`;
     canvas.style.height = `${Math.round(info.fh * s)}px`;
   }
@@ -1882,6 +1927,11 @@ export class BattleScreen {
       case 'playCard': {
         // 先把牌亮出来（对手用了什么牌是必须看得见的），再做出招动作
         this.pushLogLine(this.logOf(ev));
+        /**
+         * 记下这一侧刚出的牌：命中特效要按**打过来的那张牌的属性**上色
+         * （火系打过来是红的、电系还会额外劈一道闪电 —— 见 hitAnim）。
+         */
+        this._lastCard = { ...(this._lastCard ?? {}), [ev.side]: ev.id };
         // 背景花纹：这一侧在动，它那半片亮一点（敌我同一套写法）
         this.decorAct(ev.side, 1500);
         // AP 要**跟着出牌当场扣**：playEvent 开头已经把界面副本推进过了（disp.ap 已经减掉），
@@ -1900,7 +1950,11 @@ export class BattleScreen {
         const targetBody = ev.side === 'player' ? this.playerBody : this.enemyBody;
         floatAt(targetBody, `-${ev.amount}`, 'float-dmg');
         targetBody.classList.add('fighter-hurt');
-        this.burstFx(targetBody, 'slash_1', { size: 110, ms: 380 });
+        // 无视防御的直伤 = 一道闪电劈下来（spark_01~07 就是一族闪电弧，以前一张都没用过）
+        this.burstFx(targetBody, pickOne(['spark_03', 'spark_01', 'spark_05']), {
+          color: '#ffe23a', ms: 420, klass: 'fx-impact',
+        });
+        this.burstFx(targetBody, 'star_09', { color: '#fff0a8', ms: 380, delay: 120 });
         audio.hurt();
         setTimeout(() => targetBody.classList.remove('fighter-hurt'), 320);
         this.refreshSide(ev.side);
@@ -1918,10 +1972,16 @@ export class BattleScreen {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
         floatAt(body, t('+{n} 护盾', { n: ev.amount }), 'float-shield');
         audio.shieldUp();
-        // 「变硬」这类防御强化也要闪一下白光，玩家才知道这回合真的硬了
+        /**
+         * 护盾的演出（3.1.4 按用户的要求重做）：
+         *   · 行走图**整个剪影闪白**再复原（用户原话：「使用护盾之类的招式可以让行走图闪光，
+         *     就是行走图变成全白然后回复这种形式」）；
+         *   · 外加一层**罩子**（magic_2 那张罗盘星，青蓝色）和一圈**涨开的光环**（light_1）。
+         * 以前只有 light_1 + trace_1 两张灰图，看不出「多了一层壳」。
+         */
         this.flash(body);
-        this.burstFx(body, 'light_1', { size: 150, ms: 480 });
-        this.burstFx(body, 'trace_1', { size: 130, ms: 520, rotate: 45 });
+        this.burstFx(body, 'magic_2', { color: '#8ce4ff', ms: 560 });
+        this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring', ms: 620, delay: 60 });
         this.refreshSide(ev.side);
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.shield);
@@ -1932,8 +1992,13 @@ export class BattleScreen {
         if (ev.amount > 0) {
           floatAt(body, `+${ev.amount}`, 'float-heal');
           audio.heal();
-          this.burstFx(body, 'spark_1', { size: 120, ms: 500, klass: 'fx-heal' });
-          this.burstFx(body, 'star_1', { size: 96, ms: 620, klass: 'fx-heal' });
+          /**
+           * 治疗用**星芒**，不用闪电：以前这里挂的是 spark_1，而那一张其实是**一道闪电**
+           * （spark_01~07 是一族闪电弧），治疗时劈自己一道雷，谁看都不对。
+           * star_04/star_08 才是「亮晶晶」那一族。
+           */
+          this.burstFx(body, 'star_04', { color: '#9df0a8', ms: 520 });
+          this.burstFx(body, 'star_08', { color: '#e6ffe9', ms: 640, delay: 90 });
         }
         this.refreshSide(ev.side);
         this.pushLogLine(this.logOf(ev));
@@ -1945,10 +2010,17 @@ export class BattleScreen {
         else if (ev.status === 'burn') audio.burn();
         else if (ev.status === 'weak') audio.dizzy();
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
-        // 中毒=绿雾、剧毒=深紫雾、灼伤=火光、虚弱=紫旋、出血=红痕
-        const STATUS_FX = { poison: 'magic_1', toxic: 'magic_1', burn: 'flare_1', weak: 'twirl_1', bleed: 'slash_1' };
-        this.burstFx(body, STATUS_FX[ev.status] ?? 'magic_1', {
-          size: 124, ms: 520, klass: `fx-status fx-status-${ev.status}`,
+        /**
+         * 中毒=绿雾、剧毒=紫雾、灼伤=火光、虚弱=紫旋、出血=红痕。
+         *
+         * ⚠ 这套配色直到 3.1.4 才**真的生效**：以前是用 `filter: hue-rotate()` 上色的，
+         * 而 fx 贴图全是纯灰的，色相旋转对灰毫无作用 —— 中毒和灼伤长得一模一样。
+         * 现在颜色由 battle-fx.js 的 STATUS_FX 给（遮罩上色，见那边的文件头）。
+         */
+        const look = statusLook(ev.status);
+        this.burstFx(body, look.fx, { color: look.color, ms: 540, klass: `fx-status fx-status-${ev.status}` });
+        this.burstFx(body, ev.status === 'burn' ? 'star_07' : 'star_09', {
+          color: look.color, ms: 420, delay: 120,
         });
         // 胶囊自己的入场 / 层数变化动画由 refreshSide 里的对齐逻辑负责（见 syncStatusChips）
         this.refreshSide(ev.side);
@@ -1974,8 +2046,9 @@ export class BattleScreen {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
         if ((ev.gained ?? 0) > 0) {
           audio.poison();
-          this.burstFx(body, 'magic_1', { size: 160, ms: 560, klass: 'fx-status fx-status-toxic' });
-          this.burstFx(body, 'spark_1', { size: 130, ms: 520, klass: 'fx-status' });
+          // 层数翻倍：整排数字翻过去，配一圈紫色爆闪（star_09 = 八芒爆闪那张）
+          this.burstFx(body, 'magic_1', { color: '#b06ad8', ms: 560, klass: 'fx-status fx-status-toxic' });
+          this.burstFx(body, 'star_09', { color: '#d9a0ff', ms: 520, delay: 90 });
           floatAt(body, t('层数 ×2'), 'float-dmg');
           await this.wait(PACE.purge);
           this.refreshSide(ev.side);
@@ -1994,8 +2067,11 @@ export class BattleScreen {
         if ((ev.gained ?? 0) > 0) {
           audio.poison();
           floatAt(mine, t('转嫁'), 'float-heal');
-          this.burstFx(other, 'magic_1', { size: 160, ms: 560, klass: 'fx-status fx-status-toxic' });
-          this.burstFx(mine, 'light_1', { size: 140, ms: 460 });
+          // 「搬过去了」这件事用**一道飞过去的光**来说：以前是自己这边亮一下、对面亮一下，
+          // 看不出方向（现在用 trace 那族的流光条，从自己身上飞到对手身上）
+          this.flyFx(mine, other, pickOne(['trace_03', 'trace_04', 'trace_05']), { color: '#b06ad8', ms: 420 });
+          this.burstFx(other, 'magic_1', { color: '#b06ad8', ms: 560, klass: 'fx-status fx-status-toxic', delay: 380 });
+          this.burstFx(mine, 'light_1', { color: '#cdf3ff', klass: 'fx-ring', ms: 520 });
           if (this.markPurge(ev.side, ev)) await this.wait(PACE.purge);
           this.refreshSide(ev.side);
           this.refreshSide(ev.side === 'player' ? 'enemy' : 'player');
@@ -2010,8 +2086,9 @@ export class BattleScreen {
         if ((ev.removed ?? 0) > 0) {
           audio.heal();
           this.flash(body);
-          this.burstFx(body, 'light_1', { size: 150, ms: 480 });
-          this.burstFx(body, 'spark_1', { size: 120, ms: 520, klass: 'fx-heal' });
+          // 净化：一圈光环从脚下涨开 + 几颗星芒散开（light_1 是同心圆环、star_02 是小圆环）
+          this.burstFx(body, 'light_1', { color: '#dff6ff', klass: 'fx-ring', ms: 560 });
+          this.burstFx(body, 'star_04', { color: '#eafff2', ms: 600, delay: 100 });
           if (this.markPurge(ev.side, ev)) {
             floatAt(body, t('净化'), 'float-heal');
             // 先让那几个胶囊亮一下白光：不然「哪几个被清掉了」根本看不见
@@ -2031,7 +2108,10 @@ export class BattleScreen {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
         if ((ev.stacks ?? 0) > 0) {
           audio.poison();
-          this.burstFx(body, 'magic_1', { size: 150, ms: 560, klass: 'fx-status fx-status-toxic' });
+          // 引爆：八芒爆闪 + 一圈烟（烟用正片叠底的「压暗」模式），比「再冒一滴毒雾」重得多
+          this.burstFx(body, 'star_09', { color: '#ffe04a', ms: 520 });
+          this.burstFx(body, 'smoke_1', { color: '#7a5a3a', ms: 620, blend: 'multiply', delay: 60 });
+          this.burstFx(body, 'magic_1', { color: '#b06ad8', ms: 560, klass: 'fx-status fx-status-toxic' });
           floatAt(body, t('引爆 ×{n}', { n: ev.stacks }), 'float-dmg');
           if (this.markPurge(ev.side, ev)) await this.wait(PACE.purge);
           this.refreshSide(ev.side);
@@ -2060,6 +2140,10 @@ export class BattleScreen {
         const body = ev.side === 'player' ? this.playerBody : this.enemyBody;
         floatAt(body, t('闪避！'), 'float-miss');
         audio.miss();
+        // 闪避：一道残影从身上划过去（trace 那族的流光条），比干巴巴一行「闪避！」有说服力
+        this.burstFx(body, pickOne(['trace_06', 'trace_07']), {
+          color: '#cfe4ff', ms: 420, klass: 'fx-ring', blend: 'screen',
+        });
         this.pushLogLine(this.logOf(ev));
         await this.wait(PACE.dodge);
         break;
@@ -2125,42 +2209,54 @@ export class BattleScreen {
 
   // ================= 简单特效（复用工作区的 fx 贴图）=================
 
-  /** 角色行走图闪一下白光：强化 / 变化类技能用这个表示「生效了」 */
-  flash(body) {
-    if (!body) return;
-    body.classList.remove('fighter-flash');
-    // 强制重排，保证连续两次强化也能重新播动画
-    void body.offsetWidth;
-    body.classList.add('fighter-flash');
-    setTimeout(() => body.classList.remove('fighter-flash'), 560);
+  /**
+   * 角色行走图闪一下白光：护盾 / 强化 / 净化这类「身上发生了变化」用这个表示。
+   * 实现（`brightness(0) invert(1)` 做成剪影）与理由都在 battle-fx.js 里。
+   */
+  flash(body, opts) {
+    flashWhite(body, opts);
+  }
+
+  /**
+   * 特效时长也要跟着「战斗演出速度」走。
+   *
+   * 演出里别的等待都过 `wait()`（乘 speedMul），可特效的时长是写在 CSS 动画上的 ——
+   * 结果把速度调慢之后，身体换动作慢吞吞、特效却还是正常速度闪一下就没了，
+   * 想看清「这一下打了什么特效」反而更难。现在统一乘同一个倍率。
+   */
+  fxMs(ms) {
+    return Math.max(60, Math.round((ms ?? 460) * this.speedMul));
   }
 
   /**
    * 在身上叠一张特效贴图（assets/img/fx/*.png），播完自动移除。
+   *
+   * ⚠ 尺寸默认**跟着这只精灵的盒子走**（`fxSize`）：以前各处写死 110~160，
+   * 小个子（冰宝 32×32）身上像糊了一整块、大个子（沙螺蟒 96×80）身上盖不满。
+   * 颜色默认取 neutral 暖白，具体场合请显式传（`color: tintOf(card.types)` 之类）——
+   * 贴图本身是纯灰的，不上色就只有灰白一种（见 battle-fx.js 的文件头）。
+   *
    * @param {HTMLElement} body 角色容器
    * @param {string} fx 特效图名（不带扩展名）
-   * @param {{size?:number, ms?:number, rotate?:number, tone?:string, class?:string, flip?:boolean}} opts
    */
   burstFx(body, fx, opts = {}) {
     if (!body) return null;
-    const { size = 120, ms = 460, rotate = 0, tone = 'screen', klass = '', flip = false } = opts;
-    const node = el('div', {
-      class: `fx-burst ${klass}`.trim(),
-      style: {
-        width: `${size}px`,
-        height: `${size}px`,
-        backgroundImage: `url(assets/img/fx/${fx}.png)`,
-        mixBlendMode: tone,
-        // 用 CSS 变量把参数递给 keyframes / 居中用的负边距
-        '--fx-rot': `${rotate}deg`,
-        '--fx-ms': `${ms}ms`,
-        '--fx-size': `${size}px`,
-        transform: flip ? 'scaleX(-1)' : '',
-      },
+    const { ms = 460, delay = 0, size, ...rest } = opts;
+    return burst(body, fx, {
+      size: size ?? fxSize(body), ms: this.fxMs(ms), delay: this.fxMs(delay), ...rest,
     });
-    body.append(node);
-    setTimeout(() => node.remove(), ms + 60);
-    return node;
+  }
+
+  /**
+   * 远隔类招式的「打出去」：一道光条从出手那一侧飞到对手身上（见 battle-fx.js）。
+   * 出手 / 挨打两侧都传精灵盒子；落点那边由调用方接着放命中特效。
+   */
+  flyFx(fromBody, toBody, fx, opts = {}) {
+    if (!fromBody || !toBody) return null;
+    const { ms = 340, size, ...rest } = opts;
+    return projectile(this.field, fromBody, toBody, fx, {
+      size: size ?? Math.max(56, Math.round(fxSize(fromBody, 0.6))), ms: this.fxMs(ms), ...rest,
+    });
   }
 
   /** 强化 / 削弱：闪光 + 对应属性的特效 + 飘字 */
@@ -2169,21 +2265,27 @@ export class BattleScreen {
     if (!body) return;
     const up = ev.amount > 0;
     const stat = ev.stat;
-    // 每种属性给一套「看得出是哪一项」的贴图与颜色
+    /**
+     * 每种属性给一套「看得出是哪一项」的贴图与颜色 ——
+     * 形状取自 Kenney 包里没用过的那几张：攻击=小闪、防御=流光、敏捷=月牙、幸运=星芒。
+     */
     const LOOK = {
-      atk: { fx: 'flare_1', tone: 'screen', text: t(STAT_SHORT.atk) },
-      def: { fx: 'trace_1', tone: 'screen', text: t(STAT_SHORT.def) },
-      agi: { fx: 'twirl_1', tone: 'screen', text: t(STAT_SHORT.agi) },
-      luck: { fx: 'star_1', tone: 'screen', text: t(STAT_SHORT.luck) },
+      atk: { fx: 'flare_1', color: '#ff9a4a', text: t(STAT_SHORT.atk) },
+      def: { fx: 'trace_01', color: '#8cc4ff', text: t(STAT_SHORT.def) },
+      agi: { fx: 'twirl_01', color: '#9df0d8', text: t(STAT_SHORT.agi) },
+      luck: { fx: 'star_05', color: '#ffe06a', text: t(STAT_SHORT.luck) },
     };
-    const look = LOOK[stat] ?? { fx: 'magic_1', tone: 'screen', text: '' };
+    const look = LOOK[stat] ?? { fx: 'magic_1', color: '#d8b0ff', text: '' };
     if (up) {
       this.flash(body);
-      this.burstFx(body, look.fx, { size: 132, ms: 460, rotate: 0 });
-      // 星星是双向的：上升用金色，下降用暗紫
+      // 强化：主特效 + 一颗星芒（延迟 90ms 出来，像「两层」而不是同时闪）
+      this.burstFx(body, look.fx, { color: look.color, ms: 520, rotate: 0 });
+      this.burstFx(body, 'star_08', { color: look.color, ms: 560, delay: 90 });
       floatAt(body, `${look.text} ${ev.amount > 0 ? '+' : ''}${ev.amount}`, 'float-buff');
     } else {
-      this.burstFx(body, 'smoke_1', { size: 130, ms: 460, tone: 'multiply', klass: 'fx-debuff' });
+      // 削弱：烟（压暗）+ 一圈紫旋，和强化在颜色与混合模式上都拉开
+      this.burstFx(body, 'smoke_1', { color: '#6a4a6a', ms: 520, blend: 'multiply', klass: 'fx-debuff' });
+      this.burstFx(body, 'twirl_02', { color: '#c08ade', ms: 520, delay: 80, klass: 'fx-debuff' });
       floatAt(body, `${look.text} ${ev.amount}`, 'float-debuff');
     }
     await this.wait(180);
@@ -2296,26 +2398,43 @@ export class BattleScreen {
    * 卡片数据里没有「远程 / 近身」这个字段，所以按**属性**推：火水电冰超草妖幽恶龙飞这些系
    * 在素材里都是放招的姿势，一般 / 格斗 / 地面 / 岩石 / 钢 / 毒算近身。
    */
+  /**
+   * 这张牌该演哪个动作。
+   *
+   * **判定来自卡牌自己带的 `range` 字段**（接触 / 远隔，3.1.4，用户要求：
+   * 「从现在开始要求所有卡牌分一个，命名为接触类（近程）和远隔类（远程）来进行判定」）。
+   *
+   * 在这之前是**按属性猜**的：一张表写着「火水电冰超草妖幽恶龙飞算远隔」，
+   * 再挂一份近身白名单（咬住 / 龙爪 / 飞踢…）去救那些属性与动作明显不符的牌。
+   * 那套猜法有三个毛病：① 救不过来的还很多（「泼沙」是地面系、其实该算接触，
+   * 猜成远隔；「岩崩」是岩石系、其实是从远处扔石头，猜成近身）；
+   * ② 加一张新牌就得想想「它要不要进白名单」；③ 玩家没法知道这张牌会怎么演。
+   * 现在判定写进数据（`content/cards.json` 的 range）、有门禁盯着（每张牌都必须有），
+   * 演出和特效都照它走 —— 远隔的牌会**真的打过去**（见 attackAnim 的飞行物）。
+   *
+   * 顺序有讲究：只看**自己这边**的动作（护盾 / 强化 / 抽牌 / 治疗）一律 Charge ——
+   * 那是原地蓄力，和接触 / 远隔无关；打向对手的状态牌是「放招」（Shoot）。
+   */
   animForCard(card) {
     const effs = card?.effects ?? [];
     const onEnemy = (e) => e.target !== 'self';
     /**
-     * 先看「自己这边」的动作，再看「打向对手」的动作。
-     * 顺序有讲究：一张牌两样都干的时候（酸液护甲 = 给自己护盾 + 给对手叠中毒），
-     * 按「它主要是个什么牌」来演 —— 护盾是它给人的第一印象，所以 Charge 优先。
+     * ① 只作用在**自己**身上的动作（护盾 / 强化 / 抽牌 / 治疗）→ 原地蓄力（Charge）。
+     * 一张牌两样都干的时候（酸液护甲 = 给自己护盾 + 给对手叠中毒），按「它主要是个什么牌」来演 ——
+     * 护盾是它给人的第一印象，所以 Charge 优先。
      */
     if (effs.some((e) => ['shield', 'strength', 'grantBuff'].includes(e.kind)
       || (e.kind === 'buff' && !onEnemy(e) && ((e.amount ?? 0) > 0 || (e.pct ?? 0) > 0)))) return 'Charge';
-    // 给对手挂状态 / 削弱 → 放招（状态效果在本作里都是挂给对手的：target 字段多半没写）
-    if (effs.some((e) => (e.kind === 'status' && onEnemy(e))
-      || (e.kind === 'buff' && onEnemy(e) && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0)))) return 'Shoot';
-    // 伤害牌：近身白名单优先，其次按属性分远近
-    if (effs.some((e) => e.kind === 'damage')) {
-      if (MELEE_MOVES.has(card.id)) return 'Attack';
-      return (card.types ?? []).some((tp) => RANGED_TYPES.has(tp)) ? 'Shoot' : 'Attack';
-    }
-    // 纯抽牌 / 纯治疗之类：没有更贴的动作，蓄一下
-    return effs.some((e) => e.kind === 'heal') ? 'Charge' : 'Attack';
+    /**
+     * ② 打向对手的（伤害 / 给对手挂状态 / 削对手）——**动作由卡牌自己的判定决定**。
+     * 「放招」不等于「远程」：往对手身上挂弱化也可能是撞上去咬一口（腐蚀之触就是这种），
+     * 所以这里不再自作主张判 Shoot，一律看 `range`。
+     */
+    const offensive = effs.some((e) => e.kind === 'damage'
+      || (e.kind === 'status' && onEnemy(e))
+      || (e.kind === 'buff' && onEnemy(e) && ((e.amount ?? 0) < 0 || (e.pct ?? 0) < 0)));
+    if (!offensive) return 'Charge';
+    return card?.range === '远隔' ? 'Shoot' : 'Attack';
   }
 
   /**
@@ -2357,7 +2476,11 @@ export class BattleScreen {
     try {
       const rowH = (this.rowR?.[side]?.height) ?? 300;
       const base = side === 'player' ? this.playerBaseScale : this.enemyBaseScale;
-      const scale = this.fitScale(slug, name, rowH, base);
+      /**
+       * 用**这一只精灵当前的缩放**（layoutBattle 按待机帧算好的），不要按这个动作的帧重算 ——
+       * 帧盒子大小各动作不同，重算会让精灵在出手的一瞬间变大变小。
+       */
+      const scale = this[scaleKey] ?? this.fitScale(slug, 'Idle', rowH, base);
       const node = await createAnim(slug, {
         anim: name,
         scale,
@@ -2373,11 +2496,37 @@ export class BattleScreen {
        * 现在的做法：Idle 被换出去时节点仍然活着（引用在 this.*IdleAnim 上），
        * 动作演完再把它 replace 回来 —— 不重建、不残留、布局也不会跳。
        */
-      const restore = () => {
+      /**
+       * 立刻把这张动作画布摘干净 —— 供「新动作挤进来」时收尾用（见 playFighterAnim 开头那句）。
+       * 和 restore 的区别：**不等定格**（新动作已经在建了，旧的那张必须马上让位）。
+       */
+      const drop = () => {
         node.destroy?.();
         if (node.parentElement && idle) node.replaceWith(idle);
         else node.remove?.();
         if (this[key] === node) this[key] = null;
+        if (idle && this[animKey] === node) { this[animKey] = idle; this[nameKey] = 'Idle'; }
+      };
+      /**
+       * 收场：先**定格**这一帧一会儿，再把待机柔和地放回来（3.1.4）。
+       *
+       * 用户的感受是「受伤动画放完就直接切回正常状态了，还是太突然」——
+       * 以前确实是「最后一帧刚站稳就换掉」，中间没有任何停顿。
+       * 现在两件事一起做：定格 PACE.restoreHold（打击感里的命中停顿），
+       * 换回来时待机从 60% 淡到 100%（绝不淡到 0，那样会看见精灵消失一下）。
+       *
+       * ⚠ 定格期间可能有新动作挤进来（连续出牌 / 多段伤害）：那时候 `this[key]` 已经换成新的
+       * 画布了，这里必须**直接放弃**、不能再去 replaceWith，否则会把新画面换掉。
+       */
+      const restore = async ({ hold = PACE.restoreHold, soft = true } = {}) => {
+        if (hold > 0) await this.wait(hold);
+        if (this[key] !== node) return;
+        node.destroy?.();
+        if (node.parentElement && idle) {
+          node.replaceWith(idle);
+          if (soft) this.fadeInCanvas(idle, PACE.restoreFade);
+        } else node.remove?.();
+        this[key] = null;
         if (idle) {
           this[animKey] = idle;
           this[nameKey] = 'Idle';
@@ -2385,7 +2534,7 @@ export class BattleScreen {
           this[animKey] = node;
         }
       };
-      node.__restore = restore;
+      node.__restore = drop;
       if (idle && idle.parentElement) idle.replaceWith(node);
       else body.append(node);
       node.playOnce(fps);
@@ -2399,18 +2548,37 @@ export class BattleScreen {
     }
   }
 
+  /**
+   * 出招的演出：**接触类撞上去、远隔类打过去**（3.1.4）。
+   *
+   * 这一条和「每张牌都带接触 / 远隔判定」是同一件事的两面：动作演的是 Shoot 还是 Attack
+   * 由卡牌的判定决定（见 animForCard），特效也照着同一个判定走 ——
+   *   · 远隔：**一道流光从出手那一侧飞到对手身上**（trace 那族的流光条），自己这边只轻轻一亮；
+   *   · 接触：弧光朝对手那一侧甩出去 + 身体前冲（lunge）。
+   * 以前不管远近，都只是在**自己身上**贴一张图，看起来远程招和近身招一模一样。
+   * 颜色按卡牌的属性给（火红、毒紫、龙深蓝…），见 battle-fx.js 的 TYPE_TINT。
+   */
   async attackAnim(side, card = null) {
     const body = side === 'player' ? this.playerBody : this.enemyBody;
+    const other = side === 'player' ? this.enemyBody : this.playerBody;
+    const ranged = this.animForCard(card) === 'Shoot';
+    const tint = tintOf(card?.types);
     body.classList.add(side === 'player' ? 'lunge-player' : 'lunge-enemy');
     // 攻击牌甩一道弧光（朝对手那一侧偏出去），纯变化牌不甩
     const isAttack = !!card?.effects?.some((e) => e.kind === 'damage');
-    if (isAttack) {
+    if (isAttack && !ranged) {
       const heavy = card.effects.some((e) => e.kind === 'damage' && (e.power ?? 0) >= 8);
       this.burstFx(body, heavy ? 'flare_1' : 'slash_1', {
-        size: heavy ? 150 : 120,
+        color: tint,
         ms: 380,
         rotate: side === 'player' ? -18 : 18,
         klass: side === 'player' ? 'fx-swing-right' : 'fx-swing-left',
+      });
+    } else if (isAttack) {
+      // 远隔：先在手边亮一下（蓄势），再让光条飞过去
+      this.burstFx(body, 'star_05', { size: fxSize(body, 0.7), color: tint, ms: 260 });
+      this.flyFx(body, other, pickOne(['trace_02', 'trace_04', 'trace_05', 'trace_01']), {
+        color: tint, ms: 320,
       });
     }
     const styleId = 'battle-lunge-style';
@@ -2423,13 +2591,14 @@ export class BattleScreen {
       `;
       document.head.append(st);
     }
-    // 按卡牌决定动作（远程 → Shoot、自身强化 → Charge、近身 → Attack），演完回 Idle
+    // 按卡牌决定动作（远隔打过去 → Shoot、自身强化 → Charge、接触撞上去 → Attack），演完回 Idle
     const { name, restore } = await this.playFighterAnim(side, this.animForCard(card), { fps: 12 });
     void name;
     await this.wait(PACE.attack / 2);
     body.classList.remove('lunge-player', 'lunge-enemy');
     await this.wait(PACE.attack / 2);
-    restore();
+    // await：定格 + 淡回待机也算演出时间（见 PACE.restoreHold），不 await 的话它会被下一件事压住
+    await restore();
   }
 
   async hitAnim(ev, body, cardEl) {
@@ -2438,15 +2607,29 @@ export class BattleScreen {
     if (ev.absorbed > 0) floatAt(cardEl, t('挡下 {n}', { n: ev.absorbed }), 'float-block', -14);
     audio.hit(Math.min(1, ev.amount / Math.max(1, this.battle.player.maxHp * 0.18)));
     body.classList.add('fighter-hurt');
-    // 命中特效：会心一击更大更亮，被护盾挡下时改放一圈蓝光
+    /**
+     * 命中特效按「挨了什么属性的打」上色（3.1.4）：
+     *   · 被护盾挡下 → 青色的罩子（magic_2 罗盘星）+ 一圈光环；
+     *   · 会心一击 → 八芒爆闪（star_09）+ 小闪，抖动更狠；
+     *   · 普通命中 → 土块（dirt_1/2 交替，别每次都一样）+ 一片按属性着色的火花。
+     * 打过来的属性从**对手刚出的那张牌**上取（`_lastCard`，见 playCard 那一支）。
+     */
+    const hitTint = tintOf(CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types);
+    const typeList = CARD_BY_ID[this._lastCard?.[ev.side === 'player' ? 'enemy' : 'player']]?.types ?? [];
     if (ev.absorbed > 0 && ev.amount <= 0) {
-      this.burstFx(body, 'light_1', { size: 150, ms: 380, klass: 'fx-block' });
+      this.burstFx(body, 'magic_2', { color: '#8ce4ff', ms: 420, klass: 'fx-block' });
+      this.burstFx(body, 'light_1', { color: '#cdf3ff', klass: 'fx-ring fx-block', ms: 520, delay: 60 });
     } else {
-      this.burstFx(body, ev.crit ? 'flare_1' : 'dirt_1', {
-        size: ev.crit ? 150 : 110,
+      this.burstFx(body, ev.crit ? 'star_09' : pickOne(['dirt_1', 'dirt_2']), {
+        color: ev.crit ? '#ffdf7a' : hitTint,
         ms: ev.crit ? 460 : 360,
         klass: ev.crit ? 'fx-impact-crit' : 'fx-impact',
       });
+      if (ev.crit) this.burstFx(body, 'flare_1', { color: hitTint, ms: 420, delay: 70 });
+      // 电系打上来额外劈一道闪电（spark_01~07 是一族闪电弧，形状每次不一样）
+      if (typeList.includes('电')) {
+        this.burstFx(body, pickOne(['spark_02', 'spark_04', 'spark_06']), { color: '#ffe23a', ms: 380, delay: 40 });
+      }
     }
     const slug = ev.side === 'player' ? this.game.data.slug : this.battle.enemy.slug;
     void slug;
@@ -2466,7 +2649,7 @@ export class BattleScreen {
      * 是叠在这个姿势上的。所以：打空了才还原，打死了就让它定格在受伤姿势上。
      */
     const dead = this.battle.over || (this.dispHp[ev.side] ?? 1) <= 0 || ev.lethal;
-    if (!dead) restore();
+    if (!dead) await restore();
   }
 
   async onBattleEnd(ev) {

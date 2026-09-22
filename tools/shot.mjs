@@ -1,5 +1,20 @@
 // 用 Edge headless 截图 + 收集控制台错误，验证游戏在真实浏览器里跑得起来。
 // 用法: node tools/shot.mjs [url] [outfile] [waitMs]
+//
+// ⚠ 两条踩过的坑，拍「动效」之前先看一眼：
+//
+// ① **CSS 动画不会跟着虚拟时间走**。`--virtual-time-budget` 会把 setTimeout 之类的定时器
+//    瞬间推完（游戏逻辑因此跑得飞快），但 CSS 动画基本停在它自己的进度上 ——
+//    所以**只靠 CSS 动画才看得见的画面，怎么调 waitMs 都拍不到**：
+//    `@keyframes` 从 `opacity: 0` 起步的特效（src/ui/battle-fx.js 那些）截出来就是一片空白，
+//    而 `@keyframes` 到 `opacity: 0` 结束的（同文件）截出来也一样。
+//    要拍这种画面，用**覆盖样式把它定在某一格**（`animation: none` + 静态 opacity/scale，
+//    或者 `animation-delay: -Xms; animation-play-state: paused`）——
+//    tools/dgfxdemo-script.js 就是这么干的。
+// ② 默认会强制 `prefers-reduced-motion`，而 style.css 末尾有一条**全局**规则
+//    （`*, *::before, *::after { animation-duration: .001ms !important }`）——
+//    意思是「所有动画瞬间跑到终点」。想拍任何动画都得加 `motion=1`，
+//    否则特效会停在**结束帧**（爆炸类特效的结束帧就是「什么都没有」）。
 import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';

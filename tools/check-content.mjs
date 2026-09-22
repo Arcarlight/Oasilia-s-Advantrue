@@ -424,6 +424,61 @@ if (merchantMissing) warn(`跑 & tools/fetch-content.ps1 可以把缺的头像�
 }
 
 // ---------- 4. 卡牌池 / 招式池的健壮性 ----------
+/**
+ * **每张卡都要有 range（接触 / 远隔），而且只能是这两个值之一。**
+ *
+ * 为什么它算门禁、而不是一个装饰字段：战斗界面拿它决定演哪个动作
+ * （`src/ui/battle-view.js` 的 animForCard —— 接触走「撞上去 Attack」、远隔走「放招 Shoot」）。
+ * 以前这件事是**按属性猜**的（火水电冰超草妖幽恶龙飞 = 远隔，其余 = 接触，再加一张近身白名单），
+ * 猜错的后果玩家一眼就能看见：「咬住」是恶系，却被演成站原地放招。
+ * 现在判定写在数据里，于是「少了这个字段」不再是「猜一个」，而是**演不出来**，必须拦在这里。
+ *
+ * 报错文案特意写清「这张卡该判成什么」：加新卡的人看这一条就知道怎么填，
+ * 不用去翻 battle-view 或者问人。
+ */
+{
+  const RANGE_OK = ['接触', '远隔'];
+  /** 名字和属性「说不准远近」时的最后兜底：是不是只作用在自己身上（原地蓄力 / 护盾 / 抽牌 / 治疗） */
+  const selfOnlyish = (c) => !(c.effects ?? []).some((e) => {
+    if (e.kind === 'damage') return true;
+    if (['status', 'buff', 'detonate', 'statusDouble', 'statusSteal'].includes(e.kind)) {
+      return e.target && e.target !== 'self';
+    }
+    if (e.kind === 'delay' || e.kind === 'trigger') {
+      return (e.effects ?? []).some((x) => x.kind === 'damage' || (x.target && x.target !== 'self'));
+    }
+    return false;
+  });
+  /** 名字里带这些字 = 上去碰对手（咬 / 爪 / 拳 / 投掷…），先判它 */
+  const CONTACT_WORD = /咬|噬|爪|拳|踢|角|尾|翼|头锤|撞击|猛撞|冲撞|压顶|猛扑|劈|斩|投掷|挥|拍|啄/;
+  /** 名字里带这些字 = 放出去（射线 / 炮弹 / 飞针…） */
+  const SHOT_WORD = /射线|光线|光束|炮|箭|弹|针|球|波动|风|吐息|枪|刃/;
+  for (const c of CARDS) {
+    const base = (c.types ?? []).some((t) => ['火', '水', '电', '冰', '超能', '草', '妖精', '幽灵', '恶', '龙', '飞行'].includes(t))
+      ? '远隔' : '接触';
+    const hint = c.targeting === 'self' || selfOnlyish(c)
+      ? '接触（这张牌只作用在自己身上 —— 原地蓄力 / 护盾 / 抽牌 / 治疗那类）'
+      : CONTACT_WORD.test(c.name ?? '')
+        ? '接触（名字是上去碰对手的招：咬 / 爪 / 拳 / 投掷…）'
+        : SHOT_WORD.test(c.name ?? '')
+          ? '远隔（名字是放出去的招：射线 / 炮弹 / 飞针…）'
+          : `按属性起点像「${base}」（${base === '远隔'
+            ? '火水电冰超草妖幽恶龙飞这些属性默认远隔'
+            : '一般 / 格斗 / 地面 / 岩石 / 钢 / 毒 / 虫这些属性默认接触'}，名字没有矛盾就照它填）`;
+    if (c.range == null) {
+      err(`卡牌「${c.id}」（${c.name}）缺 range：每张卡都要写明是「接触」还是「远隔」——`
+        + `这一张该判成${hint}。属性 types 只是起点，名字和属性矛盾的**以名字为准**（判定依据见 src/ui/battle-view.js 的 animForCard）`);
+    } else if (!RANGE_OK.includes(c.range)) {
+      err(`卡牌「${c.id}」（${c.name}）的 range=${JSON.stringify(c.range)} 不是「接触」也不是「远隔」——`
+        + `这一张该判成${hint}`);
+    }
+  }
+  const n = { 接触: 0, 远隔: 0 };
+  for (const c of CARDS) if (RANGE_OK.includes(c.range)) n[c.range] += 1;
+  note(`接触 / 远隔：${n.接触} 张接触、${n.远隔} 张远隔`
+    + `（前者演「撞上去」，后者演「放招」；判定起点=属性，名字矛盾时以名字为准）`);
+}
+
 const byRarity = {};
 for (const c of CARDS) byRarity[c.rarity] = (byRarity[c.rarity] ?? 0) + 1;
 for (const r of Object.keys(RARITY)) {
@@ -1455,6 +1510,21 @@ if (BGM_FILES) {
       if (!e.items?.length) err(`更新日志 v${e.version} 一条内容都没有`);
       for (const line of e.items ?? []) {
         if (!/[\u4e00-\u9fa5]/.test(line)) err(`更新日志 v${e.version} 有一条不像中文原文：${line.slice(0, 24)}`);
+        /**
+         * ⚠ **更新日志是写给玩家看的，不许出现第二人称**（3.1.4，用户点出来的：
+         * 「有发现更新日志里的更新内容甚至出现『你』这样的第二人称，这更新日志是给玩家看的，
+         * 怎么可以这样呢？」）。
+         *
+         * 这条是**真出过事**的：这一页的文案是我（写更新日志的人）写给「提需求的人」的口吻，
+         * 于是混进了「你自己去曲库里挑的」「轮到你时下半片亮」「一回合打掉你 400 点」这种句子 ——
+         * 玩家读到「你自己去挑的」只会一头雾水（他没挑过）。全表 20 条都改成了无人称说法。
+         * 判据就是这两个字：中文原文里不许出现「你 / 您」。
+         */
+        const you = /[你您]/.exec(line);
+        if (you) {
+          err(`更新日志 v${e.version} 用了第二人称「${you[0]}」：${line.slice(0, 40)}…`
+            + ' —— 这一页是给玩家看的，请改成无人称说法（「玩家」/「我方」/直接省略主语）');
+        }
       }
     }
     /**
