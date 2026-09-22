@@ -17,9 +17,21 @@ if (!process.env.NODE_USE_ENV_PROXY && !process.env.HTTPS_PROXY) {
 }
 
 const FILES = [
+  /**
+   * ⚠ **单文件包本身**要放在最前面比。
+   *
+   * 这张清单以前只有 src/ 和几个素材 —— 而玩家真正打开的是 `oasis-game.html`
+   * （45MB、把 src + content + 贴图全内联进去的那一份）。也就是说清单全绿，
+   * 也不代表线上跑的是这一份：**3.1.4 排查「什么特效都没了」时就撞上过这个盲区**，
+   * 得另写脚本把两边哈希出来对（见 tools/shots 里那个临时脚本）。
+   * 45MB 走代理取一次十几秒，比「以为部署好了其实没有」便宜得多。
+   */
+  'oasis-game.html',
   'index.html',
   'src/main.js',
   'src/ui/battle-view.js',
+  'src/ui/battle-fx.js',
+  'src/ui/battle-decor.js',
   'src/ui/screens.js',
   'src/ui/style.css',
   'src/ui/hud.js',
