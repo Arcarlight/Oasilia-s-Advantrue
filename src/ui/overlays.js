@@ -205,13 +205,42 @@ export function showHeldOverflow(game) {
         el('button', {
           class: 'btn btn-sm btn-primary',
           onClick: () => {
-            game.dropItem(id);
-            const got = game.giveItem(pending.id, 1);
-            game.awaitingOverflow = null;
+            /**
+             * 同一次「丢掉一件」只许换一次：`pending` 是界面点「丢掉一件，收下它」时
+             * 现造的待处理项，一个待处理项只能消费一次。少了这一道，连点两下（或者
+             * 节点已经从 DOM 上摘掉、又被人补发一次 click）就会**丢两件、拿两件**。
+             */
+            if (pending.consumed) { close(); return; }
+            pending.consumed = true;
+            /**
+             * 掉落那一屏的这件东西是不是**正等着换手**。
+             *
+             * `live` 为真时，换手成功要把战果写回掉落记录（stored / seen），
+             * 那一屏才会收掉、走到结算页；不写回去的话它会一直停在「栏位满了」，
+             * 玩家再点一次就能把同一件道具再收一遍（用户报的「窗口没有关闭」）。
+             */
+            const drop = game.reward?.itemDrop;
+            const live = !!drop && !drop.seen && !drop.stored && drop.id === pending.id;
+            if (live && drop.claimed) { close(); return; }      // 已经换过这一件了，别再来一次
+            if (live) drop.claimed = true;
+            /**
+             * 换手走引擎的 swapHeld（**一次做完、中途不重画**）：
+             * 以前这里是自己拼 dropItem + giveItem，而 `dropItem()` 内部会 changed() 重画，
+             * 地图页那一下看到 awaitingOverflow 还在就**又弹一个**丢弃框 ——
+             * 关掉的是原来那个，新弹的留在屏幕上，玩家看到的就是「窗口没关」。
+             */
+            const got = game.swapHeld(pending.id, id);
+            if (got.stored && live) {
+              drop.stored = true;
+              drop.overflow = false;
+              drop.seen = true;
+            }
             audio.useItem();
             toast(got.stored ? t('丢掉「{a}」，收下「{b}」。', { a: item.name, b: fresh?.name ?? pending.id }) : t('换手失败，栏位还是满的。'), got.stored ? 'good' : 'bad');
             close();
             renderHud(game);
+            // 收尾重画一次：掉落那一屏因此收掉（换到了就直接进结算页），地图 / 宝箱页也跟着刷新
+            game.changed();
           },
         }, [t('丢掉这件，换新的')]),
       ]),

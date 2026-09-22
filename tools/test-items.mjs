@@ -28,6 +28,9 @@ globalThis.localStorage = {
 const { Game, itemSellPrice, itemUseEffect } = await imp('src/core/game.js');
 const { ITEMS } = await imp('src/data/items.js');
 const { effectiveAtk, Battle } = await imp('src/core/battle.js');
+const { CARD_BY_ID } = await imp('src/data/cards.js');
+const { BALANCE } = await imp('src/data/balance.js');
+const { eventOption } = await imp('src/core/eventfx.js');
 
 let pass = 0;
 let fail = 0;
@@ -283,6 +286,222 @@ group('⑨ 掉落「不要这件」之后不许再问一遍');
   g.takeRewardCard(null);
   ok(!g.awaitingOverflow, '拒绝之后没有遗留的待处理项（地图页不会第二次弹「丢掉一件」）');
   ok(!g.data.held.includes(fresh), '拒绝的那件确实没进手持栏', `${ITEMS[fresh]?.name}`);
+}
+
+// ---------- ⑩ 持有效果的「死 key」：一件都不许再出现 ----------
+/**
+ * 用户报的原话：「有玩家发现目前战后恢复的道具（大根茎等）都不起效，请你进行 bug 查询，
+ * 还有哪些没有生效的道具」。
+ *
+ * 查下去是 5 个 key 从头到尾**没有一行代码读过**（大根茎 / 元气根 / 幸运蛋 / 贵重骨头 /
+ * 彗星碎片 / 甜甜蜜 / 炽热岩石 / 妖精宝石 / 沙沙岩石 共 9 件）——
+ * 数据、文案、图鉴、掉落全都正常，所以肉眼完全看不出来。
+ * 静态那一份门禁在 tools/check-item-effects.mjs，这里测的是**行为**：
+ * 每一类效果都真的在引擎里产出可观测的变化。
+ */
+group('⑩ 战后回复：大根茎 / 元气根（玩家报的那个）');
+{
+  /** 打一场必胜的普通战斗，返回这一场的结果（掉落打桩成不掉，免得干扰） */
+  const fightOnce = (held, seed) => {
+    const gg = new Game({ seed: 1 });
+    gg.newRun(seed);
+    gg.data.held = [...held];
+    gg.invalidateMods();
+    gg.rollItemDrop = () => null;
+    gg.data.hp = Math.round(gg.data.maxHp * 0.2);   // 血够低，回复不会被最大生命夹住
+    gg.startBattle('normal', 0, 'direct');
+    gg.battle.enemy.hp = 0;
+    gg.battle.winner = 'player';
+    gg.battle.over = true;
+    /**
+     * ⚠ 最大生命要**在打完之前**抄下来：战后成长（applyGrowth）可能加最大生命，
+     * 打完再读 `data.maxHp` 会比结算那一刻大一点，算出来的期望值就差了 1 点
+     * （第一版就是这么假红的：268 × 16% = 42.88 → 43，而结算时是 265 × 16% = 42.4 → 42）。
+     */
+    const maxHp = gg.data.maxHp;
+    return { g: gg, maxHp, r: gg.finishBattle() };
+  };
+
+  const plain = fightOnce([], 2001);
+  const base = Math.round(plain.maxHp * BALANCE.healAfterBattlePct);
+  ok(plain.r.healed === base, '空手：战后回复 = 基础比例', `${plain.r.healed}（最大生命 ${plain.maxHp} 的 ${Math.round(BALANCE.healAfterBattlePct * 100)}%）`);
+
+  const root = ITEMS.big_root;
+  const withRoot = fightOnce([root.id], 2001);
+  const add = root.hold.mods.find((m) => m.key === 'healAfterBattlePct').add;
+  const want = Math.round(withRoot.maxHp * (BALANCE.healAfterBattlePct + add));
+  ok(withRoot.r.healed === want, `拿着「${root.name}」真的多回了`, `${plain.r.healed} → ${withRoot.r.healed}（+${Math.round(add * 100)}%）`);
+  ok(withRoot.r.healed > plain.r.healed, '比空手回得多（这就是玩家说「不起效」的那一件事）');
+
+  const energy = ITEMS.energy_root;
+  const withEnergy = fightOnce([energy.id], 2001);
+  const add2 = energy.hold.mods.find((m) => m.key === 'healAfterBattlePct').add;
+  ok(withEnergy.r.healed === Math.round(withEnergy.maxHp * (BALANCE.healAfterBattlePct + add2)),
+    `「${energy.name}」同样生效`, `+${Math.round(add2 * 100)}% → ${withEnergy.r.healed}`);
+
+  // 两件一起拿 = 相加（不是相乘、也不是只算一件）
+  const both = fightOnce([root.id, energy.id], 2001);
+  ok(both.r.healed === Math.round(both.maxHp * (BALANCE.healAfterBattlePct + add + add2)),
+    '两件一起拿：加成相加', `${both.r.healed} ≈ 基础 ${base} + ${Math.round((add + add2) * 100)}%`);
+}
+
+group('⑪ 金币加成：幸运蛋 / 贵重骨头');
+{
+  g.newRun(2002);
+  g.data.held = [];
+  g.invalidateMods();
+  g.data.gold = 0;
+  ok(g.gainGold(100) === 100, '空手：拿多少是多少', '100 → 100');
+
+  const egg = ITEMS.lucky_egg;
+  const eggAdd = egg.hold.mods.find((m) => m.key === 'goldPct').add;
+  g.data.held = [egg.id];
+  g.invalidateMods();
+  ok(g.gainGold(100) === Math.round(100 * (1 + eggAdd)), `拿着「${egg.name}」拿钱变多`,
+    `100 → ${g.gainGold(0) === 0 ? Math.round(100 * (1 + eggAdd)) : '?'}（+${Math.round(eggAdd * 100)}%）`);
+
+  // 战斗奖励那条路也真的走 gainGold（不是只在这一个函数里成立）
+  const battleGold = (held) => {
+    const gg = new Game({ seed: 1 });
+    gg.newRun(2002);
+    gg.data.held = [...held];
+    gg.invalidateMods();
+    gg.rollItemDrop = () => null;
+    gg.startBattle('normal', 0, 'direct');
+    gg.battle.enemy.hp = 0;
+    gg.battle.winner = 'player';
+    gg.battle.over = true;
+    return gg.finishBattle().gold;
+  };
+  const g0 = battleGold([]);
+  const g1 = battleGold([egg.id]);
+  ok(g1 > g0 && Math.abs(g1 - g0 * (1 + eggAdd)) <= 1, '战斗金币也吃这个加成（两次同种子的战斗对比）',
+    `${g0} → ${g1}`);
+
+  const bone = ITEMS.rare_bone;
+  const boneAdd = bone.hold.mods.find((m) => m.key === 'goldPct').add;
+  g.data.held = [bone.id];
+  g.invalidateMods();
+  ok(g.gainGold(100) === Math.round(100 * (1 + boneAdd)), `「${bone.name}」同样生效`, `+${Math.round(boneAdd * 100)}%`);
+
+  /**
+   * **卖东西不吃这个加成**（故意的）：卖价由 itemSellPrice 定死，
+   * 否则「买进来再卖出去」就成了一台印钞机。
+   */
+  g.data.held = [egg.id, bone.id];
+  g.invalidateMods();
+  const goldBefore = g.data.gold;
+  const sold = g.sellItem(bone.id);
+  ok(sold.gold === itemSellPrice(bone) && g.data.gold === goldBefore + itemSellPrice(bone),
+    '卖道具照原价（不被金币加成放大：那会变成刷钱的口子）', `${sold.gold} 金`);
+}
+
+group('⑫ 卡牌奖励多一个选项：彗星碎片');
+{
+  const choicesFor = (held, kind, seed) => {
+    const gg = new Game({ seed: 1 });
+    gg.newRun(seed);
+    gg.data.held = [...held];
+    gg.invalidateMods();
+    gg.rollItemDrop = () => null;
+    gg.startBattle(kind, 0, 'direct');
+    gg.data.cardDrought = 9;                  // 保底：这一场必定出卡
+    gg.battle.enemy.hp = 0;
+    gg.battle.winner = 'player';
+    gg.battle.over = true;
+    return gg.finishBattle().cardChoices.length;
+  };
+  const shard = ITEMS.comet_shard;
+  const plainNormal = choicesFor([], 'normal', 2003);
+  const shardNormal = choicesFor([shard.id], 'normal', 2003);
+  ok(plainNormal === 3, '普通战斗：3 个选项', String(plainNormal));
+  ok(shardNormal === plainNormal + 1, `拿着「${shard.name}」多一个选项`, `${plainNormal} → ${shardNormal}`);
+  const plainElite = choicesFor([], 'elite', 2003);
+  const shardElite = choicesFor([shard.id], 'elite', 2003);
+  ok(plainElite === 4 && shardElite === 5, '精英 / 首领（本来就 4 个）同样 +1', `${plainElite} → ${shardElite}`);
+}
+
+group('⑬ 事件与营地的回复量：甜甜蜜');
+{
+  /** 直接造一个事件选项跑一遍（走的是真的 eventfx 执行链） */
+  const runOption = (held, effects, seed) => {
+    const gg = new Game({ seed: 1 });
+    gg.newRun(seed);
+    gg.data.held = [...held];
+    gg.invalidateMods();
+    gg.data.hp = 10;
+    gg.data.gold = 200;          // 留够钱：付得起才看得到「付了多少」
+    const gold0 = gg.data.gold;
+    gg.event = { id: 'test_event', options: [eventOption({ label: 't', effects, text: 't' })] };
+    gg.phase = 'event';
+    gg.chooseEventOption(0);
+    return { heal: gg.data.hp - 10, gold: gg.data.gold - gold0, g: gg };
+  };
+  const honey = ITEMS.honey;
+  const add = honey.hold.mods.find((m) => m.key === 'eventHealPct').add;
+  ok(!!honey, `甜甜蜜在道具表里`, honey.name);
+
+  const plain = runOption([], [{ hp: 100 }], 2004);
+  const sweet = runOption([honey.id], [{ hp: 100 }], 2004);
+  ok(plain.heal === 100, '空手：事件回 100 就是 100', String(plain.heal));
+  ok(sweet.heal === Math.round(100 * (1 + add)), `拿着「${honey.name}」事件回血变多`, `${plain.heal} → ${sweet.heal}（+${Math.round(add * 100)}%）`);
+
+  const plainGold = runOption([], [{ gold: 100 }], 2005);
+  const honeyGold = runOption([honey.id], [{ gold: 100 }], 2005);
+  ok(honeyGold.gold === 100, '事件里的金币**不吃**这个加成（甜甜蜜只管回复量）', `+${honeyGold.gold} 金`);
+  const eggGold = runOption([ITEMS.lucky_egg.id], [{ gold: 100 }], 2005);
+  const eggAdd = ITEMS.lucky_egg.hold.mods.find((m) => m.key === 'goldPct').add;
+  ok(eggGold.gold === Math.round(100 * (1 + eggAdd)), '事件里的金币吃的是「获得的金币 +X%」（幸运蛋）', `+${eggGold.gold} 金`);
+  ok(plainGold.gold === 100, '空手：事件给 100 就是 100', `+${plainGold.gold} 金`);
+  const pay = runOption([ITEMS.lucky_egg.id], [{ gold: -45 }], 2006);
+  ok(pay.gold === -45, '事件里要付的钱照付（不会被道具加成放大）', `${pay.gold} 金`);
+
+  g.newRun(2007);
+  g.data.held = [];
+  g.invalidateMods();
+  const restPlain = g.startRest().healAmount;
+  g.data.held = [honey.id];
+  g.invalidateMods();
+  const restSweet = g.startRest().healAmount;
+  ok(restPlain === Math.round(g.data.maxHp * BALANCE.restHealPct), '营地：空手按基础比例回', `${restPlain}`);
+  ok(restSweet === Math.round(g.data.maxHp * BALANCE.restHealPct * (1 + add)),
+    `营地也吃这个加成`, `${restPlain} → ${restSweet}`);
+}
+
+group('⑭ 自身增益持续 +1 回合：炽热岩石');
+{
+  const buffBattle = (mods) => new Battle({
+    seed: 11, mods,
+    player: { name: 'T', slug: 'flygon', hp: 300, maxHp: 300, atk: 30, def: 10, agi: 10, luck: 0 },
+    deck: ['sand_beat'],
+    enemy: { id: 'e', slug: 'sandile', name: 'E', maxHp: 400, atk: 10, def: 2, agi: 5, luck: 0, tier: 'mob', deck: ['sand_beat'] },
+  });
+  const rock = ITEMS.heat_rock;
+  const add = rock.hold.mods.find((m) => m.key === 'buffTurns').add;
+  const card = CARD_BY_ID.sand_beat;                 // 行动点上限 +1（持续 3 回合）
+  ok(!!card && card.effects.some((e) => e.kind === 'grantBuff'), '找到一张给自己挂强化的牌', card?.name);
+
+  const b0 = buffBattle(undefined);
+  b0.start();
+  b0.resolveCard('player', card, {});
+  const t0 = b0.player.buffs.apMax?.turns;
+  ok(t0 === 3, '空手：强化持续 3 回合（卡面写的数）', `turns=${t0}`);
+
+  const g2 = new Game({ seed: 1 });
+  g2.newRun(2008);
+  g2.data.held = [rock.id];
+  g2.invalidateMods();
+  const b1 = buffBattle(g2.heldMods());
+  b1.start();
+  b1.resolveCard('player', card, {});
+  const t1 = b1.player.buffs.apMax?.turns;
+  ok(t1 === t0 + add, `拿着「${rock.name}」持续回合 +${add}`, `${t0} → ${t1}`);
+
+  // 负面：敌人给自己挂的强化**不许**被玩家的道具拉长
+  const b2 = buffBattle(g2.heldMods());
+  b2.start();
+  b2.resolveCard('enemy', card, {});
+  ok(b2.enemy.buffs.apMax?.turns === 3, '对手给自己挂的强化不受玩家道具影响', `turns=${b2.enemy.buffs.apMax?.turns}`);
 }
 
 console.log(`\n道具（手持）回归测试：通过 ${pass}，失败 ${fail}`);

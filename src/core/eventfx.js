@@ -163,7 +163,8 @@ function runEffect(eff, game, vars) {
         const cost = game.takeDamage(-n);
         vars.hp = (vars.hp ?? 0) + cost;
       } else {
-        const healed = game.heal(n);
+        // 事件回血走 healFromEvent：「事件与营地的回复量 +X%」（甜甜蜜）在这里生效
+        const healed = game.healFromEvent(n);
         vars.heal = (vars.heal ?? 0) + healed;
       }
       break;
@@ -174,13 +175,13 @@ function runEffect(eff, game, vars) {
         const cost = game.takeDamage(-amount);
         vars.hp = (vars.hp ?? 0) + cost;
       } else {
-        const healed = game.heal(amount);
+        const healed = game.healFromEvent(amount);
         vars.heal = (vars.heal ?? 0) + healed;
       }
       break;
     }
     case 'fullHeal': {
-      const healed = game.heal(game.data.maxHp);
+      const healed = game.healFromEvent(game.data.maxHp);
       vars.heal = (vars.heal ?? 0) + healed;
       break;
     }
@@ -193,14 +194,22 @@ function runEffect(eff, game, vars) {
     }
     case 'gold': {
       const n = Number(v);
-      game.data.gold = Math.max(0, game.data.gold + n);
-      vars.gold = (vars.gold ?? 0) + n;
+      /**
+       * 拿钱走 gainGold（吃「获得的金币 +X%」），付钱**不走** ——
+       * 过路费该付多少就付多少，否则同一件道具会让事件里的付款选项反而变贵。
+       */
+      if (n >= 0) {
+        const got = game.gainGold(n);
+        vars.gold = (vars.gold ?? 0) + got;
+      } else {
+        game.data.gold = Math.max(0, game.data.gold + n);
+        vars.gold = (vars.gold ?? 0) + n;
+      }
       break;
     }
     case 'goldRange': {
       const [a, b] = v;
-      const g = game.rng.int(a, b);
-      game.data.gold += g;
+      const g = game.gainGold(game.rng.int(a, b));
       vars.gold = (vars.gold ?? 0) + g;
       break;
     }

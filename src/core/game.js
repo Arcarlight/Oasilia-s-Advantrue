@@ -291,6 +291,38 @@ export class Game {
     return healed;
   }
 
+  /**
+   * **事件与营地的回复**（不是战斗里的回复，也不是战斗结算的那个）。
+   *
+   * 只有这里会乘「事件与营地的回复量 +X%」（甜甜蜜）——所以事件分支（core/eventfx.js）
+   * 与营地（startRest）都必须走它，别再直接调 `heal()`，否则那件道具又是白拿。
+   * 名称里的 event 就是文案里说的「事件与营地」。
+   */
+  healFromEvent(amount) {
+    const mul = 1 + Math.max(0, this.modAdd('eventHealPct'));
+    return this.heal(Math.round(amount * mul));
+  }
+
+  /**
+   * **拿到金币的唯一入口**：战斗奖励 / 宝箱 / 事件 / 章节通关都走它。
+   *
+   * 「获得的金币 +X%」（幸运蛋 / 贵重骨头）在这里生效。以前这个 key 在
+   * content/items.json 里写着、`src/` 里却没有一行代码读它 —— 那两件是纯摆设。
+   *
+   * 扣钱（事件要付的过路费）与卖东西**不走这里**：卖价已经由 itemSellPrice 定死，
+   * 来回买卖不该被道具放大（否则就是个刷钱的口子）。
+   */
+  gainGold(amount) {
+    const n = Math.round(amount);
+    if (n <= 0) {
+      this.data.gold = Math.max(0, this.data.gold + n);
+      return n;
+    }
+    const got = Math.round(n * (1 + Math.max(0, this.modAdd('goldPct'))));
+    this.data.gold += got;
+    return got;
+  }
+
   takeDamage(amount) {
     const d = this.data;
     const cost = Math.min(amount, d.hp - 1); // 地图事件不会直接致死
@@ -447,8 +479,31 @@ export class Game {
   /** 丢掉一件但不重画（useItem 内部用：界面自己会在拿到结果后重画） */
   dropItemSilent(id) {
     const i = this.data.held.lastIndexOf(id);
-    if (i >= 0) this.data.held.splice(i, 1);
+    if (i < 0) return false;
+    this.data.held.splice(i, 1);
     this.invalidateMods();
+    return true;
+  }
+
+  /**
+   * 「丢掉手上这件，换上新掉的那件」—— 掉落窗口 / 开箱 / 奖励溢出那三条路唯一的换手入口。
+   *
+   * 为什么要收成一条：以前界面是自己拼三步（dropItem → giveItem → 清 awaitingOverflow），
+   * 而 `dropItem()` 内部会 `changed()` **重画一次**，那一下的副作用是——
+   *   · 地图页看到 `awaitingOverflow` 还在，于是**又弹一个**同样的丢弃框
+   *     （玩家报了：「道具已经进了手持栏，窗口却没关」——关掉的是原来那个，新弹的留在了屏幕上）；
+   *   · 掉落那一屏也会重画成同一个「栏位满了」的样子，看不出换手成功。
+   * 这里一次做完（先清待处理项、再丢、再拿、最后 save），中途不重画，
+   * 外面在结束时重画**一次**就够。
+   *
+   * @returns giveItem 的结果（{ ok, stored, overflow, ... }）
+   */
+  swapHeld(dropId, keepId) {
+    this.awaitingOverflow = null;
+    if (!this.dropItemSilent(keepId)) return { ok: false, stored: false, overflow: false, text: t('手上没有这一件。') };
+    const got = this.giveItem(dropId, 1);
+    this.save();
+    return got;
   }
 
   /** 清掉身上指定的几个负面状态，返回真的清掉的那些 key */
@@ -584,8 +639,8 @@ export class Game {
     }
     // 通关金币：正片那张表用完之后（无尽模式的第 7 章起）按 goldBase + 每章递增
     const goldTable = BALANCE.stageClearGold[d.stage - 1];
-    const bonus = goldTable ?? ((BALANCE.endless?.goldBase ?? 40) + Math.max(0, d.stage - campaign + 1) * (BALANCE.endless?.goldPerChapter ?? 20));
-    d.gold += bonus;
+    // 走 gainGold：这一份也要吃「获得的金币 +X%」，而文案里那个数字是**实际拿到**的数
+    const bonus = this.gainGold(goldTable ?? ((BALANCE.endless?.goldBase ?? 40) + Math.max(0, d.stage - campaign + 1) * (BALANCE.endless?.goldPerChapter ?? 20)));
     // 打完首领完全恢复：下一章的敌人强度是按满血设计的
     const healLines = [];
     if (BALANCE.fullHealAfterBoss) {
@@ -1131,10 +1186,18 @@ export class Game {
      */
     const rw = heroRewardMul(d.hero);
     const range = ctx.kind === 'boss' ? BALANCE.goldPerElite : ctx.kind === 'elite' ? BALANCE.goldPerElite : BALANCE.goldPerBattle;
-    const gold = Math.round(this.rng.int(range[0], range[1]) * rewardMult * rw.gold);
-    d.gold += gold;
-    // 战后回血：主角可以有自己的倍率（阿特拉斯两倍长的路线靠它扛消耗，见 heroRewardMul 的 heal）
-    const heal = Math.round(d.maxHp * BALANCE.healAfterBattlePct * rw.heal);
+    // gainGold：战斗金币同样吃「获得的金币 +X%」（幸运蛋 / 贵重骨头）
+    const gold = this.gainGold(Math.round(this.rng.int(range[0], range[1]) * rewardMult * rw.gold));
+    /**
+     * 战后回血 = 基础比例 + **手上那几件「战斗胜利后回复最大生命 X%」的道具**
+     * （大根茎 / 元气根），再乘主角自己的倍率（阿特拉斯两倍长的路线靠它扛消耗，
+     * 见 heroRewardMul 的 heal）。
+     *
+     * ⚠ 玩家报过：「战后恢复的道具（大根茎等）都不起效」。原因就是这一行以前只读
+     * BALANCE.healAfterBattlePct，`healAfterBattlePct` 这个持有效果**从来没有被读过** ——
+     * 那两件道具从加进游戏那天起就是白拿的（现在 check-item-effects 会把这种 key 拦下来）。
+     */
+    const heal = Math.round(d.maxHp * (BALANCE.healAfterBattlePct + this.modAdd('healAfterBattlePct')) * rw.heal);
     const healed = this.heal(heal);
 
     // 成长：每场战斗永久提升一点属性，精英/首领给得更多。
@@ -1176,7 +1239,11 @@ export class Game {
     const getCard = isBigNode || drought >= pity || this.rng.chance(BALANCE.cardRewardChance);
     // 出卡就清零；空手就累加（精英/首领必出，等于顺手把连空打断）
     d.cardDrought = getCard ? 0 : drought + 1;
-    const slots = isBigNode ? 4 : 3;
+    /**
+     * 选项数 = 普通 3 / 精英与首领 4，**再加手上「卡牌奖励多 N 个选项」的道具**
+     * （彗星碎片）。这个 key 以前也没人读，所以那件史诗道具等于没有效果。
+     */
+    const slots = (isBigNode ? 4 : 3) + Math.max(0, Math.round(this.modAdd('rewardChoices')));
     const choices = getCard ? this.withSustainPity(rollCards(slots, 0, [], weights, d.hero), weights) : [];
 
     /**
@@ -1386,6 +1453,12 @@ export class Game {
       stored: !!res.stored,
       overflow: !!res.overflow,
       text: res.text ?? '',
+      /**
+       * `claimed`：这一件掉落**已经被「丢掉一件换新的」那条路收下过了**。
+       * 界面靠它防止同一件掉落被换进来两次（换手成功之后要是那一屏还留在屏幕上，
+       * 玩家再点一次就会凭空多出一件 —— 见 swapHeld 的注释）。
+       */
+      claimed: false,
     };
   }
 
@@ -1489,14 +1562,13 @@ export class Game {
     const d = this.data;
     let chest;
     if (roll < 0.36) {
-      const gold = this.rng.int(45, 95) + d.stage * 20;
-      d.gold += gold;
+      // 宝箱里的金币也吃「获得的金币 +X%」，文案里写的是实际拿到的那一份
+      const gold = this.gainGold(this.rng.int(45, 95) + d.stage * 20);
       chest = { kind: 'gold', gold, text: t('一整袋金币，还有几颗碎宝石。\n「沉是沉了点，不过我不嫌弃。」\n金币 +{gold}。', { gold }) };
     } else if (roll < 0.74) {
       const card = rollCard(0.5, [], null, this.data?.hero);
       this.addCard(card.id);
-      const gold = this.rng.int(15, 35);
-      d.gold += gold;
+      const gold = this.gainGold(this.rng.int(15, 35));
       chest = { kind: 'card', cardId: card.id, gold, text: t('箱底压着一张卡，还有一点零钱。\n「压在最底下的多半是好东西。」\n获得「{card}」，金币 +{gold}。', { card: card.name, gold }) };
     } else if (roll < 0.9) {
       /**
@@ -1548,7 +1620,11 @@ export class Game {
 
   startRest() {
     const d = this.data;
-    const healAmount = Math.round(d.maxHp * BALANCE.restHealPct);
+    /**
+     * 营地的回复量也要吃「事件与营地的回复量 +X%」（甜甜蜜）—— 这个数会直接
+     * 显示在休息按钮上，所以**先把倍率算进来再报数**，别让界面写一个玩家拿不到的数。
+     */
+    const healAmount = Math.round(d.maxHp * BALANCE.restHealPct * (1 + Math.max(0, this.modAdd('eventHealPct'))));
     /**
      * done 是「这次机会用掉了」的总开关：休息和冥想**只能二选一**。
      * 以前 used / upgraded 各管各的，于是休息完还能再冥想，

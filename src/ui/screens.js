@@ -717,7 +717,9 @@ function renderRest(game) {
     }, [
       el('span', { class: 'option-label' }, [
         el('span', { class: 'ico-heal' }),
-        el('span', { text: t('休息一下（回复 {hp} HP，约最大生命的 {pct}%）', { hp: rest.healAmount, pct: Math.round(BALANCE.restHealPct * 100) }) }),
+        // 百分比从**实际回复量**反算：手上带着「事件与营地的回复量 +X%」的道具时，
+        // 写死的 BALANCE.restHealPct 会比玩家真正拿到的少一截（说 30% 实际回 45%）。
+        el('span', { text: t('休息一下（回复 {hp} HP，约最大生命的 {pct}%）', { hp: rest.healAmount, pct: Math.round((rest.healAmount / Math.max(1, game.data.maxHp)) * 100) }) }),
       ]),
       el('small', {
         text: rest.used
@@ -1237,7 +1239,7 @@ function renderItemDrop(game) {
    *     后者会清掉 `overflow` 标记，绝不会再弹第二次。
    */
   const actions = el('div', { class: 'reward-row' });
-  if (!drop.stored) {
+  if (!drop.stored && !drop.claimed) {
     actions.append(el('button', {
       class: 'btn btn-primary',
       onClick: () => {

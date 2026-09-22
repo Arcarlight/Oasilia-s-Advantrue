@@ -271,6 +271,26 @@ button { font-family: inherit; }
   box-shadow: inset 0 0 0 2px rgba(232, 207, 162, .25);
 }
 .btn-ghost:hover { background: rgba(255, 255, 255, .12); }
+/**
+ * **浅色羊皮纸面板上的幽灵按钮要反过来染色。**
+ *
+ * `.btn-ghost` 那一套是给深色背景调的（`--sand-7` = #e8cfa2 的浅沙色），压在
+ * `.panel-paper`（`--paper` #f0dcb6）上**实测对比度只有 1.15:1**（WCAG 正文要求 4.5:1）——
+ * 玩家报的「获得道具的界面里，不要的选项太浅了，几乎看不见」说的就是掉落那一屏的
+ * 「不要，就这样」。纸面上改成墨色 + 半透明白底 + 一圈看得见的描边，实测 13.8:1。
+ *
+ * 量法见 tools/diag-itemdrop.js（同一台浏览器、同一个按钮，只换这一条规则做 A/B）。
+ *
+ * 事件 / 宝箱 / 营地 / 商店那几屏也是同一张羊皮纸，一起受益。
+ */
+.panel-paper .btn-ghost {
+  background: rgba(255, 255, 255, .38);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px rgba(90, 60, 30, .45), var(--shadow-1);
+  text-shadow: none;
+}
+.panel-paper .btn-ghost:hover { background: rgba(255, 255, 255, .6); }
+.panel-paper .btn-ghost[disabled], .panel-paper .btn-ghost.disabled { color: rgba(42, 28, 18, .45); }
 .btn-sm { min-height: 36px; padding: 6px 12px; font-size: 13px; }
 .btn-lg { min-height: 54px; padding: 14px 26px; font-size: 17px; }
 .btn-icon { min-height: 40px; min-width: 44px; padding: 8px 10px; }

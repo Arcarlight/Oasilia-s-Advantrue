@@ -15,7 +15,7 @@
 //
 // 「check」的顺序**不能改**（每一步都为下一步准备输入）：
 //   build-content → build-i18n → **subset-fonts** → check-content → check-copy → check-icons
-//   → 11 套 test-*.mjs → bundle → verify-bundle → smoke-check
+//   → check-item-effects → 12 套 test-*.mjs → bundle → verify-bundle → smoke-check
 //
 // 为什么字体子集要排在内容体检**之前**：内容体检里有一条「字体子集是不是过期了」——
 // 刚改完文案时它必然是过期的（新字还没裁进子集），先裁一次再看才不会误报。
@@ -28,6 +28,7 @@
 //   check-content    数据自洽（图 / 属性 / 效果 key / 三语覆盖率 / 现实动物 / 更新日志…）
 //   check-copy       玩家读到的文案 vs 引擎实况（开发口气、旧概念、占位符、星号…）
 //   check-icons      .ico-* 类名有没有定义、素材在不在
+//   check-item-effects  道具写的持有效果，src 里必须真的有人读它（防「白拿的道具」）
 //   subset-fonts     按「现在用到的字」重裁字体子集（**内容文案一变就得跑**）
 //   bundle           src/ + content/ 打成一个 oasis-game.html（线上跑的就是它）
 import fs from 'node:fs';
@@ -217,6 +218,7 @@ function check() {
   run('内容体检（数据自洽 / 三语覆盖 / 现实动物 / 字体指纹）', ['tools/check-content.mjs', '--strict']);
   run('文案体检（玩家读到的字 vs 引擎实况）', ['tools/check-copy.mjs']);
   run('图标体检（.ico-* 有没有定义）', ['tools/check-icons.mjs']);
+  run('道具效果体检（每个持有效果都得有代码读它）', ['tools/check-item-effects.mjs']);
 
   const tests = fs.readdirSync(path.join(ROOT, 'tools')).filter((f) => /^test-.*\.mjs$/.test(f)).sort();
   for (const t of tests) run(`回归测试 ${t}`, [`tools/${t}`]);
@@ -225,7 +227,7 @@ function check() {
   run('验证打包产物', ['tools/verify-bundle.mjs']);
   run('冒烟（真浏览器点一遍主要流程）', ['tools/smoke-check.mjs']);
 
-  console.log(`\n✅ 全绿：${tests.length + 9} 步，用时 ${Math.round((Date.now() - t0) / 1000)} 秒。`);
+  console.log(`\n✅ 全绿：${tests.length + 10} 步，用时 ${Math.round((Date.now() - t0) / 1000)} 秒。`);
   console.log('别忘了最后那三件事：更新日志加一条 + package.json 版本号 → git commit → git push → node tools/compare-deployed.mjs');
 }
 

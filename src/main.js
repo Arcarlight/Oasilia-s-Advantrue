@@ -280,6 +280,11 @@ async function boot() {
     // 背包诊断：每一件道具能不能用、按钮可不可点、×0 的条目有没有被滤掉
     import('../tools/diag-items.js').catch((e) => console.error('背包诊断加载失败', e));
   }
+  if (params.get('dgitemdrop')) {
+    // 掉落窗口诊断：换手之后窗口会不会收掉、「不要」那个按钮看不看得见
+    // （?dgitemdrop=1 自检；?dgitemdrop=shot / shot-old 留屏截图）
+    import('../tools/diag-itemdrop.js').catch((e) => console.error('掉落窗口诊断加载失败', e));
+  }
   if (params.get('dgemote')) {
     // 表情诊断：打一回合，把「事件流」和「头像表情变化」按时间对在一起看
     import('../tools/diag-emote.js').catch((e) => console.error('表情诊断加载失败', e));

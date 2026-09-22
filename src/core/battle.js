@@ -1020,7 +1020,15 @@ export class Battle {
        */
       case 'grantBuff': {
         const targetKey = eff.target === 'enemy' ? foeKey : sourceKey;
-        this.grantBuff(targetKey, eff.buff, eff.n ?? 1, eff.turns ?? 3);
+        /**
+         * 「自身增益持续 +N 回合」（炽热岩石 / 妖精宝石 / 沙沙岩石）在这里加。
+         *
+         * 只加**玩家给自己挂的**那一种（`targetKey === 'player'`）：道具写的是「自身增益」，
+         * 而敌人给自己挂的强化、以及玩家给敌人挂的东西都不该被玩家的道具拉长。
+         * 这个 key 以前在 items.json 里挂着、没有一行代码读它 —— 那三件同样是白拿的。
+         */
+        const extra = targetKey === 'player' ? Math.max(0, modAdd(this.player, 'buffTurns')) : 0;
+        this.grantBuff(targetKey, eff.buff, eff.n ?? 1, (eff.turns ?? 3) + extra);
         break;
       }
       /**
