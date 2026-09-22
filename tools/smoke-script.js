@@ -655,6 +655,84 @@
             + Math.abs(at - idleRef[side]).toFixed(1) + 'px（起手帧中心 ' + at.toFixed(1) + ' vs 待机 ' + idleRef[side].toFixed(1) + '）');
         }
       }
+      /**
+       * ⑦-b 图鉴的行走图**不许被裁掉一截**（3.1.4 的一个回归）。
+       *
+       * 图鉴那几张图是 trim: true 建的：画布缓冲区按「内容外接框 × 缩放」建，
+       * paint() 再把裁过的框铺满画布 —— 所以那个框必须**罩得住这一行动画的每一帧**。
+       * 我为了修「换动作上下跳」一度把这里的框换成了「起手帧」的框，于是会动的动作
+       * （挥手、前冲、倒下）后面几帧露到画布外面被切掉，用户在图鉴里看到了缺胳膊少腿。
+       *
+       * 这里的验法和实现无关：自己把精灵图读进来，量出**这一行所有帧的并集**，
+       * 再和画布缓冲区尺寸对 —— 对不上就是裁错了。
+       */
+      try {
+        const spritesMod = await import('/src/core/sprites.js');
+        const meta = await (await fetch('assets/data/sprites.json')).json();
+        /**
+         * 挑的这几只不是随手写的：tools/shots/probe-trim-scope.mjs 量过 208 只的 Idle ——
+         * **119 只**的「整行并集」比「起手帧的框」大出 2 像素以上（大嘴娃宽 +20、
+         * 大嘴雀高 +18、电龙高 +12…）。用起手帧的框去裁，这 119 只就会缺一块。
+         * 所以这里拿两只最狠的当哨兵：裁错了它们必然对不上。
+         */
+        for (const slug of [bsv.game.data.slug, 'mawile', 'fearow']) {
+          const info = meta?.[slug]?.anims?.Idle;
+          const cv = await spritesMod.createAnim(slug, { anim: 'Idle', trim: true, scale: 2 });
+          if (!info || !cv) {
+            errors.push('拿不到 ' + slug + ' 的 Idle 元数据 / 裁剪画布');
+            continue;
+          }
+          const img = new Image();
+          await new Promise((res, rej) => {
+            img.onload = res; img.onerror = rej;
+            img.src = 'assets/pokemon/' + slug + '/Idle.png';
+          });
+          const w = info.fw * info.cols;
+          const h = info.fh * info.rows;
+          const probe = document.createElement('canvas');
+          probe.width = w; probe.height = h;
+          const pc = probe.getContext('2d', { willReadFrequently: true });
+          pc.drawImage(img, 0, 0);
+          /**
+           * ⚠ 必须**换一次朝向**再量：图鉴那张行走图会跟着鼠标转（canvas.setDir），
+           * 而出事的就是这条路径（建的时候用的是整行并集，换朝向时一度换成了起手帧的框）。
+           * 只量「刚建好」的那张是量不出问题的 —— 第一次写这条断言时就漏了这一步。
+           */
+          const startRow = cv.dirRow ?? 0;
+          cv.setDir(startRow === 0 ? 1 : 0);
+          const row = cv.dirRow ?? 0;
+          /**
+           * ⚠ 并集要在**画格内坐标**里取：一行的 7 格是横向排开的，
+           * 直接对整行取外接框会把 7 格连成 434 像素宽（第一版就写错了，
+           * 报出来「画布 62×70 vs 并集 434×70」这种假警报）。
+           * core/sprites.js 的 contentBox 也是这么做的：把每一格画到 (0,0) 再取并集。
+           */
+          let x0 = Infinity; let y0 = Infinity; let x1 = -1; let y1 = -1;
+          for (let c = 0; c < info.cols; c += 1) {
+            const d = pc.getImageData(c * info.fw, row * info.fh, info.fw, info.fh).data;
+            for (let y = 0; y < info.fh; y += 1) {
+              for (let x = 0; x < info.fw; x += 1) {
+                if (d[(y * info.fw + x) * 4 + 3] > 8) {
+                  if (x < x0) x0 = x; if (x > x1) x1 = x;
+                  if (y < y0) y0 = y; if (y > y1) y1 = y;
+                }
+              }
+            }
+          }
+          const wantW = Math.round((x1 - x0 + 1) * 2);
+          const wantH = Math.round((y1 - y0 + 1) * 2);
+          log('裁剪行走图（' + slug + '×2）：画布 ' + cv.width + '×' + cv.height
+            + '｜这一行所有帧的并集 ' + wantW + '×' + wantH);
+          if (Math.abs(cv.width - wantW) > 2 || Math.abs(cv.height - wantH) > 2) {
+            errors.push('图鉴行走图裁错了（' + slug + '）：画布 ' + cv.width + '×' + cv.height
+              + '，而这一行动画的内容并集是 ' + wantW + '×' + wantH + '（裁小了就会切掉后面几帧）');
+          }
+          cv.destroy?.();
+        }
+      } catch (e) {
+        errors.push('裁剪行走图检查失败：' + e.message);
+      }
+
       // 量完把这几个一次性动作收掉，别留给后面的检查
       for (const side of ['enemy', 'player']) {
         const body = side === 'enemy' ? bsv.enemyBody : bsv.playerBody;

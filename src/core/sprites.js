@@ -379,7 +379,17 @@ export async function createAnim(slug, opts = {}) {
     canvas.contentBox = firstFrameBox(info, img, pctx, row);
     canvas.contentRow = row;
     if (trim) {
-      box = canvas.contentBox;
+      /**
+       * ⚠ 裁切必须用**整行的并集框**，不能用 firstFrameBox。
+       *
+       * `box` 决定的是画布的缓冲区大小，`paint()` 按「裁过的框」把每一帧画满这张画布 ——
+       * 只按**第一帧**的外接框裁，后面那些动起来的帧（挥手、前冲、倒下）就有一部分
+       * 落到画布外面被切掉。3.1.4 我为了修「换动作时角色上下跳」把这里的 `box` 换成过
+       * firstFrameBox，于是图鉴里那些会动的行走图**缺胳膊少腿**（用户报的
+       * 「图鉴内的部分宝可梦有行走图被截掉」）。
+       * 对齐用的锚点另存一份 `canvas.contentBox`（那才用第一帧），两者不要混。
+       */
+      box = contentBox(info, img, pctx, row);
       const s = autoScale ? autoScale / box.h : useScale;
       canvas.width = Math.round(box.w * s);
       canvas.height = Math.round(box.h * s);
@@ -409,8 +419,11 @@ export async function createAnim(slug, opts = {}) {
    * 有 199 只跳得超过 4% 的帧高，最狠的一只（土居忍士的受伤）跳了 65%（约 45 像素）。
    * 战斗界面拿这个框把每一帧的内容**对齐到同一个位置**（见 ui/battle-view.js 的 applyAnimScale），
    * 换动作就只剩下动作本身的变化，不会有位移。
+   * ⚠ 它和 `box`（裁切用的**整行并集框**）不是一回事，别互相顶替：
+   * 用并集框当对齐锚，出招那种一冲一收的动作会被算歪（实测残留 27 像素）；
+   * 用这个框去裁切，图鉴里会动的行走图就会被切掉一截（用户报过）。
    */
-  canvas.contentBox = box ?? firstFrameBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0);
+  canvas.contentBox = firstFrameBox(info, img, pctx, frames[0] ? Math.round(frames[0].y / info.fh) : 0);
   canvas.contentRow = frames[0] ? Math.round(frames[0].y / info.fh) : 0;
   canvas.trimmed = !!box;
   canvas.animName = animName;
